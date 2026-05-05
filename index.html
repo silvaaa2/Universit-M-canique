@@ -1,140 +1,90 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Université Mécanique</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Module 4 - Mécanique</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <div id="loader">
-    <div class="loader-box">
-      <h2>Université Mécanique</h2>
-      <p id="loaderText">Initialisation du campus mécanique...</p>
-      <div class="loader-bar"><span></span></div>
+
+<div id="loader">
+  <div class="loader-box">
+    <h2>Module 4 - Mécanique</h2>
+    <p id="loaderText">Chargement du système...</p>
+    <div class="bar"><span></span></div>
+  </div>
+</div>
+
+<header>
+  <div class="logo" onclick="openPage('home')">Module 4 - Mécanique</div>
+
+  <nav>
+    <button onclick="openPage('home')">Accueil</button>
+    <button onclick="openPage('facile')">Custom Facile</button>
+    <button onclick="openPage('moyen')">Custom Moyen</button>
+    <button onclick="openPage('difficile')">Custom Difficile</button>
+  </nav>
+</header>
+
+<main>
+
+<section id="home" class="page active">
+  <h1>Université Mécanique</h1>
+  <p>Choisis ton niveau de custom et valide les configurations.</p>
+
+  <div class="cards">
+    <button onclick="openPage('facile')" class="card">
+      Custom Facile
+    </button>
+
+    <button onclick="openPage('moyen')" class="card">
+      Custom Moyen
+    </button>
+
+    <button onclick="openPage('difficile')" class="card">
+      Custom Difficile
+    </button>
+  </div>
+</section>
+
+<section id="facile" class="page">
+  <h2>Custom Facile - Dukes</h2>
+
+  <div class="grid">
+    <img src="images/dukes.png">
+
+    <div class="info">
+      <p>Couleur principale <span class="yes">Oui</span></p>
+      <p>Couleur secondaire <span class="yes">Oui</span></p>
+      <p>Couleur intérieur <span class="no">Non</span></p>
+      <p>Nacré <span class="yes">Oui</span></p>
+      <p>Néon <span class="yes">Oui</span></p>
+      <p>Extras <span class="no">Non</span></p>
+      <p>Full perf <span class="no">Non</span></p>
+
+      <a class="btn" target="_blank"
+      href="https://docs.google.com/forms/d/e/1FAIpQLSeFe0dYjLTHWcPM0oC-H5J6m6bc4xd9sIBN4vy2s_xE_VfdEQ/viewform">
+        Remplir le formulaire
+      </a>
     </div>
   </div>
+</section>
 
-  <header>
-    <div class="brand" onclick="openPage('home')">
-      <span></span>
-      Université Mécanique
-    </div>
+<section id="moyen" class="page">
+  <h2>Custom Moyen</h2>
+  <p>Pas encore dispo</p>
+</section>
 
-    <nav>
-      <button onclick="openPage('home')">Accueil</button>
-      <button onclick="openPage('module1')">Custom facile</button>
-      <button onclick="openPage('module2')">Custom Moyen</button>
-      <button onclick="openPage('module3')">Custom Difficile</button>
-    </nav>
-  </header>
+<section id="difficile" class="page">
+  <h2>Custom Difficile</h2>
+  <p>Pas encore dispo</p>
+</section>
 
-  <main>
-    <section id="home" class="page active">
-      <div class="hero">
-        <div>
-          <p class="tag">Campus automobile • Formation concessionnaire</p>
-          <h1>Université <strong>Mécanique</strong></h1>
-          <p class="desc">
-            Sélectionne un module, consulte les fiches véhicules,
-            vérifie les contraintes techniques et valide via le formulaire.
-          </p>
+</main>
 
-          <div class="buttons">
-            <button class="btn primary" onclick="openPage('module1')">Commencer</button>
-            <button class="btn secondary" onclick="openPage('modules')">Voir les modules</button>
-          </div>
-        </div>
+<script src="script.js"></script>
 
-        <div class="campus-card">
-          <h3>Tableau de bord</h3>
-          <div><span>Statut</span><b class="online">ONLINE</b></div>
-          <div><span>Module 1</span><b>Disponible</b></div>
-          <div><span>Module 2</span><b>À venir</b></div>
-          <div><span>Module 3</span><b>À venir</b></div>
-          <div><span>Module 4</span><b>À venir</b></div>
-        </div>
-      </div>
-    </section>
-
-    <section id="modules" class="page">
-      <h2>Parcours de formation</h2>
-
-      <div class="module-grid">
-        <button class="module-card" onclick="openPage('module1')">
-          <span>01</span>
-          <h3>Module 1</h3>
-          <p>Custom Facile — Dukes</p>
-        </button>
-
-        <button class="module-card locked" onclick="openPage('module2')">
-          <span>02</span>
-          <h3>Module 2</h3>
-          <p>En attente de configuration.</p>
-        </button>
-
-        <button class="module-card locked" onclick="openPage('module3')">
-          <span>03</span>
-          <h3>Module 3</h3>
-          <p>En attente de configuration.</p>
-        </button>
-
-        <button class="module-card locked" onclick="openPage('module4')">
-          <span>04</span>
-          <h3>Module 4</h3>
-          <p>En attente de configuration.</p>
-        </button>
-      </div>
-    </section>
-
-    <section id="module1" class="page">
-      <div class="module-header">
-        <p>Module 1 • Custom Facile</p>
-        <h2>Dukes</h2>
-      </div>
-
-      <div class="vehicle-layout">
-        <div class="photo-card">
-          <img src="images/dukes.png" alt="Dukes rendu final">
-          <div class="photo-label">Rendu final</div>
-        </div>
-
-        <div class="info-card">
-          <h3>Informations techniques</h3>
-
-          <div class="info-line"><span>Couleur principale</span><b class="yes">Oui</b></div>
-          <div class="info-line"><span>Couleur secondaire</span><b class="yes">Oui</b></div>
-          <div class="info-line"><span>Couleur intérieur</span><b class="no">Non</b></div>
-          <div class="info-line"><span>Nacré</span><b class="yes">Oui</b></div>
-          <div class="info-line"><span>Néon</span><b class="yes">Oui</b></div>
-          <div class="info-line"><span>Extras</span><b class="no">Non</b></div>
-          <div class="info-line"><span>Full perf</span><b class="no">Non</b></div>
-
-          <a class="btn primary full" target="_blank"
-            href="https://docs.google.com/forms/d/e/1FAIpQLSeFe0dYjLTHWcPM0oC-H5J6m6bc4xd9sIBN4vy2s_xE_VfdEQ/viewform">
-            Remplir le formulaire
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section id="module2" class="page empty">
-      <h2>Module 2</h2>
-      <p>Pas encore configuré.</p>
-    </section>
-
-    <section id="module3" class="page empty">
-      <h2>Module 3</h2>
-      <p>Pas encore configuré.</p>
-    </section>
-
-    <section id="module4" class="page empty">
-      <h2>Module 4</h2>
-      <p>Pas encore configuré.</p>
-    </section>
-  </main>
-
-  <script src="script.js"></script>
 </body>
 </html>
