@@ -59,7 +59,7 @@
   align-items: start;
 }
 
-/* Carte photo agrandie */
+/* Carte photo */
 .photo-card {
   position: relative;
   width: 880px;
@@ -80,6 +80,78 @@
   object-fit: cover;
   display: block;
   filter: contrast(1.04) saturate(.95);
+}
+
+/* Carrousel */
+.gallery-card {
+  position: relative;
+}
+
+.gallery-card img {
+  transition: opacity .18s ease, transform .25s ease;
+}
+
+.gallery-card img.fade-out {
+  opacity: 0;
+  transform: scale(.985);
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.58);
+  color: var(--text);
+
+  font-size: 38px;
+  line-height: 1;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  backdrop-filter: blur(12px);
+  transition: .2s;
+}
+
+.gallery-arrow:hover {
+  background: rgba(214,180,106,.18);
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+.gallery-arrow.left {
+  left: 20px;
+}
+
+.gallery-arrow.right {
+  right: 20px;
+}
+
+.gallery-counter {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  z-index: 5;
+
+  padding: 10px 15px;
+  border-radius: 999px;
+
+  background: rgba(0,0,0,.62);
+  border: 1px solid rgba(255,255,255,.16);
+  color: var(--text);
+
+  font-size: 13px;
+  font-weight: 900;
+  backdrop-filter: blur(12px);
 }
 
 /* Carte informations */
@@ -246,6 +318,25 @@
   .photo-card img {
     height: 300px;
     min-height: 300px;
+  }
+
+  .gallery-arrow {
+    width: 42px;
+    height: 42px;
+    font-size: 30px;
+  }
+
+  .gallery-arrow.left {
+    left: 12px;
+  }
+
+  .gallery-arrow.right {
+    right: 12px;
+  }
+
+  .gallery-counter {
+    right: 14px;
+    bottom: 14px;
   }
 
   .info-card {
