@@ -4,67 +4,29 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-}
-
-.hero::after {
-  content: "";
-  width: min(430px, 100%);
-  height: 520px;
-  justify-self: end;
-  border-radius: 42px;
-  background:
-    linear-gradient(rgba(0,0,0,.15), rgba(0,0,0,.75)),
-    url("../images/dukes.png");
-  background-size: cover;
-  background-position: center;
-  border: 1px solid var(--border);
-  box-shadow: 0 35px 100px rgba(0,0,0,.55), 0 0 80px rgba(214,180,106,.13);
-}
-
-.tag {
-  color: var(--gold);
-  text-transform: uppercase;
-  letter-spacing: .22em;
-  font-size: 12px;
-  font-weight: 900;
+  padding: 80px 0 40px;
 }
 
 h1 {
+  max-width: 1100px;
+  margin: 0;
   font-size: clamp(70px, 8vw, 120px);
+  line-height: .9;
   letter-spacing: -5px;
 }
 
 h1 span {
-  background: linear-gradient(90deg, #d6b46a, #fff2c4);
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-h1 span {
-  color: transparent;
-  background: linear-gradient(90deg, var(--gold), var(--gold2), #fff3c4);
+  background: linear-gradient(90deg, var(--gold), #fff2c4);
   -webkit-background-clip: text;
   background-clip: text;
-}
-
-.desc {
-  max-width: 650px;
-  color: var(--muted);
-  font-size: 18px;
-  line-height: 1.8;
-}
-
-.actions {
-  margin-top: 32px;
-  display: flex;
-  gap: 14px;
+  color: transparent;
 }
 
 .modules {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
-  margin: -80px 0 90px;
+  margin: -60px 0 90px;
 }
 
 .card {
@@ -104,18 +66,12 @@ h1 span {
 }
 
 @media (max-width: 950px) {
-  .hero {
-    grid-template-columns: 1fr;
-    padding: 60px 0;
-  }
-
-  .hero::after {
-    justify-self: start;
-    height: 320px;
-  }
-
   .modules {
     grid-template-columns: 1fr;
     margin-top: 0;
+  }
+
+  h1 {
+    font-size: 58px;
   }
 }
