@@ -1,16 +1,26 @@
-function openPage(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+const loader = document.getElementById("loader");
+const loaderText = document.getElementById("loaderText");
 
-  document.getElementById("loader").classList.remove("hide");
+function openPage(id) {
+  loaderText.textContent = "Ouverture de l’espace...";
+  loader.classList.remove("hide");
 
   setTimeout(() => {
-    document.getElementById("loader").classList.add("hide");
-  }, 500);
+    document.querySelectorAll(".page").forEach(page => {
+      page.classList.remove("active");
+    });
+
+    document.getElementById(id).classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, 250);
+
+  setTimeout(() => {
+    loader.classList.add("hide");
+  }, 700);
 }
 
-window.onload = () => {
+window.addEventListener("load", () => {
   setTimeout(() => {
-    document.getElementById("loader").classList.add("hide");
+    loader.classList.add("hide");
   }, 1200);
-};
+});
