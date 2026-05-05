@@ -57,17 +57,6 @@
   align-items: stretch;
 }
 
-.photo-card,
-.info-card {
-  border-radius: 36px;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
-  border: 1px solid var(--border);
-  box-shadow: 0 35px 110px rgba(0,0,0,.42);
-  backdrop-filter: blur(18px);
-  overflow: hidden;
-}
-
 .photo-card {
   position: relative;
   min-height: 590px;
