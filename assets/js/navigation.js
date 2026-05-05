@@ -1,7 +1,8 @@
 function goPage(url) {
-  document.getElementById("loader").style.display = "block";
+  loaderText.textContent = "Ouverture de l’espace...";
+  loader.classList.remove("hide");
 
   setTimeout(() => {
     window.location.href = url;
-  }, 400);
+  }, 650);
 }
