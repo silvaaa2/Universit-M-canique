@@ -1,1 +1,35 @@
+header {
+  height: 80px;
+  padding: 0 7vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
+  background: rgba(6, 7, 15, 0.7);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+}
+
+.logo {
+  font-weight: 900;
+  font-size: 18px;
+}
+
+nav {
+  display: flex;
+  gap: 10px;
+}
+
+nav button {
+  border: none;
+  background: rgba(255,255,255,0.05);
+  color: #cfd4ff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+nav button:hover {
+  background: rgba(0, 210, 255, 0.2);
+}
