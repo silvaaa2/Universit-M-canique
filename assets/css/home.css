@@ -1,19 +1,118 @@
 .hero {
-  padding: 80px;
+  min-height: calc(100vh - 86px);
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  align-items: center;
+  gap: 50px;
+}
+
+.hero::after {
+  content: "";
+  width: min(430px, 100%);
+  height: 520px;
+  justify-self: end;
+  border-radius: 42px;
+  background:
+    linear-gradient(rgba(0,0,0,.15), rgba(0,0,0,.75)),
+    url("../images/dukes.png");
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--border);
+  box-shadow: 0 35px 100px rgba(0,0,0,.55), 0 0 80px rgba(214,180,106,.13);
+}
+
+.tag {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+h1 {
+  max-width: 820px;
+  margin: 18px 0;
+  font-size: clamp(56px, 7vw, 105px);
+  line-height: .9;
+  letter-spacing: -.08em;
 }
 
 h1 span {
-  color: var(--gold);
+  color: transparent;
+  background: linear-gradient(90deg, var(--gold), var(--gold2), #fff3c4);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.desc {
+  max-width: 650px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.actions {
+  margin-top: 32px;
+  display: flex;
+  gap: 14px;
 }
 
 .modules {
-  display: flex;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin: -80px 0 90px;
 }
 
 .card {
-  background: var(--card);
+  min-height: 250px;
   padding: 30px;
-  border-radius: 10px;
+  border-radius: 34px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+  border: 1px solid var(--border);
   cursor: pointer;
+  transition: .25s;
+  box-shadow: 0 25px 80px rgba(0,0,0,.32);
+  backdrop-filter: blur(18px);
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  border-color: var(--gold);
+  box-shadow: 0 35px 110px rgba(0,0,0,.48), 0 0 45px rgba(214,180,106,.14);
+}
+
+.card span {
+  color: var(--gold);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.card h3 {
+  margin: 65px 0 12px;
+  font-size: 30px;
+  letter-spacing: -.04em;
+}
+
+.card p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 950px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 60px 0;
+  }
+
+  .hero::after {
+    justify-self: start;
+    height: 320px;
+  }
+
+  .modules {
+    grid-template-columns: 1fr;
+    margin-top: 0;
+  }
 }
