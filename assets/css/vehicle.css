@@ -155,10 +155,29 @@
   background: #ff5b6e;
 }
 
-.full {
+/* Bouton formulaire propre */
+.info-card .btn.primary {
   width: 100%;
+  min-height: 58px;
   margin-top: 30px;
-  min-height: 50px;
+  border-radius: 18px;
+  color: #080808;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  box-shadow: 0 18px 45px rgba(214, 180, 106, .18);
+  font-size: 15px;
+  font-weight: 900;
+  text-decoration: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.info-card .btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 65px rgba(214, 180, 106, .28);
 }
 
 /* Responsive */
