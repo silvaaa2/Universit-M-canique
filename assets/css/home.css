@@ -1,9 +1,9 @@
 .hero {
   min-height: calc(100vh - 86px);
-  display: grid;
-  grid-template-columns: 1.1fr .9fr;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 50px;
+  text-align: center;
 }
 
 .hero::after {
