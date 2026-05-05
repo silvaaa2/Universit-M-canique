@@ -1,9 +1,29 @@
 .btn {
-  padding: 10px 20px;
   border: none;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
   cursor: pointer;
+  font-weight: 900;
+  transition: .25s;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
 }
 
 .primary {
-  background: var(--gold);
+  color: #070707;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  box-shadow: 0 18px 50px rgba(214,180,106,.18);
+}
+
+.primary:hover {
+  box-shadow: 0 25px 70px rgba(214,180,106,.28);
+}
+
+.secondary {
+  color: var(--text);
+  background: rgba(255,255,255,.07);
+  border: 1px solid var(--border);
 }
