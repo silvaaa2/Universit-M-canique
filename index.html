@@ -6,21 +6,22 @@
   <title>Université Mécanique</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div id="loader">
-    <div class="loader-card">
-      <div class="scanner"></div>
-      <h1>Université Mécanique</h1>
-      <p id="loader-text">Initialisation du module custom...</p>
-      <div class="progress"><span></span></div>
+    <div class="loader-box">
+      <div class="loader-title">Université Mécanique</div>
+      <div class="loader-text">Chargement du module custom...</div>
+      <div class="loader-bar"><span></span></div>
     </div>
   </div>
 
-  <header class="topbar">
+  <header>
     <div class="brand">
-      <span class="logo-dot"></span>
-      <span>Université Mécanique</span>
+      <span></span>
+      Université Mécanique
     </div>
+
     <nav>
       <a href="#accueil">Accueil</a>
       <a href="#facile">Custom Facile</a>
@@ -30,41 +31,46 @@
   </header>
 
   <main>
-    <section class="hero reveal" id="accueil">
-      <div class="hero-content">
-        <p class="eyebrow">Atelier custom chez le concessionnaire</p>
-        <h1>Formation custom <span>futuriste</span> pour mécanos.</h1>
-        <p class="subtitle">Choisis une difficulté, consulte les infos techniques, vérifie le rendu final et remplis le formulaire proprement.</p>
-        <div class="hero-actions">
-          <a class="btn primary" href="#facile">Commencer</a>
-          <a class="btn ghost" href="#catalogue">Voir les modules</a>
+    <section class="hero" id="accueil">
+      <div class="hero-text">
+        <p class="tag">Atelier custom chez le concessionnaire</p>
+        <h1>Formation custom <strong>futuriste</strong> pour mécanos.</h1>
+        <p class="desc">
+          Consulte les modules, vérifie les informations techniques,
+          regarde le rendu final et remplis le formulaire.
+        </p>
+
+        <div class="buttons">
+          <a href="#facile" class="btn primary">Commencer</a>
+          <a href="#modules" class="btn secondary">Voir les modules</a>
         </div>
       </div>
-      <div class="hud-card">
-        <div class="hud-header">
-          <span>SYSTEM STATUS</span>
-          <strong>ONLINE</strong>
-        </div>
-        <div class="hud-line"><span>Module Facile</span><b>1 véhicule</b></div>
-        <div class="hud-line"><span>Module Moyen</span><b>à venir</b></div>
-        <div class="hud-line"><span>Module Difficile</span><b>à venir</b></div>
+
+      <div class="status-card">
+        <p>SYSTEM STATUS <b>ONLINE</b></p>
+        <p>Module Facile <b>1 véhicule</b></p>
+        <p>Module Moyen <b>à venir</b></p>
+        <p>Module Difficile <b>à venir</b></p>
       </div>
     </section>
 
-    <section class="catalogue reveal" id="catalogue">
+    <section class="modules" id="modules">
       <h2>Modules de custom</h2>
-      <div class="cards">
-        <a class="module-card active" href="#facile">
+
+      <div class="module-grid">
+        <a href="#facile" class="module-card">
           <span>01</span>
           <h3>Custom Facile</h3>
           <p>Base parfaite pour apprendre sans se cramer le cerveau.</p>
         </a>
-        <a class="module-card locked" href="#moyen">
+
+        <a href="#moyen" class="module-card">
           <span>02</span>
           <h3>Custom Moyen</h3>
           <p>En attente des véhicules et infos techniques.</p>
         </a>
-        <a class="module-card locked" href="#difficile">
+
+        <a href="#difficile" class="module-card">
           <span>03</span>
           <h3>Custom Difficile</h3>
           <p>Module avancé, prêt à être ajouté.</p>
@@ -72,51 +78,80 @@
       </div>
     </section>
 
-    <section class="vehicle reveal" id="facile">
+    <section class="vehicle" id="facile">
       <div class="section-title">
         <p>Custom Facile</p>
         <h2>Dukes</h2>
       </div>
 
       <div class="vehicle-grid">
-        <div class="image-panel">
-          <img src="dukes.png" alt="Dukes rendu final" />
-          <div class="image-caption">Photo rendu final</div>
+        <div class="image-card">
+          <img src="dukes.png" alt="Rendu final Dukes" />
+          <div class="caption">Photo rendu final</div>
         </div>
 
-        <div class="tech-panel">
+        <div class="info-card">
           <h3>Information Technique</h3>
-          <div class="tech-list">
-            <div><span>Couleur principale</span><b class="yes">Oui</b></div>
-            <div><span>Couleur secondaire</span><b class="yes">Oui</b></div>
-            <div><span>Couleur intérieur</span><b class="no">Non</b></div>
-            <div><span>Nacré</span><b class="yes">Oui</b></div>
-            <div><span>Néon</span><b class="yes">Oui</b></div>
-            <div><span>Extras</span><b class="no">Non</b></div>
-            <div><span>Full perf</span><b class="no">Non</b></div>
+
+          <div class="info-line">
+            <span>Couleur principale</span>
+            <b class="yes">Oui</b>
           </div>
 
-          <a class="btn primary wide" target="_blank" href="https://docs.google.com/forms/d/e/1FAIpQLSeFe0dYjLTHWcPM0oC-H5J6m6bc4xd9sIBN4vy2s_xE_VfdEQ/viewform">
+          <div class="info-line">
+            <span>Couleur secondaire</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Couleur intérieur</span>
+            <b class="no">Non</b>
+          </div>
+
+          <div class="info-line">
+            <span>Nacré</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Néon</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Extras</span>
+            <b class="no">Non</b>
+          </div>
+
+          <div class="info-line">
+            <span>Full perf</span>
+            <b class="no">Non</b>
+          </div>
+
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSeFe0dYjLTHWcPM0oC-H5J6m6bc4xd9sIBN4vy2s_xE_VfdEQ/viewform"
+            target="_blank"
+            class="btn primary full"
+          >
             Remplir le formulaire
           </a>
         </div>
       </div>
     </section>
 
-    <section class="placeholder reveal" id="moyen">
+    <section class="empty" id="moyen">
       <h2>Custom Moyen</h2>
-      <p>Module pas encore configuré. Envoie le véhicule, la photo, les infos techniques et le formulaire.</p>
+      <p>Module pas encore configuré.</p>
     </section>
 
-    <section class="placeholder reveal" id="difficile">
+    <section class="empty" id="difficile">
       <h2>Custom Difficile</h2>
-      <p>Module pas encore configuré. Envoie le véhicule, la photo, les infos techniques et le formulaire.</p>
+      <p>Module pas encore configuré.</p>
     </section>
   </main>
 
   <footer>
-    <span>Université Mécanique</span>
-    <span>Interface custom garage</span>
+    <p>Université Mécanique — Interface custom garage</p>
   </footer>
 
   <script src="script.js"></script>
