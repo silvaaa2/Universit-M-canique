@@ -1,1 +1,22 @@
+.btn {
+  border: none;
+  padding: 12px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 900;
+  transition: 0.2s;
+}
 
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.primary {
+  background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+  color: black;
+}
+
+.secondary {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
