@@ -1,5 +1,6 @@
-window.onload = () => {
+window.addEventListener("load", () => {
   setTimeout(() => {
-    document.getElementById("loader").style.display = "none";
-  }, 2000);
-};
+    const loader = document.getElementById("loader");
+    loader.classList.add("hide");
+  }, 1800);
+});
