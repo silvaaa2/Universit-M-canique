@@ -1,15 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
+
 :root {
-  --bg: #070707;
+  --bg: #050505;
+  --bg2: #0d0d0c;
+  --card: rgba(255, 255, 255, 0.075);
+  --card2: rgba(214, 180, 106, 0.08);
+  --border: rgba(255, 255, 255, 0.13);
   --gold: #d6b46a;
-  --gold2: #f1d58a;
-  --text: #f4f1ea;
-  --muted: #a7a29a;
-  --card: rgba(255,255,255,0.05);
+  --gold2: #f4d98f;
+  --text: #f7f1e4;
+  --muted: #aaa39a;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: Arial;
-  background: var(--bg);
+  font-family: "Inter", sans-serif;
   color: var(--text);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(214,180,106,.18), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(255,255,255,.07), transparent 26%),
+    linear-gradient(135deg, #050505, #10100f 50%, #050505);
+  min-height: 100vh;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 70px 70px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+  pointer-events: none;
+}
+
+main {
+  position: relative;
+  z-index: 2;
+  padding: 0 7vw;
 }
