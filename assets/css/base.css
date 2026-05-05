@@ -1,48 +1,15 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap");
-
 :root {
   --bg: #070707;
-  --bg2: #111111;
-  --card: rgba(255, 255, 255, 0.065);
-  --border: rgba(255, 255, 255, 0.13);
-  --text: #f4f1ea;
-  --muted: #a7a29a;
   --gold: #d6b46a;
   --gold2: #f1d58a;
-  --metal: #2a2a2a;
-  --green: #47e6a2;
-  --red: #ff5b6e;
-}
-
-* {
-  box-sizing: border-box;
+  --text: #f4f1ea;
+  --muted: #a7a29a;
+  --card: rgba(255,255,255,0.05);
 }
 
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
+  font-family: Arial;
+  background: var(--bg);
   color: var(--text);
-  background:
-    radial-gradient(circle at 15% 10%, rgba(214, 180, 106, 0.18), transparent 28%),
-    radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.06), transparent 30%),
-    linear-gradient(180deg, #070707, #101010 60%, #050505);
-  min-height: 100vh;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
-  background-size: 58px 58px;
-  pointer-events: none;
-  opacity: .45;
-}
-
-main {
-  position: relative;
-  z-index: 2;
-  padding: 0 7vw;
 }
