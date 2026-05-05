@@ -190,7 +190,6 @@
   .photo-card img {
     min-height: 360px;
   }
-}
 
 @media (max-width: 700px) {
   .page-top {
