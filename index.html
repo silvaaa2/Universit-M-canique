@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Module 4 - Mécanique</title>
+  <meta charset="UTF-8">
+  <title>Module 4 - Mécanique</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="assets/css/base.css">
-<link rel="stylesheet" href="assets/css/header.css">
-<link rel="stylesheet" href="assets/css/home.css">
-<link rel="stylesheet" href="assets/css/buttons.css">
-<link rel="stylesheet" href="assets/css/loader.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/header.css">
+  <link rel="stylesheet" href="assets/css/home.css">
+  <link rel="stylesheet" href="assets/css/buttons.css">
+  <link rel="stylesheet" href="assets/css/loader.css">
 </head>
 
 <body>
@@ -22,23 +23,24 @@
 </div>
 
 <header>
-  <div class="logo">Module 4</div>
+  <div class="logo" onclick="goPage('index.html')">
+    <img src="Images/logo.png" alt="Logo Module 4">
+    <span>Module 4 - Mécanique</span>
+  </div>
 
   <nav>
     <button onclick="goPage('pages/custom-facile.html')">Custom Facile</button>
-    <button>Custom Moyen</button>
-    <button>Custom Difficile</button>
+    <button onclick="goPage('pages/custom-moyen.html')">Custom Moyen</button>
+    <button onclick="goPage('pages/custom-difficile.html')">Custom Difficile</button>
   </nav>
 </header>
 
 <main>
 
 <section class="hero">
-
   <h1>
-    Custom - <span>Concessionaire Auto</span>
+    Custom - <span>Concessionnaire Auto</span>
   </h1>
-
 </section>
 
 <section class="modules">
@@ -49,13 +51,13 @@
     <p>Configuration Dukes</p>
   </div>
 
-  <div class="card">
+  <div class="card" onclick="goPage('pages/custom-moyen.html')">
     <span>02</span>
     <h3>Custom Moyen</h3>
     <p>Bientôt</p>
   </div>
 
-  <div class="card">
+  <div class="card" onclick="goPage('pages/custom-difficile.html')">
     <span>03</span>
     <h3>Custom Difficile</h3>
     <p>Bientôt</p>
