@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Module 4 - Mécanique</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/header.css">
+  <link rel="stylesheet" href="assets/css/loader.css">
+  <link rel="stylesheet" href="assets/css/buttons.css">
+  <link rel="stylesheet" href="assets/css/home.css">
+</head>
+
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-box">
+    <h2>Module 4 - Mécanique</h2>
+    <p id="loaderText">Initialisation du campus mécanique...</p>
+    <div class="loader-bar"><span></span></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Module 4 - Mécanique</div>
+
+  <nav>
+    <button onclick="goPage('pages/custom-facile.html')">Custom Facile</button>
+    <button onclick="goPage('pages/custom-moyen.html')">Custom Moyen</button>
+    <button onclick="goPage('pages/custom-difficile.html')">Custom Difficile</button>
+  </nav>
+</header>
+
+<!-- MAIN -->
+<main>
+
+<section class="hero">
+  <p class="tag">Université mécanique • Formation concessionnaire</p>
+
+  <h1>
+    Campus digital de <span>custom automobile</span>
+  </h1>
+
+  <p class="desc">
+    Sélectionne un niveau de custom, consulte les informations techniques
+    et valide les configurations via formulaire.
+  </p>
+
+  <div class="actions">
+    <button class="btn primary" onclick="goPage('pages/custom-facile.html')">
+      Commencer
+    </button>
+
+    <button class="btn secondary" onclick="goPage('pages/custom-facile.html')">
+      Accès rapide
+    </button>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section class="modules">
+
+  <div class="card" onclick="goPage('pages/custom-facile.html')">
+    <span>01</span>
+    <h3>Custom Facile</h3>
+    <p>Configurations simples pour débuter.</p>
+  </div>
+
+  <div class="card" onclick="goPage('pages/custom-moyen.html')">
+    <span>02</span>
+    <h3>Custom Moyen</h3>
+    <p>En attente de contenu.</p>
+  </div>
+
+  <div class="card" onclick="goPage('pages/custom-difficile.html')">
+    <span>03</span>
+    <h3>Custom Difficile</h3>
+    <p>En attente de contenu.</p>
+  </div>
+
+</section>
+
+</main>
+
+<!-- JS -->
+<script src="assets/js/loader.js"></script>
+<script src="assets/js/navigation.js"></script>
+
+</body>
+</html>
