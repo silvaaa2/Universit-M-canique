@@ -51,8 +51,15 @@
 
     <div class="vehicle-layout">
 
-      <div class="photo-card">
-        <img src="../Images/dukes.png" alt="Dukes rendu final">
+      <div class="photo-card gallery-card">
+        <img id="vehicleImage" src="../Images/dukes-1.png" alt="Dukes rendu final">
+
+        <button class="gallery-arrow left" onclick="changeImage(-1)">‹</button>
+        <button class="gallery-arrow right" onclick="changeImage(1)">›</button>
+
+        <div class="gallery-counter">
+          <span id="currentImage">1</span>/<span id="totalImages">5</span>
+        </div>
       </div>
 
       <aside class="info-card">
@@ -115,6 +122,7 @@
 
 <script src="../assets/js/loader.js"></script>
 <script src="../assets/js/navigation.js"></script>
+<script src="../assets/js/gallery.js"></script>
 
 </body>
 </html>
