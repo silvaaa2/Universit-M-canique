@@ -3,12 +3,12 @@
   padding: 28px;
   border-radius: 32px;
   background:
-    radial-gradient(circle at 10% 20%, rgba(214,180,106,.15), transparent 30%),
-    linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.025));
+    radial-gradient(circle at 10% 20%, rgba(214,180,106,.12), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
   border: 1px solid rgba(214,180,106,.22);
   box-shadow:
-    0 35px 110px rgba(0,0,0,.42),
-    0 0 60px rgba(214,180,106,.08);
+    0 24px 70px rgba(0,0,0,.34),
+    0 0 32px rgba(214,180,106,.06);
 }
 
 .students-head {
@@ -50,7 +50,7 @@
   cursor: pointer;
   font-weight: 900;
   white-space: nowrap;
-  transition: .25s;
+  transition: background .18s ease, transform .18s ease;
 }
 
 .students-refresh:hover {
@@ -73,7 +73,7 @@
   border-radius: 999px;
   cursor: pointer;
   font-weight: 900;
-  transition: .25s;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
 }
 
 .student-filter.active,
@@ -106,7 +106,7 @@
   font-family: inherit;
   position: relative;
   overflow: hidden;
-  transition: .25s;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
 }
 
 .student-card::after {
@@ -114,9 +114,9 @@
   position: absolute;
   inset: auto -40px -55px -40px;
   height: 90px;
-  opacity: .22;
-  filter: blur(18px);
-  transition: .25s;
+  opacity: .14;
+  filter: blur(10px);
+  pointer-events: none;
 }
 
 .student-card.pending {
@@ -129,7 +129,6 @@
 
 .student-card.approved {
   border-color: rgba(72,224,160,.55);
-  box-shadow: 0 0 34px rgba(72,224,160,.08);
 }
 
 .student-card.approved::after {
@@ -138,7 +137,6 @@
 
 .student-card.refused {
   border-color: rgba(255,91,110,.55);
-  box-shadow: 0 0 34px rgba(255,91,110,.08);
 }
 
 .student-card.refused::after {
@@ -146,7 +144,7 @@
 }
 
 .student-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-4px);
 }
 
 .student-card small {
@@ -202,27 +200,14 @@
   padding: 28px;
   border-radius: 32px;
   background:
-    radial-gradient(circle at 12% 15%, rgba(214,180,106,.12), transparent 28%),
-    linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.025));
+    radial-gradient(circle at 12% 15%, rgba(214,180,106,.10), transparent 28%),
+    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
   border: 1px solid rgba(255,255,255,.13);
-  box-shadow: 0 35px 110px rgba(0,0,0,.42);
-  animation: studentIn .35s ease;
+  box-shadow: 0 24px 70px rgba(0,0,0,.34);
 }
 
 .student-detail.show {
   display: block;
-}
-
-@keyframes studentIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .student-detail-head {
@@ -263,7 +248,7 @@
   font-size: 26px;
   font-weight: 900;
   cursor: pointer;
-  transition: .25s;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
 }
 
 .student-close:hover {
@@ -286,7 +271,7 @@
   border: 1px solid var(--border);
   cursor: pointer;
   font-weight: 900;
-  transition: .25s;
+  transition: transform .18s ease;
 }
 
 .status-btn:hover {
@@ -369,7 +354,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  transition: .25s;
+  transition: transform .18s ease;
 }
 
 .photo-link:hover {
@@ -377,7 +362,7 @@
 }
 
 /* ============================= */
-/* MODE FOCUS ÉLÈVE - SANS VOILE */
+/* MODE FOCUS ÉLÈVE OPTIMISÉ */
 /* ============================= */
 
 body.student-focus {
@@ -418,7 +403,7 @@ body.student-focus .students-dashboard {
   box-shadow: none !important;
 }
 
-/* SUPPRESSION TOTALE DES VOILES / FONDS SOMBRES */
+/* Suppression totale des voiles / fonds sombres */
 body.student-focus::before,
 body.student-focus::after,
 body.student-focus main::before,
@@ -439,13 +424,13 @@ body.student-focus #authOverlay.show {
   filter: none !important;
 }
 
-/* Fiche élève en vraie fenêtre focus, sans assombrir l'écran */
+/* Fiche élève focus en version perf : moins de glow, pas d'animation */
 body.student-focus .student-detail {
   position: fixed !important;
   z-index: 600 !important;
   top: 110px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) !important;
   width: min(1100px, calc(100vw - 70px));
   max-height: calc(100vh - 140px);
   overflow-y: auto;
@@ -456,16 +441,29 @@ body.student-focus .student-detail {
 
   border-radius: 34px;
   background:
-    radial-gradient(circle at 12% 12%, rgba(214,180,106,.12), transparent 32%),
+    radial-gradient(circle at 12% 12%, rgba(214,180,106,.09), transparent 32%),
     linear-gradient(145deg, rgba(38,38,38,.98), rgba(20,20,20,.98)) !important;
-  border: 1px solid rgba(214,180,106,.32);
+  border: 1px solid rgba(214,180,106,.30);
   box-shadow:
-    0 45px 140px rgba(0,0,0,.72),
-    0 0 95px rgba(214,180,106,.16);
+    0 24px 70px rgba(0,0,0,.56),
+    0 0 28px rgba(214,180,106,.06) !important;
 
   opacity: 1 !important;
   filter: none !important;
   backdrop-filter: none !important;
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+/* Supprime les animations/transitions lourdes dans la fiche focus */
+body.student-focus .student-detail *,
+body.student-focus .student-info-card,
+body.student-focus .student-detail-actions,
+body.student-focus .photo-link,
+body.student-focus .status-btn {
+  animation: none !important;
+  transition: none !important;
 }
 
 /* Petit label en haut */
@@ -482,6 +480,8 @@ body.student-focus .student-detail::before {
   letter-spacing: .18em;
   font-size: 11px;
   font-weight: 900;
+  box-shadow: none !important;
+  filter: none !important;
 }
 
 /* Titre plus propre */
@@ -498,11 +498,12 @@ body.student-focus .student-detail-actions {
   border: 1px solid var(--border);
 }
 
-/* Cartes internes plus premium */
+/* Cartes internes plus légères */
 body.student-focus .student-info-card {
   background:
-    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
   border-color: rgba(255,255,255,.14);
+  box-shadow: none !important;
 }
 
 /* Badge statut */
@@ -524,13 +525,13 @@ body.student-focus .student-info-card {
 .student-focus-status.approved {
   color: #08160f;
   background: #48e0a0;
-  box-shadow: 0 0 28px rgba(72,224,160,.18);
+  box-shadow: none;
 }
 
 .student-focus-status.refused {
   color: #240008;
   background: #ff5b6e;
-  box-shadow: 0 0 28px rgba(255,91,110,.18);
+  box-shadow: none;
 }
 
 /* Bouton fermer toujours au-dessus */
