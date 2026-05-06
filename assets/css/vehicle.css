@@ -53,15 +53,15 @@
 /* Layout principal */
 .vehicle-layout {
   display: grid;
-  grid-template-columns: 780px 430px;
-  gap: 36px;
+  grid-template-columns: 900px 430px;
+  gap: 38px;
   justify-content: center;
   align-items: start;
 }
 
 /* Colonne médias */
 .media-column {
-  width: 780px;
+  width: 900px;
 }
 
 .media-tabs {
@@ -142,11 +142,11 @@
   border-color: transparent;
 }
 
-/* Carte photo */
+/* Carte photo agrandie */
 .photo-card {
   position: relative;
-  width: 780px;
-  height: 470px;
+  width: 900px;
+  height: 540px;
   border-radius: 34px;
   overflow: hidden;
   background:
@@ -156,7 +156,7 @@
   backdrop-filter: blur(18px);
 }
 
-/* IMPORTANT : image entière visible */
+/* Image entière visible, pas coupée */
 .photo-card img {
   width: 100%;
   height: 100%;
@@ -164,7 +164,7 @@
   object-position: center;
   display: block;
   background: #050505;
-  padding: 10px;
+  padding: 8px;
   filter: contrast(1.04) saturate(.95);
 }
 
@@ -188,15 +188,15 @@
   transform: translateY(-50%);
   z-index: 5;
 
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: 999px;
 
   border: 1px solid rgba(255,255,255,.18);
   background: rgba(0,0,0,.58);
   color: var(--text);
 
-  font-size: 38px;
+  font-size: 40px;
   line-height: 1;
   cursor: pointer;
 
@@ -242,8 +242,8 @@
 
 /* Météo */
 .meteo-card {
-  width: 780px;
-  height: 470px;
+  width: 900px;
+  height: 540px;
   border-radius: 34px;
   overflow: hidden;
   background:
@@ -362,20 +362,20 @@
 }
 
 /* Responsive */
-@media (max-width: 1450px) {
+@media (max-width: 1500px) {
   .vehicle-layout {
-    grid-template-columns: 720px 420px;
-    gap: 30px;
+    grid-template-columns: 800px 420px;
+    gap: 32px;
   }
 
   .media-column {
-    width: 720px;
+    width: 800px;
   }
 
   .photo-card,
   .meteo-card {
-    width: 720px;
-    height: 430px;
+    width: 800px;
+    height: 480px;
   }
 
   .info-card {
@@ -396,7 +396,7 @@
   .photo-card,
   .meteo-card {
     width: 100%;
-    height: 440px;
+    height: 500px;
   }
 
   .info-card {
@@ -425,7 +425,7 @@
   .photo-card,
   .meteo-card {
     border-radius: 26px;
-    height: 300px;
+    height: 330px;
   }
 
   .photo-card img,
