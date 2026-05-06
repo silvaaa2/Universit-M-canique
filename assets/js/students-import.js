@@ -103,10 +103,31 @@ function isUsefulValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== "";
 }
 
+function showStudentLoading() {
+  const authOverlay = document.getElementById("authOverlay");
+  const authTitle = document.getElementById("authTitle");
+  const authText = document.getElementById("authText");
+
+  if (!authOverlay || !authTitle || !authText) return;
+
+  authTitle.textContent = "Ouverture des réponses...";
+  authText.textContent = "Chargement de la fiche élève et des éléments envoyés.";
+  authOverlay.classList.add("show");
+}
+
+function hideStudentLoading() {
+  const authOverlay = document.getElementById("authOverlay");
+
+  if (!authOverlay) return;
+
+  authOverlay.classList.remove("show");
+}
+
 async function loadStudents() {
   studentsStatus.textContent = "Import des réponses depuis Google Sheets...";
   studentsGrid.innerHTML = "";
   studentDetail.classList.remove("show");
+  document.body.classList.remove("student-focus");
 
   try {
     const imported = [];
@@ -194,7 +215,7 @@ function renderStudents() {
   }
 
   studentsGrid.innerHTML = filtered.map(student => `
-    <button class="student-card ${student.status}" onclick="openStudentDetail('${student.id}')">
+    <button class="student-card ${student.status}" onclick="openStudentDetailWithLoading('${student.id}')">
       <small>${student.customLabel}</small>
       <h4>${escapeHTML(student.name)}</h4>
       <p>${escapeHTML(student.vehicle)} — ID ${escapeHTML(student.uniqueId)}</p>
@@ -218,7 +239,17 @@ function setStudentFilter(filter) {
   }
 
   studentDetail.classList.remove("show");
+  document.body.classList.remove("student-focus");
   renderStudents();
+}
+
+function openStudentDetailWithLoading(studentId) {
+  showStudentLoading();
+
+  setTimeout(() => {
+    openStudentDetail(studentId);
+    hideStudentLoading();
+  }, 850);
 }
 
 function openStudentDetail(studentId) {
@@ -239,6 +270,10 @@ function openStudentDetail(studentId) {
       </div>
 
       <button class="student-close" onclick="closeStudentDetail()">×</button>
+    </div>
+
+    <div class="student-focus-status ${student.status}">
+      ${statusLabel(student.status)}
     </div>
 
     <div class="student-detail-actions">
@@ -311,6 +346,7 @@ function openStudentDetail(studentId) {
     </div>
   `;
 
+  document.body.classList.add("student-focus");
   studentDetail.classList.add("show");
 
   setTimeout(() => {
@@ -323,6 +359,17 @@ function openStudentDetail(studentId) {
 
 function closeStudentDetail() {
   studentDetail.classList.remove("show");
+  document.body.classList.remove("student-focus");
+
+  setTimeout(() => {
+    const dashboard = document.querySelector(".students-dashboard");
+    if (dashboard) {
+      dashboard.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  }, 80);
 }
 
 function changeStudentStatus(studentId, status) {
