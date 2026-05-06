@@ -7,16 +7,21 @@ function openCustomAnswer(custom) {
     rumina: document.getElementById("ruminaAnswer")
   };
 
-  if (panels[custom]) {
-    panels[custom].classList.add("show");
+  const selectedPanel = panels[custom];
 
-    setTimeout(() => {
-      panels[custom].scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }, 100);
+  if (!selectedPanel) {
+    console.error("Panel introuvable :", custom);
+    return;
   }
+
+  selectedPanel.classList.add("show");
+
+  setTimeout(() => {
+    selectedPanel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }, 100);
 }
 
 function closeCustomAnswers() {
