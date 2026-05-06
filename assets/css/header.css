@@ -27,6 +27,8 @@ header {
   width: 54px;
   height: 54px;
   object-fit: contain;
+  display: block;
+  flex-shrink: 0;
   border-radius: 14px;
 }
 
@@ -37,6 +39,7 @@ header {
 nav {
   display: flex;
   gap: 12px;
+  align-items: center;
 }
 
 nav button {
@@ -54,6 +57,43 @@ nav button:hover {
   color: var(--text);
   border-color: var(--gold);
   background: rgba(214,180,106,.12);
+}
+
+/* Bouton Espace Prof */
+.prof-button {
+  width: 48px;
+  height: 44px;
+  padding: 0 14px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.prof-button:hover {
+  width: 155px;
+}
+
+.prof-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.prof-text {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: .25s;
+}
+
+.prof-button:hover .prof-text {
+  opacity: 1;
+  max-width: 110px;
 }
 
 @media (max-width: 800px) {
@@ -76,5 +116,14 @@ nav button:hover {
 
   .logo {
     font-size: 18px;
+  }
+
+  .prof-button {
+    width: auto;
+  }
+
+  .prof-text {
+    opacity: 1;
+    max-width: 120px;
   }
 }
