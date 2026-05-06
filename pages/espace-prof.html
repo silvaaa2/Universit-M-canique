@@ -270,7 +270,40 @@
 <script src="../assets/js/loader.js"></script>
 <script src="../assets/js/navigation.js"></script>
 <script src="../assets/js/prof-login.js"></script>
-<script src="../assets/js/prof-customs.js"></script>
+
+<script>
+  function openCustomAnswer(custom) {
+    const panels = {
+      dukes: document.getElementById("dukesAnswer"),
+      sentinel: document.getElementById("sentinelAnswer"),
+      rumina: document.getElementById("ruminaAnswer")
+    };
+
+    document.querySelectorAll(".custom-answer-panel").forEach(panel => {
+      panel.classList.remove("show");
+    });
+
+    if (!panels[custom]) {
+      console.error("Panel introuvable :", custom);
+      return;
+    }
+
+    panels[custom].classList.add("show");
+
+    setTimeout(() => {
+      panels[custom].scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 100);
+  }
+
+  function closeCustomAnswers() {
+    document.querySelectorAll(".custom-answer-panel").forEach(panel => {
+      panel.classList.remove("show");
+    });
+  }
+</script>
 
 </body>
 </html>
