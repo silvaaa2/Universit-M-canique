@@ -472,4 +472,138 @@ body.student-focus .student-detail-actions {
   background: rgba(255,255,255,.045);
   border: 1px solid var(--border);
 }
+/* ============================= */
+/* MODE FOCUS ÉLÈVE ULTRA PROPRE */
+/* ============================= */
 
+body.student-focus {
+  overflow-x: hidden;
+}
+
+/* On cache tout ce qui parasite quand une fiche élève est ouverte */
+body.student-focus .prof-topbar,
+body.student-focus #profPanel > p,
+body.student-focus .prof-actions,
+body.student-focus .custom-answer-panel,
+body.student-focus .sheet-dashboard,
+body.student-focus .students-head,
+body.student-focus .students-filters,
+body.student-focus #studentsStatus,
+body.student-focus #studentsGrid {
+  display: none !important;
+}
+
+/* Le bloc correction devient juste un conteneur invisible */
+body.student-focus .students-dashboard {
+  width: min(1100px, 100%);
+  margin-top: 0;
+  padding: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Le panel prof ne garde que la fiche */
+body.student-focus #profPanel {
+  width: min(1120px, 100%);
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Fond sombre focus derrière */
+body.student-focus main::before {
+  content: "";
+  position: fixed;
+  inset: 86px 0 0 0;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(214,180,106,.14), transparent 32%),
+    rgba(0,0,0,.72);
+  backdrop-filter: blur(8px);
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* Fiche élève au premier plan */
+body.student-focus .student-detail {
+  position: relative;
+  z-index: 60;
+  display: block !important;
+  margin: 0 auto;
+  padding: 34px;
+  border-radius: 34px;
+  background:
+    radial-gradient(circle at 12% 12%, rgba(214,180,106,.16), transparent 32%),
+    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+  border: 1px solid rgba(214,180,106,.32);
+  box-shadow:
+    0 45px 140px rgba(0,0,0,.70),
+    0 0 90px rgba(214,180,106,.14);
+}
+
+/* Petit label en haut de fiche */
+body.student-focus .student-detail::before {
+  content: "Fiche élève";
+  display: inline-flex;
+  margin-bottom: 18px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(214,180,106,.12);
+  border: 1px solid rgba(214,180,106,.25);
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+/* Titre plus focus */
+body.student-focus .student-detail-head h3 {
+  font-size: clamp(48px, 6vw, 82px);
+  line-height: .9;
+}
+
+/* Boutons d’action plus visibles */
+body.student-focus .student-detail-actions {
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid var(--border);
+}
+
+/* Cartes internes plus premium */
+body.student-focus .student-info-card {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+  border-color: rgba(255,255,255,.14);
+}
+
+/* Badge statut dans la fiche */
+.student-focus-status {
+  width: fit-content;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.student-focus-status.pending {
+  color: #ddd;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+}
+
+.student-focus-status.approved {
+  color: #08160f;
+  background: #48e0a0;
+  box-shadow: 0 0 28px rgba(72,224,160,.18);
+}
+
+.student-focus-status.refused {
+  color: #240008;
+  background: #ff5b6e;
+  box-shadow: 0 0 28px rgba(255,91,110,.18);
+}
