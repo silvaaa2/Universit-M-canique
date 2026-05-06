@@ -541,3 +541,33 @@ body.student-focus .student-close {
     padding: 24px;
   }
 }
+/* SUPPRESSION DÉFINITIVE DU FOND SOMBRE EN MODE FOCUS */
+body.student-focus::before,
+body.student-focus main::before,
+body.student-focus .prof-page::before,
+body.student-focus .students-dashboard::before {
+  content: none !important;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  filter: none !important;
+}
+
+/* On garde la fiche visible normalement, sans assombrissement */
+body.student-focus .student-detail {
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* On évite que le reste crée un voile sombre */
+body.student-focus,
+body.student-focus main,
+body.student-focus .prof-page,
+body.student-focus .students-dashboard {
+  background: transparent !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
