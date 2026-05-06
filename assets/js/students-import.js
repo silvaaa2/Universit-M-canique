@@ -103,7 +103,6 @@ function isUsefulValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== "";
 }
 
-/* Loader ouverture élève - version rapide */
 function showStudentLoading() {
   const authOverlay = document.getElementById("authOverlay");
   const authTitle = document.getElementById("authTitle");
@@ -126,13 +125,12 @@ function hideStudentLoading() {
   authOverlay.style.display = "none";
 }
 
-/* Import Google Sheets */
 async function loadStudents() {
   if (!studentsStatus || !studentsGrid || !studentDetail) return;
 
   studentsStatus.textContent = "Import des réponses depuis Google Sheets...";
   studentsGrid.innerHTML = "";
-  studentDetail.classList.remove("show");
+  studentDetail.classList.remove("show", "focus-pop");
   document.body.classList.remove("student-focus");
 
   try {
@@ -203,7 +201,6 @@ async function loadStudents() {
   }
 }
 
-/* Affichage des étiquettes */
 function renderStudents() {
   if (!studentsStatus || !studentsGrid) return;
 
@@ -235,7 +232,6 @@ function renderStudents() {
   `).join("");
 }
 
-/* Filtres */
 function setStudentFilter(filter) {
   activeStudentFilter = filter;
 
@@ -249,14 +245,13 @@ function setStudentFilter(filter) {
   }
 
   if (studentDetail) {
-    studentDetail.classList.remove("show");
+    studentDetail.classList.remove("show", "focus-pop");
   }
 
   document.body.classList.remove("student-focus");
   renderStudents();
 }
 
-/* Ouverture avec loader rapide */
 function openStudentDetailWithLoading(studentId) {
   showStudentLoading();
 
@@ -266,7 +261,6 @@ function openStudentDetailWithLoading(studentId) {
   }, 180);
 }
 
-/* Fiche élève */
 function openStudentDetail(studentId) {
   const student = allStudents.find(item => item.id === studentId);
   if (!student || !studentDetail) return;
@@ -375,12 +369,16 @@ function openStudentDetail(studentId) {
 
   document.body.classList.add("student-focus");
   studentDetail.classList.add("show");
+
+  /* Force le redémarrage de l’animation à chaque ouverture */
+  studentDetail.classList.remove("focus-pop");
+  void studentDetail.offsetWidth;
+  studentDetail.classList.add("focus-pop");
 }
 
-/* Fermeture fiche élève */
 function closeStudentDetail() {
   if (studentDetail) {
-    studentDetail.classList.remove("show");
+    studentDetail.classList.remove("show", "focus-pop");
   }
 
   document.body.classList.remove("student-focus");
@@ -400,7 +398,6 @@ function closeStudentDetail() {
   }
 }
 
-/* Changement statut */
 function changeStudentStatus(studentId, status) {
   const student = allStudents.find(item => item.id === studentId);
   if (!student) return;
@@ -412,7 +409,6 @@ function changeStudentStatus(studentId, status) {
   openStudentDetail(student.id);
 }
 
-/* Nettoyage affichage */
 function cleanHeader(header) {
   return String(header)
     .replace("Prénom - Nom (RP)", "Nom RP")
@@ -435,7 +431,6 @@ function escapeAttr(value) {
   return escapeHTML(value);
 }
 
-/* Init */
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".student-filter").forEach(button => {
     button.addEventListener("click", () => {
