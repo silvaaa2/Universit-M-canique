@@ -35,6 +35,27 @@
   }
 }
 
+.prof-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.prof-toptext {
+  display: grid;
+  gap: 8px;
+}
+
+.prof-toptext .prof-kicker {
+  margin-bottom: 0;
+}
+
+.prof-toptext h1 {
+  margin: 0;
+}
+
 .prof-kicker {
   margin: 0 0 12px;
   color: var(--gold);
@@ -191,9 +212,10 @@
   flex-shrink: 0;
   align-self: flex-start;
 }
+
 /* Réponses customs */
 .custom-answer-panel {
-  display: none;
+  display: none !important;
   margin-top: 28px;
   padding: 28px;
   border-radius: 32px;
@@ -206,7 +228,7 @@
 }
 
 .custom-answer-panel.show {
-  display: block;
+  display: block !important;
 }
 
 @keyframes answerIn {
@@ -253,6 +275,7 @@
 }
 
 .answer-close {
+  display: none;
   width: 44px;
   height: 44px;
   border-radius: 999px;
@@ -265,6 +288,12 @@
   transition: .25s;
   position: relative;
   z-index: 5;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-answer-panel.show .answer-close {
+  display: inline-flex;
 }
 
 .answer-close:hover {
@@ -543,7 +572,6 @@
 
 /* FIX PROPRE AFFICHAGE ESPACE PROF */
 
-/* Quand pas connecté : absolument rien du dashboard ne doit apparaître */
 body:not(.is-prof-logged) #profPanel,
 body:not(.is-prof-logged) .prof-actions,
 body:not(.is-prof-logged) .custom-answer-panel,
@@ -553,22 +581,11 @@ body:not(.is-prof-logged) .answer-close {
   display: none !important;
 }
 
-/* Quand connecté : on cache le login */
 body.is-prof-logged #loginCard {
   display: none !important;
 }
 
-/* Dashboard visible seulement après connexion */
 body.is-prof-logged #profPanel.show {
-  display: block !important;
-}
-
-/* Les fiches réponses restent fermées tant qu’on clique pas */
-.custom-answer-panel {
-  display: none !important;
-}
-
-.custom-answer-panel.show {
   display: block !important;
 }
 
@@ -580,7 +597,8 @@ body.is-prof-logged #profPanel.show {
     grid-template-columns: 1fr;
   }
 
-  .answer-head {
+  .answer-head,
+  .prof-topbar {
     flex-direction: column;
   }
 
