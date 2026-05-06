@@ -63,8 +63,8 @@
 
       <form id="loginForm" class="login-form">
         <label>
-          Nom d’utilisateur
-          <input id="username" type="text" placeholder="Entrez votre identifiant" autocomplete="username">
+          Email professeur
+          <input id="username" type="email" placeholder="exemple@module4.fr" autocomplete="username">
         </label>
 
         <label>
@@ -75,7 +75,7 @@
         <button class="btn primary" type="submit">Se connecter</button>
 
         <div id="loginError" class="login-error">
-          Identifiant ou mot de passe incorrect.
+          Email ou mot de passe incorrect.
         </div>
       </form>
     </div>
@@ -530,7 +530,7 @@
 
 <script src="../assets/js/loader.js"></script>
 <script src="../assets/js/navigation.js"></script>
-<script src="../assets/js/prof-login.js"></script>
+<script type="module" src="../assets/js/prof-login.js"></script>
 <script src="../assets/js/students-import.js"></script>
 
 <script>
