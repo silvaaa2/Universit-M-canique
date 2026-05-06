@@ -377,7 +377,7 @@
 }
 
 /* ============================= */
-/* MODE FOCUS ÉLÈVE - FULLSCREEN */
+/* MODE FOCUS ÉLÈVE - SANS VOILE */
 /* ============================= */
 
 body.student-focus {
@@ -418,12 +418,28 @@ body.student-focus .students-dashboard {
   box-shadow: none !important;
 }
 
-/* Fond sombre plein écran */
-body.student-focus::before {
+/* SUPPRESSION TOTALE DES VOILES / FONDS SOMBRES */
+body.student-focus::before,
+body.student-focus::after,
+body.student-focus main::before,
+body.student-focus main::after,
+body.student-focus .prof-page::before,
+body.student-focus .prof-page::after,
+body.student-focus .students-dashboard::before,
+body.student-focus .students-dashboard::after,
+body.student-focus #authOverlay,
+body.student-focus #authOverlay.show {
+  content: none !important;
   display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  filter: none !important;
 }
 
-/* Fiche élève en vraie fenêtre focus */
+/* Fiche élève en vraie fenêtre focus, sans assombrir l'écran */
 body.student-focus .student-detail {
   position: fixed !important;
   z-index: 600 !important;
@@ -440,12 +456,16 @@ body.student-focus .student-detail {
 
   border-radius: 34px;
   background:
-    radial-gradient(circle at 12% 12%, rgba(214,180,106,.16), transparent 32%),
-    linear-gradient(145deg, rgba(32,32,32,.98), rgba(14,14,14,.98));
+    radial-gradient(circle at 12% 12%, rgba(214,180,106,.12), transparent 32%),
+    linear-gradient(145deg, rgba(38,38,38,.98), rgba(20,20,20,.98)) !important;
   border: 1px solid rgba(214,180,106,.32);
   box-shadow:
-    0 45px 140px rgba(0,0,0,.85),
+    0 45px 140px rgba(0,0,0,.72),
     0 0 95px rgba(214,180,106,.16);
+
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
 }
 
 /* Petit label en haut */
@@ -519,6 +539,17 @@ body.student-focus .student-close {
   z-index: 650;
 }
 
+/* Empêche un parent de foncer la fiche */
+body.student-focus,
+body.student-focus main,
+body.student-focus .prof-page,
+body.student-focus #profPanel,
+body.student-focus .students-dashboard {
+  opacity: 1 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
 /* Responsive */
 @media (max-width: 1000px) {
   .students-grid,
@@ -540,34 +571,4 @@ body.student-focus .student-close {
     max-height: calc(100vh - 120px);
     padding: 24px;
   }
-}
-/* SUPPRESSION DÉFINITIVE DU FOND SOMBRE EN MODE FOCUS */
-body.student-focus::before,
-body.student-focus main::before,
-body.student-focus .prof-page::before,
-body.student-focus .students-dashboard::before {
-  content: none !important;
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  filter: none !important;
-}
-
-/* On garde la fiche visible normalement, sans assombrissement */
-body.student-focus .student-detail {
-  opacity: 1 !important;
-  filter: none !important;
-  backdrop-filter: none !important;
-}
-
-/* On évite que le reste crée un voile sombre */
-body.student-focus,
-body.student-focus main,
-body.student-focus .prof-page,
-body.student-focus .students-dashboard {
-  background: transparent !important;
-  filter: none !important;
-  backdrop-filter: none !important;
 }
