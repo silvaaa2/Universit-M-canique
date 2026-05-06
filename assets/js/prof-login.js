@@ -1,5 +1,5 @@
 const PROF_USERNAME = "mecaniqueprof";
-const PROF_PASSWORD = "module4prof";
+const PROF_PASSWORD = "mecaniquefbfa";
 
 const loginForm = document.getElementById("loginForm");
 const loginCard = document.getElementById("loginCard");
