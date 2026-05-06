@@ -58,7 +58,7 @@
       <p class="prof-kicker">Accès professeur</p>
       <h1>Espace Prof</h1>
       <p>
-        Connectez-vous pour accéder aux réponses, corrections des customs et examens.
+        Connectez-vous pour accéder aux réponses, corrections et informations internes des customs.
       </p>
 
       <form id="loginForm" class="login-form">
@@ -519,6 +519,51 @@
               <div id="studentsGrid" class="students-grid"></div>
 
               <div id="studentDetail" class="student-detail"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CORRECTIONS EXAMENS -->
+      <div class="collapse-card is-open">
+        <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
+          <div class="collapse-title">
+            <span>Corrections examens</span>
+            <strong>Réponses & examens</strong>
+            <small>Catégorie prévue pour importer, consulter et corriger les examens des élèves.</small>
+          </div>
+
+          <div class="collapse-right">
+            <em>Cliquer pour ouvrir / fermer</em>
+            <b>−</b>
+          </div>
+        </button>
+
+        <div class="collapse-panel">
+          <div class="collapse-inner">
+            <div class="exam-dashboard clean-inside">
+              <div class="exam-empty">
+                <div class="exam-icon">📝</div>
+
+                <div>
+                  <span class="exam-kicker">Module examens</span>
+                  <h3>Corrections d’examens</h3>
+                  <p>
+                    Cette section est prête. On pourra bientôt y importer les réponses des examens,
+                    afficher les élèves, ouvrir leur fiche, puis valider ou refuser leur correction.
+                  </p>
+                </div>
+              </div>
+
+              <div class="exam-actions">
+                <button type="button" class="exam-btn disabled">
+                  Import bientôt disponible
+                </button>
+
+                <button type="button" class="exam-btn ghost disabled">
+                  Aucune donnée pour l’instant
+                </button>
+              </div>
             </div>
           </div>
         </div>
