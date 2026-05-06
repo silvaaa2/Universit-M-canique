@@ -1,8 +1,13 @@
-const loader = document.getElementById("loader");
-const loaderText = document.getElementById("loaderText");
-
 window.addEventListener("load", () => {
+  const loader = document.getElementById("loader");
+
+  if (!loader) return;
+
   setTimeout(() => {
     loader.classList.add("hide");
-  }, 1000);
+
+    setTimeout(() => {
+      loader.style.display = "none";
+    }, 450);
+  }, 450);
 });
