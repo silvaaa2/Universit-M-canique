@@ -618,3 +618,120 @@ body.is-prof-logged #profPanel.show {
     width: 100%;
   }
 }
+/* ============================= */
+/* MENUS PLIABLES ESPACE PROF */
+/* ============================= */
+
+.collapse-block {
+  margin-top: 28px;
+  border-radius: 32px;
+  overflow: hidden;
+}
+
+.collapse-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 22px 26px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(214,180,106,.16), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
+  border: 1px solid rgba(214,180,106,.24);
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.35),
+    0 0 45px rgba(214,180,106,.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  transition: .25s;
+}
+
+.collapse-summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapse-summary:hover {
+  transform: translateY(-2px);
+  border-color: rgba(214,180,106,.45);
+  box-shadow:
+    0 30px 90px rgba(0,0,0,.42),
+    0 0 55px rgba(214,180,106,.10);
+}
+
+.collapse-summary div {
+  display: grid;
+  gap: 7px;
+}
+
+.collapse-summary span {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.collapse-summary strong {
+  color: var(--text);
+  font-size: 24px;
+  letter-spacing: -.04em;
+}
+
+.collapse-summary em {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.collapse-summary::after {
+  content: "−";
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: rgba(214,180,106,.16);
+  border: 1px solid rgba(214,180,106,.28);
+  color: var(--gold);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.collapse-block:not([open]) .collapse-summary::after {
+  content: "+";
+}
+
+.collapse-block:not([open]) .collapse-summary {
+  opacity: .86;
+}
+
+/* évite double marge quand les blocs sont ouverts */
+.collapse-block .sheet-dashboard,
+.collapse-block .students-dashboard {
+  margin-top: 14px;
+}
+
+/* focus élève : on cache aussi les titres pliables */
+body.student-focus .collapse-summary {
+  display: none !important;
+}
+
+body.student-focus .collapse-block {
+  margin-top: 0 !important;
+  overflow: visible !important;
+}
+
+@media (max-width: 900px) {
+  .collapse-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .collapse-summary em {
+    white-space: normal;
+  }
+}
