@@ -576,6 +576,7 @@ body:not(.is-prof-logged) #profPanel,
 body:not(.is-prof-logged) .prof-actions,
 body:not(.is-prof-logged) .custom-answer-panel,
 body:not(.is-prof-logged) .sheet-dashboard,
+body:not(.is-prof-logged) .students-dashboard,
 body:not(.is-prof-logged) .logout-btn,
 body:not(.is-prof-logged) .answer-close {
   display: none !important;
