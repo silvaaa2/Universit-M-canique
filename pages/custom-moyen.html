@@ -33,6 +33,11 @@
     <button onclick="goPage('custom-facile.html')">Custom Facile</button>
     <button onclick="goPage('custom-moyen.html')">Custom Moyen</button>
     <button onclick="goPage('custom-difficile.html')">Custom Difficile</button>
+
+    <button class="prof-button" onclick="goPage('espace-prof.html')">
+      <span class="prof-icon">👤</span>
+      <span class="prof-text">Espace Prof</span>
+    </button>
   </nav>
 </header>
 
@@ -57,13 +62,8 @@
       <div class="media-column">
 
         <div class="media-tabs">
-          <button class="media-tab active" onclick="openMediaPanel('photos')">
-            Photos
-          </button>
-
-          <button class="media-tab" onclick="openMediaPanel('meteo')">
-            Météo
-          </button>
+          <button class="media-tab active" onclick="openMediaPanel('photos')">Photos</button>
+          <button class="media-tab" onclick="openMediaPanel('meteo')">Météo</button>
         </div>
 
         <div id="photosPanel" class="media-panel active">
@@ -98,40 +98,13 @@
         </div>
 
         <div class="info-list">
-          <div class="info-line">
-            <span>Couleur principale</span>
-            <b class="yes">Oui</b>
-          </div>
-
-          <div class="info-line">
-            <span>Couleur secondaire</span>
-            <b class="no">Non</b>
-          </div>
-
-          <div class="info-line">
-            <span>Couleur intérieur</span>
-            <b class="no">Non</b>
-          </div>
-
-          <div class="info-line">
-            <span>Nacré</span>
-            <b class="yes">Oui</b>
-          </div>
-
-          <div class="info-line">
-            <span>Néon</span>
-            <b class="yes">Oui</b>
-          </div>
-
-          <div class="info-line">
-            <span>Extras</span>
-            <b class="no">Non</b>
-          </div>
-
-          <div class="info-line">
-            <span>Full perf</span>
-            <b class="yes">Oui</b>
-          </div>
+          <div class="info-line"><span>Couleur principale</span><b class="yes">Oui</b></div>
+          <div class="info-line"><span>Couleur secondaire</span><b class="no">Non</b></div>
+          <div class="info-line"><span>Couleur intérieur</span><b class="no">Non</b></div>
+          <div class="info-line"><span>Nacré</span><b class="yes">Oui</b></div>
+          <div class="info-line"><span>Néon</span><b class="yes">Oui</b></div>
+          <div class="info-line"><span>Extras</span><b class="no">Non</b></div>
+          <div class="info-line"><span>Full perf</span><b class="yes">Oui</b></div>
         </div>
 
         <a
