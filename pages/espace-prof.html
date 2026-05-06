@@ -542,82 +542,114 @@
   <div class="collapse-panel">
     <div class="collapse-inner">
       <div class="exam-dashboard clean-inside">
-        <div class="exam-empty">
-          <div class="exam-icon">📝</div>
 
+        <div class="exam-header">
           <div>
             <span class="exam-kicker">Module examens</span>
             <h3>Corrections d’examens</h3>
             <p>
-              Cette section est prête. On pourra bientôt y importer les réponses des examens,
-              afficher les élèves, ouvrir leur fiche, puis valider ou refuser leur correction.
+              Sélectionnez une catégorie d’examen pour consulter les réponses,
+              préparer les corrections et organiser les validations.
             </p>
           </div>
         </div>
 
-        <div class="exam-actions">
-          <button type="button" class="exam-btn disabled">
-            Import bientôt disponible
+        <div class="exam-menu">
+          <button type="button" class="exam-card" onclick="openExamPanel('meteo')">
+            <span>01</span>
+            <h4>Examen Météo</h4>
+            <p>Questions liées à la météo, conditions et analyse RP.</p>
           </button>
 
-          <button type="button" class="exam-btn ghost disabled">
-            Aucune donnée pour l’instant
+          <button type="button" class="exam-card" onclick="openExamPanel('photos')">
+            <span>02</span>
+            <h4>Examen Photos</h4>
+            <p>Contrôle des preuves envoyées, captures et documents visuels.</p>
+          </button>
+
+          <button type="button" class="exam-card" onclick="openExamPanel('vehicule')">
+            <span>03</span>
+            <h4>Examen Véhicule</h4>
+            <p>Questions liées au véhicule, mécanique et diagnostic.</p>
           </button>
         </div>
+
+        <!-- PANEL METEO -->
+        <div class="exam-answer-panel" id="examMeteoPanel">
+          <div class="exam-answer-head">
+            <div>
+              <span>Examen 01</span>
+              <h3>Météo</h3>
+              <p>Section prévue pour importer et corriger les réponses de l’examen météo.</p>
+            </div>
+
+            <button type="button" class="exam-close" onclick="closeExamPanels()">×</button>
+          </div>
+
+          <div class="exam-placeholder-grid">
+            <div class="exam-placeholder-card">
+              <strong>Import Google Sheets</strong>
+              <p>Bientôt : liste des élèves, notes et réponses météo.</p>
+            </div>
+
+            <div class="exam-placeholder-card">
+              <strong>Correction</strong>
+              <p>Bientôt : valider, refuser ou remettre en attente une copie.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL PHOTOS -->
+        <div class="exam-answer-panel" id="examPhotosPanel">
+          <div class="exam-answer-head">
+            <div>
+              <span>Examen 02</span>
+              <h3>Photos</h3>
+              <p>Section prévue pour contrôler les photos, preuves et captures envoyées.</p>
+            </div>
+
+            <button type="button" class="exam-close" onclick="closeExamPanels()">×</button>
+          </div>
+
+          <div class="exam-placeholder-grid">
+            <div class="exam-placeholder-card">
+              <strong>Photos envoyées</strong>
+              <p>Bientôt : boutons pour ouvrir les liens photo des élèves.</p>
+            </div>
+
+            <div class="exam-placeholder-card">
+              <strong>État de correction</strong>
+              <p>Bientôt : accepté, refusé ou à revoir.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL VEHICULE -->
+        <div class="exam-answer-panel" id="examVehiculePanel">
+          <div class="exam-answer-head">
+            <div>
+              <span>Examen 03</span>
+              <h3>Véhicule</h3>
+              <p>Section prévue pour corriger les réponses liées au véhicule et à la mécanique.</p>
+            </div>
+
+            <button type="button" class="exam-close" onclick="closeExamPanels()">×</button>
+          </div>
+
+          <div class="exam-placeholder-grid">
+            <div class="exam-placeholder-card">
+              <strong>Diagnostic</strong>
+              <p>Bientôt : réponses des élèves sur les pannes et analyses mécaniques.</p>
+            </div>
+
+            <div class="exam-placeholder-card">
+              <strong>Validation</strong>
+              <p>Bientôt : bouton réussi, échoué ou correction en attente.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
-
-    </div>
-  </section>
-</main>
-
-<script src="../assets/js/loader.js"></script>
-<script src="../assets/js/navigation.js"></script>
-<script type="module" src="../assets/js/prof-login.js"></script>
-<script src="../assets/js/students-import.js"></script>
-
-<script>
-  function toggleCollapse(button) {
-    const card = button.closest(".collapse-card");
-    const icon = card.querySelector(".collapse-right b");
-
-    card.classList.toggle("is-open");
-    icon.textContent = card.classList.contains("is-open") ? "−" : "+";
-  }
-
-  function openCustomAnswer(custom) {
-    const panels = {
-      dukes: document.getElementById("dukesAnswer"),
-      sentinel: document.getElementById("sentinelAnswer"),
-      rumina: document.getElementById("ruminaAnswer")
-    };
-
-    document.querySelectorAll(".custom-answer-panel").forEach(panel => {
-      panel.classList.remove("show");
-    });
-
-    const selectedPanel = panels[custom];
-
-    if (!selectedPanel) return;
-
-    selectedPanel.classList.add("show");
-
-    setTimeout(() => {
-      selectedPanel.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }, 100);
-  }
-
-  function closeCustomAnswers() {
-    document.querySelectorAll(".custom-answer-panel").forEach(panel => {
-      panel.classList.remove("show");
-    });
-  }
-</script>
-
-</body>
-</html>
