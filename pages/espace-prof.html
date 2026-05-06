@@ -431,116 +431,105 @@
       </div>
 
       <!-- GOOGLE SHEETS -->
-<!-- GOOGLE SHEETS -->
-<details class="collapse-block" open>
-  <summary class="collapse-summary">
-    <div>
-      <span>Tableau centralisé</span>
-      <strong>Réponses des élèves</strong>
-    </div>
+      <div class="collapse-card is-open">
+        <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
+          <div class="collapse-title">
+            <span>Tableau centralisé</span>
+            <strong>Réponses des élèves</strong>
+            <small>Accès direct au Google Sheets des formulaires.</small>
+          </div>
 
-    <em>Cliquer pour ouvrir / fermer</em>
-  </summary>
+          <div class="collapse-right">
+            <em>Cliquer pour ouvrir / fermer</em>
+            <b>−</b>
+          </div>
+        </button>
 
-  <div class="sheet-dashboard">
-    <div class="sheet-left">
-      <div class="sheet-icon">📊</div>
+        <div class="collapse-panel">
+          <div class="collapse-inner">
+            <div class="sheet-dashboard">
+              <div class="sheet-left">
+                <div class="sheet-icon">📊</div>
 
-      <div>
-        <span class="sheet-kicker">Tableau centralisé</span>
-        <h3>Réponses des élèves</h3>
-        <p>
-          Consultez toutes les réponses envoyées via les formulaires des customs :
-          Facile, Moyen et Difficile.
-        </p>
-      </div>
-    </div>
+                <div>
+                  <span class="sheet-kicker">Tableau centralisé</span>
+                  <h3>Réponses des élèves</h3>
+                  <p>
+                    Consultez toutes les réponses envoyées via les formulaires des customs :
+                    Facile, Moyen et Difficile.
+                  </p>
+                </div>
+              </div>
 
-    <div class="sheet-side">
-      <div class="sheet-status">
-        <span></span>
-        Google Sheets connecté
-      </div>
+              <div class="sheet-side">
+                <div class="sheet-status">
+                  <span></span>
+                  Google Sheets connecté
+                </div>
 
-      <a
-        class="sheet-btn"
-        target="_blank"
-        href="https://docs.google.com/spreadsheets/d/1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc/edit?gid=1133112226#gid=1133112226"
-      >
-        Ouvrir le tableau
-      </a>
-    </div>
-  </div>
-</details>
-          <a
-            class="sheet-btn"
-            target="_blank"
-            href="https://docs.google.com/spreadsheets/d/1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc/edit?gid=1133112226#gid=1133112226"
-          >
-            Ouvrir le tableau
-          </a>
+                <a
+                  class="sheet-btn"
+                  target="_blank"
+                  href="https://docs.google.com/spreadsheets/d/1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc/edit?gid=1133112226#gid=1133112226"
+                >
+                  Ouvrir le tableau
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- CORRECTIONS ELEVES -->
-<!-- CORRECTIONS ELEVES -->
-<details class="collapse-block" open>
-  <summary class="collapse-summary">
-    <div>
-      <span>Corrections élèves</span>
-      <strong>Réponses importées</strong>
-    </div>
+      <div class="collapse-card is-open">
+        <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
+          <div class="collapse-title">
+            <span>Corrections élèves</span>
+            <strong>Réponses importées</strong>
+            <small>Validez ou refusez directement les customs envoyés.</small>
+          </div>
 
-    <em>Cliquer pour ouvrir / fermer</em>
-  </summary>
+          <div class="collapse-right">
+            <em>Cliquer pour ouvrir / fermer</em>
+            <b>−</b>
+          </div>
+        </button>
 
-  <div class="students-dashboard">
-    <div class="students-head">
-      <div>
-        <span>Corrections élèves</span>
-        <h3>Réponses importées</h3>
-        <p>
-          Les réponses sont importées automatiquement depuis Google Sheets.
-          Cliquez sur un élève pour consulter ses réponses et valider ou refuser son custom.
-        </p>
-      </div>
+        <div class="collapse-panel">
+          <div class="collapse-inner">
+            <div class="students-dashboard">
+              <div class="students-head">
+                <div>
+                  <span>Corrections élèves</span>
+                  <h3>Réponses importées</h3>
+                  <p>
+                    Les réponses sont importées automatiquement depuis Google Sheets.
+                    Cliquez sur un élève pour consulter ses réponses et valider ou refuser son custom.
+                  </p>
+                </div>
 
-      <button class="students-refresh" onclick="loadStudents()">
-        Actualiser
-      </button>
-    </div>
+                <button class="students-refresh" onclick="loadStudents()">
+                  Actualiser
+                </button>
+              </div>
 
-    <div class="students-filters">
-      <button class="student-filter active" data-student-filter="all">Tous</button>
-      <button class="student-filter" data-student-filter="Dukes">Dukes</button>
-      <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
-      <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
-    </div>
+              <div class="students-filters">
+                <button class="student-filter active" data-student-filter="all">Tous</button>
+                <button class="student-filter" data-student-filter="Dukes">Dukes</button>
+                <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
+                <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
+              </div>
 
-    <div id="studentsStatus" class="students-status">
-      Chargement des réponses...
-    </div>
+              <div id="studentsStatus" class="students-status">
+                Chargement des réponses...
+              </div>
 
-    <div id="studentsGrid" class="students-grid"></div>
+              <div id="studentsGrid" class="students-grid"></div>
 
-    <div id="studentDetail" class="student-detail"></div>
-  </div>
-</details>
-
-        <div class="students-filters">
-          <button class="student-filter active" data-student-filter="all">Tous</button>
-          <button class="student-filter" data-student-filter="Dukes">Dukes</button>
-          <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
-          <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
+              <div id="studentDetail" class="student-detail"></div>
+            </div>
+          </div>
         </div>
-
-        <div id="studentsStatus" class="students-status">
-          Chargement des réponses...
-        </div>
-
-        <div id="studentsGrid" class="students-grid"></div>
-
-        <div id="studentDetail" class="student-detail"></div>
       </div>
 
     </div>
@@ -553,6 +542,19 @@
 <script src="../assets/js/students-import.js"></script>
 
 <script>
+  function toggleCollapse(button) {
+    const card = button.closest(".collapse-card");
+    const icon = card.querySelector(".collapse-right b");
+
+    card.classList.toggle("is-open");
+
+    if (card.classList.contains("is-open")) {
+      icon.textContent = "−";
+    } else {
+      icon.textContent = "+";
+    }
+  }
+
   function openCustomAnswer(custom) {
     const panels = {
       dukes: document.getElementById("dukesAnswer"),
