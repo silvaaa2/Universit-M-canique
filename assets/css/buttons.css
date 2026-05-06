@@ -27,54 +27,78 @@
   background: rgba(255,255,255,.07);
   border: 1px solid var(--border);
 }
+
 /* FIX FINAL bouton Espace Prof */
-nav .prof-button {
+header nav button.prof-button {
+  box-sizing: border-box !important;
   width: 52px !important;
-  height: 52px !important;
   min-width: 52px !important;
+  max-width: 52px !important;
+  height: 52px !important;
+  min-height: 52px !important;
   padding: 0 !important;
 
-  display: inline-flex !important;
+  display: grid !important;
+  grid-template-columns: 52px 0px !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-items: center !important;
+  column-gap: 0 !important;
 
   border-radius: 999px !important;
+  border: 1px solid var(--border) !important;
+  background: rgba(255,255,255,.045) !important;
+  color: var(--text) !important;
+
   overflow: hidden !important;
-  position: relative !important;
+  white-space: nowrap !important;
+  transition:
+    width .25s ease,
+    max-width .25s ease,
+    grid-template-columns .25s ease,
+    background .25s ease,
+    border-color .25s ease !important;
 }
 
-nav .prof-button:hover {
-  width: 160px !important;
-  padding: 0 16px !important;
-  justify-content: flex-start !important;
+header nav button.prof-button:hover {
+  width: 170px !important;
+  max-width: 170px !important;
+  grid-template-columns: 52px 1fr !important;
+  padding: 0 14px 0 0 !important;
+  background: rgba(214,180,106,.12) !important;
+  border-color: var(--gold) !important;
 }
 
-nav .prof-button .prof-icon {
+header nav button.prof-button .prof-icon {
   width: 52px !important;
-  height: 52px !important;
   min-width: 52px !important;
+  height: 52px !important;
+  min-height: 52px !important;
 
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  display: grid !important;
+  place-items: center !important;
 
   font-size: 18px !important;
   line-height: 1 !important;
   margin: 0 !important;
   padding: 0 !important;
-
-  transform: translateX(0px) translateY(0px) !important;
+  transform: none !important;
 }
 
-nav .prof-button .prof-text {
+header nav button.prof-button .prof-text {
   opacity: 0 !important;
+  width: 0 !important;
   max-width: 0 !important;
   overflow: hidden !important;
-  white-space: nowrap !important;
-  transition: opacity .2s ease, max-width .25s ease !important;
+  justify-self: start !important;
+  text-align: left !important;
+  transition:
+    opacity .2s ease,
+    width .25s ease,
+    max-width .25s ease !important;
 }
 
-nav .prof-button:hover .prof-text {
+header nav button.prof-button:hover .prof-text {
   opacity: 1 !important;
-  max-width: 120px !important;
+  width: 105px !important;
+  max-width: 105px !important;
 }
