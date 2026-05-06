@@ -573,4 +573,28 @@
 .prof-box.clickable p {
   pointer-events: none;
 }
+.prof-box.clickable {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--border);
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  position: relative;
+  z-index: 20;
+}
 
+.prof-box.clickable h3,
+.prof-box.clickable p,
+.prof-box.clickable span {
+  pointer-events: none;
+}
+
+.custom-answer-panel {
+  display: none;
+}
+
+.custom-answer-panel.show {
+  display: block;
+}
