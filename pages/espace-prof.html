@@ -125,7 +125,7 @@
           <div>
             <span>Custom Facile</span>
             <h2>Dukes</h2>
-            <p>Réponses et configuration attendue pour le custom Dukes.</p>
+            <p>Réponses et configuration attendue pour la custom Dukes.</p>
           </div>
 
           <button type="button" class="answer-close" onclick="closeCustomAnswers()">×</button>
@@ -225,7 +225,7 @@
           <div>
             <span>Custom Moyen</span>
             <h2>Sentinel XS4</h2>
-            <p>Réponses et configuration attendue pour le custom Sentinel XS4.</p>
+            <p>Réponses et configuration attendue pour la custom Sentinel XS4.</p>
           </div>
 
           <button type="button" class="answer-close" onclick="closeCustomAnswers()">×</button>
@@ -326,7 +326,7 @@
           <div>
             <span>Custom Difficile</span>
             <h2>Annis Rumina</h2>
-            <p>Réponses et configuration attendue pour le custom Annis Rumina.</p>
+            <p>Réponses et configuration attendue pour la custom Annis Rumina.</p>
           </div>
 
           <button type="button" class="answer-close" onclick="closeCustomAnswers()">×</button>
@@ -436,7 +436,7 @@
           <div class="collapse-title">
             <span>Tableau centralisé</span>
             <strong>Réponses des élèves</strong>
-            <small>Accès direct au Google Sheets des formulaires.</small>
+            <small>Consultez toutes les réponses envoyées via les formulaires.</small>
           </div>
 
           <div class="collapse-right">
@@ -447,16 +447,16 @@
 
         <div class="collapse-panel">
           <div class="collapse-inner">
-            <div class="sheet-dashboard">
+            <div class="sheet-dashboard clean-inside">
               <div class="sheet-left">
                 <div class="sheet-icon">📊</div>
 
                 <div>
-                  <span class="sheet-kicker">Tableau centralisé</span>
-                  <h3>Réponses des élèves</h3>
+                  <span class="sheet-kicker">Google Sheets connecté</span>
+                  <h3>Tableau des réponses</h3>
                   <p>
-                    Consultez toutes les réponses envoyées via les formulaires des customs :
-                    Facile, Moyen et Difficile.
+                    Accédez au tableau centralisé contenant les réponses des élèves
+                    pour les customs Facile, Moyen et Difficile.
                   </p>
                 </div>
               </div>
@@ -464,7 +464,7 @@
               <div class="sheet-side">
                 <div class="sheet-status">
                   <span></span>
-                  Google Sheets connecté
+                  Connecté
                 </div>
 
                 <a
@@ -486,7 +486,7 @@
           <div class="collapse-title">
             <span>Corrections élèves</span>
             <strong>Réponses importées</strong>
-            <small>Validez ou refusez directement les customs envoyés.</small>
+            <small>Validez ou refusez directement la custom envoyée par chaque élève.</small>
           </div>
 
           <div class="collapse-right">
@@ -497,27 +497,19 @@
 
         <div class="collapse-panel">
           <div class="collapse-inner">
-            <div class="students-dashboard">
-              <div class="students-head">
-                <div>
-                  <span>Corrections élèves</span>
-                  <h3>Réponses importées</h3>
-<p>
-  Les réponses sont importées automatiquement depuis Google Sheets.
-  Cliquez sur un élève pour consulter ses réponses et valider ou refuser sa custom.
-</p>
+            <div class="students-dashboard clean-inside">
+
+              <div class="students-tools">
+                <div class="students-filters">
+                  <button class="student-filter active" data-student-filter="all">Tous</button>
+                  <button class="student-filter" data-student-filter="Dukes">Dukes</button>
+                  <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
+                  <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
                 </div>
 
                 <button class="students-refresh" onclick="loadStudents()">
                   Actualiser
                 </button>
-              </div>
-
-              <div class="students-filters">
-                <button class="student-filter active" data-student-filter="all">Tous</button>
-                <button class="student-filter" data-student-filter="Dukes">Dukes</button>
-                <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
-                <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
               </div>
 
               <div id="studentsStatus" class="students-status">
@@ -547,12 +539,7 @@
     const icon = card.querySelector(".collapse-right b");
 
     card.classList.toggle("is-open");
-
-    if (card.classList.contains("is-open")) {
-      icon.textContent = "−";
-    } else {
-      icon.textContent = "+";
-    }
+    icon.textContent = card.classList.contains("is-open") ? "−" : "+";
   }
 
   function openCustomAnswer(custom) {
@@ -568,9 +555,7 @@
 
     const selectedPanel = panels[custom];
 
-    if (!selectedPanel) {
-      return;
-    }
+    if (!selectedPanel) return;
 
     selectedPanel.classList.add("show");
 
