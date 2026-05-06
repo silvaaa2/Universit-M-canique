@@ -53,7 +53,7 @@
 /* Layout principal */
 .vehicle-layout {
   display: grid;
-  grid-template-columns: 880px 430px;
+  grid-template-columns: 780px 430px;
   gap: 36px;
   justify-content: center;
   align-items: start;
@@ -61,7 +61,7 @@
 
 /* Colonne médias */
 .media-column {
-  width: 880px;
+  width: 780px;
 }
 
 .media-tabs {
@@ -145,8 +145,8 @@
 /* Carte photo */
 .photo-card {
   position: relative;
-  width: 880px;
-  min-height: 520px;
+  width: 780px;
+  height: 470px;
   border-radius: 34px;
   overflow: hidden;
   background:
@@ -156,12 +156,15 @@
   backdrop-filter: blur(18px);
 }
 
+/* IMPORTANT : image entière visible */
 .photo-card img {
   width: 100%;
-  height: 520px;
-  min-height: 520px;
-  object-fit: cover;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
   display: block;
+  background: #050505;
+  padding: 10px;
   filter: contrast(1.04) saturate(.95);
 }
 
@@ -239,8 +242,8 @@
 
 /* Météo */
 .meteo-card {
-  width: 880px;
-  min-height: 520px;
+  width: 780px;
+  height: 470px;
   border-radius: 34px;
   overflow: hidden;
   background:
@@ -252,9 +255,9 @@
 
 .meteo-card img {
   width: 100%;
-  height: 520px;
-  min-height: 520px;
+  height: 100%;
   object-fit: contain;
+  object-position: center;
   display: block;
   background: #050505;
   padding: 18px;
@@ -361,30 +364,18 @@
 /* Responsive */
 @media (max-width: 1450px) {
   .vehicle-layout {
-    grid-template-columns: 780px 420px;
+    grid-template-columns: 720px 420px;
     gap: 30px;
   }
 
   .media-column {
-    width: 780px;
+    width: 720px;
   }
 
   .photo-card,
   .meteo-card {
-    width: 780px;
-    min-height: 470px;
-  }
-
-  .photo-card img {
-    height: 470px;
-    min-height: 470px;
-  }
-
-  .meteo-card img {
-    height: 470px;
-    min-height: 470px;
-    object-fit: contain;
-    padding: 18px;
+    width: 720px;
+    height: 430px;
   }
 
   .info-card {
@@ -405,21 +396,7 @@
   .photo-card,
   .meteo-card {
     width: 100%;
-    min-height: 440px;
-  }
-
-  .photo-card img {
-    width: 100%;
     height: 440px;
-    min-height: 440px;
-  }
-
-  .meteo-card img {
-    width: 100%;
-    height: 440px;
-    min-height: 440px;
-    object-fit: contain;
-    padding: 16px;
   }
 
   .info-card {
@@ -448,19 +425,12 @@
   .photo-card,
   .meteo-card {
     border-radius: 26px;
-    min-height: 300px;
-  }
-
-  .photo-card img {
     height: 300px;
-    min-height: 300px;
   }
 
+  .photo-card img,
   .meteo-card img {
-    height: 300px;
-    min-height: 300px;
-    object-fit: contain;
-    padding: 12px;
+    padding: 8px;
   }
 
   .gallery-arrow {
@@ -492,27 +462,4 @@
     padding: 22px;
     border-radius: 26px;
   }
-  /* Ajustement taille média - un peu plus petit */
-@media (min-width: 1251px) {
-  .vehicle-layout {
-    grid-template-columns: 720px 430px;
-    gap: 34px;
-  }
-
-  .media-column {
-    width: 720px;
-  }
-
-  .photo-card,
-  .meteo-card {
-    width: 720px;
-    min-height: 430px;
-  }
-
-  .photo-card img,
-  .meteo-card img {
-    height: 430px;
-    min-height: 430px;
-  }
 }
-
