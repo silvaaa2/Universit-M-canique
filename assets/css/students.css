@@ -420,14 +420,7 @@ body.student-focus .students-dashboard {
 
 /* Fond sombre plein écran */
 body.student-focus::before {
-  content: "";
-  position: fixed;
-  inset: 86px 0 0 0;
-  z-index: 500;
-  background:
-    radial-gradient(circle at 50% 20%, rgba(214,180,106,.14), transparent 35%),
-    rgba(0,0,0,.84);
-  backdrop-filter: blur(10px);
+  display: none !important;
 }
 
 /* Fiche élève en vraie fenêtre focus */
