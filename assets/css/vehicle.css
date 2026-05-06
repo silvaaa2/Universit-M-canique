@@ -59,6 +59,89 @@
   align-items: start;
 }
 
+/* Colonne médias */
+.media-column {
+  width: 880px;
+}
+
+.media-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.media-tab {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.055);
+  color: var(--muted);
+  padding: 12px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 900;
+  transition: .25s;
+}
+
+.media-tab:hover,
+.media-tab.active {
+  color: #080808;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-color: transparent;
+}
+
+.media-panel {
+  display: none;
+  position: relative;
+  animation: mediaIn .25s ease;
+}
+
+.media-panel.active {
+  display: block;
+}
+
+@keyframes mediaIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 10;
+
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.62);
+  color: var(--text);
+
+  font-size: 26px;
+  font-weight: 900;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  backdrop-filter: blur(12px);
+  transition: .2s;
+}
+
+.panel-close:hover {
+  color: #080808;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-color: transparent;
+}
+
 /* Carte photo */
 .photo-card {
   position: relative;
@@ -152,6 +235,26 @@
   font-size: 13px;
   font-weight: 900;
   backdrop-filter: blur(12px);
+}
+
+/* Météo */
+.meteo-card {
+  width: 880px;
+  min-height: 520px;
+  border-radius: 34px;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.025));
+  border: 1px solid var(--border);
+  box-shadow: 0 35px 110px rgba(0,0,0,.42);
+  backdrop-filter: blur(18px);
+}
+
+.meteo-card img {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  display: block;
 }
 
 /* Carte informations */
@@ -259,12 +362,18 @@
     gap: 30px;
   }
 
-  .photo-card {
+  .media-column {
+    width: 780px;
+  }
+
+  .photo-card,
+  .meteo-card {
     width: 780px;
     min-height: 470px;
   }
 
-  .photo-card img {
+  .photo-card img,
+  .meteo-card img {
     height: 470px;
     min-height: 470px;
   }
@@ -280,12 +389,18 @@
     justify-content: stretch;
   }
 
-  .photo-card {
+  .media-column {
+    width: 100%;
+  }
+
+  .photo-card,
+  .meteo-card {
     width: 100%;
     min-height: 440px;
   }
 
-  .photo-card img {
+  .photo-card img,
+  .meteo-card img {
     width: 100%;
     height: 440px;
     min-height: 440px;
@@ -310,12 +425,18 @@
     font-size: 48px;
   }
 
-  .photo-card {
+  .media-tabs {
+    flex-wrap: wrap;
+  }
+
+  .photo-card,
+  .meteo-card {
     border-radius: 26px;
     min-height: 300px;
   }
 
-  .photo-card img {
+  .photo-card img,
+  .meteo-card img {
     height: 300px;
     min-height: 300px;
   }
@@ -337,6 +458,12 @@
   .gallery-counter {
     right: 14px;
     bottom: 14px;
+  }
+
+  .panel-close {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
   }
 
   .info-card {
