@@ -195,8 +195,7 @@
   background: #ff5b6e;
 }
 
-/* Détail élève */
-
+/* Détail élève normal */
 .student-detail {
   display: none;
   margin-top: 26px;
@@ -377,110 +376,15 @@
   transform: translateY(-2px);
 }
 
-@media (max-width: 1000px) {
-  .students-grid,
-  .student-info-grid,
-  .student-photos {
-    grid-template-columns: 1fr;
-  }
-
-  .students-head,
-  .student-detail-head {
-    flex-direction: column;
-  }
-  /* MODE FOCUS ÉLÈVE */
-
-body.student-focus .prof-actions,
-body.student-focus .sheet-dashboard,
-body.student-focus .students-head,
-body.student-focus .students-filters,
-body.student-focus #studentsStatus,
-body.student-focus #studentsGrid {
-  display: none !important;
-}
-
-body.student-focus .students-dashboard {
-  padding: 0;
-  background: transparent;
-  border-color: transparent;
-  box-shadow: none;
-}
-
-body.student-focus .student-detail {
-  margin-top: 0;
-  display: block;
-  border-color: rgba(214,180,106,.28);
-  box-shadow:
-    0 35px 110px rgba(0,0,0,.55),
-    0 0 75px rgba(214,180,106,.12);
-}
-
-body.student-focus .student-detail::before {
-  content: "Fiche élève";
-  display: inline-flex;
-  margin-bottom: 18px;
-  padding: 9px 14px;
-  border-radius: 999px;
-  background: rgba(214,180,106,.12);
-  border: 1px solid rgba(214,180,106,.25);
-  color: var(--gold);
-  text-transform: uppercase;
-  letter-spacing: .18em;
-  font-size: 11px;
-  font-weight: 900;
-}
-
-.student-focus-status {
-  width: fit-content;
-  margin-bottom: 20px;
-  padding: 10px 15px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.student-focus-status.pending {
-  color: #ddd;
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.14);
-}
-
-.student-focus-status.approved {
-  color: #08160f;
-  background: #48e0a0;
-  box-shadow: 0 0 28px rgba(72,224,160,.18);
-}
-
-.student-focus-status.refused {
-  color: #240008;
-  background: #ff5b6e;
-  box-shadow: 0 0 28px rgba(255,91,110,.18);
-}
-
-body.student-focus .student-detail-head h3 {
-  font-size: clamp(46px, 6vw, 78px);
-}
-
-body.student-focus .student-info-card {
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
-}
-
-body.student-focus .student-detail-actions {
-  padding: 18px;
-  border-radius: 24px;
-  background: rgba(255,255,255,.045);
-  border: 1px solid var(--border);
-}
 /* ============================= */
-/* MODE FOCUS ÉLÈVE ULTRA PROPRE */
+/* MODE FOCUS ÉLÈVE - FULLSCREEN */
 /* ============================= */
 
 body.student-focus {
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
-/* On cache tout ce qui parasite quand une fiche élève est ouverte */
+/* Cache absolument tout ce qui gêne quand une fiche élève est ouverte */
 body.student-focus .prof-topbar,
 body.student-focus #profPanel > p,
 body.student-focus .prof-actions,
@@ -493,57 +397,65 @@ body.student-focus #studentsGrid {
   display: none !important;
 }
 
-/* Le bloc correction devient juste un conteneur invisible */
-body.student-focus .students-dashboard {
-  width: min(1100px, 100%);
-  margin-top: 0;
-  padding: 0;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-/* Le panel prof ne garde que la fiche */
+/* Le panel principal devient transparent */
 body.student-focus #profPanel {
-  width: min(1120px, 100%);
+  width: 100% !important;
+  max-width: none !important;
   padding: 0 !important;
+  margin: 0 !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
 
-/* Fond sombre focus derrière */
-body.student-focus main::before {
+/* Le dashboard correction devient juste un conteneur invisible */
+body.student-focus .students-dashboard {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Fond sombre plein écran */
+body.student-focus::before {
   content: "";
   position: fixed;
   inset: 86px 0 0 0;
+  z-index: 500;
   background:
-    radial-gradient(circle at 50% 20%, rgba(214,180,106,.14), transparent 32%),
-    rgba(0,0,0,.72);
-  backdrop-filter: blur(8px);
-  z-index: 40;
-  pointer-events: none;
+    radial-gradient(circle at 50% 20%, rgba(214,180,106,.14), transparent 35%),
+    rgba(0,0,0,.84);
+  backdrop-filter: blur(10px);
 }
 
-/* Fiche élève au premier plan */
+/* Fiche élève en vraie fenêtre focus */
 body.student-focus .student-detail {
-  position: relative;
-  z-index: 60;
+  position: fixed !important;
+  z-index: 600 !important;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1100px, calc(100vw - 70px));
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+
   display: block !important;
-  margin: 0 auto;
+  margin: 0 !important;
   padding: 34px;
+
   border-radius: 34px;
   background:
     radial-gradient(circle at 12% 12%, rgba(214,180,106,.16), transparent 32%),
-    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
+    linear-gradient(145deg, rgba(32,32,32,.98), rgba(14,14,14,.98));
   border: 1px solid rgba(214,180,106,.32);
   box-shadow:
-    0 45px 140px rgba(0,0,0,.70),
-    0 0 90px rgba(214,180,106,.14);
+    0 45px 140px rgba(0,0,0,.85),
+    0 0 95px rgba(214,180,106,.16);
 }
 
-/* Petit label en haut de fiche */
+/* Petit label en haut */
 body.student-focus .student-detail::before {
   content: "Fiche élève";
   display: inline-flex;
@@ -559,13 +471,13 @@ body.student-focus .student-detail::before {
   font-weight: 900;
 }
 
-/* Titre plus focus */
+/* Titre plus propre */
 body.student-focus .student-detail-head h3 {
-  font-size: clamp(48px, 6vw, 82px);
+  font-size: clamp(46px, 5vw, 78px);
   line-height: .9;
 }
 
-/* Boutons d’action plus visibles */
+/* Boutons d’action bien visibles */
 body.student-focus .student-detail-actions {
   padding: 18px;
   border-radius: 24px;
@@ -580,7 +492,7 @@ body.student-focus .student-info-card {
   border-color: rgba(255,255,255,.14);
 }
 
-/* Badge statut dans la fiche */
+/* Badge statut */
 .student-focus-status {
   width: fit-content;
   margin-bottom: 20px;
@@ -606,4 +518,33 @@ body.student-focus .student-info-card {
   color: #240008;
   background: #ff5b6e;
   box-shadow: 0 0 28px rgba(255,91,110,.18);
+}
+
+/* Bouton fermer toujours au-dessus */
+body.student-focus .student-close {
+  position: relative;
+  z-index: 650;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .students-grid,
+  .student-info-grid,
+  .student-photos {
+    grid-template-columns: 1fr;
+  }
+
+  .students-head,
+  .student-detail-head {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 900px) {
+  body.student-focus .student-detail {
+    top: 100px;
+    width: calc(100vw - 30px);
+    max-height: calc(100vh - 120px);
+    padding: 24px;
+  }
 }
