@@ -559,4 +559,18 @@
   .sheet-btn {
     width: 100%;
   }
+  .prof-box.clickable {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--border);
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
 }
+
+.prof-box.clickable h3,
+.prof-box.clickable p {
+  pointer-events: none;
+}
+
