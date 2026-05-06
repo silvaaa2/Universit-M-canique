@@ -283,15 +283,17 @@
       panel.classList.remove("show");
     });
 
-    if (!panels[custom]) {
+    const selectedPanel = panels[custom];
+
+    if (!selectedPanel) {
       console.error("Panel introuvable :", custom);
       return;
     }
 
-    panels[custom].classList.add("show");
+    selectedPanel.classList.add("show");
 
     setTimeout(() => {
-      panels[custom].scrollIntoView({
+      selectedPanel.scrollIntoView({
         behavior: "smooth",
         block: "start"
       });
