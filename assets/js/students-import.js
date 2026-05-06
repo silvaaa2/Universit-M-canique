@@ -103,7 +103,7 @@ function isUsefulValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== "";
 }
 
-/* Loader ouverture élève - version plus légère */
+/* Loader ouverture élève - version rapide */
 function showStudentLoading() {
   const authOverlay = document.getElementById("authOverlay");
   const authTitle = document.getElementById("authTitle");
@@ -263,7 +263,7 @@ function openStudentDetailWithLoading(studentId) {
   setTimeout(() => {
     openStudentDetail(studentId);
     hideStudentLoading();
-  }, 220);
+  }, 180);
 }
 
 /* Fiche élève */
@@ -375,12 +375,6 @@ function openStudentDetail(studentId) {
 
   document.body.classList.add("student-focus");
   studentDetail.classList.add("show");
-
-  /* Pas de smooth ici : ça lag sur certains PC */
-  window.scrollTo({
-    top: 0,
-    behavior: "auto"
-  });
 }
 
 /* Fermeture fiche élève */
