@@ -1,1 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Difficile - Annis Rumina</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/header.css">
+  <link rel="stylesheet" href="../assets/css/loader.css">
+  <link rel="stylesheet" href="../assets/css/buttons.css">
+  <link rel="stylesheet" href="../assets/css/vehicle.css">
+</head>
+
+<body>
+
+<div id="loader">
+  <div class="loader-box">
+    <h2>Custom Difficile</h2>
+    <p id="loaderText">Chargement de la fiche véhicule...</p>
+    <div class="loader-bar"><span></span></div>
+  </div>
+</div>
+
+<header>
+  <div class="logo" onclick="goPage('../index.html')">
+    <img src="../Images/logo.png" alt="Logo Module 4">
+    <span>Module 4 - Mécanique</span>
+  </div>
+
+  <nav>
+    <button onclick="goPage('../index.html')">Accueil</button>
+    <button onclick="goPage('custom-facile.html')">Custom Facile</button>
+    <button onclick="goPage('custom-moyen.html')">Custom Moyen</button>
+    <button onclick="goPage('custom-difficile.html')">Custom Difficile</button>
+  </nav>
+</header>
+
+<main>
+
+  <section class="vehicle-page">
+
+    <div class="page-top">
+      <button class="back-btn" onclick="goPage('../index.html')">← Retour</button>
+
+      <div>
+        <p class="kicker">Module 4 - Mécanique</p>
+        <h1>Custom Difficile</h1>
+        <p class="intro">
+          Photos et informations techniques pour le Custom Difficile.
+        </p>
+      </div>
+    </div>
+
+    <div class="vehicle-layout">
+
+      <div class="media-column">
+
+        <div class="media-tabs">
+          <button class="media-tab active" onclick="openMediaPanel('photos')">
+            Photos
+          </button>
+
+          <button class="media-tab" onclick="openMediaPanel('meteo')">
+            Météo
+          </button>
+        </div>
+
+        <div id="photosPanel" class="media-panel active">
+          <button class="panel-close" onclick="closeMediaPanels()">×</button>
+
+          <div class="photo-card gallery-card">
+            <img id="vehicleImage" src="../Images/Annis%20Rumina-1.png" alt="Annis Rumina rendu final">
+
+            <button class="gallery-arrow left" onclick="changeImage(-1)">‹</button>
+            <button class="gallery-arrow right" onclick="changeImage(1)">›</button>
+
+            <div class="gallery-counter">
+              <span id="currentImage">1</span>/<span id="totalImages">4</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="meteoPanel" class="media-panel">
+          <button class="panel-close" onclick="closeMediaPanels()">×</button>
+
+          <div class="meteo-card">
+            <img src="../Images/meteo.png" alt="Informations météo obligatoires">
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="info-card">
+        <div class="info-head">
+          <p>Véhicule</p>
+          <h2>Annis Rumina</h2>
+        </div>
+
+        <div class="info-list">
+          <div class="info-line">
+            <span>Couleur principale</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Couleur secondaire</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Couleur intérieur</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Nacré</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Néon</span>
+            <b class="no">Non</b>
+          </div>
+
+          <div class="info-line">
+            <span>Extras</span>
+            <b class="yes">Oui</b>
+          </div>
+
+          <div class="info-line">
+            <span>Full perf</span>
+            <b class="yes">Oui</b>
+          </div>
+        </div>
+
+        <a
+          class="btn primary full"
+          target="_blank"
+          href="https://docs.google.com/forms/d/e/1FAIpQLSdPbQYwqfg-79vzWVONROBbsseYY9joUX_qIaxzQpvaVh0e0g/viewform"
+        >
+          Remplir le formulaire
+        </a>
+      </aside>
+
+    </div>
+
+  </section>
+
+</main>
+
+<script src="../assets/js/loader.js"></script>
+<script src="../assets/js/navigation.js"></script>
+<script src="../assets/js/gallery-difficile.js"></script>
+<script src="../assets/js/media-tabs.js"></script>
+
+</body>
+</html>
