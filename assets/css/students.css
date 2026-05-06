@@ -424,7 +424,7 @@ body.student-focus #authOverlay.show {
   filter: none !important;
 }
 
-/* Fiche élève focus : fixe, instantanée, sans animation lourde */
+/* Fiche élève focus : fixe, avec mini pop légère */
 body.student-focus .student-detail {
   position: fixed !important;
   z-index: 600 !important;
@@ -453,10 +453,22 @@ body.student-focus .student-detail {
   opacity: 1 !important;
   filter: none !important;
   backdrop-filter: none !important;
-  animation: none !important;
+  animation: studentFocusPop .16s ease-out both !important;
   transition: none !important;
   will-change: auto !important;
   contain: layout paint !important;
+}
+
+@keyframes studentFocusPop {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scale(.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
 }
 
 /* Supprime les animations/transitions lourdes dans la fiche focus */
@@ -559,7 +571,7 @@ body.student-focus * {
   scroll-behavior: auto !important;
 }
 
-body.student-focus .student-detail,
+/* On neutralise les enfants, MAIS PAS la fiche elle-même */
 body.student-focus .student-detail * {
   animation-duration: 0s !important;
   transition-duration: 0s !important;
