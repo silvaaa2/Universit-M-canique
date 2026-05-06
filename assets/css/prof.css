@@ -5,6 +5,7 @@
   place-items: center;
 }
 
+/* Login + Panel */
 .login-card,
 .prof-panel {
   width: min(980px, 100%);
@@ -57,6 +58,7 @@
   line-height: 1.7;
 }
 
+/* Formulaire login */
 .login-form {
   display: grid;
   gap: 14px;
@@ -103,11 +105,20 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
+  0%, 100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-6px);
+  }
+
+  75% {
+    transform: translateX(6px);
+  }
 }
 
+/* Affichage dashboard */
 .prof-panel {
   display: none;
 }
@@ -116,6 +127,7 @@
   display: block;
 }
 
+/* Cartes customs */
 .prof-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -152,7 +164,9 @@
 .prof-box:hover {
   transform: translateY(-6px);
   border-color: rgba(214,180,106,.45);
-  box-shadow: 0 22px 70px rgba(0,0,0,.32), 0 0 38px rgba(214,180,106,.10);
+  box-shadow:
+    0 22px 70px rgba(0,0,0,.32),
+    0 0 38px rgba(214,180,106,.10);
 }
 
 .prof-box span {
@@ -171,6 +185,7 @@
   font-size: 14px;
 }
 
+/* Bouton logout */
 .logout-btn {
   margin-top: 26px;
 }
@@ -247,6 +262,8 @@
   font-weight: 900;
   cursor: pointer;
   transition: .25s;
+  position: relative;
+  z-index: 5;
 }
 
 .answer-close:hover {
@@ -336,6 +353,19 @@
   gap: 28px;
   overflow: hidden;
   position: relative;
+}
+
+.sheet-dashboard::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  top: -90px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(214,180,106,.12);
+  filter: blur(8px);
+  pointer-events: none;
 }
 
 .sheet-left {
@@ -430,7 +460,7 @@
   box-shadow: 0 24px 65px rgba(214,180,106,.28);
 }
 
-/* Overlay connexion */
+/* Overlay connexion / déconnexion */
 .auth-overlay {
   position: fixed;
   inset: 0;
@@ -441,6 +471,7 @@
     radial-gradient(circle at center, rgba(214,180,106,.13), transparent 35%),
     rgba(5,5,5,.88);
   backdrop-filter: blur(14px);
+
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -461,7 +492,22 @@
   background:
     linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
   border: 1px solid var(--border);
-  box-shadow: 0 35px 110px rgba(0,0,0,.55), 0 0 70px rgba(214,180,106,.14);
+  box-shadow:
+    0 35px 110px rgba(0,0,0,.55),
+    0 0 70px rgba(214,180,106,.14);
+  animation: authIn .35s ease;
+}
+
+@keyframes authIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .auth-spinner {
@@ -494,11 +540,47 @@
   line-height: 1.6;
 }
 
+/* FIX PROPRE AFFICHAGE ESPACE PROF */
+
+/* Quand pas connecté : absolument rien du dashboard ne doit apparaître */
+body:not(.is-prof-logged) #profPanel,
+body:not(.is-prof-logged) .prof-actions,
+body:not(.is-prof-logged) .custom-answer-panel,
+body:not(.is-prof-logged) .sheet-dashboard,
+body:not(.is-prof-logged) .logout-btn,
+body:not(.is-prof-logged) .answer-close {
+  display: none !important;
+}
+
+/* Quand connecté : on cache le login */
+body.is-prof-logged #loginCard {
+  display: none !important;
+}
+
+/* Dashboard visible seulement après connexion */
+body.is-prof-logged #profPanel.show {
+  display: block !important;
+}
+
+/* Les fiches réponses restent fermées tant qu’on clique pas */
+.custom-answer-panel {
+  display: none !important;
+}
+
+.custom-answer-panel.show {
+  display: block !important;
+}
+
+/* Responsive */
 @media (max-width: 900px) {
   .prof-actions,
   .answer-grid,
   .answer-columns {
     grid-template-columns: 1fr;
+  }
+
+  .answer-head {
+    flex-direction: column;
   }
 
   .sheet-dashboard,
