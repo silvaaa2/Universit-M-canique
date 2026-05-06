@@ -431,26 +431,47 @@
       </div>
 
       <!-- GOOGLE SHEETS -->
-      <div class="sheet-dashboard">
-        <div class="sheet-left">
-          <div class="sheet-icon">📊</div>
+<!-- GOOGLE SHEETS -->
+<details class="collapse-block" open>
+  <summary class="collapse-summary">
+    <div>
+      <span>Tableau centralisé</span>
+      <strong>Réponses des élèves</strong>
+    </div>
 
-          <div>
-            <span class="sheet-kicker">Tableau centralisé</span>
-            <h3>Réponses des élèves</h3>
-            <p>
-              Consultez toutes les réponses envoyées via les formulaires des customs :
-              Facile, Moyen et Difficile.
-            </p>
-          </div>
-        </div>
+    <em>Cliquer pour ouvrir / fermer</em>
+  </summary>
 
-        <div class="sheet-side">
-          <div class="sheet-status">
-            <span></span>
-            Google Sheets connecté
-          </div>
+  <div class="sheet-dashboard">
+    <div class="sheet-left">
+      <div class="sheet-icon">📊</div>
 
+      <div>
+        <span class="sheet-kicker">Tableau centralisé</span>
+        <h3>Réponses des élèves</h3>
+        <p>
+          Consultez toutes les réponses envoyées via les formulaires des customs :
+          Facile, Moyen et Difficile.
+        </p>
+      </div>
+    </div>
+
+    <div class="sheet-side">
+      <div class="sheet-status">
+        <span></span>
+        Google Sheets connecté
+      </div>
+
+      <a
+        class="sheet-btn"
+        target="_blank"
+        href="https://docs.google.com/spreadsheets/d/1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc/edit?gid=1133112226#gid=1133112226"
+      >
+        Ouvrir le tableau
+      </a>
+    </div>
+  </div>
+</details>
           <a
             class="sheet-btn"
             target="_blank"
@@ -462,21 +483,49 @@
       </div>
 
       <!-- CORRECTIONS ELEVES -->
-      <div class="students-dashboard">
-        <div class="students-head">
-          <div>
-            <span>Corrections élèves</span>
-            <h3>Réponses importées</h3>
-            <p>
-              Les réponses sont importées automatiquement depuis Google Sheets.
-              Cliquez sur un élève pour consulter ses réponses et valider ou refuser sa custom.
-            </p>
-          </div>
+<!-- CORRECTIONS ELEVES -->
+<details class="collapse-block" open>
+  <summary class="collapse-summary">
+    <div>
+      <span>Corrections élèves</span>
+      <strong>Réponses importées</strong>
+    </div>
 
-          <button class="students-refresh" onclick="loadStudents()">
-            Actualiser
-          </button>
-        </div>
+    <em>Cliquer pour ouvrir / fermer</em>
+  </summary>
+
+  <div class="students-dashboard">
+    <div class="students-head">
+      <div>
+        <span>Corrections élèves</span>
+        <h3>Réponses importées</h3>
+        <p>
+          Les réponses sont importées automatiquement depuis Google Sheets.
+          Cliquez sur un élève pour consulter ses réponses et valider ou refuser son custom.
+        </p>
+      </div>
+
+      <button class="students-refresh" onclick="loadStudents()">
+        Actualiser
+      </button>
+    </div>
+
+    <div class="students-filters">
+      <button class="student-filter active" data-student-filter="all">Tous</button>
+      <button class="student-filter" data-student-filter="Dukes">Dukes</button>
+      <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
+      <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
+    </div>
+
+    <div id="studentsStatus" class="students-status">
+      Chargement des réponses...
+    </div>
+
+    <div id="studentsGrid" class="students-grid"></div>
+
+    <div id="studentDetail" class="student-detail"></div>
+  </div>
+</details>
 
         <div class="students-filters">
           <button class="student-filter active" data-student-filter="all">Tous</button>
