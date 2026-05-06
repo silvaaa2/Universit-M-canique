@@ -88,22 +88,146 @@
       </p>
 
       <div class="prof-actions">
-        <div class="prof-box">
+        <button class="prof-box clickable" onclick="openCustomAnswer('dukes')">
           <span>01</span>
           <h3>Custom Facile</h3>
-          <p>Réponses liées au Custom Dukes.</p>
-        </div>
+          <p>Custom Dukes</p>
+        </button>
 
-        <div class="prof-box">
+        <button class="prof-box clickable" onclick="openCustomAnswer('sentinel')">
           <span>02</span>
           <h3>Custom Moyen</h3>
-          <p>Réponses liées au Custom Sentinel XS4.</p>
-        </div>
+          <p>Custom Sentinel XS4</p>
+        </button>
 
-        <div class="prof-box">
+        <button class="prof-box clickable" onclick="openCustomAnswer('rumina')">
           <span>03</span>
           <h3>Custom Difficile</h3>
-          <p>Réponses liées au Custom Annis Rumina.</p>
+          <p>Custom Annis Rumina</p>
+        </button>
+      </div>
+
+      <div class="custom-answer-panel" id="dukesAnswer">
+        <div class="answer-head">
+          <div>
+            <span>Custom Facile</span>
+            <h2>Dukes</h2>
+            <p>Réponses et configuration attendue pour le custom Dukes.</p>
+          </div>
+
+          <button class="answer-close" onclick="closeCustomAnswers()">×</button>
+        </div>
+
+        <div class="answer-grid">
+          <div class="answer-card">
+            <span>Couleurs</span>
+
+            <div class="answer-line">
+              <strong>Couleur principale</strong>
+              <p>Oui — Rouge cuivre</p>
+            </div>
+
+            <div class="answer-line">
+              <strong>Couleur secondaire</strong>
+              <p>Oui — Blanc neige</p>
+            </div>
+
+            <div class="answer-line">
+              <strong>Nacré</strong>
+              <p>Oui — Blanc neige</p>
+            </div>
+
+            <div class="answer-line">
+              <strong>Couleur intérieure</strong>
+              <p>Non</p>
+            </div>
+          </div>
+
+          <div class="answer-card">
+            <span>Performances & options</span>
+
+            <div class="answer-line">
+              <strong>Full perf</strong>
+              <p>Non</p>
+            </div>
+
+            <div class="answer-line">
+              <strong>Extras</strong>
+              <p>Aucun extra</p>
+            </div>
+
+            <div class="answer-line">
+              <strong>Néon</strong>
+              <p>Oui — Blanc</p>
+            </div>
+          </div>
+
+          <div class="answer-card wide">
+            <span>Informations techniques visuelles</span>
+
+            <div class="answer-columns">
+              <div>
+                <h4>Roues</h4>
+                <p>Type de roue : Muscle</p>
+                <p>Modèle des roues : 31</p>
+                <p>Fumée des pneus : Blanc</p>
+              </div>
+
+              <div>
+                <h4>Accessoires</h4>
+                <p>Ouvrir/fermer la porte : Coffre</p>
+                <p>Klaxon : 0</p>
+                <p>Phares xénons : Oui</p>
+                <p>Couleur des phares : 3</p>
+                <p>Vitres teintées : 5</p>
+                <p>Plaque : 5</p>
+              </div>
+
+              <div>
+                <h4>Carrosserie</h4>
+                <p>Aileron : 1</p>
+                <p>Pare-choc avant : 1</p>
+                <p>Pare-choc arrière : 0</p>
+                <p>Pot d’échappement : 1</p>
+                <p>Cadre : 1</p>
+                <p>Capot : 1</p>
+                <p>Toit : 24</p>
+              </div>
+
+              <div>
+                <h4>Néons</h4>
+                <p>Néon gauche : Oui</p>
+                <p>Néon droite : Oui</p>
+                <p>Néon avant : Oui</p>
+                <p>Néon arrière : Oui</p>
+                <p>Couleur des néons : Blanc</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="custom-answer-panel" id="sentinelAnswer">
+        <div class="answer-head">
+          <div>
+            <span>Custom Moyen</span>
+            <h2>Sentinel XS4</h2>
+            <p>Réponses à intégrer.</p>
+          </div>
+
+          <button class="answer-close" onclick="closeCustomAnswers()">×</button>
+        </div>
+      </div>
+
+      <div class="custom-answer-panel" id="ruminaAnswer">
+        <div class="answer-head">
+          <div>
+            <span>Custom Difficile</span>
+            <h2>Annis Rumina</h2>
+            <p>Réponses à intégrer.</p>
+          </div>
+
+          <button class="answer-close" onclick="closeCustomAnswers()">×</button>
         </div>
       </div>
 
@@ -148,6 +272,7 @@
 <script src="../assets/js/loader.js"></script>
 <script src="../assets/js/navigation.js"></script>
 <script src="../assets/js/prof-login.js"></script>
+<script src="../assets/js/prof-customs.js"></script>
 
 </body>
 </html>
