@@ -103,7 +103,7 @@ function isUsefulValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== "";
 }
 
-/* Loader focus élève */
+/* Loader ouverture élève */
 function showStudentLoading() {
   const authOverlay = document.getElementById("authOverlay");
   const authTitle = document.getElementById("authTitle");
@@ -111,6 +111,7 @@ function showStudentLoading() {
 
   if (!authOverlay || !authTitle || !authText) return;
 
+  authOverlay.style.display = "";
   authTitle.textContent = "Ouverture des réponses...";
   authText.textContent = "Chargement de la fiche élève et des éléments envoyés.";
   authOverlay.classList.add("show");
@@ -122,6 +123,11 @@ function hideStudentLoading() {
   if (!authOverlay) return;
 
   authOverlay.classList.remove("show");
+  authOverlay.style.display = "none";
+
+  setTimeout(() => {
+    authOverlay.style.display = "";
+  }, 300);
 }
 
 /* Import Google Sheets */
@@ -352,12 +358,22 @@ function openStudentDetail(studentId) {
     </div>
   `;
 
-  /* Ferme les fiches customs si ouvertes */
   document.querySelectorAll(".custom-answer-panel").forEach(panel => {
     panel.classList.remove("show");
   });
 
-  /* Active le vrai mode focus */
+  hideStudentLoading();
+
+  const authOverlay = document.getElementById("authOverlay");
+  if (authOverlay) {
+    authOverlay.classList.remove("show");
+    authOverlay.style.display = "none";
+
+    setTimeout(() => {
+      authOverlay.style.display = "";
+    }, 300);
+  }
+
   document.body.classList.add("student-focus");
   studentDetail.classList.add("show");
 }
@@ -366,6 +382,12 @@ function openStudentDetail(studentId) {
 function closeStudentDetail() {
   studentDetail.classList.remove("show");
   document.body.classList.remove("student-focus");
+
+  const authOverlay = document.getElementById("authOverlay");
+  if (authOverlay) {
+    authOverlay.classList.remove("show");
+    authOverlay.style.display = "";
+  }
 
   setTimeout(() => {
     const dashboard = document.querySelector(".students-dashboard");
