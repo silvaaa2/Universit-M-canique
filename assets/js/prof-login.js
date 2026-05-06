@@ -1,5 +1,5 @@
 const PROF_USERNAME = "mecaniqueprof";
-const PROF_PASSWORD = "mecaniqueflashbackfa";
+const PROF_PASSWORD = "module4prof";
 
 const loginForm = document.getElementById("loginForm");
 const loginCard = document.getElementById("loginCard");
@@ -20,12 +20,23 @@ function hideAuthOverlay() {
   authOverlay.classList.remove("show");
 }
 
+function showLogin() {
+  loginCard.style.display = "block";
+  profPanel.classList.remove("show");
+}
+
+function showPanel() {
+  loginCard.style.display = "none";
+  profPanel.classList.add("show");
+}
+
 function checkSession() {
   const isLogged = localStorage.getItem("profLogged") === "true";
 
   if (isLogged) {
-    loginCard.style.display = "none";
-    profPanel.classList.add("show");
+    showPanel();
+  } else {
+    showLogin();
   }
 }
 
@@ -42,43 +53,24 @@ loginForm.addEventListener("submit", (event) => {
   setTimeout(() => {
     if (username === PROF_USERNAME && password === PROF_PASSWORD) {
       localStorage.setItem("profLogged", "true");
-
-      loginCard.classList.add("fade-out");
-
-      setTimeout(() => {
-        loginCard.style.display = "none";
-        loginCard.classList.remove("fade-out");
-
-        profPanel.classList.add("show");
-        hideAuthOverlay();
-      }, 350);
-
+      showPanel();
+      hideAuthOverlay();
     } else {
       hideAuthOverlay();
-
-      setTimeout(() => {
-        loginError.classList.add("show");
-      }, 150);
+      loginError.classList.add("show");
     }
-  }, 1100);
+  }, 900);
 });
 
 function logoutProf() {
   showAuthOverlay("Déconnexion en cours...", "Fermeture de la session professeur.");
 
-  profPanel.classList.add("fade-out");
-
   setTimeout(() => {
     localStorage.removeItem("profLogged");
-
-    profPanel.classList.remove("show");
-    profPanel.classList.remove("fade-out");
-
-    loginCard.style.display = "block";
-    loginError.classList.remove("show");
-
+    closeCustomAnswers();
+    showLogin();
     hideAuthOverlay();
-  }, 1100);
+  }, 900);
 }
 
 checkSession();
