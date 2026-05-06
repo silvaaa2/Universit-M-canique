@@ -15,6 +15,19 @@
   border: 1px solid var(--border);
   box-shadow: 0 35px 110px rgba(0,0,0,.42);
   backdrop-filter: blur(18px);
+  animation: panelIn .45s ease;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .prof-kicker {
@@ -82,6 +95,13 @@
 
 .login-error.show {
   display: block;
+  animation: shake .25s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
 }
 
 .prof-panel {
@@ -126,6 +146,96 @@
 
 .logout-btn {
   margin-top: 26px;
+}
+
+/* Overlay connexion / déconnexion */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, rgba(214,180,106,.13), transparent 35%),
+    rgba(5,5,5,.88);
+  backdrop-filter: blur(14px);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: .35s ease;
+}
+
+.auth-overlay.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+.auth-box {
+  width: min(380px, 90%);
+  padding: 34px;
+  border-radius: 34px;
+  text-align: center;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+  border: 1px solid var(--border);
+  box-shadow: 0 35px 110px rgba(0,0,0,.55), 0 0 70px rgba(214,180,106,.14);
+  animation: authIn .35s ease;
+}
+
+@keyframes authIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.auth-spinner {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,.12);
+  border-top-color: var(--gold);
+  border-right-color: var(--gold2);
+  animation: spin .85s linear infinite;
+  box-shadow: 0 0 35px rgba(214,180,106,.22);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-box h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  letter-spacing: -.04em;
+}
+
+.auth-box p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.login-card.fade-out,
+.prof-panel.fade-out {
+  animation: panelOut .35s ease forwards;
+}
+
+@keyframes panelOut {
+  to {
+    opacity: 0;
+    transform: translateY(-14px) scale(.98);
+  }
 }
 
 @media (max-width: 800px) {
