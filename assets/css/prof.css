@@ -5,10 +5,7 @@
   place-items: center;
 }
 
-/* ============================= */
 /* LOGIN + PANEL */
-/* ============================= */
-
 .login-card,
 .prof-panel {
   width: min(980px, 100%);
@@ -82,10 +79,7 @@
   line-height: 1.7;
 }
 
-/* ============================= */
 /* FORMULAIRE LOGIN */
-/* ============================= */
-
 .login-form {
   display: grid;
   gap: 14px;
@@ -145,10 +139,7 @@
   }
 }
 
-/* ============================= */
 /* AFFICHAGE DASHBOARD */
-/* ============================= */
-
 .prof-panel {
   display: none;
 }
@@ -157,10 +148,7 @@
   display: block;
 }
 
-/* ============================= */
 /* CARTES CUSTOMS */
-/* ============================= */
-
 .prof-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -218,20 +206,14 @@
   font-size: 14px;
 }
 
-/* ============================= */
 /* BOUTON LOGOUT */
-/* ============================= */
-
 .logout-btn {
   margin-top: 0;
   flex-shrink: 0;
   align-self: flex-start;
 }
 
-/* ============================= */
 /* REPONSES CUSTOMS */
-/* ============================= */
-
 .custom-answer-panel {
   display: none !important;
   margin-top: 28px;
@@ -383,10 +365,7 @@
   line-height: 1.45;
 }
 
-/* ============================= */
 /* GOOGLE SHEETS */
-/* ============================= */
-
 .sheet-dashboard {
   margin-top: 0;
   padding: 28px;
@@ -508,10 +487,110 @@
   box-shadow: 0 24px 65px rgba(214,180,106,.28);
 }
 
-/* ============================= */
-/* OVERLAY CONNEXION / DECONNEXION */
-/* ============================= */
+/* EXAMENS */
+.exam-dashboard {
+  margin-top: 0;
+  padding: 28px;
+  border-radius: 0 0 32px 32px;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(214,180,106,.13), transparent 28%),
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 28px;
+  overflow: hidden;
+  position: relative;
+}
 
+.exam-dashboard::after {
+  content: "";
+  position: absolute;
+  right: -80px;
+  bottom: -90px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(214,180,106,.10);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.exam-empty {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  position: relative;
+  z-index: 2;
+}
+
+.exam-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  box-shadow: 0 18px 50px rgba(214,180,106,.14);
+  flex-shrink: 0;
+}
+
+.exam-kicker {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.exam-dashboard h3 {
+  margin: 9px 0 8px;
+  font-size: 32px;
+  letter-spacing: -.05em;
+}
+
+.exam-dashboard p {
+  margin: 0;
+  max-width: 590px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.exam-actions {
+  display: grid;
+  gap: 12px;
+  justify-items: end;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.exam-btn {
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: none;
+  color: #080808;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  font-weight: 900;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.exam-btn.ghost {
+  color: var(--muted);
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+}
+
+.exam-btn.disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+/* OVERLAY CONNEXION / DECONNEXION */
 .auth-overlay {
   position: fixed;
   inset: 0;
@@ -590,15 +669,13 @@
   line-height: 1.6;
 }
 
-/* ============================= */
 /* FIX AFFICHAGE ESPACE PROF */
-/* ============================= */
-
 body:not(.is-prof-logged) #profPanel,
 body:not(.is-prof-logged) .prof-actions,
 body:not(.is-prof-logged) .custom-answer-panel,
 body:not(.is-prof-logged) .sheet-dashboard,
 body:not(.is-prof-logged) .students-dashboard,
+body:not(.is-prof-logged) .exam-dashboard,
 body:not(.is-prof-logged) .collapse-card,
 body:not(.is-prof-logged) .logout-btn,
 body:not(.is-prof-logged) .answer-close {
@@ -613,10 +690,7 @@ body.is-prof-logged #profPanel.show {
   display: block !important;
 }
 
-/* ============================= */
-/* MENUS PLIABLES PROPRES */
-/* ============================= */
-
+/* MENUS PLIABLES */
 .collapse-card {
   margin-top: 28px;
   border-radius: 32px;
@@ -756,8 +830,6 @@ body.is-prof-logged #profPanel.show {
   border-right: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018)) !important;
 }
 
 .students-tools {
@@ -768,7 +840,6 @@ body.is-prof-logged #profPanel.show {
   margin-bottom: 20px;
 }
 
-/* cache l'ancien header interne des corrections si présent */
 .students-dashboard .students-head {
   display: none !important;
 }
@@ -796,10 +867,7 @@ body.student-focus .collapse-inner {
   overflow: visible !important;
 }
 
-/* ============================= */
 /* RESPONSIVE */
-/* ============================= */
-
 @media (max-width: 900px) {
   .prof-actions,
   .answer-grid,
@@ -811,18 +879,22 @@ body.student-focus .collapse-inner {
   .prof-topbar,
   .sheet-dashboard,
   .sheet-left,
+  .exam-dashboard,
+  .exam-empty,
   .collapse-toggle,
   .students-tools {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .sheet-side {
+  .sheet-side,
+  .exam-actions {
     width: 100%;
     justify-items: stretch;
   }
 
-  .sheet-btn {
+  .sheet-btn,
+  .exam-btn {
     width: 100%;
   }
 
