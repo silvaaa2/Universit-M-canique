@@ -492,4 +492,27 @@
     padding: 22px;
     border-radius: 26px;
   }
+  /* Ajustement taille média - un peu plus petit */
+@media (min-width: 1251px) {
+  .vehicle-layout {
+    grid-template-columns: 720px 430px;
+    gap: 34px;
+  }
+
+  .media-column {
+    width: 720px;
+  }
+
+  .photo-card,
+  .meteo-card {
+    width: 720px;
+    min-height: 430px;
+  }
+
+  .photo-card img,
+  .meteo-card img {
+    height: 430px;
+    min-height: 430px;
+  }
 }
+
