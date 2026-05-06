@@ -137,3 +137,52 @@ nav button:hover {
     max-width: 120px;
   }
 }
+/* Bouton Espace Prof centré */
+.prof-button {
+  width: 52px;
+  height: 52px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+  transition: width .25s ease, background .25s ease, border-color .25s ease, transform .25s ease;
+  white-space: nowrap;
+}
+
+.prof-button:hover {
+  width: 160px;
+  justify-content: flex-start;
+  background: rgba(255,255,255,.08);
+  border-color: rgba(214,180,106,.35);
+}
+
+.prof-icon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  font-size: 18px;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.prof-text {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: opacity .2s ease, max-width .25s ease;
+}
+
+.prof-button:hover .prof-text {
+  opacity: 1;
+  max-width: 120px;
+}
