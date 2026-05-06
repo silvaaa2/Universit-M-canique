@@ -47,22 +47,48 @@
         <p class="kicker">Module 4 - Mécanique</p>
         <h1>Custom Facile</h1>
         <p class="intro">
-          Photo et informations technique pour la Custom facile.
+          Photos et informations techniques pour le Custom Facile.
         </p>
       </div>
     </div>
 
     <div class="vehicle-layout">
 
-      <div class="photo-card gallery-card">
-        <img id="vehicleImage" src="../Images/dukes-1.png" alt="Dukes rendu final">
+      <div class="media-column">
 
-        <button class="gallery-arrow left" onclick="changeImage(-1)">‹</button>
-        <button class="gallery-arrow right" onclick="changeImage(1)">›</button>
+        <div class="media-tabs">
+          <button class="media-tab active" onclick="openMediaPanel('photos')">
+            Photos
+          </button>
 
-        <div class="gallery-counter">
-          <span id="currentImage">1</span>/<span id="totalImages">5</span>
+          <button class="media-tab" onclick="openMediaPanel('meteo')">
+            Météo
+          </button>
         </div>
+
+        <div id="photosPanel" class="media-panel active">
+          <button class="panel-close" onclick="closeMediaPanels()">×</button>
+
+          <div class="photo-card gallery-card">
+            <img id="vehicleImage" src="../Images/dukes-1.png" alt="Dukes rendu final">
+
+            <button class="gallery-arrow left" onclick="changeImage(-1)">‹</button>
+            <button class="gallery-arrow right" onclick="changeImage(1)">›</button>
+
+            <div class="gallery-counter">
+              <span id="currentImage">1</span>/<span id="totalImages">5</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="meteoPanel" class="media-panel">
+          <button class="panel-close" onclick="closeMediaPanels()">×</button>
+
+          <div class="meteo-card">
+            <img src="../Images/meteo.png" alt="Informations météo obligatoires">
+          </div>
+        </div>
+
       </div>
 
       <aside class="info-card">
@@ -126,6 +152,7 @@
 <script src="../assets/js/loader.js"></script>
 <script src="../assets/js/navigation.js"></script>
 <script src="../assets/js/gallery.js"></script>
+<script src="../assets/js/media-tabs.js"></script>
 
 </body>
 </html>
