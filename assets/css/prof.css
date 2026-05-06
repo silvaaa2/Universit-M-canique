@@ -187,9 +187,10 @@
 
 /* Bouton logout */
 .logout-btn {
-  margin-top: 26px;
+  margin-top: 0;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
-
 /* Réponses customs */
 .custom-answer-panel {
   display: none;
