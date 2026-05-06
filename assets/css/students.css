@@ -369,7 +369,6 @@ body.student-focus {
   overflow: hidden;
 }
 
-/* Cache absolument tout ce qui gêne quand une fiche élève est ouverte */
 body.student-focus .prof-topbar,
 body.student-focus #profPanel > p,
 body.student-focus .prof-actions,
@@ -382,7 +381,6 @@ body.student-focus #studentsGrid {
   display: none !important;
 }
 
-/* Le panel principal devient transparent */
 body.student-focus #profPanel {
   width: 100% !important;
   max-width: none !important;
@@ -394,7 +392,6 @@ body.student-focus #profPanel {
   backdrop-filter: none !important;
 }
 
-/* Le dashboard correction devient juste un conteneur invisible */
 body.student-focus .students-dashboard {
   margin: 0 !important;
   padding: 0 !important;
@@ -403,7 +400,6 @@ body.student-focus .students-dashboard {
   box-shadow: none !important;
 }
 
-/* Suppression totale des voiles / fonds sombres */
 body.student-focus::before,
 body.student-focus::after,
 body.student-focus main::before,
@@ -424,7 +420,7 @@ body.student-focus #authOverlay.show {
   filter: none !important;
 }
 
-/* Fiche élève focus : fixe, avec mini pop légère */
+/* Fiche élève focus */
 body.student-focus .student-detail {
   position: fixed !important;
   z-index: 600 !important;
@@ -442,7 +438,7 @@ body.student-focus .student-detail {
   margin: 0 !important;
   padding: 34px !important;
 
-  transform: translate3d(-50%, 0, 0) !important;
+  transform: translate3d(-50%, 0, 0) scale(1);
 
   border-radius: 34px !important;
   background:
@@ -450,38 +446,37 @@ body.student-focus .student-detail {
   border: 1px solid rgba(214,180,106,.30) !important;
   box-shadow: 0 18px 45px rgba(0,0,0,.48) !important;
 
-  opacity: 1 !important;
+  opacity: 1;
   filter: none !important;
   backdrop-filter: none !important;
-  animation: studentFocusPop .16s ease-out both !important;
   transition: none !important;
   will-change: auto !important;
   contain: layout paint !important;
 }
 
-@keyframes studentFocusPop {
-  from {
+/* Animation forcée par JS */
+body.student-focus .student-detail.focus-pop {
+  animation: studentFocusPopReal .22s cubic-bezier(.2,.9,.25,1) both !important;
+}
+
+@keyframes studentFocusPopReal {
+  0% {
     opacity: 0;
-    transform: translate3d(-50%, 0, 0) scale(.985);
+    transform: translate3d(-50%, 8px, 0) scale(.965);
   }
 
-  to {
+  100% {
     opacity: 1;
     transform: translate3d(-50%, 0, 0) scale(1);
   }
 }
 
-/* Supprime les animations/transitions lourdes dans la fiche focus */
-body.student-focus .student-detail *,
-body.student-focus .student-info-card,
-body.student-focus .student-detail-actions,
-body.student-focus .photo-link,
-body.student-focus .status-btn {
-  animation: none !important;
-  transition: none !important;
+/* On neutralise les enfants, MAIS PAS la fiche */
+body.student-focus .student-detail * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
 }
 
-/* Petit label en haut */
 body.student-focus .student-detail::before {
   content: "Fiche élève";
   display: inline-flex;
@@ -499,13 +494,11 @@ body.student-focus .student-detail::before {
   filter: none !important;
 }
 
-/* Titre plus propre */
 body.student-focus .student-detail-head h3 {
   font-size: clamp(46px, 5vw, 78px);
   line-height: .9;
 }
 
-/* Boutons d’action bien visibles */
 body.student-focus .student-detail-actions {
   padding: 18px;
   border-radius: 24px;
@@ -513,7 +506,6 @@ body.student-focus .student-detail-actions {
   border: 1px solid var(--border);
 }
 
-/* Cartes internes plus légères */
 body.student-focus .student-info-card {
   background:
     linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
@@ -521,7 +513,6 @@ body.student-focus .student-info-card {
   box-shadow: none !important;
 }
 
-/* Badge statut */
 .student-focus-status {
   width: fit-content;
   margin-bottom: 20px;
@@ -549,13 +540,11 @@ body.student-focus .student-info-card {
   box-shadow: none;
 }
 
-/* Bouton fermer toujours au-dessus */
 body.student-focus .student-close {
   position: relative;
   z-index: 650;
 }
 
-/* Empêche un parent de foncer la fiche */
 body.student-focus,
 body.student-focus main,
 body.student-focus .prof-page,
@@ -566,15 +555,8 @@ body.student-focus .students-dashboard {
   backdrop-filter: none !important;
 }
 
-/* Fix perf total fiche élève */
 body.student-focus * {
   scroll-behavior: auto !important;
-}
-
-/* On neutralise les enfants, MAIS PAS la fiche elle-même */
-body.student-focus .student-detail * {
-  animation-duration: 0s !important;
-  transition-duration: 0s !important;
 }
 
 /* Responsive */
