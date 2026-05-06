@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Espace Prof</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/header.css">
+  <link rel="stylesheet" href="../assets/css/loader.css">
+  <link rel="stylesheet" href="../assets/css/buttons.css">
+</head>
+
+<body>
+
+<div id="loader">
+  <div class="loader-box">
+    <h2>Espace Prof</h2>
+    <p id="loaderText">Chargement de l’espace sécurisé...</p>
+    <div class="loader-bar"><span></span></div>
+  </div>
+</div>
+
+<header>
+  <div class="logo" onclick="goPage('../index.html')">
+    <img src="../Images/logo.png" alt="Logo Module 4">
+    <span>Module 4 - Mécanique</span>
+  </div>
+
+  <nav>
+    <button onclick="goPage('../index.html')">Accueil</button>
+    <button onclick="goPage('custom-facile.html')">Custom Facile</button>
+    <button onclick="goPage('custom-moyen.html')">Custom Moyen</button>
+    <button onclick="goPage('custom-difficile.html')">Custom Difficile</button>
+
+    <button class="prof-button" onclick="goPage('espace-prof.html')">
+      <span class="prof-icon">👤</span>
+      <span class="prof-text">Espace Prof</span>
+    </button>
+  </nav>
+</header>
+
+<main>
+  <section style="padding: 80px 0;">
+    <p style="color: var(--gold); text-transform: uppercase; letter-spacing: .18em; font-weight: 900;">
+      Accès professeur
+    </p>
+
+    <h1 style="font-size: clamp(58px, 7vw, 105px); line-height: .9; letter-spacing: -.08em; margin: 16px 0;">
+      Espace Prof
+    </h1>
+
+    <p style="max-width: 650px; color: var(--muted); font-size: 18px; line-height: 1.7;">
+      Connexion et réponses des formulaires à venir.
+    </p>
+  </section>
+</main>
+
+<script src="../assets/js/loader.js"></script>
+<script src="../assets/js/navigation.js"></script>
+
+</body>
+</html>
