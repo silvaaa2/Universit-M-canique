@@ -27,3 +27,54 @@
   background: rgba(255,255,255,.07);
   border: 1px solid var(--border);
 }
+/* FIX FINAL bouton Espace Prof */
+nav .prof-button {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+nav .prof-button:hover {
+  width: 160px !important;
+  padding: 0 16px !important;
+  justify-content: flex-start !important;
+}
+
+nav .prof-button .prof-icon {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 18px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  transform: translateX(0px) translateY(0px) !important;
+}
+
+nav .prof-button .prof-text {
+  opacity: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  transition: opacity .2s ease, max-width .25s ease !important;
+}
+
+nav .prof-button:hover .prof-text {
+  opacity: 1 !important;
+  max-width: 120px !important;
+}
