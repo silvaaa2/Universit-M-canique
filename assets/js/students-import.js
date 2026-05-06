@@ -103,7 +103,7 @@ function isUsefulValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== "";
 }
 
-/* Loader ouverture élève */
+/* Loader ouverture élève - version plus légère */
 function showStudentLoading() {
   const authOverlay = document.getElementById("authOverlay");
   const authTitle = document.getElementById("authTitle");
@@ -113,7 +113,7 @@ function showStudentLoading() {
 
   authOverlay.style.display = "";
   authTitle.textContent = "Ouverture des réponses...";
-  authText.textContent = "Chargement de la fiche élève et des éléments envoyés.";
+  authText.textContent = "Chargement rapide de la fiche élève.";
   authOverlay.classList.add("show");
 }
 
@@ -124,14 +124,12 @@ function hideStudentLoading() {
 
   authOverlay.classList.remove("show");
   authOverlay.style.display = "none";
-
-  setTimeout(() => {
-    authOverlay.style.display = "";
-  }, 300);
 }
 
 /* Import Google Sheets */
 async function loadStudents() {
+  if (!studentsStatus || !studentsGrid || !studentDetail) return;
+
   studentsStatus.textContent = "Import des réponses depuis Google Sheets...";
   studentsGrid.innerHTML = "";
   studentDetail.classList.remove("show");
@@ -207,6 +205,8 @@ async function loadStudents() {
 
 /* Affichage des étiquettes */
 function renderStudents() {
+  if (!studentsStatus || !studentsGrid) return;
+
   const filtered = activeStudentFilter === "all"
     ? allStudents
     : allStudents.filter(student => student.sheet === activeStudentFilter);
@@ -248,25 +248,28 @@ function setStudentFilter(filter) {
     currentButton.classList.add("active");
   }
 
-  studentDetail.classList.remove("show");
+  if (studentDetail) {
+    studentDetail.classList.remove("show");
+  }
+
   document.body.classList.remove("student-focus");
   renderStudents();
 }
 
-/* Ouverture avec loader */
+/* Ouverture avec loader rapide */
 function openStudentDetailWithLoading(studentId) {
   showStudentLoading();
 
   setTimeout(() => {
     openStudentDetail(studentId);
     hideStudentLoading();
-  }, 850);
+  }, 220);
 }
 
 /* Fiche élève */
 function openStudentDetail(studentId) {
   const student = allStudents.find(item => item.id === studentId);
-  if (!student) return;
+  if (!student || !studentDetail) return;
 
   const mainAnswers = student.answers.filter(item => {
     const label = item.label.toLowerCase();
@@ -368,19 +371,24 @@ function openStudentDetail(studentId) {
   if (authOverlay) {
     authOverlay.classList.remove("show");
     authOverlay.style.display = "none";
-
-    setTimeout(() => {
-      authOverlay.style.display = "";
-    }, 300);
   }
 
   document.body.classList.add("student-focus");
   studentDetail.classList.add("show");
+
+  /* Pas de smooth ici : ça lag sur certains PC */
+  window.scrollTo({
+    top: 0,
+    behavior: "auto"
+  });
 }
 
 /* Fermeture fiche élève */
 function closeStudentDetail() {
-  studentDetail.classList.remove("show");
+  if (studentDetail) {
+    studentDetail.classList.remove("show");
+  }
+
   document.body.classList.remove("student-focus");
 
   const authOverlay = document.getElementById("authOverlay");
@@ -389,15 +397,13 @@ function closeStudentDetail() {
     authOverlay.style.display = "";
   }
 
-  setTimeout(() => {
-    const dashboard = document.querySelector(".students-dashboard");
-    if (dashboard) {
-      dashboard.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  }, 80);
+  const dashboard = document.querySelector(".students-dashboard");
+  if (dashboard) {
+    dashboard.scrollIntoView({
+      behavior: "auto",
+      block: "start"
+    });
+  }
 }
 
 /* Changement statut */
