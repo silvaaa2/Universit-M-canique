@@ -1,5 +1,5 @@
 const PROF_USERNAME = "mecaniqueprof";
-const PROF_PASSWORD = "mecaniquefbfa";
+const PROF_PASSWORD = "module4prof";
 
 const loginForm = document.getElementById("loginForm");
 const loginCard = document.getElementById("loginCard");
@@ -21,13 +21,25 @@ function hideAuthOverlay() {
 }
 
 function showLogin() {
+  document.body.classList.remove("is-prof-logged");
+
   loginCard.style.display = "block";
   profPanel.classList.remove("show");
+
+  closeCustomAnswersSafe();
 }
 
 function showPanel() {
+  document.body.classList.add("is-prof-logged");
+
   loginCard.style.display = "none";
   profPanel.classList.add("show");
+}
+
+function closeCustomAnswersSafe() {
+  document.querySelectorAll(".custom-answer-panel").forEach(panel => {
+    panel.classList.remove("show");
+  });
 }
 
 function checkSession() {
@@ -56,6 +68,8 @@ loginForm.addEventListener("submit", (event) => {
       showPanel();
       hideAuthOverlay();
     } else {
+      localStorage.removeItem("profLogged");
+      showLogin();
       hideAuthOverlay();
       loginError.classList.add("show");
     }
@@ -67,7 +81,6 @@ function logoutProf() {
 
   setTimeout(() => {
     localStorage.removeItem("profLogged");
-    closeCustomAnswers();
     showLogin();
     hideAuthOverlay();
   }, 900);
