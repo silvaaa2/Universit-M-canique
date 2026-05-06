@@ -7,7 +7,7 @@
 
 .login-card,
 .prof-panel {
-  width: min(520px, 100%);
+  width: min(980px, 100%);
   padding: 34px;
   border-radius: 34px;
   background:
@@ -16,6 +16,10 @@
   box-shadow: 0 35px 110px rgba(0,0,0,.42);
   backdrop-filter: blur(18px);
   animation: panelIn .45s ease;
+}
+
+.login-card {
+  width: min(520px, 100%);
 }
 
 @keyframes panelIn {
@@ -106,7 +110,6 @@
 
 .prof-panel {
   display: none;
-  width: min(980px, 100%);
 }
 
 .prof-panel.show {
@@ -130,10 +133,26 @@
   font-family: inherit;
 }
 
+.prof-box.clickable {
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+  position: relative;
+  z-index: 20;
+}
+
+.prof-box.clickable h3,
+.prof-box.clickable p,
+.prof-box.clickable span {
+  pointer-events: none;
+}
+
 .prof-box:hover {
-  transform: translateY(-4px);
-  border-color: rgba(214,180,106,.34);
-  background: rgba(214,180,106,.07);
+  transform: translateY(-6px);
+  border-color: rgba(214,180,106,.45);
+  box-shadow: 0 22px 70px rgba(0,0,0,.32), 0 0 38px rgba(214,180,106,.10);
 }
 
 .prof-box span {
@@ -152,23 +171,11 @@
   font-size: 14px;
 }
 
-.prof-box.clickable {
-  text-align: left;
-  color: var(--text);
-  cursor: pointer;
-}
-
-.prof-box.clickable:hover {
-  transform: translateY(-6px);
-  border-color: rgba(214,180,106,.45);
-  box-shadow: 0 22px 70px rgba(0,0,0,.32), 0 0 38px rgba(214,180,106,.10);
-}
-
 .logout-btn {
   margin-top: 26px;
 }
 
-/* Panels réponses customs */
+/* Réponses customs */
 .custom-answer-panel {
   display: none;
   margin-top: 28px;
@@ -311,7 +318,7 @@
   line-height: 1.45;
 }
 
-/* Dashboard Google Sheets */
+/* Google Sheets */
 .sheet-dashboard {
   margin-top: 28px;
   padding: 28px;
@@ -329,19 +336,6 @@
   gap: 28px;
   overflow: hidden;
   position: relative;
-}
-
-.sheet-dashboard::after {
-  content: "";
-  position: absolute;
-  right: -90px;
-  top: -90px;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: rgba(214,180,106,.12);
-  filter: blur(8px);
-  pointer-events: none;
 }
 
 .sheet-left {
@@ -436,7 +430,7 @@
   box-shadow: 0 24px 65px rgba(214,180,106,.28);
 }
 
-/* Overlay connexion / déconnexion */
+/* Overlay connexion */
 .auth-overlay {
   position: fixed;
   inset: 0;
@@ -447,7 +441,6 @@
     radial-gradient(circle at center, rgba(214,180,106,.13), transparent 35%),
     rgba(5,5,5,.88);
   backdrop-filter: blur(14px);
-
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -469,19 +462,6 @@
     linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
   border: 1px solid var(--border);
   box-shadow: 0 35px 110px rgba(0,0,0,.55), 0 0 70px rgba(214,180,106,.14);
-  animation: authIn .35s ease;
-}
-
-@keyframes authIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .auth-spinner {
@@ -514,34 +494,10 @@
   line-height: 1.6;
 }
 
-.login-card.fade-out,
-.prof-panel.fade-out {
-  animation: panelOut .35s ease forwards;
-}
-
-@keyframes panelOut {
-  to {
-    opacity: 0;
-    transform: translateY(-14px) scale(.98);
-  }
-}
-
 @media (max-width: 900px) {
-  .answer-grid {
-    grid-template-columns: 1fr;
-  }
-
+  .prof-actions,
+  .answer-grid,
   .answer-columns {
-    grid-template-columns: 1fr;
-  }
-
-  .answer-head {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 850px) {
-  .prof-actions {
     grid-template-columns: 1fr;
   }
 
@@ -559,42 +515,4 @@
   .sheet-btn {
     width: 100%;
   }
-  .prof-box.clickable {
-  appearance: none;
-  -webkit-appearance: none;
-  border: 1px solid var(--border);
-  text-align: left;
-  color: var(--text);
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.prof-box.clickable h3,
-.prof-box.clickable p {
-  pointer-events: none;
-}
-.prof-box.clickable {
-  appearance: none;
-  -webkit-appearance: none;
-  border: 1px solid var(--border);
-  text-align: left;
-  color: var(--text);
-  cursor: pointer;
-  font-family: inherit;
-  position: relative;
-  z-index: 20;
-}
-
-.prof-box.clickable h3,
-.prof-box.clickable p,
-.prof-box.clickable span {
-  pointer-events: none;
-}
-
-.custom-answer-panel {
-  display: none;
-}
-
-.custom-answer-panel.show {
-  display: block;
 }
