@@ -95,7 +95,7 @@ function setStoredStatus(studentId, status) {
 }
 
 function isPhotoColumn(header) {
-  const h = header.toLowerCase();
+  const h = String(header).toLowerCase();
   return h.includes("photo") || h === "final";
 }
 
@@ -103,6 +103,7 @@ function isUsefulValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== "";
 }
 
+/* Loader focus élève */
 function showStudentLoading() {
   const authOverlay = document.getElementById("authOverlay");
   const authTitle = document.getElementById("authTitle");
@@ -123,6 +124,7 @@ function hideStudentLoading() {
   authOverlay.classList.remove("show");
 }
 
+/* Import Google Sheets */
 async function loadStudents() {
   studentsStatus.textContent = "Import des réponses depuis Google Sheets...";
   studentsGrid.innerHTML = "";
@@ -197,6 +199,7 @@ async function loadStudents() {
   }
 }
 
+/* Affichage des étiquettes */
 function renderStudents() {
   const filtered = activeStudentFilter === "all"
     ? allStudents
@@ -226,6 +229,7 @@ function renderStudents() {
   `).join("");
 }
 
+/* Filtres */
 function setStudentFilter(filter) {
   activeStudentFilter = filter;
 
@@ -243,6 +247,7 @@ function setStudentFilter(filter) {
   renderStudents();
 }
 
+/* Ouverture avec loader */
 function openStudentDetailWithLoading(studentId) {
   showStudentLoading();
 
@@ -252,6 +257,7 @@ function openStudentDetailWithLoading(studentId) {
   }, 850);
 }
 
+/* Fiche élève */
 function openStudentDetail(studentId) {
   const student = allStudents.find(item => item.id === studentId);
   if (!student) return;
@@ -346,17 +352,17 @@ function openStudentDetail(studentId) {
     </div>
   `;
 
+  /* Ferme les fiches customs si ouvertes */
+  document.querySelectorAll(".custom-answer-panel").forEach(panel => {
+    panel.classList.remove("show");
+  });
+
+  /* Active le vrai mode focus */
   document.body.classList.add("student-focus");
   studentDetail.classList.add("show");
-
-  setTimeout(() => {
-    studentDetail.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  }, 80);
 }
 
+/* Fermeture fiche élève */
 function closeStudentDetail() {
   studentDetail.classList.remove("show");
   document.body.classList.remove("student-focus");
@@ -372,6 +378,7 @@ function closeStudentDetail() {
   }, 80);
 }
 
+/* Changement statut */
 function changeStudentStatus(studentId, status) {
   const student = allStudents.find(item => item.id === studentId);
   if (!student) return;
@@ -383,6 +390,7 @@ function changeStudentStatus(studentId, status) {
   openStudentDetail(student.id);
 }
 
+/* Nettoyage affichage */
 function cleanHeader(header) {
   return String(header)
     .replace("Prénom - Nom (RP)", "Nom RP")
@@ -405,6 +413,7 @@ function escapeAttr(value) {
   return escapeHTML(value);
 }
 
+/* Init */
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".student-filter").forEach(button => {
     button.addEventListener("click", () => {
