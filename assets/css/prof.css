@@ -388,16 +388,13 @@
 /* ============================= */
 
 .sheet-dashboard {
-  margin-top: 16px;
+  margin-top: 0;
   padding: 28px;
-  border-radius: 32px;
+  border-radius: 0 0 32px 32px;
   background:
-    radial-gradient(circle at 12% 20%, rgba(214,180,106,.18), transparent 28%),
-    linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
-  border: 1px solid rgba(214,180,106,.26);
-  box-shadow:
-    0 35px 110px rgba(0,0,0,.42),
-    0 0 60px rgba(214,180,106,.08);
+    radial-gradient(circle at 12% 20%, rgba(214,180,106,.16), transparent 28%),
+    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.018));
+  border-top: 1px solid rgba(255,255,255,.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -617,13 +614,20 @@ body.is-prof-logged #profPanel.show {
 }
 
 /* ============================= */
-/* MENUS PLIABLES ANIMÉS ESPACE PROF */
+/* MENUS PLIABLES PROPRES */
 /* ============================= */
 
 .collapse-card {
   margin-top: 28px;
   border-radius: 32px;
   overflow: hidden;
+  border: 1px solid rgba(214,180,106,.22);
+  background:
+    radial-gradient(circle at 10% 20%, rgba(214,180,106,.14), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.022));
+  box-shadow:
+    0 28px 95px rgba(0,0,0,.38),
+    0 0 55px rgba(214,180,106,.06);
   animation: collapseCardIn .45s ease both;
 }
 
@@ -641,15 +645,9 @@ body.is-prof-logged #profPanel.show {
 
 .collapse-toggle {
   width: 100%;
-  padding: 24px 26px;
-  border-radius: 30px;
-  border: 1px solid rgba(214,180,106,.25);
-  background:
-    radial-gradient(circle at 10% 20%, rgba(214,180,106,.18), transparent 30%),
-    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.025));
-  box-shadow:
-    0 28px 90px rgba(0,0,0,.38),
-    0 0 55px rgba(214,180,106,.07);
+  padding: 26px;
+  border: none;
+  background: transparent;
   color: var(--text);
   font-family: inherit;
   cursor: pointer;
@@ -657,19 +655,11 @@ body.is-prof-logged #profPanel.show {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  transition:
-    transform .25s ease,
-    border-color .25s ease,
-    box-shadow .25s ease,
-    background .25s ease;
+  transition: background .25s ease;
 }
 
 .collapse-toggle:hover {
-  transform: translateY(-3px);
-  border-color: rgba(214,180,106,.48);
-  box-shadow:
-    0 35px 105px rgba(0,0,0,.48),
-    0 0 70px rgba(214,180,106,.13);
+  background: rgba(255,255,255,.035);
 }
 
 .collapse-title {
@@ -688,7 +678,7 @@ body.is-prof-logged #profPanel.show {
 
 .collapse-title strong {
   color: var(--text);
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(26px, 3vw, 36px);
   line-height: .95;
   letter-spacing: -.06em;
 }
@@ -713,7 +703,6 @@ body.is-prof-logged #profPanel.show {
   font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
-  opacity: .85;
 }
 
 .collapse-right b {
@@ -722,16 +711,12 @@ body.is-prof-logged #profPanel.show {
   border-radius: 999px;
   display: grid;
   place-items: center;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(214,180,106,.28), rgba(255,224,146,.14));
-  border: 1px solid rgba(214,180,106,.35);
+  background: rgba(214,180,106,.16);
+  border: 1px solid rgba(214,180,106,.32);
   color: var(--gold);
   font-size: 25px;
   font-weight: 900;
-  transition:
-    transform .3s ease,
-    background .3s ease,
-    color .3s ease;
+  transition: transform .35s ease;
 }
 
 .collapse-card.is-open .collapse-right b {
@@ -739,8 +724,7 @@ body.is-prof-logged #profPanel.show {
 }
 
 .collapse-card:not(.is-open) .collapse-right b {
-  background: rgba(255,255,255,.06);
-  color: var(--muted);
+  transform: rotate(0deg);
 }
 
 .collapse-panel {
@@ -761,17 +745,31 @@ body.is-prof-logged #profPanel.show {
 }
 
 .collapse-inner {
-  overflow: hidden;
   min-height: 0;
+  overflow: hidden;
 }
 
-.collapse-card:not(.is-open) .collapse-toggle {
-  opacity: .92;
+.clean-inside {
+  margin-top: 0 !important;
+  border-radius: 0 0 32px 32px !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.018)) !important;
 }
 
-/* Evite les vieux blocs doublés */
-.collapse-card > .sheet-dashboard,
-.collapse-card > .students-dashboard {
+.students-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+/* cache l'ancien header interne des corrections si présent */
+.students-dashboard .students-head {
   display: none !important;
 }
 
@@ -783,6 +781,9 @@ body.student-focus .collapse-toggle {
 body.student-focus .collapse-card {
   margin-top: 0 !important;
   overflow: visible !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 body.student-focus .collapse-panel {
@@ -810,7 +811,8 @@ body.student-focus .collapse-inner {
   .prof-topbar,
   .sheet-dashboard,
   .sheet-left,
-  .collapse-toggle {
+  .collapse-toggle,
+  .students-tools {
     flex-direction: column;
     align-items: flex-start;
   }
