@@ -26,6 +26,10 @@ const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+/*
+  GOOGLE SHEETS PUBLIC EN LECTURE
+  Le chargement se fait uniquement après login via prof-login.js.
+*/
 const SHEET_ID = "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc";
 
 const SHEETS = [
@@ -76,7 +80,8 @@ function safeDocId(value) {
 }
 
 function csvUrl(gid) {
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
+  const cache = Date.now();
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}&cache=${cache}`;
 }
 
 function parseCSV(text) {
@@ -186,7 +191,7 @@ async function setStoredStatus(studentId, status) {
 }
 
 function isPhotoColumn(header) {
-  const h = String(header).toLowerCase();
+  const h = String(header).toLowerCase().trim();
   return h.includes("photo") || h === "final";
 }
 
@@ -238,16 +243,31 @@ async function loadStudents() {
 
     for (const sheet of SHEETS) {
       const response = await fetch(csvUrl(sheet.gid));
+
+      if (!response.ok) {
+        throw new Error(`Erreur Google Sheets ${sheet.name} : ${response.status}`);
+      }
+
       const csvText = await response.text();
+
+      if (csvText.toLowerCase().includes("<html") || csvText.toLowerCase().includes("<!doctype")) {
+        throw new Error(`Le Google Sheet ${sheet.name} ne renvoie pas un CSV. Vérifie le partage public en lecture.`);
+      }
+
       const rows = parseCSV(csvText);
 
       if (rows.length < 2) continue;
 
-      const headers = rows[0].map(h => h.trim());
+      const headers = rows[0].map(h => String(h || "").trim());
 
       rows.slice(1).forEach((row, index) => {
         const rowNumber = index + 2;
 
+        /*
+          Selon ton ancien Google Forms :
+          row[1] = Nom RP
+          row[2] = ID unique
+        */
         const name = row[1] || "";
         const uniqueId = row[2] || "";
 
@@ -297,7 +317,7 @@ async function loadStudents() {
 
   } catch (error) {
     console.error(error);
-    studentsStatus.textContent = "Erreur : impossible d’importer les réponses ou les corrections.";
+    studentsStatus.textContent = "Erreur : impossible d’importer les réponses. Vérifie que le Google Sheets est accessible en lecture.";
   }
 }
 
@@ -321,7 +341,7 @@ function renderStudents() {
   }
 
   studentsGrid.innerHTML = filtered.map(student => `
-    <button class="student-card ${student.status}" onclick="openStudentDetailWithLoading('${escapeAttr(student.id)}')">
+    <button class="student-card ${student.status}" data-student-id="${escapeAttr(student.id)}">
       <small>${escapeHTML(student.customLabel)}</small>
       <h4>${escapeHTML(student.name)}</h4>
       <p>${escapeHTML(student.vehicle)} — ID ${escapeHTML(student.uniqueId)}</p>
@@ -330,6 +350,12 @@ function renderStudents() {
       </div>
     </button>
   `).join("");
+
+  document.querySelectorAll(".student-card[data-student-id]").forEach(card => {
+    card.addEventListener("click", () => {
+      openStudentDetailWithLoading(card.dataset.studentId);
+    });
+  });
 }
 
 function setStudentFilter(filter) {
@@ -366,7 +392,7 @@ function openStudentDetail(studentId) {
   if (!student || !studentDetail) return;
 
   const mainAnswers = student.answers.filter(item => {
-    const label = item.label.toLowerCase();
+    const label = String(item.label || "").toLowerCase();
     return !label.includes("horodateur");
   });
 
@@ -386,15 +412,15 @@ function openStudentDetail(studentId) {
     </div>
 
     <div class="student-detail-actions">
-      <button class="status-btn approve" onclick="changeStudentStatus('${escapeAttr(student.id)}', 'approved')">
+      <button class="status-btn approve" data-status-action="approved" data-student-id="${escapeAttr(student.id)}">
         Approuver
       </button>
 
-      <button class="status-btn refuse" onclick="changeStudentStatus('${escapeAttr(student.id)}', 'refused')">
+      <button class="status-btn refuse" data-status-action="refused" data-student-id="${escapeAttr(student.id)}">
         Refuser
       </button>
 
-      <button class="status-btn pending" onclick="changeStudentStatus('${escapeAttr(student.id)}', 'pending')">
+      <button class="status-btn pending" data-status-action="pending" data-student-id="${escapeAttr(student.id)}">
         Remettre en attente
       </button>
     </div>
@@ -431,7 +457,7 @@ function openStudentDetail(studentId) {
           ${
             student.photos.length
               ? student.photos.map(photo => `
-                  <a class="photo-link" href="${escapeAttr(photo.url)}" target="_blank">
+                  <a class="photo-link" href="${escapeAttr(photo.url)}" target="_blank" rel="noopener noreferrer">
                     ${escapeHTML(cleanHeader(photo.label))}
                   </a>
                 `).join("")
@@ -444,16 +470,24 @@ function openStudentDetail(studentId) {
         <h4>Réponses du formulaire</h4>
 
         ${
-          mainAnswers.map(answer => `
-            <div class="student-line">
-              <strong>${escapeHTML(cleanHeader(answer.label))}</strong>
-              <span>${escapeHTML(answer.value)}</span>
-            </div>
-          `).join("")
+          mainAnswers.length
+            ? mainAnswers.map(answer => `
+                <div class="student-line">
+                  <strong>${escapeHTML(cleanHeader(answer.label))}</strong>
+                  <span>${formatAnswerValue(answer.value)}</span>
+                </div>
+              `).join("")
+            : `<p>Aucune réponse détectée.</p>`
         }
       </div>
     </div>
   `;
+
+  document.querySelectorAll("[data-status-action]").forEach(button => {
+    button.addEventListener("click", () => {
+      changeStudentStatus(button.dataset.studentId, button.dataset.statusAction);
+    });
+  });
 
   document.querySelectorAll(".custom-answer-panel").forEach(panel => {
     panel.classList.remove("show");
@@ -521,10 +555,24 @@ async function changeStudentStatus(studentId, status) {
 function cleanHeader(header) {
   return String(header)
     .replace("Prénom - Nom (RP)", "Nom RP")
+    .replace("Prénom / Nom", "Nom RP")
+    .replace("Prenom/ Nom", "Nom RP")
     .replace("ID Unique", "ID unique")
+    .replace("Id unique", "ID unique")
     .replace("Photo menu ", "")
     .replace("Photo ", "")
     .trim();
+}
+
+function formatAnswerValue(value) {
+  const text = escapeHTML(value);
+
+  const urlRegex = /(https?:\/\/[^\s<]+)/g;
+
+  return text.replace(urlRegex, (url) => {
+    const cleanUrl = url.replace(/&amp;/g, "&");
+    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+  });
 }
 
 function escapeHTML(value) {
@@ -540,26 +588,12 @@ function escapeAttr(value) {
   return escapeHTML(value);
 }
 
-let studentsAlreadyLoaded = false;
-
-async function loadStudentsOnce() {
-  if (studentsAlreadyLoaded) return;
-  studentsAlreadyLoaded = true;
-  await loadStudents();
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".student-filter").forEach(button => {
     button.addEventListener("click", () => {
       setStudentFilter(button.dataset.studentFilter);
     });
   });
-});
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadStudentsOnce();
-  }
 });
 
 window.loadStudents = loadStudents;
