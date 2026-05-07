@@ -173,3 +173,12 @@
     font-size: 46px;
   }
 }
+.prof-dashboard {
+  display: block;
+  padding: 55px 0 90px;
+}
+
+.prof-dashboard[hidden],
+.prof-login-page[hidden] {
+  display: none !important;
+}
