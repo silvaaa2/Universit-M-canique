@@ -5,6 +5,9 @@ const loginError = document.getElementById("loginError");
 const logoutBtn = document.getElementById("logoutBtn");
 const loginBtn = document.getElementById("loginBtn");
 const loginBtnText = loginBtn.querySelector(".btn-text");
+const loginTransition = document.getElementById("loginTransition");
+
+let isManualLoginTransition = false;
 
 function setLoginLoading(isLoading) {
   loginBtn.disabled = isLoading;
@@ -12,7 +15,17 @@ function setLoginLoading(isLoading) {
   loginBtnText.textContent = isLoading ? "Connexion..." : "Connexion";
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function showLogin() {
+  loginTransition.hidden = true;
+  loginTransition.classList.remove("active");
+
+  profDashboard.classList.remove("dashboard-visible");
+  loginSection.classList.remove("leaving");
+
   loginSection.removeAttribute("hidden");
   profDashboard.setAttribute("hidden", "");
 
@@ -22,15 +35,56 @@ function showLogin() {
   setLoginLoading(false);
 }
 
-function showDashboard() {
+function showDashboardInstant() {
+  loginTransition.hidden = true;
+  loginTransition.classList.remove("active");
+
   loginSection.setAttribute("hidden", "");
   profDashboard.removeAttribute("hidden");
 
   loginSection.style.display = "none";
   profDashboard.style.display = "block";
 
-  setLoginLoading(false);
+  requestAnimationFrame(() => {
+    profDashboard.classList.add("dashboard-visible");
+  });
 
+  setLoginLoading(false);
+  window.scrollTo(0, 0);
+}
+
+async function showDashboardWithTransition() {
+  loginSection.classList.add("leaving");
+
+  await sleep(250);
+
+  loginTransition.hidden = false;
+
+  requestAnimationFrame(() => {
+    loginTransition.classList.add("active");
+  });
+
+  await sleep(950);
+
+  loginSection.setAttribute("hidden", "");
+  profDashboard.removeAttribute("hidden");
+
+  loginSection.style.display = "none";
+  profDashboard.style.display = "block";
+
+  await sleep(250);
+
+  loginTransition.classList.remove("active");
+
+  await sleep(350);
+
+  loginTransition.hidden = true;
+
+  requestAnimationFrame(() => {
+    profDashboard.classList.add("dashboard-visible");
+  });
+
+  setLoginLoading(false);
   window.scrollTo(0, 0);
 }
 
@@ -63,8 +117,10 @@ async function startFirebaseAuth() {
     showLogin();
 
     onAuthStateChanged(auth, (user) => {
+      if (isManualLoginTransition) return;
+
       if (user) {
-        showDashboard();
+        showDashboardInstant();
       } else {
         showLogin();
       }
@@ -78,10 +134,11 @@ async function startFirebaseAuth() {
 
       loginError.textContent = "";
       setLoginLoading(true);
+      isManualLoginTransition = true;
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        showDashboard();
+        await showDashboardWithTransition();
       } catch (error) {
         console.error("Erreur Firebase :", error.code);
 
@@ -97,7 +154,10 @@ async function startFirebaseAuth() {
           loginError.textContent = "Erreur de connexion.";
         }
 
+        loginSection.classList.remove("leaving");
         setLoginLoading(false);
+      } finally {
+        isManualLoginTransition = false;
       }
     });
 
