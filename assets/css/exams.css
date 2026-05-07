@@ -256,7 +256,7 @@
 
 .exam-result-bar {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -287,7 +287,7 @@
   border-color: rgba(255,91,110,.35);
 }
 
-.exam-bonus-card {
+.exam-extra-card {
   margin-bottom: 20px;
   padding: 20px;
   border-radius: 24px;
@@ -295,58 +295,46 @@
   border: 1px solid var(--border);
 }
 
-.exam-bonus-card h4 {
+.exam-extra-card h4 {
   margin: 0 0 14px;
   color: var(--gold);
   font-size: 16px;
 }
 
-.exam-bonus-card p {
+.exam-extra-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.exam-extra-btn {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.exam-extra-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(214,180,106,.35);
+}
+
+.exam-extra-btn.active {
+  color: #080808;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-color: transparent;
+}
+
+.exam-extra-note {
   margin: 14px 0 0;
   color: var(--muted);
   line-height: 1.6;
-}
-
-.exam-bonus-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-.exam-bonus-grid label {
-  display: grid;
-  gap: 7px;
-  color: var(--muted);
-  font-weight: 900;
-}
-
-.exam-bonus-grid input {
-  height: 44px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,.24);
-  color: var(--text);
-  padding: 0 12px;
-  font-weight: 900;
-  outline: none;
-}
-
-.exam-bonus-grid small {
-  color: var(--gold);
-  font-weight: 900;
-}
-
-.exam-form-score {
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  color: var(--muted);
-  background: rgba(255,255,255,.055);
-  border: 1px solid var(--border);
-}
-
-.exam-form-score strong {
-  color: var(--gold);
+  font-weight: 800;
 }
 
 .exam-questions {
@@ -460,7 +448,6 @@
   border: 1px solid var(--border);
 }
 
-/* Quand une fiche custom est ouverte, on cache les examens */
 body.student-focus #examSection {
   display: none !important;
 }
@@ -468,8 +455,7 @@ body.student-focus #examSection {
 @media (max-width: 1000px) {
   .exam-grid,
   .exam-rules,
-  .exam-result-bar,
-  .exam-bonus-grid {
+  .exam-result-bar {
     grid-template-columns: 1fr;
   }
 
@@ -481,5 +467,9 @@ body.student-focus #examSection {
 
   .exam-question-top label {
     min-width: 100%;
+  }
+
+  .exam-extra-buttons {
+    flex-direction: column;
   }
 }
