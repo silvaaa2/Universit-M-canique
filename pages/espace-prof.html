@@ -37,29 +37,24 @@
     <img src="../Images/logo.png" alt="Logo Module 4">
     <span>Module 4 - Mécanique</span>
   </div>
-
   <nav>
     <button onclick="goPage('../index.html')">Accueil</button>
     <button onclick="goPage('custom-facile.html')">Custom Facile</button>
     <button onclick="goPage('custom-moyen.html')">Custom Moyen</button>
     <button onclick="goPage('custom-difficile.html')">Custom Difficile</button>
-
     <button class="prof-button" onclick="goPage('espace-prof.html')">
-      <span class="prof-icon">👤</span>
-      <span class="prof-text">Espace Prof</span>
+      <span class="prof-icon">👤</span><span class="prof-text">Espace Prof</span>
     </button>
   </nav>
 </header>
 
 <main>
   <section class="prof-page">
-
     <!-- LOGIN -->
     <div id="loginCard" class="login-card">
       <p class="prof-kicker">Accès professeur</p>
       <h1>Espace Prof</h1>
       <p>Connectez-vous pour accéder aux réponses, corrections et informations internes des customs.</p>
-
       <form id="loginForm" class="login-form">
         <label>Email professeur
           <input id="username" type="email" placeholder="exemple@module4.fr" autocomplete="username">
@@ -87,19 +82,13 @@
       <!-- CARTES CUSTOMS -->
       <div class="prof-actions">
         <button type="button" class="prof-box clickable" onclick="openCustomAnswer('dukes')">
-          <span>01</span>
-          <h3>Custom Facile</h3>
-          <p>Custom Dukes</p>
+          <span>01</span><h3>Custom Facile</h3><p>Custom Dukes</p>
         </button>
         <button type="button" class="prof-box clickable" onclick="openCustomAnswer('sentinel')">
-          <span>02</span>
-          <h3>Custom Moyen</h3>
-          <p>Custom Sentinel XS4</p>
+          <span>02</span><h3>Custom Moyen</h3><p>Custom Sentinel XS4</p>
         </button>
         <button type="button" class="prof-box clickable" onclick="openCustomAnswer('rumina')">
-          <span>03</span>
-          <h3>Custom Difficile</h3>
-          <p>Custom Annis Rumina</p>
+          <span>03</span><h3>Custom Difficile</h3><p>Custom Annis Rumina</p>
         </button>
       </div>
 
@@ -171,8 +160,6 @@
 <script type="module" src="../assets/js/prof-login.js"></script>
 <script type="module" src="../assets/js/students-import-firestore.js"></script>
 <script type="module" src="../assets/js/exams-import-firestore.js"></script>
-<script type="module" src="../assets/js/custom-answers.js"></script>
-<script type="module" src="../assets/js/firestore-listeners.js"></script>
 
 <script>
 function toggleCollapse(button) {
