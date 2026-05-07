@@ -128,6 +128,7 @@ function getExamStorageKey(studentId) {
 function getExamCorrection(studentId) {
   try {
     const saved = localStorage.getItem(getExamStorageKey(studentId));
+
     if (!saved) {
       return {
         points: {},
@@ -440,6 +441,21 @@ function openExamDetail(studentId, options = {}) {
     }
   });
 }
+
+function refreshExamAfterUpdate(studentId) {
+  const currentPageScroll = window.scrollY;
+  const currentDetailScroll = examDetail ? examDetail.scrollTop : 0;
+
+  renderExamStudents();
+
+  openExamDetail(studentId, {
+    shouldScroll: false,
+    restorePageScroll: true,
+    pageScrollY: currentPageScroll,
+    detailScrollTop: currentDetailScroll
+  });
+}
+
 function toggleExamExtra(studentId, type) {
   const student = allExamStudents.find(item => item.id === studentId);
   if (!student) return;
@@ -448,8 +464,7 @@ function toggleExamExtra(studentId, type) {
   correction.extras[type] = !correction.extras[type];
   saveExamCorrection(studentId, correction);
 
-  renderExamStudents();
-  openExamDetail(studentId);
+  refreshExamAfterUpdate(studentId);
 }
 
 function updateExamPoint(studentId, questionIndex, value) {
@@ -470,8 +485,7 @@ function updateExamPoint(studentId, questionIndex, value) {
   correction.points[questionIndex] = number;
   saveExamCorrection(studentId, correction);
 
-  renderExamStudents();
-  openExamDetail(studentId);
+  refreshExamAfterUpdate(studentId);
 }
 
 function updateExamComment(studentId, value) {
