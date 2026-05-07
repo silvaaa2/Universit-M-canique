@@ -540,12 +540,26 @@ function escapeAttr(value) {
   return escapeHTML(value);
 }
 
+let studentsAlreadyLoaded = false;
+
+async function loadStudentsOnce() {
+  if (studentsAlreadyLoaded) return;
+  studentsAlreadyLoaded = true;
+  await loadStudents();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".student-filter").forEach(button => {
     button.addEventListener("click", () => {
       setStudentFilter(button.dataset.studentFilter);
     });
   });
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loadStudentsOnce();
+  }
 });
 
 window.loadStudents = loadStudents;
