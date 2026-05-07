@@ -2,60 +2,71 @@
 import express from "express";
 import cors from "cors";
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import admin from "firebase-admin";
 import fs from "fs";
+import path from "path";
 
 // ===== CONFIG =====
-const SERVICE_ACCOUNT_JSON_PATH = "./credentials/universit-4b11e.json"; // ton JSON téléchargé
-const FIRESTORE_PROJECT_ID = "universit-4b11e";
+const SERVICE_ACCOUNT_JSON_PATH = path.resolve("./credentials/universit-4b11e-29f07d194df0.json"); // <-- ton fichier JSON service account
+const PORT = 3000;
 
-// Google Sheets IDs + gid
+// Google Sheets
 const SHEETS_CONFIG = [
-  { name: "Dukes", sheetId: "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc", gid: 1133112226 },
-  { name: "Sentinel XS4", sheetId: "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc", gid: 1138787690 },
-  { name: "Annis Rumina", sheetId: "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc", gid: 49030161 },
-  { name: "Examen", sheetId: "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY", gid: 282279229 }
+  { name: "Dukes", sheetId: "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc", gid: "1133112226", label: "Custom Facile" },
+  { name: "Sentinel XS4", sheetId: "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc", gid: "1138787690", label: "Custom Moyen" },
+  { name: "Annis Rumina", sheetId: "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc", gid: "49030161", label: "Custom Difficile" },
+  { name: "Examen", sheetId: "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY", gid: "282279229", label: "Examen Mécanique" }
 ];
 
-// Firestore init
-admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_JSON_PATH, "utf-8"))),
-  projectId: FIRESTORE_PROJECT_ID,
-});
-const db = admin.firestore();
-
-// Express init
+// ===== INIT SERVEUR =====
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// ===== FONCTION POUR LIRE GOOGLE SHEETS =====
 async function loadSheet(sheetId, gid) {
+  const creds = JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_JSON_PATH, "utf-8"));
   const doc = new GoogleSpreadsheet(sheetId);
-  await doc.useServiceAccountAuth(JSON.parse(fs.readFileSync(SERVICE_ACCOUNT_JSON_PATH)));
+  await doc.useServiceAccountAuth(creds);
   await doc.loadInfo();
+
   const sheet = doc.sheetsById[gid];
+  if (!sheet) throw new Error(`Sheet GID ${gid} introuvable`);
+
   const rows = await sheet.getRows();
-  return rows.map(row => row._rawData); // simplifié
+
+  return rows.map(r => r._rawData); // simple array de données
 }
 
-// Endpoint pour lancer l'import
-app.get("/load-all", async (req, res) => {
+// ===== ENDPOINT POUR LES CUSTOMS & EXAM =====
+app.get("/load-answers", async (req, res) => {
   try {
-    for (const conf of SHEETS_CONFIG) {
-      const rows = await loadSheet(conf.sheetId, conf.gid);
-      const colRef = db.collection(conf.name);
+    const allData = {};
 
-      for (const row of rows) {
-        const id = row[0] || Math.random().toString(36).substring(2, 10);
-        await colRef.doc(id).set({ data: row }, { merge: true });
-      }
+    for (const sheetConf of SHEETS_CONFIG) {
+      const rows = await loadSheet(sheetConf.sheetId, sheetConf.gid);
+
+      // Convertit chaque ligne en objet pour ton espace prof
+      const parsedRows = rows.map((row, index) => ({
+        id: `${sheetConf.name}-${index+2}`,
+        sheet: sheetConf.name,
+        customLabel: sheetConf.label,
+        name: row[0] || "Sans nom",
+        uniqueId: row[1] || "Aucun ID",
+        vehicle: row[2] || "",
+        answers: row.slice(3), // reste des colonnes pour questions / réponses
+      }));
+
+      allData[sheetConf.name] = parsedRows;
     }
-    res.json({ success: true, message: "Import terminé" });
+
+    res.json({ success: true, data: allData });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
-const PORT = 3001;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// ===== START SERVER =====
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});
