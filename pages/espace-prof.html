@@ -41,7 +41,9 @@
   <section class="prof-login-page" id="loginSection">
     <div class="prof-login-card">
       <p class="kicker">Accès sécurisé</p>
+
       <h1>Espace Prof</h1>
+
       <p class="intro">
         Connectez-vous avec votre compte professeur pour accéder aux outils internes.
       </p>
@@ -53,8 +55,9 @@
         <label for="password">Mot de passe</label>
         <input type="password" id="password" placeholder="••••••••" required>
 
-        <button type="submit" class="btn primary full">
-          Connexion
+        <button type="submit" class="btn primary full" id="loginBtn">
+          <span class="btn-text">Connexion</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
         </button>
       </form>
 
@@ -66,7 +69,9 @@
     <div class="prof-dashboard-top">
       <div>
         <p class="kicker">Module 4 - Mécanique</p>
+
         <h1>Tableau Prof</h1>
+
         <p class="intro">
           Bienvenue dans l’espace sécurisé. Ici on ajoutera les corrigés et les réponses élèves.
         </p>
@@ -104,6 +109,7 @@
   </section>
 
 </main>
+
 <script src="../assets/js/loader.js"></script>
 <script src="../assets/js/navigation.js"></script>
 <script type="module" src="../assets/js/prof-auth.js"></script>
