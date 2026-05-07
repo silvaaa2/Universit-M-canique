@@ -5,9 +5,6 @@ import {
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import {
-  getFirestore
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -21,11 +18,9 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
 window.firebaseApp = app;
 window.firebaseAuth = auth;
-window.firebaseDb = db;
 
 const loginForm = document.getElementById("loginForm");
 const loginCard = document.getElementById("loginCard");
@@ -35,6 +30,8 @@ const loginError = document.getElementById("loginError");
 const authOverlay = document.getElementById("authOverlay");
 const authTitle = document.getElementById("authTitle");
 const authText = document.getElementById("authText");
+
+let hasLoadedProfData = false;
 
 function showAuthOverlay(title, text) {
   if (!authOverlay || !authTitle || !authText) return;
@@ -64,7 +61,7 @@ function closeCustomAnswersSafe() {
 
   const studentDetail = document.getElementById("studentDetail");
   if (studentDetail) {
-    studentDetail.classList.remove("show");
+    studentDetail.classList.remove("show", "focus-pop");
   }
 
   const examDetail = document.getElementById("examDetail");
@@ -73,11 +70,41 @@ function closeCustomAnswersSafe() {
   }
 }
 
+function loadProfDataAfterLogin() {
+  if (hasLoadedProfData) return;
+  hasLoadedProfData = true;
+
+  setTimeout(() => {
+    if (typeof window.loadStudents === "function") {
+      window.loadStudents();
+    } else if (typeof window.loadStudentsFromServer === "function") {
+      window.loadStudentsFromServer();
+    } else {
+      console.warn("Fonction loadStudents introuvable.");
+    }
+
+    if (typeof window.loadExamStudents === "function") {
+      window.loadExamStudents();
+    } else if (typeof window.loadExamStudentsFromServer === "function") {
+      window.loadExamStudentsFromServer();
+    } else {
+      console.warn("Fonction loadExamStudents introuvable.");
+    }
+  }, 300);
+}
+
 function showLogin() {
   document.body.classList.remove("is-prof-logged");
 
-  if (loginCard) loginCard.style.display = "block";
-  if (profPanel) profPanel.classList.remove("show");
+  hasLoadedProfData = false;
+
+  if (loginCard) {
+    loginCard.style.display = "block";
+  }
+
+  if (profPanel) {
+    profPanel.classList.remove("show");
+  }
 
   closeCustomAnswersSafe();
 }
@@ -85,18 +112,15 @@ function showLogin() {
 function showPanel() {
   document.body.classList.add("is-prof-logged");
 
-  if (loginCard) loginCard.style.display = "none";
-  if (profPanel) profPanel.classList.add("show");
+  if (loginCard) {
+    loginCard.style.display = "none";
+  }
 
-  setTimeout(() => {
-    if (typeof window.loadStudents === "function") {
-      window.loadStudents();
-    }
+  if (profPanel) {
+    profPanel.classList.add("show");
+  }
 
-    if (typeof window.loadExamStudents === "function") {
-      window.loadExamStudents();
-    }
-  }, 150);
+  loadProfDataAfterLogin();
 }
 
 function showLoginError(message) {
@@ -116,8 +140,11 @@ if (loginForm) {
   loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const email = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const emailInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
+    const email = emailInput ? emailInput.value.trim() : "";
+    const password = passwordInput ? passwordInput.value.trim() : "";
 
     hideLoginError();
 
