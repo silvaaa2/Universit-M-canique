@@ -623,6 +623,20 @@ function closeExamDetail() {
   examDetail.classList.remove("show");
 }
 
+let examsAlreadyLoaded = false;
+
+async function loadExamStudentsOnce() {
+  if (examsAlreadyLoaded) return;
+  examsAlreadyLoaded = true;
+  await loadExamStudents();
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loadExamStudentsOnce();
+  }
+});
+
 window.loadExamStudents = loadExamStudents;
 window.renderExamStudents = renderExamStudents;
 window.openExamDetail = openExamDetail;
