@@ -1,10 +1,13 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  getFirestore
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -16,8 +19,13 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.firebaseApp = app;
+window.firebaseAuth = auth;
+window.firebaseDb = db;
 
 const loginForm = document.getElementById("loginForm");
 const loginCard = document.getElementById("loginCard");
@@ -47,32 +55,6 @@ function hideAuthOverlay() {
   }, 300);
 }
 
-function showLogin() {
-  document.body.classList.remove("is-prof-logged");
-
-  if (loginCard) {
-    loginCard.style.display = "block";
-  }
-
-  if (profPanel) {
-    profPanel.classList.remove("show");
-  }
-
-  closeCustomAnswersSafe();
-}
-
-function showPanel() {
-  document.body.classList.add("is-prof-logged");
-
-  if (loginCard) {
-    loginCard.style.display = "none";
-  }
-
-  if (profPanel) {
-    profPanel.classList.add("show");
-  }
-}
-
 function closeCustomAnswersSafe() {
   document.querySelectorAll(".custom-answer-panel").forEach(panel => {
     panel.classList.remove("show");
@@ -84,6 +66,37 @@ function closeCustomAnswersSafe() {
   if (studentDetail) {
     studentDetail.classList.remove("show");
   }
+
+  const examDetail = document.getElementById("examDetail");
+  if (examDetail) {
+    examDetail.classList.remove("show");
+  }
+}
+
+function showLogin() {
+  document.body.classList.remove("is-prof-logged");
+
+  if (loginCard) loginCard.style.display = "block";
+  if (profPanel) profPanel.classList.remove("show");
+
+  closeCustomAnswersSafe();
+}
+
+function showPanel() {
+  document.body.classList.add("is-prof-logged");
+
+  if (loginCard) loginCard.style.display = "none";
+  if (profPanel) profPanel.classList.add("show");
+
+  setTimeout(() => {
+    if (typeof window.loadStudents === "function") {
+      window.loadStudents();
+    }
+
+    if (typeof window.loadExamStudents === "function") {
+      window.loadExamStudents();
+    }
+  }, 150);
 }
 
 function showLoginError(message) {
@@ -99,52 +112,53 @@ function hideLoginError() {
   loginError.classList.remove("show");
 }
 
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+if (loginForm) {
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  const email = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
+    const email = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-  hideLoginError();
+    hideLoginError();
 
-  if (!email || !password) {
-    showLoginError("Email ou mot de passe manquant.");
-    return;
-  }
-
-  showAuthOverlay("Connexion en cours...", "Vérification des accès professeur.");
-
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    showPanel();
-    hideAuthOverlay();
-  } catch (error) {
-    console.error(error);
-
-    hideAuthOverlay();
-
-    let message = "Email ou mot de passe incorrect.";
-
-    if (error.code === "auth/invalid-email") {
-      message = "Adresse email invalide.";
+    if (!email || !password) {
+      showLoginError("Email ou mot de passe manquant.");
+      return;
     }
 
-    if (error.code === "auth/user-not-found") {
-      message = "Aucun compte professeur trouvé avec cet email.";
-    }
+    showAuthOverlay("Connexion en cours...", "Vérification des accès professeur.");
 
-    if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
-      message = "Email ou mot de passe incorrect.";
-    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showPanel();
+      hideAuthOverlay();
+    } catch (error) {
+      console.error(error);
+      hideAuthOverlay();
 
-    if (error.code === "auth/too-many-requests") {
-      message = "Trop de tentatives. Réessaie plus tard.";
-    }
+      let message = "Email ou mot de passe incorrect.";
 
-    showLoginError(message);
-    showLogin();
-  }
-});
+      if (error.code === "auth/invalid-email") {
+        message = "Adresse email invalide.";
+      }
+
+      if (error.code === "auth/user-not-found") {
+        message = "Aucun compte professeur trouvé avec cet email.";
+      }
+
+      if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+        message = "Email ou mot de passe incorrect.";
+      }
+
+      if (error.code === "auth/too-many-requests") {
+        message = "Trop de tentatives. Réessaie plus tard.";
+      }
+
+      showLoginError(message);
+      showLogin();
+    }
+  });
+}
 
 async function logoutProf() {
   showAuthOverlay("Déconnexion en cours...", "Fermeture de la session professeur.");
@@ -164,6 +178,8 @@ async function logoutProf() {
 window.logoutProf = logoutProf;
 
 onAuthStateChanged(auth, (user) => {
+  window.currentProfUser = user || null;
+
   if (user) {
     showPanel();
   } else {
