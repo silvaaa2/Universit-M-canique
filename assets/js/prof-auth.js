@@ -13,8 +13,8 @@ function setLoginLoading(isLoading) {
 }
 
 function showLogin() {
-  loginSection.hidden = false;
-  profDashboard.hidden = true;
+  loginSection.removeAttribute("hidden");
+  profDashboard.setAttribute("hidden", "");
 
   loginSection.style.display = "grid";
   profDashboard.style.display = "none";
@@ -23,18 +23,15 @@ function showLogin() {
 }
 
 function showDashboard() {
-  loginSection.hidden = true;
-  profDashboard.hidden = false;
+  loginSection.setAttribute("hidden", "");
+  profDashboard.removeAttribute("hidden");
 
   loginSection.style.display = "none";
   profDashboard.style.display = "block";
 
   setLoginLoading(false);
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+  window.scrollTo(0, 0);
 }
 
 async function startFirebaseAuth() {
@@ -63,7 +60,6 @@ async function startFirebaseAuth() {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // État par défaut au chargement
     showLogin();
 
     onAuthStateChanged(auth, (user) => {
