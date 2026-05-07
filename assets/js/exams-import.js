@@ -184,6 +184,23 @@ function calculateExamTotal(student) {
   }, 0);
 }
 
+function calculateExamBonus(student) {
+  const correction = getExamCorrection(student.id);
+
+  if (!correction || !correction.bonus) {
+    return 0;
+  }
+
+  const nameBonus = Number(correction.bonus.name ?? 0);
+  const idBonus = Number(correction.bonus.id ?? 0);
+
+  return Math.max(0, Math.min(nameBonus, 1)) + Math.max(0, Math.min(idBonus, 1));
+}
+
+function calculateExamGrandTotal(student) {
+  return calculateExamTotal(student) + calculateExamBonus(student);
+}
+
 function getExamResult(total) {
   if (total >= EXAM_PASS_POINTS) {
     return "passed";
