@@ -74,25 +74,18 @@
         </label>
 
         <button class="btn primary" type="submit">Se connecter</button>
-
-        <div id="loginError" class="login-error">
-          Email ou mot de passe incorrect.
-        </div>
+        <div id="loginError" class="login-error">Email ou mot de passe incorrect.</div>
       </form>
     </div>
 
     <!-- TABLEAU PROF -->
     <div id="profPanel" class="prof-panel">
-
       <div class="prof-topbar">
         <div class="prof-toptext">
           <p class="prof-kicker">Session active</p>
           <h1>Tableau Prof</h1>
         </div>
-
-        <button type="button" class="btn secondary logout-btn" onclick="logoutProf()">
-          Se déconnecter
-        </button>
+        <button type="button" class="btn secondary logout-btn" onclick="logoutProf()">Se déconnecter</button>
       </div>
 
       <p>
@@ -120,60 +113,7 @@
         </button>
       </div>
 
-      <!-- RÉPONSES CUSTOMS SÉCURISÉES FIRESTORE -->
-      <div id="customAnswersHost"></div>
-
-      <!-- GOOGLE SHEETS -->
-      <div class="collapse-card is-open">
-        <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
-          <div class="collapse-title">
-            <span>Tableau centralisé</span>
-            <strong>Réponses des élèves</strong>
-            <small>Consultez toutes les réponses envoyées via les formulaires.</small>
-          </div>
-
-          <div class="collapse-right">
-            <em>Cliquer pour ouvrir / fermer</em>
-            <b>−</b>
-          </div>
-        </button>
-
-        <div class="collapse-panel">
-          <div class="collapse-inner">
-            <div class="sheet-dashboard clean-inside">
-              <div class="sheet-left">
-                <div class="sheet-icon">📊</div>
-
-                <div>
-                  <span class="sheet-kicker">Google Sheets connecté</span>
-                  <h3>Tableau des réponses</h3>
-                  <p>
-                    Accédez au tableau centralisé contenant les réponses des élèves
-                    pour les customs Facile, Moyen et Difficile.
-                  </p>
-                </div>
-              </div>
-
-              <div class="sheet-side">
-                <div class="sheet-status">
-                  <span></span>
-                  Connecté
-                </div>
-
-                <a
-                  class="sheet-btn"
-                  target="_blank"
-                  href="https://docs.google.com/spreadsheets/d/1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc/edit?gid=1133112226#gid=1133112226"
-                >
-                  Ouvrir le tableau
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CORRECTIONS ELEVES -->
+      <!-- CORRECTIONS CUSTOMS -->
       <div class="collapse-card is-open">
         <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
           <div class="collapse-title">
@@ -181,17 +121,12 @@
             <strong>Réponses importées</strong>
             <small>Validez ou refusez directement la custom envoyée par chaque élève.</small>
           </div>
-
-          <div class="collapse-right">
-            <em>Cliquer pour ouvrir / fermer</em>
-            <b>−</b>
-          </div>
+          <div class="collapse-right"><em>Cliquer pour ouvrir / fermer</em><b>−</b></div>
         </button>
 
         <div class="collapse-panel">
           <div class="collapse-inner">
             <div class="students-dashboard clean-inside">
-
               <div class="students-tools">
                 <div class="students-filters">
                   <button class="student-filter active" data-student-filter="all">Tous</button>
@@ -199,18 +134,10 @@
                   <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
                   <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
                 </div>
-
-                <button class="students-refresh" onclick="loadStudents()">
-                  Actualiser
-                </button>
+                <button class="students-refresh" onclick="loadStudentsFromFirestore()">Actualiser</button>
               </div>
-
-              <div id="studentsStatus" class="students-status">
-                Chargement des réponses...
-              </div>
-
+              <div id="studentsStatus" class="students-status"></div>
               <div id="studentsGrid" class="students-grid"></div>
-
               <div id="studentDetail" class="student-detail"></div>
             </div>
           </div>
@@ -223,59 +150,25 @@
           <div class="collapse-title">
             <span>Corrections examens</span>
             <strong>Examen Mécanique</strong>
-            <small>Importez et corrigez les réponses envoyées via le Google Forms d’examen.</small>
+            <small>Attribuez les points directement depuis Firestore.</small>
           </div>
-
-          <div class="collapse-right">
-            <em>Cliquer pour ouvrir / fermer</em>
-            <b>−</b>
-          </div>
+          <div class="collapse-right"><em>Cliquer pour ouvrir / fermer</em><b>−</b></div>
         </button>
 
         <div class="collapse-panel">
           <div class="collapse-inner">
             <div class="exam-dashboard clean-inside">
-
               <div class="exam-top">
                 <div>
                   <span class="exam-kicker">Google Forms</span>
                   <h3>Corrections de l’examen</h3>
-                  <p>
-                    Les réponses sont importées depuis Google Sheets. Cliquez sur un élève pour consulter sa copie,
-                    attribuer les points question par question et valider son résultat.
-                  </p>
+                  <p>Les réponses sont maintenant sécurisées via Firestore.</p>
                 </div>
-
-                <button type="button" class="exam-refresh" onclick="loadExamStudents()">
-                  Actualiser
-                </button>
+                <button type="button" class="exam-refresh" onclick="loadExamStudentsFromFirestore()">Actualiser</button>
               </div>
-
-              <div class="exam-rules">
-                <div>
-                  <strong>Score maximum</strong>
-                  <span>50 points</span>
-                </div>
-
-                <div>
-                  <strong>Validation</strong>
-                  <span>40 points minimum</span>
-                </div>
-
-                <div>
-                  <strong>Correction</strong>
-                  <span>Manuelle par question</span>
-                </div>
-              </div>
-
-              <div id="examStatus" class="exam-status">
-                Chargement des réponses d’examen...
-              </div>
-
+              <div id="examStatus" class="exam-status"></div>
               <div id="examGrid" class="exam-grid"></div>
-
               <div id="examDetail" class="exam-detail"></div>
-
             </div>
           </div>
         </div>
@@ -284,7 +177,7 @@
     </div>
   </section>
 </main>
-  
+
 <script src="../assets/js/loader.js"></script>
 <script src="../assets/js/navigation.js"></script>
 <script type="module" src="../assets/js/prof-login.js"></script>
@@ -293,13 +186,30 @@
 <script type="module" src="../assets/js/custom-answers.js"></script>
 
 <script>
-  function toggleCollapse(button) {
-    const card = button.closest(".collapse-card");
-    const icon = card.querySelector(".collapse-right b");
+function toggleCollapse(button) {
+  const card = button.closest(".collapse-card");
+  const icon = card.querySelector(".collapse-right b");
+  card.classList.toggle("is-open");
+  icon.textContent = card.classList.contains("is-open") ? "−" : "+";
+}
 
-    card.classList.toggle("is-open");
-    icon.textContent = card.classList.contains("is-open") ? "−" : "+";
-  }
+function openCustomAnswer(custom) {
+  const panels = {
+    dukes: document.getElementById("dukesAnswer"),
+    sentinel: document.getElementById("sentinelAnswer"),
+    rumina: document.getElementById("ruminaAnswer")
+  };
+  document.querySelectorAll(".custom-answer-panel").forEach(panel => panel.classList.remove("show"));
+  closeExamDetail();
+  const selectedPanel = panels[custom];
+  if (!selectedPanel) return;
+  selectedPanel.classList.add("show");
+  setTimeout(() => selectedPanel.scrollIntoView({behavior:"smooth", block:"start"}), 100);
+}
+
+function closeCustomAnswers() {
+  document.querySelectorAll(".custom-answer-panel").forEach(panel => panel.classList.remove("show"));
+}
 </script>
 
 </body>
