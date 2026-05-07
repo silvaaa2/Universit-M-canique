@@ -304,7 +304,14 @@ function renderExamStudents() {
   }).join("");
 }
 
-function openExamDetail(studentId) {
+function openExamDetail(studentId, options = {}) {
+  const {
+    shouldScroll = true,
+    restorePageScroll = false,
+    pageScrollY = 0,
+    detailScrollTop = 0
+  } = options;
+
   const student = allExamStudents.find(item => item.id === studentId);
   if (!student || !examDetail) return;
 
@@ -389,7 +396,7 @@ function openExamDetail(studentId) {
                     max="${question.maxPoints}"
                     step="0.5"
                     value="${examEscapeHTML(savedPoint)}"
-                    oninput="updateExamPoint('${student.id}', ${index}, this.value)"
+                    onchange="updateExamPoint('${student.id}', ${index}, this.value)"
                   >
                   <small>/ ${question.maxPoints}</small>
                 </label>
@@ -410,7 +417,7 @@ function openExamDetail(studentId) {
         Commentaire de correction
         <textarea
           placeholder="Exemple : bon niveau général, revoir quelques points..."
-          oninput="updateExamComment('${student.id}', this.value)"
+          onblur="updateExamComment('${student.id}', this.value)"
         >${examEscapeHTML(correction.comment || "")}</textarea>
       </label>
     </div>
@@ -418,14 +425,21 @@ function openExamDetail(studentId) {
 
   examDetail.classList.add("show");
 
-  setTimeout(() => {
-    examDetail.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  }, 80);
-}
+  requestAnimationFrame(() => {
+    if (restorePageScroll) {
+      window.scrollTo(0, pageScrollY);
+      examDetail.scrollTop = detailScrollTop;
+      return;
+    }
 
+    if (shouldScroll) {
+      examDetail.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  });
+}
 function toggleExamExtra(studentId, type) {
   const student = allExamStudents.find(item => item.id === studentId);
   if (!student) return;
