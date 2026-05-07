@@ -171,6 +171,14 @@
   background: #ff5b6e;
 }
 
+.exam-bonus-line {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .exam-detail {
   display: none;
   margin-top: 26px;
@@ -248,7 +256,7 @@
 
 .exam-result-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -277,6 +285,55 @@
 
 .exam-result-bar.failed div {
   border-color: rgba(255,91,110,.35);
+}
+
+.exam-bonus-card {
+  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid var(--border);
+}
+
+.exam-bonus-card h4 {
+  margin: 0 0 14px;
+  color: var(--gold);
+  font-size: 16px;
+}
+
+.exam-bonus-card p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.exam-bonus-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.exam-bonus-grid label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.exam-bonus-grid input {
+  height: 44px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,.24);
+  color: var(--text);
+  padding: 0 12px;
+  font-weight: 900;
+  outline: none;
+}
+
+.exam-bonus-grid small {
+  color: var(--gold);
+  font-weight: 900;
 }
 
 .exam-form-score {
@@ -411,7 +468,8 @@ body.student-focus #examSection {
 @media (max-width: 1000px) {
   .exam-grid,
   .exam-rules,
-  .exam-result-bar {
+  .exam-result-bar,
+  .exam-bonus-grid {
     grid-template-columns: 1fr;
   }
 
