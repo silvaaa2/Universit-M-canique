@@ -1,69 +1,65 @@
-import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { app } from "./prof-login.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
+  authDomain: "universit-4b11e.firebaseapp.com",
+  projectId: "universit-4b11e",
+  storageBucket: "universit-4b11e.appspot.com",
+  messagingSenderId: "11363330953",
+  appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
+  measurementId: "G-Z5B51BQCNL"
+};
+
+const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-const EXAM_MAX_POINTS = 50;
-const EXAM_PASS_POINTS = 40;
 
 let allExamStudents = [];
 
-const examStatus = document.getElementById("examStatus");
 const examGrid = document.getElementById("examGrid");
+const examStatus = document.getElementById("examStatus");
 const examDetail = document.getElementById("examDetail");
 
-// Charger depuis Firestore
-export async function loadFirestoreExams() {
-  if (!examGrid || !examStatus) return;
-
-  examStatus.textContent = "Import des réponses d’examen depuis Firestore...";
-  examGrid.innerHTML = "";
-  allExamStudents = [];
-
-  try {
-    const snapshot = await getDocs(collection(db, "exams"));
-    snapshot.forEach(docSnap => {
-      allExamStudents.push(docSnap.data());
-    });
-
-    renderExamStudents();
-  } catch (err) {
-    console.error(err);
-    examStatus.textContent = "Erreur : impossible de charger l'examen depuis Firestore.";
-  }
+function statusLabel(result) {
+  if (result === "passed") return "Approuvé";
+  if (result === "failed") return "Refusé";
+  return "En attente";
 }
 
-// Affichage des élèves
-export function renderExamStudents() {
+function renderExamStudents() {
   if (!examGrid || !examStatus) return;
-
-  examStatus.textContent = `${allExamStudents.length} réponse(s) affichée(s).`;
+  examStatus.textContent = `${allExamStudents.length} réponse(s) d’examen affichée(s).`;
 
   if (!allExamStudents.length) {
-    examGrid.innerHTML = `<div class="exam-empty-card"><h4>Aucune réponse</h4><p>Pas de données disponibles.</p></div>`;
+    examGrid.innerHTML = `<div class="exam-empty-card"><h4>Aucune réponse</h4></div>`;
     return;
   }
 
-  examGrid.innerHTML = allExamStudents.map(student => {
-    const finalScore = student.questions.reduce((acc, q) => acc + (q.points || 0), 0)
-                     + ((student.extras?.stage ? 1 : 0) + (student.extras?.custom ? 1 : 0));
-    const result = finalScore >= EXAM_PASS_POINTS ? "passed" : "failed";
-
-    return `
-      <button class="exam-student-card ${result}" onclick="openExamDetail('${student.id}')">
-        <small>Examen mécanique</small>
-        <h4>${student.name}</h4>
-        <p>ID ${student.uniqueId}</p>
-        <div class="exam-score-row">
-          <span>${finalScore}/${EXAM_MAX_POINTS}</span>
-          <b class="${result}">${result === "passed" ? "Approuvé" : "Refusé"}</b>
-        </div>
-      </button>
-    `;
-  }).join("");
+  examGrid.innerHTML = allExamStudents.map(student => `
+    <button class="exam-student-card ${student.result}" onclick="openExamDetail('${student.id}')">
+      <small>Examen mécanique</small>
+      <h4>${student.name}</h4>
+      <p>ID ${student.uniqueId}</p>
+      <div class="exam-score-row">
+        <span>${student.score}/50</span>
+        <b class="${student.result}">${statusLabel(student.result)}</b>
+      </div>
+    </button>
+  `).join("");
 }
 
-// Sauvegarder correction
-export async function saveExamFirestore(studentId, correction) {
-  await setDoc(doc(db, "exams", studentId), correction);
+export async function loadExamStudents() {
+  if (!examGrid || !examStatus) return;
+  examStatus.textContent = "Chargement des réponses d’examen depuis Firestore...";
+
+  try {
+    const querySnapshot = await getDocs(collection(db, "exams"));
+    allExamStudents = [];
+    querySnapshot.forEach(doc => allExamStudents.push(doc.data()));
+
+    renderExamStudents();
+  } catch (e) {
+    console.error(e);
+    examStatus.textContent = "Erreur : impossible de charger les réponses Firestore.";
+  }
 }
