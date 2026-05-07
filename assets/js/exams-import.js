@@ -4,27 +4,38 @@ const EXAM_GID = "282279229";
 const EXAM_MAX_POINTS = 50;
 const EXAM_PASS_POINTS = 40;
 const EXAM_BONUS_MAX_POINTS = 2;
+const EXAM_REAL_MAX_POINTS = 52;
 
 /*
+  Score officiel :
   Q1 à Q14 = 50 points.
-  Prénom/Nom + ID unique = bonus à part, donc max réel possible 52.
+
+  Bonus à part :
+  Prénom / Nom RP = 1 point
+  ID unique = 1 point
+
+  Donc :
+  Score officiel affiché = /50
+  Réussite = 40/50
+  Total réel possible = /52
 */
 const EXAM_POINTS_MANUAL = [
-  1, // Q1
-  6, // Q2
-  2, // Q3
-  3, // Q4
-  4, // Q5
-  7, // Q6
-  1, // Q7
-  4, // Q8
-  5, // Q9
-  3, // Q10
-  4, // Q11
-  3, // Q12
-  3, // Q13
-  4  // Q14
+  1,  // Q1
+  6,  // Q2
+  2,  // Q3
+  3,  // Q4
+  4,  // Q5
+  7,  // Q6
+  1,  // Q7
+  4,  // Q8
+  5,  // Q9
+  3,  // Q10
+  4,  // Q11
+  3,  // Q12
+  3,  // Q13
+  4   // Q14
 ];
+
 let allExamStudents = [];
 
 const examStatus = document.getElementById("examStatus");
@@ -297,6 +308,8 @@ function renderExamStudents() {
 
   examGrid.innerHTML = allExamStudents.map(student => {
     const total = calculateExamTotal(student);
+    const bonus = calculateExamBonus(student);
+    const grandTotal = calculateExamGrandTotal(student);
     const result = getExamResult(total);
 
     return `
@@ -309,6 +322,10 @@ function renderExamStudents() {
           <span>${total}/${EXAM_MAX_POINTS}</span>
           <b class="${result}">${getExamResultLabel(result)}</b>
         </div>
+
+        <div class="exam-bonus-line">
+          Bonus : ${bonus}/${EXAM_BONUS_MAX_POINTS} — Total réel : ${grandTotal}/${EXAM_REAL_MAX_POINTS}
+        </div>
       </button>
     `;
   }).join("");
@@ -318,8 +335,10 @@ function openExamDetail(studentId) {
   const student = allExamStudents.find(item => item.id === studentId);
   if (!student || !examDetail) return;
 
-  const correction = getExamCorrection(student.id) || { points: {}, comment: "" };
+  const correction = getExamCorrection(student.id) || { points: {}, bonus: {}, comment: "" };
   const total = calculateExamTotal(student);
+  const bonus = calculateExamBonus(student);
+  const grandTotal = calculateExamGrandTotal(student);
   const result = getExamResult(total);
 
   if (typeof closeCustomAnswers === "function") {
@@ -339,7 +358,7 @@ function openExamDetail(studentId) {
 
     <div class="exam-result-bar ${result}">
       <div>
-        <strong>Score actuel</strong>
+        <strong>Score examen</strong>
         <span>${total}/${EXAM_MAX_POINTS}</span>
       </div>
 
@@ -352,6 +371,52 @@ function openExamDetail(studentId) {
         <strong>Minimum requis</strong>
         <span>${EXAM_PASS_POINTS}/${EXAM_MAX_POINTS}</span>
       </div>
+
+      <div>
+        <strong>Bonus identité</strong>
+        <span>${bonus}/${EXAM_BONUS_MAX_POINTS}</span>
+      </div>
+
+      <div>
+        <strong>Total réel possible</strong>
+        <span>${grandTotal}/${EXAM_REAL_MAX_POINTS}</span>
+      </div>
+    </div>
+
+    <div class="exam-bonus-card">
+      <h4>Bonus identité</h4>
+
+      <div class="exam-bonus-grid">
+        <label>
+          Prénom / Nom RP
+          <input
+            type="number"
+            min="0"
+            max="1"
+            step="0.5"
+            value="${examEscapeHTML(correction.bonus?.name ?? "")}"
+            oninput="updateExamBonus('${student.id}', 'name', this.value)"
+          >
+          <small>/ 1</small>
+        </label>
+
+        <label>
+          ID unique
+          <input
+            type="number"
+            min="0"
+            max="1"
+            step="0.5"
+            value="${examEscapeHTML(correction.bonus?.id ?? "")}"
+            oninput="updateExamBonus('${student.id}', 'id', this.value)"
+          >
+          <small>/ 1</small>
+        </label>
+      </div>
+
+      <p>
+        Ces points sont à part. Le score officiel reste sur 50, mais le total réel peut monter à 52.
+      </p>
     </div>
 
     ${
@@ -419,11 +484,61 @@ function openExamDetail(studentId) {
   }, 80);
 }
 
+function refreshExamResultBar(student) {
+  if (!examDetail) return;
+
+  const total = calculateExamTotal(student);
+  const bonus = calculateExamBonus(student);
+  const grandTotal = calculateExamGrandTotal(student);
+  const result = getExamResult(total);
+
+  const resultBar = examDetail.querySelector(".exam-result-bar");
+
+  if (resultBar) {
+    resultBar.className = `exam-result-bar ${result}`;
+    resultBar.innerHTML = `
+      <div>
+        <strong>Score examen</strong>
+        <span>${total}/${EXAM_MAX_POINTS}</span>
+      </div>
+
+      <div>
+        <strong>Résultat</strong>
+        <span>${getExamResultLabel(result)}</span>
+      </div>
+
+      <div>
+        <strong>Minimum requis</strong>
+        <span>${EXAM_PASS_POINTS}/${EXAM_MAX_POINTS}</span>
+      </div>
+
+      <div>
+        <strong>Bonus identité</strong>
+        <span>${bonus}/${EXAM_BONUS_MAX_POINTS}</span>
+      </div>
+
+      <div>
+        <strong>Total réel possible</strong>
+        <span>${grandTotal}/${EXAM_REAL_MAX_POINTS}</span>
+      </div>
+    `;
+  }
+}
+
 function updateExamPoint(studentId, questionIndex, value) {
   const student = allExamStudents.find(item => item.id === studentId);
   if (!student) return;
 
-  const correction = getExamCorrection(studentId) || { points: {}, comment: "" };
+  const correction = getExamCorrection(studentId) || { points: {}, bonus: {}, comment: "" };
+
+  if (!correction.points) {
+    correction.points = {};
+  }
+
+  if (!correction.bonus) {
+    correction.bonus = {};
+  }
+
   const question = student.questions[questionIndex];
 
   let number = Number(value);
@@ -438,34 +553,49 @@ function updateExamPoint(studentId, questionIndex, value) {
   saveExamCorrection(studentId, correction);
 
   renderExamStudents();
+  refreshExamResultBar(student);
+}
 
-  const total = calculateExamTotal(student);
-  const result = getExamResult(total);
+function updateExamBonus(studentId, type, value) {
+  const student = allExamStudents.find(item => item.id === studentId);
+  if (!student) return;
 
-  const resultBar = examDetail.querySelector(".exam-result-bar");
-  if (resultBar) {
-    resultBar.className = `exam-result-bar ${result}`;
-    resultBar.innerHTML = `
-      <div>
-        <strong>Score actuel</strong>
-        <span>${total}/${EXAM_MAX_POINTS}</span>
-      </div>
+  const correction = getExamCorrection(studentId) || { points: {}, bonus: {}, comment: "" };
 
-      <div>
-        <strong>Résultat</strong>
-        <span>${getExamResultLabel(result)}</span>
-      </div>
-
-      <div>
-        <strong>Minimum requis</strong>
-        <span>${EXAM_PASS_POINTS}/${EXAM_MAX_POINTS}</span>
-      </div>
-    `;
+  if (!correction.points) {
+    correction.points = {};
   }
+
+  if (!correction.bonus) {
+    correction.bonus = {};
+  }
+
+  let number = Number(value);
+
+  if (Number.isNaN(number)) {
+    number = 0;
+  }
+
+  number = Math.max(0, Math.min(number, 1));
+
+  correction.bonus[type] = number;
+  saveExamCorrection(studentId, correction);
+
+  renderExamStudents();
+  refreshExamResultBar(student);
 }
 
 function updateExamComment(studentId, value) {
-  const correction = getExamCorrection(studentId) || { points: {}, comment: "" };
+  const correction = getExamCorrection(studentId) || { points: {}, bonus: {}, comment: "" };
+
+  if (!correction.points) {
+    correction.points = {};
+  }
+
+  if (!correction.bonus) {
+    correction.bonus = {};
+  }
+
   correction.comment = value;
   saveExamCorrection(studentId, correction);
 }
