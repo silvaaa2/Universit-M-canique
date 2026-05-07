@@ -8,14 +8,15 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// 🔑 Config Firebase (mets tes infos)
+// config firebasee
 const firebaseConfig = {
-  apiKey: "TON_API_KEY",
-  authDomain: "TON_PROJET.firebaseapp.com",
-  projectId: "TON_PROJET",
-  storageBucket: "TON_PROJET.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "XXXX"
+  apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
+  authDomain: "universit-4b11e.firebaseapp.com",
+  projectId: "universit-4b11e",
+  storageBucket: "universit-4b11e.firebasestorage.app",
+  messagingSenderId: "11363330953",
+  appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
+  measurementId: "G-Z5B51BQCNL"
 };
 
 const app = initializeApp(firebaseConfig);
