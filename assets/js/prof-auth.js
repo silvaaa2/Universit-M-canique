@@ -12,6 +12,18 @@ function setLoginLoading(isLoading) {
   loginBtnText.textContent = isLoading ? "Connexion..." : "Connexion";
 }
 
+function showLogin() {
+  loginSection.hidden = false;
+  profDashboard.hidden = true;
+  setLoginLoading(false);
+}
+
+function showDashboard() {
+  loginSection.hidden = true;
+  profDashboard.hidden = false;
+  setLoginLoading(false);
+}
+
 async function startFirebaseAuth() {
   try {
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
@@ -40,12 +52,9 @@ async function startFirebaseAuth() {
 
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loginSection.hidden = true;
-        profDashboard.hidden = false;
+        showDashboard();
       } else {
-        loginSection.hidden = false;
-        profDashboard.hidden = true;
-        setLoginLoading(false);
+        showLogin();
       }
     });
 
@@ -60,12 +69,22 @@ async function startFirebaseAuth() {
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
-        loginError.textContent = "";
+
+        // Important : on affiche direct le dashboard
+        // sans attendre que Firebase refresh l'état.
+        showDashboard();
+
       } catch (error) {
+        console.error("Erreur connexion Firebase :", error.code);
+
         if (error.code === "auth/invalid-credential") {
           loginError.textContent = "Email ou mot de passe incorrect.";
         } else if (error.code === "auth/too-many-requests") {
           loginError.textContent = "Trop de tentatives. Réessaie plus tard.";
+        } else if (error.code === "auth/unauthorized-domain") {
+          loginError.textContent = "Domaine non autorisé dans Firebase.";
+        } else if (error.code === "auth/network-request-failed") {
+          loginError.textContent = "Erreur réseau. Vérifie ta connexion.";
         } else {
           loginError.textContent = "Erreur de connexion.";
         }
@@ -76,9 +95,11 @@ async function startFirebaseAuth() {
 
     logoutBtn.addEventListener("click", async () => {
       await signOut(auth);
+      showLogin();
     });
 
   } catch (error) {
+    console.error("Erreur chargement Firebase :", error);
     loginError.textContent = "Erreur de chargement Firebase.";
     setLoginLoading(false);
   }
