@@ -1,12 +1,11 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// 🔑 Config Firebase – même que pour customs
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
   authDomain: "universit-4b11e.firebaseapp.com",
   projectId: "universit-4b11e",
-  storageBucket: "universit-4b11e.firebasestorage.app",
+  storageBucket: "universit-4b11e.appspot.com",
   messagingSenderId: "11363330953",
   appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
   measurementId: "G-Z5B51BQCNL"
@@ -15,48 +14,70 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔹 Helper liens cliquables
-function formatAnswer(answer) {
-  if (!answer) return "Aucune réponse.";
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  return answer.replace(urlRegex, match => `<a href="${match}" target="_blank">${match}</a>`);
-}
+const EXAM_MAX_POINTS = 50;
+const EXAM_PASS_POINTS = 40;
 
-// 🔹 Charger les réponses examens
-export async function loadExamFirestore() {
-  const examGrid = document.getElementById("examGrid");
-  const examStatus = document.getElementById("examStatus");
+let allExamStudents = [];
+const examStatus = document.getElementById("examStatus");
+const examGrid = document.getElementById("examGrid");
+const examDetail = document.getElementById("examDetail");
 
-  if (!examGrid || !examStatus) return;
-  examStatus.textContent = "Chargement des réponses d’examen...";
+async function loadExamStudentsFromFirestore() {
+  if (!examGrid || !examStatus || !examDetail) return;
+
+  examStatus.textContent = "Chargement des réponses depuis Firestore...";
+  examGrid.innerHTML = "";
+  examDetail.classList.remove("show");
 
   try {
-    const snapshot = await getDocs(collection(db, "examAnswers"));
-    const allExams = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const snapshot = await getDocs(collection(db, "exams"));
+    const imported = [];
 
-    if (!allExams.length) {
-      examGrid.innerHTML = "<p>Aucune réponse d’examen pour le moment.</p>";
-      examStatus.textContent = "0 réponse(s).";
-      return;
-    }
+    snapshot.forEach(docu => {
+      const data = docu.data();
+      imported.push({
+        id: docu.id,
+        name: data.name || "Sans nom",
+        uniqueId: data.uniqueId || "Aucun ID",
+        questions: data.questions || [],
+        extras: data.extras || { stage: false, custom: false },
+        comment: data.comment || ""
+      });
+    });
 
-    examStatus.textContent = `${allExams.length} réponse(s) chargée(s).`;
-
-    examGrid.innerHTML = allExams.map(student => {
-      const questionsHtml = Object.entries(student.questions)
-        .map(([q, ans]) => `<p><strong>${q}:</strong> ${formatAnswer(ans)}</p>`)
-        .join("");
-
-      return `
-        <button class="exam-student-card" onclick="openExamDetail('${student.id}')">
-          <h4>${student.studentName}</h4>
-          <div class="exam-answer-box">${questionsHtml}</div>
-        </button>
-      `;
-    }).join("");
-
+    allExamStudents = imported;
+    renderExamStudents();
   } catch (err) {
     console.error(err);
-    examStatus.textContent = "Erreur lors du chargement des réponses Firestore.";
+    examStatus.textContent = "Erreur : impossible de charger les réponses Firestore.";
   }
 }
+
+function renderExamStudents() {
+  examStatus.textContent = `${allExamStudents.length} réponse(s) d’examen affichée(s).`;
+
+  if (!allExamStudents.length) {
+    examGrid.innerHTML = `<div class="exam-empty-card"><h4>Aucune réponse</h4><p>Aucune donnée trouvée.</p></div>`;
+    return;
+  }
+
+  examGrid.innerHTML = allExamStudents.map(student => {
+    const base = student.questions.reduce((sum, q) => sum + (q.points || 0), 0);
+    const bonus = (student.extras.stage ? 1 : 0) + (student.extras.custom ? 1 : 0);
+    const finalScore = base + bonus;
+    const result = finalScore >= EXAM_PASS_POINTS ? "passed" : finalScore > 0 ? "failed" : "pending";
+
+    return `
+      <button class="exam-student-card ${result}" onclick="openExamDetail('${student.id}')">
+        <small>Examen mécanique</small>
+        <h4>${student.name}</h4>
+        <p>ID ${student.uniqueId}</p>
+        <div class="exam-score-row"><span>${finalScore}/${EXAM_MAX_POINTS}</span><b class="${result}">${result === "passed" ? "Approuvé" : result === "failed" ? "Refusé" : "En attente"}</b></div>
+      </button>
+    `;
+  }).join("");
+}
+
+// Réutilise openExamDetail, closeExamDetail, updateExamPoint, toggleExamExtra etc.
+// (copie les fonctions existantes de ton exams-import.js)
+window.loadExamStudentsFromFirestore = loadExamStudentsFromFirestore;
