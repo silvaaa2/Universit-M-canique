@@ -15,13 +15,26 @@ function setLoginLoading(isLoading) {
 function showLogin() {
   loginSection.hidden = false;
   profDashboard.hidden = true;
+
+  loginSection.style.display = "grid";
+  profDashboard.style.display = "none";
+
   setLoginLoading(false);
 }
 
 function showDashboard() {
   loginSection.hidden = true;
   profDashboard.hidden = false;
+
+  loginSection.style.display = "none";
+  profDashboard.style.display = "block";
+
   setLoginLoading(false);
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 }
 
 async function startFirebaseAuth() {
@@ -50,6 +63,9 @@ async function startFirebaseAuth() {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // État par défaut au chargement
+    showLogin();
+
     onAuthStateChanged(auth, (user) => {
       if (user) {
         showDashboard();
@@ -69,13 +85,9 @@ async function startFirebaseAuth() {
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
-
-        // Important : on affiche direct le dashboard
-        // sans attendre que Firebase refresh l'état.
         showDashboard();
-
       } catch (error) {
-        console.error("Erreur connexion Firebase :", error.code);
+        console.error("Erreur Firebase :", error.code);
 
         if (error.code === "auth/invalid-credential") {
           loginError.textContent = "Email ou mot de passe incorrect.";
@@ -84,7 +96,7 @@ async function startFirebaseAuth() {
         } else if (error.code === "auth/unauthorized-domain") {
           loginError.textContent = "Domaine non autorisé dans Firebase.";
         } else if (error.code === "auth/network-request-failed") {
-          loginError.textContent = "Erreur réseau. Vérifie ta connexion.";
+          loginError.textContent = "Erreur réseau.";
         } else {
           loginError.textContent = "Erreur de connexion.";
         }
