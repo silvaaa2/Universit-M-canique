@@ -3,6 +3,14 @@ const profDashboard = document.getElementById("profDashboard");
 const loginForm = document.getElementById("loginForm");
 const loginError = document.getElementById("loginError");
 const logoutBtn = document.getElementById("logoutBtn");
+const loginBtn = document.getElementById("loginBtn");
+const loginBtnText = loginBtn.querySelector(".btn-text");
+
+function setLoginLoading(isLoading) {
+  loginBtn.disabled = isLoading;
+  loginBtn.classList.toggle("loading", isLoading);
+  loginBtnText.textContent = isLoading ? "Connexion..." : "Connexion";
+}
 
 async function startFirebaseAuth() {
   try {
@@ -37,6 +45,7 @@ async function startFirebaseAuth() {
       } else {
         loginSection.hidden = false;
         profDashboard.hidden = true;
+        setLoginLoading(false);
       }
     });
 
@@ -46,7 +55,8 @@ async function startFirebaseAuth() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-      loginError.textContent = "Connexion en cours...";
+      loginError.textContent = "";
+      setLoginLoading(true);
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
@@ -59,6 +69,8 @@ async function startFirebaseAuth() {
         } else {
           loginError.textContent = "Erreur de connexion.";
         }
+
+        setLoginLoading(false);
       }
     });
 
@@ -68,6 +80,7 @@ async function startFirebaseAuth() {
 
   } catch (error) {
     loginError.textContent = "Erreur de chargement Firebase.";
+    setLoginLoading(false);
   }
 }
 
