@@ -1,104 +1,61 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
+// 🔑 Config Firebase – remplace par la tienne
 const firebaseConfig = {
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "...",
+  apiKey: "TA_API_KEY",
+  authDomain: "TON_PROJET.firebaseapp.com",
+  projectId: "TON_PROJET",
+  storageBucket: "TON_PROJET.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let allStudents = [];
-let activeStudentFilter = "all";
+// 🔹 Helper pour rendre les liens cliquables
+function formatAnswer(answer) {
+  if (!answer) return "Aucune réponse.";
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return answer.replace(urlRegex, match => `<a href="${match}" target="_blank">${match}</a>`);
+}
 
-const studentsGrid = document.getElementById("studentsGrid");
-const studentsStatus = document.getElementById("studentsStatus");
-const studentDetail = document.getElementById("studentDetail");
+// 🔹 Charger les réponses customs
+export async function loadStudentsFirestore() {
+  const studentsGrid = document.getElementById("studentsGrid");
+  const studentsStatus = document.getElementById("studentsStatus");
 
-async function loadStudentsFromFirestore() {
   if (!studentsGrid || !studentsStatus) return;
-  studentsStatus.textContent = "Chargement des réponses des customs depuis Firestore...";
-  studentsGrid.innerHTML = "";
+  studentsStatus.textContent = "Chargement des réponses...";
 
   try {
-    const snapshot = await getDocs(collection(db, "customs_corrections"));
-    allStudents = [];
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      allStudents.push({
-        id: data.studentId,
-        name: data.name,
-        uniqueId: data.uniqueId,
-        customLabel: data.custom,
-        vehicle: data.vehicle,
-        status: data.status,
-        answers: data.points || [],
-        comment: data.comment || "",
-        photos: data.photos || []
-      });
-    });
+    const snapshot = await getDocs(collection(db, "customAnswers"));
+    const allStudents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    renderStudents();
-  } catch (error) {
-    console.error(error);
-    studentsStatus.textContent = "Erreur : impossible de charger les customs depuis Firestore.";
+    if (!allStudents.length) {
+      studentsGrid.innerHTML = "<p>Aucune réponse trouvée pour le moment.</p>";
+      studentsStatus.textContent = "0 réponse(s).";
+      return;
+    }
+
+    studentsStatus.textContent = `${allStudents.length} réponse(s) chargée(s).`;
+
+    studentsGrid.innerHTML = allStudents.map(student => {
+      const answersHtml = Object.entries(student.answers)
+        .map(([q, ans]) => `<p><strong>${q}:</strong> ${formatAnswer(ans)}</p>`)
+        .join("");
+
+      return `
+        <button class="exam-student-card" onclick="openStudentDetail('${student.id}')">
+          <h4>${student.studentName}</h4>
+          <div class="exam-answer-box">${answersHtml}</div>
+        </button>
+      `;
+    }).join("");
+
+  } catch (err) {
+    console.error(err);
+    studentsStatus.textContent = "Erreur lors du chargement des réponses Firestore.";
   }
 }
-
-function renderStudents() {
-  if (!studentsGrid || !studentsStatus) return;
-
-  const filtered = activeStudentFilter === "all"
-    ? allStudents
-    : allStudents.filter(s => s.customLabel === activeStudentFilter);
-
-  studentsStatus.textContent = `${filtered.length} réponse(s) affichée(s).`;
-
-  if (!filtered.length) {
-    studentsGrid.innerHTML = `<div class="student-info-card wide"><h4>Aucune réponse</h4></div>`;
-    return;
-  }
-
-  studentsGrid.innerHTML = filtered.map(student => `
-    <button class="student-card ${student.status}" onclick="openStudentDetailWithLoading('${student.id}')">
-      <small>${student.customLabel}</small>
-      <h4>${student.name}</h4>
-      <p>${student.vehicle} — ID ${student.uniqueId}</p>
-      <div class="student-badge ${student.status}">${student.status}</div>
-    </button>
-  `).join("");
-}
-
-async function saveCustomCorrection(studentId, correction) {
-  await setDoc(doc(db, "customs_corrections", studentId), correction);
-  loadStudentsFromFirestore();
-}
-
-function setStudentFilter(filter) {
-  activeStudentFilter = filter;
-  document.querySelectorAll(".student-filter").forEach(btn => btn.classList.remove("active"));
-  const currentBtn = document.querySelector(`[data-student-filter="${filter}"]`);
-  if (currentBtn) currentBtn.classList.add("active");
-  renderStudents();
-}
-
-// Ajouter ici les fonctions openStudentDetailWithLoading, openStudentDetail, closeStudentDetail
-// et changeStudentStatus en les adaptant pour Firestore via saveCustomCorrection
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".student-filter").forEach(btn => {
-    btn.addEventListener("click", () => setStudentFilter(btn.dataset.studentFilter));
-  });
-  loadStudentsFromFirestore();
-});
