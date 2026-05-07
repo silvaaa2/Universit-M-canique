@@ -4,16 +4,13 @@
   <meta charset="UTF-8">
   <title>Espace Prof</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="stylesheet" href="../assets/css/base.css">
   <link rel="stylesheet" href="../assets/css/header.css">
   <link rel="stylesheet" href="../assets/css/loader.css">
   <link rel="stylesheet" href="../assets/css/buttons.css">
   <link rel="stylesheet" href="../assets/css/prof.css">
   <link rel="stylesheet" href="../assets/css/students.css">
-  <link rel="stylesheet" href="../assets/css/exams.css">
 </head>
-
 <body>
 
 <div id="loader">
@@ -43,7 +40,8 @@
     <button onclick="goPage('custom-moyen.html')">Custom Moyen</button>
     <button onclick="goPage('custom-difficile.html')">Custom Difficile</button>
     <button class="prof-button" onclick="goPage('espace-prof.html')">
-      <span class="prof-icon">👤</span><span class="prof-text">Espace Prof</span>
+      <span class="prof-icon">👤</span>
+      <span class="prof-text">Espace Prof</span>
     </button>
   </nav>
 </header>
@@ -92,7 +90,151 @@
         </button>
       </div>
 
-      <!-- CORRECTIONS CUSTOMS -->
+      <!-- REPONSES DUKES -->
+      <div class="custom-answer-panel" id="dukesAnswer">
+        <div class="answer-head">
+          <div>
+            <span>Custom Facile</span>
+            <h2>Dukes</h2>
+            <p>Réponses et configuration attendue pour la custom Dukes.</p>
+          </div>
+          <button type="button" class="answer-close" onclick="closeCustomAnswers()">×</button>
+        </div>
+        <div class="answer-grid">
+          <div class="answer-card">
+            <span>Couleurs</span>
+            <div class="answer-line">
+              <strong>Couleur principale</strong>
+              <p>Oui — Rouge cuivre</p>
+            </div>
+            <div class="answer-line">
+              <strong>Couleur secondaire</strong>
+              <p>Oui — Blanc neige</p>
+            </div>
+            <div class="answer-line">
+              <strong>Nacré</strong>
+              <p>Oui — Blanc neige</p>
+            </div>
+            <div class="answer-line">
+              <strong>Couleur intérieure</strong>
+              <p>Non</p>
+            </div>
+          </div>
+          <div class="answer-card">
+            <span>Performances & options</span>
+            <div class="answer-line">
+              <strong>Full perf</strong>
+              <p>Non</p>
+            </div>
+            <div class="answer-line">
+              <strong>Extras</strong>
+              <p>Aucun extra</p>
+            </div>
+            <div class="answer-line">
+              <strong>Néon</strong>
+              <p>Oui — Blanc</p>
+            </div>
+          </div>
+          <div class="answer-card wide">
+            <span>Informations techniques visuelles</span>
+            <div class="answer-columns">
+              <div>
+                <h4>Roues</h4>
+                <p>Type de roue : Muscle</p>
+                <p>Modèle des roues : 31</p>
+                <p>Fumée des pneus : Blanc</p>
+              </div>
+              <div>
+                <h4>Accessoires</h4>
+                <p>Klaxon : 0</p>
+                <p>Phares xénons : Oui</p>
+                <p>Couleur des phares : 3</p>
+                <p>Vitres teintées : 5</p>
+                <p>Plaque : 5</p>
+              </div>
+              <div>
+                <h4>Carrosserie</h4>
+                <p>Aileron : 1</p>
+                <p>Pare-choc avant : 1</p>
+                <p>Pare-choc arrière : 0</p>
+                <p>Pot d’échappement : 1</p>
+                <p>Cadre : 1</p>
+                <p>Capot : 1</p>
+                <p>Toit : 24</p>
+              </div>
+              <div>
+                <h4>Néons</h4>
+                <p>Néon gauche : Oui</p>
+                <p>Néon droite : Oui</p>
+                <p>Néon avant : Oui</p>
+                <p>Néon arrière : Oui</p>
+                <p>Couleur des néons : Blanc</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPONSES SENTINEL -->
+      <div class="custom-answer-panel" id="sentinelAnswer">
+        <div class="answer-head">
+          <div>
+            <span>Custom Moyen</span>
+            <h2>Sentinel XS4</h2>
+            <p>Réponses et configuration attendue pour la custom Sentinel XS4.</p>
+          </div>
+          <button type="button" class="answer-close" onclick="closeCustomAnswers()">×</button>
+        </div>
+        <!-- contenus réponse Sentinel similaire à Dukes -->
+      </div>
+
+      <!-- REPONSES RUMINA -->
+      <div class="custom-answer-panel" id="ruminaAnswer">
+        <div class="answer-head">
+          <div>
+            <span>Custom Difficile</span>
+            <h2>Annis Rumina</h2>
+            <p>Réponses et configuration attendue pour la custom Annis Rumina.</p>
+          </div>
+          <button type="button" class="answer-close" onclick="closeCustomAnswers()">×</button>
+        </div>
+        <!-- contenus réponse Rumina similaire à Dukes -->
+      </div>
+
+      <!-- GOOGLE SHEETS -->
+      <div class="collapse-card is-open">
+        <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
+          <div class="collapse-title">
+            <span>Tableau centralisé</span>
+            <strong>Réponses des élèves</strong>
+            <small>Consultez toutes les réponses envoyées via les formulaires.</small>
+          </div>
+          <div class="collapse-right">
+            <em>Cliquer pour ouvrir / fermer</em>
+            <b>−</b>
+          </div>
+        </button>
+        <div class="collapse-panel">
+          <div class="collapse-inner">
+            <div class="sheet-dashboard clean-inside">
+              <div class="sheet-left">
+                <div class="sheet-icon">📊</div>
+                <div>
+                  <span class="sheet-kicker">Google Sheets connecté</span>
+                  <h3>Tableau des réponses</h3>
+                  <p>Accédez au tableau centralisé contenant les réponses des élèves pour les customs Facile, Moyen et Difficile.</p>
+                </div>
+              </div>
+              <div class="sheet-side">
+                <div class="sheet-status"><span></span> Connecté </div>
+                <a class="sheet-btn" target="_blank" href="https://docs.google.com/spreadsheets/d/1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc/edit?gid=1133112226#gid=1133112226">Ouvrir le tableau</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CORRECTIONS ELEVES -->
       <div class="collapse-card is-open">
         <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
           <div class="collapse-title">
@@ -112,40 +254,11 @@
                   <button class="student-filter" data-student-filter="Sentinel XS4">Sentinel XS4</button>
                   <button class="student-filter" data-student-filter="Annis Rumina">Annis Rumina</button>
                 </div>
-                <button class="students-refresh" onclick="loadStudentsFromFirestore()">Actualiser</button>
+                <button class="students-refresh" onclick="loadStudents()"> Actualiser </button>
               </div>
-              <div id="studentsStatus" class="students-status"></div>
+              <div id="studentsStatus" class="students-status">Chargement des réponses...</div>
               <div id="studentsGrid" class="students-grid"></div>
               <div id="studentDetail" class="student-detail"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CORRECTIONS EXAMENS -->
-      <div id="examSection" class="collapse-card is-open">
-        <button type="button" class="collapse-toggle" onclick="toggleCollapse(this)">
-          <div class="collapse-title">
-            <span>Corrections examens</span>
-            <strong>Examen Mécanique</strong>
-            <small>Attribuez les points directement depuis Firestore.</small>
-          </div>
-          <div class="collapse-right"><em>Cliquer pour ouvrir / fermer</em><b>−</b></div>
-        </button>
-        <div class="collapse-panel">
-          <div class="collapse-inner">
-            <div class="exam-dashboard clean-inside">
-              <div class="exam-top">
-                <div>
-                  <span class="exam-kicker">Google Forms</span>
-                  <h3>Corrections de l’examen</h3>
-                  <p>Les réponses sont maintenant sécurisées via Firestore.</p>
-                </div>
-                <button type="button" class="exam-refresh" onclick="loadExamStudentsFromFirestore()">Actualiser</button>
-              </div>
-              <div id="examStatus" class="exam-status"></div>
-              <div id="examGrid" class="exam-grid"></div>
-              <div id="examDetail" class="exam-detail"></div>
             </div>
           </div>
         </div>
@@ -159,7 +272,6 @@
 <script src="../assets/js/navigation.js"></script>
 <script type="module" src="../assets/js/prof-login.js"></script>
 <script src="../assets/js/students-import.js"></script>
-<script src="../assets/js/exams-import.js"></script>
 
 <script>
 function toggleCollapse(button) {
@@ -175,18 +287,45 @@ function openCustomAnswer(custom) {
     sentinel: document.getElementById("sentinelAnswer"),
     rumina: document.getElementById("ruminaAnswer")
   };
-  document.querySelectorAll(".custom-answer-panel").forEach(panel => panel.classList.remove("show"));
-  closeExamDetail();
+  document.querySelectorAll(".custom-answer-panel").forEach(panel => {
+    panel.classList.remove("show");
+  });
   const selectedPanel = panels[custom];
   if (!selectedPanel) return;
   selectedPanel.classList.add("show");
-  setTimeout(() => selectedPanel.scrollIntoView({behavior:"smooth", block:"start"}), 100);
+  setTimeout(() => {
+    selectedPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 100);
 }
 
 function closeCustomAnswers() {
-  document.querySelectorAll(".custom-answer-panel").forEach(panel => panel.classList.remove("show"));
+  document.querySelectorAll(".custom-answer-panel").forEach(panel => {
+    panel.classList.remove("show");
+  });
+}
+
+function openExamPanel(type) {
+  const panels = {
+    meteo: document.getElementById("examMeteoPanel"),
+    photos: document.getElementById("examPhotosPanel"),
+    vehicule: document.getElementById("examVehiculePanel")
+  };
+  document.querySelectorAll(".exam-answer-panel").forEach(panel => {
+    panel.classList.remove("show");
+  });
+  const selectedPanel = panels[type];
+  if (!selectedPanel) return;
+  selectedPanel.classList.add("show");
+  setTimeout(() => {
+    selectedPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 80);
+}
+
+function closeExamPanels() {
+  document.querySelectorAll(".exam-answer-panel").forEach(panel => {
+    panel.classList.remove("show");
+  });
 }
 </script>
-
 </body>
 </html>
