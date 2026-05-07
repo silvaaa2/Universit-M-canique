@@ -3,12 +3,13 @@ import { getFirestore, collection, getDocs } from "https://www.gstatic.com/fireb
 
 // 🔑 Config Firebase – remplace par la tienne
 const firebaseConfig = {
-  apiKey: "TA_API_KEY",
-  authDomain: "TON_PROJET.firebaseapp.com",
-  projectId: "TON_PROJET",
-  storageBucket: "TON_PROJET.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "APP_ID"
+  apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
+  authDomain: "universit-4b11e.firebaseapp.com",
+  projectId: "universit-4b11e",
+  storageBucket: "universit-4b11e.firebasestorage.app",
+  messagingSenderId: "11363330953",
+  appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
+  measurementId: "G-Z5B51BQCNL"
 };
 
 const app = initializeApp(firebaseConfig);
