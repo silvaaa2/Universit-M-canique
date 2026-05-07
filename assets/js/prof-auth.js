@@ -1,21 +1,13 @@
-console.log("prof-auth.js trouvé par la page ✅");
-
 const loginSection = document.getElementById("loginSection");
 const profDashboard = document.getElementById("profDashboard");
 const loginForm = document.getElementById("loginForm");
 const loginError = document.getElementById("loginError");
 const logoutBtn = document.getElementById("logoutBtn");
 
-console.log("loginForm =", loginForm);
-
 async function startFirebaseAuth() {
   try {
-    console.log("Chargement Firebase en cours...");
-
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
     const firebaseAuth = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
-
-    console.log("Firebase importé ✅");
 
     const { initializeApp } = firebaseApp;
     const {
@@ -39,8 +31,6 @@ async function startFirebaseAuth() {
     const auth = getAuth(app);
 
     onAuthStateChanged(auth, (user) => {
-      console.log("État connexion Firebase :", user);
-
       if (user) {
         loginSection.hidden = true;
         profDashboard.hidden = false;
@@ -53,8 +43,6 @@ async function startFirebaseAuth() {
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      console.log("Bouton connexion cliqué ✅");
-
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
@@ -63,16 +51,13 @@ async function startFirebaseAuth() {
       try {
         await signInWithEmailAndPassword(auth, email, password);
         loginError.textContent = "";
-        console.log("Connexion réussie ✅");
       } catch (error) {
-        console.error("Erreur Firebase :", error.code, error.message);
-
         if (error.code === "auth/invalid-credential") {
           loginError.textContent = "Email ou mot de passe incorrect.";
         } else if (error.code === "auth/too-many-requests") {
           loginError.textContent = "Trop de tentatives. Réessaie plus tard.";
         } else {
-          loginError.textContent = "Erreur Firebase : " + error.code;
+          loginError.textContent = "Erreur de connexion.";
         }
       }
     });
@@ -82,8 +67,7 @@ async function startFirebaseAuth() {
     });
 
   } catch (error) {
-    console.error("Firebase n’a pas chargé ❌", error);
-    loginError.textContent = "Erreur de chargement Firebase. Regarde la console.";
+    loginError.textContent = "Erreur de chargement Firebase.";
   }
 }
 
