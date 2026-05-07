@@ -1,14 +1,19 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
-  authDomain: "universit-4b11e.firebaseapp.com",
-  projectId: "universit-4b11e",
-  storageBucket: "universit-4b11e.appspot.com",
-  messagingSenderId: "11363330953",
-  appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
-  measurementId: "G-Z5B51BQCNL"
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "...",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -21,18 +26,42 @@ const studentsGrid = document.getElementById("studentsGrid");
 const studentsStatus = document.getElementById("studentsStatus");
 const studentDetail = document.getElementById("studentDetail");
 
-function statusLabel(status) {
-  if (status === "approved") return "Approuvé";
-  if (status === "refused") return "Refusé";
-  return "En attente";
+async function loadStudentsFromFirestore() {
+  if (!studentsGrid || !studentsStatus) return;
+  studentsStatus.textContent = "Chargement des réponses des customs depuis Firestore...";
+  studentsGrid.innerHTML = "";
+
+  try {
+    const snapshot = await getDocs(collection(db, "customs_corrections"));
+    allStudents = [];
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      allStudents.push({
+        id: data.studentId,
+        name: data.name,
+        uniqueId: data.uniqueId,
+        customLabel: data.custom,
+        vehicle: data.vehicle,
+        status: data.status,
+        answers: data.points || [],
+        comment: data.comment || "",
+        photos: data.photos || []
+      });
+    });
+
+    renderStudents();
+  } catch (error) {
+    console.error(error);
+    studentsStatus.textContent = "Erreur : impossible de charger les customs depuis Firestore.";
+  }
 }
 
 function renderStudents() {
-  if (!studentsStatus || !studentsGrid) return;
+  if (!studentsGrid || !studentsStatus) return;
 
   const filtered = activeStudentFilter === "all"
     ? allStudents
-    : allStudents.filter(student => student.vehicle === activeStudentFilter);
+    : allStudents.filter(s => s.customLabel === activeStudentFilter);
 
   studentsStatus.textContent = `${filtered.length} réponse(s) affichée(s).`;
 
@@ -42,34 +71,34 @@ function renderStudents() {
   }
 
   studentsGrid.innerHTML = filtered.map(student => `
-    <button class="student-card ${student.status}" onclick="openStudentDetail('${student.id}')">
-      <small>${student.vehicle}</small>
+    <button class="student-card ${student.status}" onclick="openStudentDetailWithLoading('${student.id}')">
+      <small>${student.customLabel}</small>
       <h4>${student.name}</h4>
-      <p>ID ${student.uniqueId}</p>
-      <div class="student-badge ${student.status}">${statusLabel(student.status)}</div>
+      <p>${student.vehicle} — ID ${student.uniqueId}</p>
+      <div class="student-badge ${student.status}">${student.status}</div>
     </button>
   `).join("");
 }
 
-export async function loadStudents() {
-  if (!studentsStatus || !studentsGrid) return;
-  studentsStatus.textContent = "Chargement des réponses depuis Firestore...";
-
-  try {
-    const querySnapshot = await getDocs(collection(db, "customs"));
-    allStudents = [];
-    querySnapshot.forEach(doc => {
-      allStudents.push(doc.data());
-    });
-
-    renderStudents();
-  } catch (e) {
-    console.error(e);
-    studentsStatus.textContent = "Erreur : impossible de charger les réponses Firestore.";
-  }
+async function saveCustomCorrection(studentId, correction) {
+  await setDoc(doc(db, "customs_corrections", studentId), correction);
+  loadStudentsFromFirestore();
 }
 
-export function setStudentFilter(filter) {
+function setStudentFilter(filter) {
   activeStudentFilter = filter;
+  document.querySelectorAll(".student-filter").forEach(btn => btn.classList.remove("active"));
+  const currentBtn = document.querySelector(`[data-student-filter="${filter}"]`);
+  if (currentBtn) currentBtn.classList.add("active");
   renderStudents();
 }
+
+// Ajouter ici les fonctions openStudentDetailWithLoading, openStudentDetail, closeStudentDetail
+// et changeStudentStatus en les adaptant pour Firestore via saveCustomCorrection
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".student-filter").forEach(btn => {
+    btn.addEventListener("click", () => setStudentFilter(btn.dataset.studentFilter));
+  });
+  loadStudentsFromFirestore();
+});
