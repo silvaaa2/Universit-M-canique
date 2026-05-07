@@ -1,3 +1,31 @@
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
+  authDomain: "universit-4b11e.firebaseapp.com",
+  projectId: "universit-4b11e",
+  storageBucket: "universit-4b11e.firebasestorage.app",
+  messagingSenderId: "11363330953",
+  appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
+  measurementId: "G-Z5B51BQCNL"
+};
+
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 const EXAM_SHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
 const EXAM_GID = "282279229";
 
@@ -22,10 +50,29 @@ const EXAM_POINTS_MANUAL = [
 ];
 
 let allExamStudents = [];
+let examCorrections = {};
 
 const examStatus = document.getElementById("examStatus");
 const examGrid = document.getElementById("examGrid");
 const examDetail = document.getElementById("examDetail");
+
+function waitForProfUser() {
+  return new Promise((resolve) => {
+    if (auth.currentUser) {
+      resolve(auth.currentUser);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+}
+
+function safeDocId(value) {
+  return encodeURIComponent(String(value));
+}
 
 function examCsvUrl() {
   return `https://docs.google.com/spreadsheets/d/${EXAM_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${EXAM_GID}`;
@@ -121,53 +168,93 @@ function getExamUniqueId(row, headers) {
   return index >= 0 && row[index] ? row[index] : "Aucun ID";
 }
 
-function getExamStorageKey(studentId) {
-  return `exam-correction-${studentId}`;
+function getExamQuestionMaxPoints(questionIndex) {
+  return Number(EXAM_POINTS_MANUAL[questionIndex]) || 0;
+}
+
+function getDefaultExamCorrection() {
+  return {
+    points: {},
+    extras: {
+      stage: false,
+      custom: false
+    },
+    comment: ""
+  };
 }
 
 function getExamCorrection(studentId) {
-  try {
-    const saved = localStorage.getItem(getExamStorageKey(studentId));
+  const saved = examCorrections[studentId];
 
-    if (!saved) {
-      return {
-        points: {},
-        extras: {
-          stage: false,
-          custom: false
-        },
-        comment: ""
-      };
-    }
+  return {
+    points: saved?.points || {},
+    extras: {
+      stage: Boolean(saved?.extras?.stage),
+      custom: Boolean(saved?.extras?.custom)
+    },
+    comment: saved?.comment || ""
+  };
+}
 
-    const parsed = JSON.parse(saved);
+async function loadExamCorrections() {
+  const user = await waitForProfUser();
 
-    return {
-      points: parsed.points || {},
-      extras: {
-        stage: Boolean(parsed.extras?.stage),
-        custom: Boolean(parsed.extras?.custom)
-      },
-      comment: parsed.comment || ""
-    };
-  } catch {
-    return {
-      points: {},
-      extras: {
-        stage: false,
-        custom: false
-      },
-      comment: ""
-    };
+  if (!user) {
+    examCorrections = {};
+    return;
   }
+
+  const snapshot = await getDocs(collection(db, "examCorrections"));
+  const loaded = {};
+
+  snapshot.forEach((item) => {
+    const data = item.data();
+    if (!data.studentId) return;
+
+    loaded[data.studentId] = {
+      points: data.points || {},
+      extras: {
+        stage: Boolean(data.extras?.stage),
+        custom: Boolean(data.extras?.custom)
+      },
+      comment: data.comment || "",
+      updatedBy: data.updatedBy || "",
+      updatedAt: data.updatedAt || null
+    };
+  });
+
+  examCorrections = loaded;
 }
 
-function saveExamCorrection(studentId, correction) {
-  localStorage.setItem(getExamStorageKey(studentId), JSON.stringify(correction));
-}
+async function saveExamCorrection(studentId, correction) {
+  const user = await waitForProfUser();
 
-function getExamQuestionMaxPoints(questionIndex) {
-  return Number(EXAM_POINTS_MANUAL[questionIndex]) || 0;
+  if (!user) {
+    throw new Error("Aucun professeur connecté.");
+  }
+
+  examCorrections[studentId] = {
+    points: correction.points || {},
+    extras: {
+      stage: Boolean(correction.extras?.stage),
+      custom: Boolean(correction.extras?.custom)
+    },
+    comment: correction.comment || "",
+    updatedBy: user.email || "",
+    updatedAt: new Date().toISOString()
+  };
+
+  await setDoc(doc(db, "examCorrections", safeDocId(studentId)), {
+    studentId,
+    points: correction.points || {},
+    extras: {
+      stage: Boolean(correction.extras?.stage),
+      custom: Boolean(correction.extras?.custom)
+    },
+    comment: correction.comment || "",
+    updatedBy: user.email || "",
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 }
 
 function calculateExamBaseScore(student) {
@@ -211,11 +298,20 @@ function getExamResultLabel(result) {
 async function loadExamStudents() {
   if (!examStatus || !examGrid || !examDetail) return;
 
+  const user = await waitForProfUser();
+
+  if (!user) {
+    examStatus.textContent = "Connexion professeur requise.";
+    return;
+  }
+
   examStatus.textContent = "Import des réponses d’examen depuis Google Sheets...";
   examGrid.innerHTML = "";
   examDetail.classList.remove("show");
 
   try {
+    await loadExamCorrections();
+
     const response = await fetch(examCsvUrl());
     const csvText = await response.text();
     const rows = parseExamCSV(csvText);
@@ -261,7 +357,7 @@ async function loadExamStudents() {
 
   } catch (error) {
     console.error(error);
-    examStatus.textContent = "Erreur : impossible d’importer l’examen. Vérifie que le Google Sheets est public.";
+    examStatus.textContent = "Erreur : impossible d’importer l’examen ou les corrections.";
   }
 }
 
@@ -287,7 +383,7 @@ function renderExamStudents() {
     const result = getExamResult(student);
 
     return `
-      <button class="exam-student-card ${result}" onclick="openExamDetail('${student.id}')">
+      <button class="exam-student-card ${result}" onclick="openExamDetail('${examEscapeHTML(student.id)}')">
         <small>Examen mécanique</small>
         <h4>${examEscapeHTML(student.name)}</h4>
         <p>ID ${examEscapeHTML(student.uniqueId)}</p>
@@ -357,7 +453,7 @@ function openExamDetail(studentId, options = {}) {
         <button
           type="button"
           class="exam-extra-btn ${correction.extras.stage ? "active" : ""}"
-          onclick="toggleExamExtra('${student.id}', 'stage')"
+          onclick="toggleExamExtra('${examEscapeHTML(student.id)}', 'stage')"
         >
           Point stage (+1)
         </button>
@@ -365,7 +461,7 @@ function openExamDetail(studentId, options = {}) {
         <button
           type="button"
           class="exam-extra-btn ${correction.extras.custom ? "active" : ""}"
-          onclick="toggleExamExtra('${student.id}', 'custom')"
+          onclick="toggleExamExtra('${examEscapeHTML(student.id)}', 'custom')"
         >
           Point custom (+1)
         </button>
@@ -397,7 +493,7 @@ function openExamDetail(studentId, options = {}) {
                     max="${question.maxPoints}"
                     step="0.5"
                     value="${examEscapeHTML(savedPoint)}"
-                    onchange="updateExamPoint('${student.id}', ${index}, this.value)"
+                    onchange="updateExamPoint('${examEscapeHTML(student.id)}', ${index}, this.value)"
                   >
                   <small>/ ${question.maxPoints}</small>
                 </label>
@@ -418,7 +514,7 @@ function openExamDetail(studentId, options = {}) {
         Commentaire de correction
         <textarea
           placeholder="Exemple : bon niveau général, revoir quelques points..."
-          onblur="updateExamComment('${student.id}', this.value)"
+          onblur="updateExamComment('${examEscapeHTML(student.id)}', this.value)"
         >${examEscapeHTML(correction.comment || "")}</textarea>
       </label>
     </div>
@@ -456,21 +552,33 @@ function refreshExamAfterUpdate(studentId) {
   });
 }
 
-function toggleExamExtra(studentId, type) {
+async function toggleExamExtra(studentId, type) {
   const student = allExamStudents.find(item => item.id === studentId);
   if (!student) return;
 
+  const previousCorrection = getExamCorrection(studentId);
   const correction = getExamCorrection(studentId);
+
   correction.extras[type] = !correction.extras[type];
-  saveExamCorrection(studentId, correction);
+  examCorrections[studentId] = correction;
 
   refreshExamAfterUpdate(studentId);
+
+  try {
+    await saveExamCorrection(studentId, correction);
+  } catch (error) {
+    console.error(error);
+    examCorrections[studentId] = previousCorrection;
+    refreshExamAfterUpdate(studentId);
+    alert("Impossible de sauvegarder le bonus. Vérifie Firestore.");
+  }
 }
 
-function updateExamPoint(studentId, questionIndex, value) {
+async function updateExamPoint(studentId, questionIndex, value) {
   const student = allExamStudents.find(item => item.id === studentId);
   if (!student) return;
 
+  const previousCorrection = getExamCorrection(studentId);
   const correction = getExamCorrection(studentId);
   const question = student.questions[questionIndex];
 
@@ -483,15 +591,31 @@ function updateExamPoint(studentId, questionIndex, value) {
   number = Math.max(0, Math.min(number, question.maxPoints));
 
   correction.points[questionIndex] = number;
-  saveExamCorrection(studentId, correction);
+  examCorrections[studentId] = correction;
 
   refreshExamAfterUpdate(studentId);
+
+  try {
+    await saveExamCorrection(studentId, correction);
+  } catch (error) {
+    console.error(error);
+    examCorrections[studentId] = previousCorrection;
+    refreshExamAfterUpdate(studentId);
+    alert("Impossible de sauvegarder les points. Vérifie Firestore.");
+  }
 }
 
-function updateExamComment(studentId, value) {
+async function updateExamComment(studentId, value) {
   const correction = getExamCorrection(studentId);
   correction.comment = value;
-  saveExamCorrection(studentId, correction);
+  examCorrections[studentId] = correction;
+
+  try {
+    await saveExamCorrection(studentId, correction);
+  } catch (error) {
+    console.error(error);
+    alert("Impossible de sauvegarder le commentaire. Vérifie Firestore.");
+  }
 }
 
 function closeExamDetail() {
@@ -499,8 +623,10 @@ function closeExamDetail() {
   examDetail.classList.remove("show");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  if (examStatus && examGrid && examDetail) {
-    loadExamStudents();
-  }
-});
+window.loadExamStudents = loadExamStudents;
+window.renderExamStudents = renderExamStudents;
+window.openExamDetail = openExamDetail;
+window.toggleExamExtra = toggleExamExtra;
+window.updateExamPoint = updateExamPoint;
+window.updateExamComment = updateExamComment;
+window.closeExamDetail = closeExamDetail;
