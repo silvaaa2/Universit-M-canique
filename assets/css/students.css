@@ -369,6 +369,7 @@ body.student-focus {
   overflow: hidden;
 }
 
+/* On cache tout sauf la fiche élève */
 body.student-focus .prof-topbar,
 body.student-focus #profPanel > p,
 body.student-focus .prof-actions,
@@ -377,7 +378,11 @@ body.student-focus .sheet-dashboard,
 body.student-focus .students-head,
 body.student-focus .students-filters,
 body.student-focus #studentsStatus,
-body.student-focus #studentsGrid {
+body.student-focus #studentsGrid,
+body.student-focus #examSection,
+body.student-focus .exam-dashboard,
+body.student-focus .exam-menu,
+body.student-focus .exam-answer-panel {
   display: none !important;
 }
 
