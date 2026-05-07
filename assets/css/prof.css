@@ -458,3 +458,24 @@
     margin-top: 44px;
   }
 }
+.prof-panel-btn,
+.correction-card {
+  appearance: none;
+  font-family: inherit;
+  border: 1px solid var(--border);
+}
+
+.prof-panel-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.prof-panel-btn h2,
+.prof-panel-btn p,
+.correction-card h3,
+.correction-card p {
+  pointer-events: none;
+}
