@@ -90,30 +90,73 @@
       </button>
     </div>
 
-  <div class="prof-grid">
+    <div class="prof-grid">
 
-  <div class="prof-panel">
-    <h2>Corrigés</h2>
-    <p>
-      Zone prévue pour les corrigés des customs.
-    </p>
-  </div>
+      <button type="button" class="prof-panel prof-panel-btn" id="openCorrectionsBtn">
+        <span class="panel-number">01</span>
+        <h2>Corrigés</h2>
+        <p>
+          Accéder aux corrigés des customs.
+        </p>
+      </button>
 
-  <div class="prof-panel">
-    <h2>Réponses élèves</h2>
-    <p>
-      Zone prévue pour afficher les réponses des élèves.
-    </p>
-  </div>
+      <button type="button" class="prof-panel prof-panel-btn">
+        <span class="panel-number">02</span>
+        <h2>Réponses élèves</h2>
+        <p>
+          Zone prévue pour afficher les réponses des élèves.
+        </p>
+      </button>
 
-  <div class="prof-panel">
-    <h2>Examens</h2>
-    <p>
-      Zone prévue pour gérer les examens plus tard.
-    </p>
-  </div>
+      <button type="button" class="prof-panel prof-panel-btn">
+        <span class="panel-number">03</span>
+        <h2>Examens</h2>
+        <p>
+          Zone prévue pour gérer les examens plus tard.
+        </p>
+      </button>
 
-</div>
+    </div>
+
+    <section class="corrections-interface" id="correctionsInterface" hidden>
+      <div class="corrections-head">
+        <div>
+          <p class="kicker">Corrigés</p>
+          <h2>Choisir un custom</h2>
+          <p>
+            Sélectionnez le custom souhaité pour consulter sa fiche de correction.
+          </p>
+        </div>
+
+        <button type="button" class="close-interface-btn" id="closeCorrectionsBtn">
+          ×
+        </button>
+      </div>
+
+      <div class="correction-cards">
+
+        <button type="button" class="correction-card">
+          <span>01</span>
+          <h3>Custom Facile</h3>
+          <p>Dukes</p>
+        </button>
+
+        <button type="button" class="correction-card">
+          <span>02</span>
+          <h3>Custom Moyen</h3>
+          <p>Sentinel XS4</p>
+        </button>
+
+        <button type="button" class="correction-card">
+          <span>03</span>
+          <h3>Custom Difficile</h3>
+          <p>Annis Rumina</p>
+        </button>
+
+      </div>
+    </section>
+
+  </section>
 
 </main>
 
