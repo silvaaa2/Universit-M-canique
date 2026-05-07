@@ -1,3 +1,31 @@
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
+  authDomain: "universit-4b11e.firebaseapp.com",
+  projectId: "universit-4b11e",
+  storageBucket: "universit-4b11e.firebasestorage.app",
+  messagingSenderId: "11363330953",
+  appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
+  measurementId: "G-Z5B51BQCNL"
+};
+
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 const SHEET_ID = "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc";
 
 const SHEETS = [
@@ -23,10 +51,29 @@ const SHEETS = [
 
 let allStudents = [];
 let activeStudentFilter = "all";
+let customCorrections = {};
 
 const studentsGrid = document.getElementById("studentsGrid");
 const studentsStatus = document.getElementById("studentsStatus");
 const studentDetail = document.getElementById("studentDetail");
+
+function waitForProfUser() {
+  return new Promise((resolve) => {
+    if (auth.currentUser) {
+      resolve(auth.currentUser);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+}
+
+function safeDocId(value) {
+  return encodeURIComponent(String(value));
+}
 
 function csvUrl(gid) {
   return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${gid}`;
@@ -87,11 +134,55 @@ function statusLabel(status) {
 }
 
 function getStoredStatus(studentId) {
-  return normalizeStatus(localStorage.getItem(`student-status-${studentId}`));
+  return normalizeStatus(customCorrections[studentId]?.status);
 }
 
-function setStoredStatus(studentId, status) {
-  localStorage.setItem(`student-status-${studentId}`, status);
+async function loadCustomCorrections() {
+  const user = await waitForProfUser();
+
+  if (!user) {
+    customCorrections = {};
+    return;
+  }
+
+  const snapshot = await getDocs(collection(db, "customCorrections"));
+  const loaded = {};
+
+  snapshot.forEach((item) => {
+    const data = item.data();
+    if (!data.studentId) return;
+
+    loaded[data.studentId] = {
+      status: normalizeStatus(data.status),
+      updatedBy: data.updatedBy || "",
+      updatedAt: data.updatedAt || null
+    };
+  });
+
+  customCorrections = loaded;
+}
+
+async function setStoredStatus(studentId, status) {
+  const user = await waitForProfUser();
+
+  if (!user) {
+    throw new Error("Aucun professeur connecté.");
+  }
+
+  const cleanStatus = normalizeStatus(status);
+
+  customCorrections[studentId] = {
+    status: cleanStatus,
+    updatedBy: user.email || "",
+    updatedAt: new Date().toISOString()
+  };
+
+  await setDoc(doc(db, "customCorrections", safeDocId(studentId)), {
+    studentId,
+    status: cleanStatus,
+    updatedBy: user.email || "",
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 }
 
 function isPhotoColumn(header) {
@@ -128,12 +219,21 @@ function hideStudentLoading() {
 async function loadStudents() {
   if (!studentsStatus || !studentsGrid || !studentDetail) return;
 
+  const user = await waitForProfUser();
+
+  if (!user) {
+    studentsStatus.textContent = "Connexion professeur requise.";
+    return;
+  }
+
   studentsStatus.textContent = "Import des réponses depuis Google Sheets...";
   studentsGrid.innerHTML = "";
   studentDetail.classList.remove("show", "focus-pop");
   document.body.classList.remove("student-focus");
 
   try {
+    await loadCustomCorrections();
+
     const imported = [];
 
     for (const sheet of SHEETS) {
@@ -197,7 +297,7 @@ async function loadStudents() {
 
   } catch (error) {
     console.error(error);
-    studentsStatus.textContent = "Erreur : impossible d’importer les réponses. Vérifie que le Google Sheets est public.";
+    studentsStatus.textContent = "Erreur : impossible d’importer les réponses ou les corrections.";
   }
 }
 
@@ -221,8 +321,8 @@ function renderStudents() {
   }
 
   studentsGrid.innerHTML = filtered.map(student => `
-    <button class="student-card ${student.status}" onclick="openStudentDetailWithLoading('${student.id}')">
-      <small>${student.customLabel}</small>
+    <button class="student-card ${student.status}" onclick="openStudentDetailWithLoading('${escapeAttr(student.id)}')">
+      <small>${escapeHTML(student.customLabel)}</small>
       <h4>${escapeHTML(student.name)}</h4>
       <p>${escapeHTML(student.vehicle)} — ID ${escapeHTML(student.uniqueId)}</p>
       <div class="student-badge ${student.status}">
@@ -286,15 +386,15 @@ function openStudentDetail(studentId) {
     </div>
 
     <div class="student-detail-actions">
-      <button class="status-btn approve" onclick="changeStudentStatus('${student.id}', 'approved')">
+      <button class="status-btn approve" onclick="changeStudentStatus('${escapeAttr(student.id)}', 'approved')">
         Approuver
       </button>
 
-      <button class="status-btn refuse" onclick="changeStudentStatus('${student.id}', 'refused')">
+      <button class="status-btn refuse" onclick="changeStudentStatus('${escapeAttr(student.id)}', 'refused')">
         Refuser
       </button>
 
-      <button class="status-btn pending" onclick="changeStudentStatus('${student.id}', 'pending')">
+      <button class="status-btn pending" onclick="changeStudentStatus('${escapeAttr(student.id)}', 'pending')">
         Remettre en attente
       </button>
     </div>
@@ -370,7 +470,6 @@ function openStudentDetail(studentId) {
   document.body.classList.add("student-focus");
   studentDetail.classList.add("show");
 
-  /* Force le redémarrage de l’animation à chaque ouverture */
   studentDetail.classList.remove("focus-pop");
   void studentDetail.offsetWidth;
   studentDetail.classList.add("focus-pop");
@@ -398,15 +497,25 @@ function closeStudentDetail() {
   }
 }
 
-function changeStudentStatus(studentId, status) {
+async function changeStudentStatus(studentId, status) {
   const student = allStudents.find(item => item.id === studentId);
   if (!student) return;
 
+  const previousStatus = student.status;
   student.status = normalizeStatus(status);
-  setStoredStatus(student.id, student.status);
 
   renderStudents();
   openStudentDetail(student.id);
+
+  try {
+    await setStoredStatus(student.id, student.status);
+  } catch (error) {
+    console.error(error);
+    student.status = previousStatus;
+    renderStudents();
+    openStudentDetail(student.id);
+    alert("Impossible de sauvegarder le statut. Vérifie Firestore.");
+  }
 }
 
 function cleanHeader(header) {
@@ -419,7 +528,7 @@ function cleanHeader(header) {
 }
 
 function escapeHTML(value) {
-  return String(value)
+  return String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -437,6 +546,12 @@ document.addEventListener("DOMContentLoaded", () => {
       setStudentFilter(button.dataset.studentFilter);
     });
   });
-
-  loadStudents();
 });
+
+window.loadStudents = loadStudents;
+window.renderStudents = renderStudents;
+window.setStudentFilter = setStudentFilter;
+window.openStudentDetailWithLoading = openStudentDetailWithLoading;
+window.openStudentDetail = openStudentDetail;
+window.closeStudentDetail = closeStudentDetail;
+window.changeStudentStatus = changeStudentStatus;
