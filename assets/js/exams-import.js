@@ -3,15 +3,28 @@ const EXAM_GID = "282279229";
 
 const EXAM_MAX_POINTS = 50;
 const EXAM_PASS_POINTS = 40;
+const EXAM_BONUS_MAX_POINTS = 2;
 
 /*
-  Points automatiques :
-  Le site divise 50 points sur toutes les questions détectées.
-  Si tu veux forcer manuellement plus tard :
-  const EXAM_POINTS_MANUAL = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5];
+  Q1 à Q14 = 50 points.
+  Prénom/Nom + ID unique = bonus à part, donc max réel possible 52.
 */
-const EXAM_POINTS_MANUAL = [];
-
+const EXAM_POINTS_MANUAL = [
+  1, // Q1
+  6, // Q2
+  2, // Q3
+  3, // Q4
+  4, // Q5
+  7, // Q6
+  1, // Q7
+  4, // Q8
+  5, // Q9
+  3, // Q10
+  4, // Q11
+  3, // Q12
+  3, // Q13
+  4  // Q14
+];
 let allExamStudents = [];
 
 const examStatus = document.getElementById("examStatus");
