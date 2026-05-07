@@ -13,28 +13,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  openCorrectionsBtn.addEventListener("click", () => {
+  function openCorrectionsInterface() {
     correctionsInterface.hidden = false;
+    document.body.classList.add("modal-open");
 
     requestAnimationFrame(() => {
       correctionsInterface.classList.add("active");
     });
+  }
+
+  function closeCorrectionsInterface() {
+    correctionsInterface.classList.remove("active");
+    document.body.classList.remove("modal-open");
 
     setTimeout(() => {
-      correctionsInterface.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }, 120);
-  });
+      correctionsInterface.hidden = true;
+    }, 300);
+  }
+
+  openCorrectionsBtn.addEventListener("click", openCorrectionsInterface);
 
   if (closeCorrectionsBtn) {
-    closeCorrectionsBtn.addEventListener("click", () => {
-      correctionsInterface.classList.remove("active");
-
-      setTimeout(() => {
-        correctionsInterface.hidden = true;
-      }, 300);
-    });
+    closeCorrectionsBtn.addEventListener("click", closeCorrectionsInterface);
   }
+
+  correctionsInterface.addEventListener("click", (e) => {
+    if (e.target === correctionsInterface) {
+      closeCorrectionsInterface();
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !correctionsInterface.hidden) {
+      closeCorrectionsInterface();
+    }
+  });
 });
