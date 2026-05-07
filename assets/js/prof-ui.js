@@ -1,8 +1,18 @@
-const openCorrectionsBtn = document.getElementById("openCorrectionsBtn");
-const closeCorrectionsBtn = document.getElementById("closeCorrectionsBtn");
-const correctionsInterface = document.getElementById("correctionsInterface");
+document.addEventListener("DOMContentLoaded", () => {
+  const openCorrectionsBtn = document.getElementById("openCorrectionsBtn");
+  const closeCorrectionsBtn = document.getElementById("closeCorrectionsBtn");
+  const correctionsInterface = document.getElementById("correctionsInterface");
 
-if (openCorrectionsBtn && correctionsInterface) {
+  if (!openCorrectionsBtn) {
+    console.error("Bouton Corrigés introuvable : #openCorrectionsBtn");
+    return;
+  }
+
+  if (!correctionsInterface) {
+    console.error("Interface corrigés introuvable : #correctionsInterface");
+    return;
+  }
+
   openCorrectionsBtn.addEventListener("click", () => {
     correctionsInterface.hidden = false;
 
@@ -17,14 +27,14 @@ if (openCorrectionsBtn && correctionsInterface) {
       });
     }, 120);
   });
-}
 
-if (closeCorrectionsBtn && correctionsInterface) {
-  closeCorrectionsBtn.addEventListener("click", () => {
-    correctionsInterface.classList.remove("active");
+  if (closeCorrectionsBtn) {
+    closeCorrectionsBtn.addEventListener("click", () => {
+      correctionsInterface.classList.remove("active");
 
-    setTimeout(() => {
-      correctionsInterface.hidden = true;
-    }, 300);
-  });
-}
+      setTimeout(() => {
+        correctionsInterface.hidden = true;
+      }, 300);
+    });
+  }
+});
