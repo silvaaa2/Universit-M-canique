@@ -299,7 +299,7 @@
   margin-bottom: 42px;
 }
 
-/* ===== Interface corrigés modal premium V2 ===== */
+/* ===== Interface corrigés modal premium V3 ===== */
 
 body.modal-open {
   overflow: hidden;
@@ -313,23 +313,24 @@ body.modal-open {
   display: grid;
   place-items: center;
 
-  padding: 42px;
+  padding: 40px;
 
   background:
-    radial-gradient(circle at 22% 18%, rgba(214,180,106,.16), transparent 30%),
-    radial-gradient(circle at 80% 22%, rgba(255,255,255,.06), transparent 28%),
-    rgba(3,3,3,.68);
+    radial-gradient(circle at 18% 20%, rgba(214,180,106,.14), transparent 26%),
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,.05), transparent 24%),
+    radial-gradient(circle at 50% 55%, rgba(214,180,106,.06), transparent 34%),
+    rgba(2,2,2,.74);
 
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
 
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 
   transition:
-    opacity .38s ease,
-    visibility .38s ease;
+    opacity .42s ease,
+    visibility .42s ease;
 }
 
 .corrections-interface.active {
@@ -346,15 +347,40 @@ body.modal-open {
   content: "";
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-  background-size: 70px 70px;
-  mask-image: linear-gradient(to bottom, black, transparent 95%);
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.05), transparent 20%),
+    radial-gradient(circle at 75% 20%, rgba(214,180,106,.08), transparent 22%),
+    radial-gradient(circle at 50% 80%, rgba(255,255,255,.03), transparent 30%);
+  filter: blur(40px);
+  opacity: .85;
+  animation: overlayFloat 12s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-/* on fusionne visuellement le head + les cards */
+.corrections-interface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size: 70px 70px;
+  mask-image: linear-gradient(to bottom, black, transparent 95%);
+  opacity: .65;
+  pointer-events: none;
+}
+
+@keyframes overlayFloat {
+  0% {
+    transform: translate3d(-20px, -12px, 0) scale(1);
+  }
+
+  100% {
+    transform: translate3d(24px, 16px, 0) scale(1.04);
+  }
+}
+
+/* bloc global */
 .corrections-head,
 .correction-cards {
   width: min(1180px, 100%);
@@ -362,21 +388,24 @@ body.modal-open {
   z-index: 2;
 }
 
+/* ===== haut modal ===== */
+
 .corrections-head {
-  padding: 44px 44px 24px;
+  padding: 46px 46px 22px;
   border-radius: 38px 38px 0 0;
 
   background:
-    linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.04));
+    linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.045));
   border: 1px solid rgba(255,255,255,.14);
   border-bottom: none;
 
   box-shadow:
-    0 30px 90px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(255,255,255,.08);
+    0 30px 110px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 0 55px rgba(214,180,106,.07);
 
-  backdrop-filter: blur(26px);
-  -webkit-backdrop-filter: blur(26px);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 
   display: flex;
   justify-content: space-between;
@@ -384,15 +413,19 @@ body.modal-open {
   gap: 28px;
 
   opacity: 0;
-  transform: translateY(35px) scale(.96);
+  transform: translateY(48px) scale(.95);
+  filter: blur(10px);
+
   transition:
-    opacity .45s cubic-bezier(.22, 1, .36, 1),
-    transform .45s cubic-bezier(.22, 1, .36, 1);
+    opacity .55s cubic-bezier(.22, 1, .36, 1),
+    transform .55s cubic-bezier(.22, 1, .36, 1),
+    filter .55s cubic-bezier(.22, 1, .36, 1);
 }
 
 .corrections-interface.active .corrections-head {
   opacity: 1;
   transform: translateY(0) scale(1);
+  filter: blur(0);
 }
 
 .corrections-head .kicker {
@@ -401,9 +434,9 @@ body.modal-open {
 
 .corrections-head h2 {
   margin: 0;
-  font-size: clamp(52px, 5.8vw, 86px);
-  line-height: .9;
-  letter-spacing: -.08em;
+  font-size: clamp(54px, 6vw, 92px);
+  line-height: .88;
+  letter-spacing: -.085em;
 }
 
 .corrections-head p {
@@ -415,12 +448,12 @@ body.modal-open {
 }
 
 .close-interface-btn {
-  width: 60px;
-  height: 60px;
-  min-width: 60px;
+  width: 62px;
+  height: 62px;
+  min-width: 62px;
   border-radius: 999px;
 
-  border: 1px solid rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.18);
   background: rgba(255,255,255,.07);
   color: var(--text);
 
@@ -431,6 +464,10 @@ body.modal-open {
 
   display: grid;
   place-items: center;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 12px 32px rgba(0,0,0,.18);
 
   transition:
     transform .25s ease,
@@ -443,42 +480,50 @@ body.modal-open {
   color: #080808;
   background: linear-gradient(135deg, var(--gold), var(--gold2));
   border-color: transparent;
-  transform: rotate(90deg) scale(1.05);
-  box-shadow: 0 16px 40px rgba(214,180,106,.22);
+  transform: rotate(90deg) scale(1.06);
+  box-shadow: 0 16px 42px rgba(214,180,106,.24);
 }
+
+/* ===== bas modal ===== */
 
 .correction-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 
-  padding: 30px 44px 44px;
+  padding: 32px 46px 46px;
   border-radius: 0 0 38px 38px;
 
   background:
-    linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.04));
+    linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.045));
   border: 1px solid rgba(255,255,255,.14);
-  border-top: none;
+  border-top: 1px solid rgba(255,255,255,.06);
 
   box-shadow:
-    0 35px 110px rgba(0,0,0,.52),
+    0 42px 120px rgba(0,0,0,.52),
     0 0 70px rgba(214,180,106,.08),
     inset 0 1px 0 rgba(255,255,255,.05);
 
-  backdrop-filter: blur(26px);
-  -webkit-backdrop-filter: blur(26px);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 
   opacity: 0;
-  transform: translateY(40px) scale(.965);
+  transform: translateY(56px) scale(.955);
+  filter: blur(12px);
+
   transition:
-    opacity .52s cubic-bezier(.22, 1, .36, 1) .08s,
-    transform .52s cubic-bezier(.22, 1, .36, 1) .08s;
+    opacity .64s cubic-bezier(.22, 1, .36, 1) .06s,
+    transform .64s cubic-bezier(.22, 1, .36, 1) .06s,
+    filter .64s cubic-bezier(.22, 1, .36, 1) .06s;
 }
 
 .corrections-interface.active .correction-cards {
   opacity: 1;
   transform: translateY(0) scale(1);
+  filter: blur(0);
 }
+
+/* ===== cartes ===== */
 
 .correction-card {
   min-height: 255px;
@@ -490,7 +535,7 @@ body.modal-open {
 
   color: var(--text);
   background:
-    linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.035));
+    linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
   border: 1px solid rgba(255,255,255,.13);
 
   box-shadow:
@@ -501,11 +546,11 @@ body.modal-open {
   -webkit-backdrop-filter: blur(18px);
 
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(38px) scale(.97);
 
   transition:
-    opacity .45s ease,
-    transform .32s ease,
+    opacity .5s ease,
+    transform .34s ease,
     border-color .28s ease,
     box-shadow .28s ease,
     background .28s ease;
@@ -513,29 +558,29 @@ body.modal-open {
 
 .corrections-interface.active .correction-card {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .corrections-interface.active .correction-card:nth-child(1) {
-  transition-delay: .14s;
+  transition-delay: .16s;
 }
 
 .corrections-interface.active .correction-card:nth-child(2) {
-  transition-delay: .21s;
+  transition-delay: .24s;
 }
 
 .corrections-interface.active .correction-card:nth-child(3) {
-  transition-delay: .28s;
+  transition-delay: .32s;
 }
 
 .correction-card:hover {
   transform: translateY(-12px) scale(1.015);
   border-color: rgba(214,180,106,.55);
   background:
-    linear-gradient(145deg, rgba(255,255,255,.15), rgba(255,255,255,.05));
+    linear-gradient(145deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
   box-shadow:
     0 30px 90px rgba(0,0,0,.42),
-    0 0 40px rgba(214,180,106,.13);
+    0 0 38px rgba(214,180,106,.13);
 }
 
 .correction-card span {
