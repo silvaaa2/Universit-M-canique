@@ -1,15 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   const openCorrectionsBtn = document.getElementById("openCorrectionsBtn");
-  const closeCorrectionsBtn = document.getElementById("closeCorrectionsBtn");
-  const closeCorrectionsDetailBtn = document.getElementById("closeCorrectionsDetailBtn");
-  const correctionsInterface = document.getElementById("correctionsInterface");
 
-  const correctionsChooserHead = document.getElementById("correctionsChooserHead");
-  const correctionCardsList = document.getElementById("correctionCardsList");
-  const correctionCards = document.querySelectorAll(".correction-card");
+  const inlineCorrections = document.getElementById("inlineCorrections");
+  const minimizeCorrectionsBtn = document.getElementById("minimizeCorrectionsBtn");
 
-  const correctionDetailView = document.getElementById("correctionDetailView");
-  const backToCorrectionCards = document.getElementById("backToCorrectionCards");
+  const inlineCorrectionChooser = document.getElementById("inlineCorrectionChooser");
+  const inlineCorrectionDetail = document.getElementById("inlineCorrectionDetail");
+
+  const backToCustomsBtn = document.getElementById("backToCustomsBtn");
+
+  const correctionCards = document.querySelectorAll(".inline-custom-btn");
 
   const correctionPath = document.getElementById("correctionPath");
   const correctionHeroKicker = document.getElementById("correctionHeroKicker");
@@ -18,26 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const correctionTags = document.getElementById("correctionTags");
   const correctionSections = document.getElementById("correctionSections");
 
-  const DOC_ID_MAP = {
-    facile: "dukes",
-    moyen: "sentinel",
-    difficile: "rumina"
-  };
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
-    authDomain: "universit-4b11e.firebaseapp.com",
-    projectId: "universit-4b11e",
-    storageBucket: "universit-4b11e.firebasestorage.app",
-    messagingSenderId: "11363330953",
-    appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
-    measurementId: "G-Z5B51BQCNL"
-  };
-
-  let firebaseServices = null;
-
-  if (!openCorrectionsBtn || !correctionsInterface) {
-    console.error("Éléments de l'interface corrigés introuvables.");
+  if (!openCorrectionsBtn || !inlineCorrections) {
+    console.error("Interface des corrigés introuvable.");
     return;
   }
 
@@ -50,159 +32,123 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("'", "&#039;");
   }
 
-  function normalizeCollection(rawValue) {
-    if (!rawValue) return [];
-    if (Array.isArray(rawValue)) return rawValue;
-    if (typeof rawValue === "object") return Object.values(rawValue);
+  function normalizeSections(rawSections) {
+    if (!rawSections) return [];
+    if (Array.isArray(rawSections)) return rawSections;
+    if (typeof rawSections === "object") return Object.values(rawSections);
     return [];
   }
 
-  async function getFirebaseServices() {
-    if (firebaseServices) return firebaseServices;
-
-    const [
-      firebaseAppModule,
-      firebaseAuthModule,
-      firebaseFirestoreModule
-    ] = await Promise.all([
-      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
-      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"),
-      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
-    ]);
-
-    const {
-      initializeApp,
-      getApps,
-      getApp
-    } = firebaseAppModule;
-
-    const { getAuth } = firebaseAuthModule;
-
-    const {
-      getFirestore,
-      doc,
-      getDoc
-    } = firebaseFirestoreModule;
-
-    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    firebaseServices = { app, auth, db, doc, getDoc };
-    return firebaseServices;
+  function normalizeItems(rawItems) {
+    if (!rawItems) return [];
+    if (Array.isArray(rawItems)) return rawItems;
+    if (typeof rawItems === "object") return Object.values(rawItems);
+    return [];
   }
 
-  function openCorrectionsInterface() {
-    correctionsInterface.hidden = false;
-    document.body.classList.add("modal-open");
+  function openInlineCorrections() {
+    if (!inlineCorrections.hidden) {
+      inlineCorrections.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
 
-    showCorrectionsList();
+    inlineCorrections.hidden = false;
 
     requestAnimationFrame(() => {
-      correctionsInterface.classList.add("active");
+      inlineCorrections.classList.add("active");
     });
-  }
 
-  function closeCorrectionsInterface() {
-    correctionsInterface.classList.remove("active");
-    document.body.classList.remove("modal-open");
+    showChooser();
 
     setTimeout(() => {
-      correctionsInterface.hidden = true;
-      showCorrectionsList();
-    }, 280);
+      inlineCorrections.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
   }
 
-  function showCorrectionsList() {
-    correctionsChooserHead.hidden = false;
-    correctionCardsList.hidden = false;
+  function closeInlineCorrections() {
+    inlineCorrections.classList.remove("active");
 
-    correctionDetailView.hidden = true;
-    correctionDetailView.classList.remove("active");
+    setTimeout(() => {
+      inlineCorrections.hidden = true;
+      showChooser();
+    }, 220);
+  }
+
+  function showChooser() {
+    inlineCorrectionChooser.hidden = false;
+    inlineCorrectionDetail.hidden = true;
 
     correctionSections.innerHTML = "";
     correctionTags.innerHTML = "";
   }
 
-  function showCorrectionDetailView() {
-    correctionsChooserHead.hidden = true;
-    correctionCardsList.hidden = true;
-
-    correctionDetailView.hidden = false;
-
-    requestAnimationFrame(() => {
-      correctionDetailView.classList.add("active");
-    });
+  function showDetail() {
+    inlineCorrectionChooser.hidden = true;
+    inlineCorrectionDetail.hidden = false;
   }
 
-  function renderLoading(customLabel, docId) {
-    showCorrectionDetailView();
+  function renderLoading(customName) {
+    showDetail();
 
-    correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
     correctionHeroKicker.textContent = "Chargement";
-    correctionTitle.textContent = customLabel;
-    correctionDescription.textContent = "Récupération de la fiche de correction...";
-
-    correctionTags.innerHTML = `
-      <span class="detail-tag">Chargement</span>
-    `;
+    correctionTitle.textContent = customName;
+    correctionDescription.textContent = "Récupération de la correction en cours...";
+    correctionPath.textContent = "Firestore / customAnswerKeys / ...";
+    correctionTags.innerHTML = "";
 
     correctionSections.innerHTML = `
-      <div class="detail-empty">
-        <div class="correction-loading-box">
-          <div class="correction-loader"></div>
-          <span>Chargement de la correction...</span>
-        </div>
+      <div class="inline-loading-box">
+        <div class="inline-loader"></div>
+        <p>Chargement de la fiche de correction...</p>
       </div>
     `;
   }
 
   function renderError(message) {
-    showCorrectionDetailView();
+    showDetail();
 
     correctionHeroKicker.textContent = "Erreur";
     correctionTitle.textContent = "Impossible de charger";
-    correctionDescription.textContent = "La fiche n’a pas pu être récupérée.";
-
-    correctionTags.innerHTML = `
-      <span class="detail-tag">Erreur</span>
-    `;
+    correctionDescription.textContent = "Une erreur est survenue pendant le chargement.";
+    correctionPath.textContent = "Firestore / customAnswerKeys / erreur";
+    correctionTags.innerHTML = "";
 
     correctionSections.innerHTML = `
-      <div class="detail-empty">
-        ${escapeHtml(message)}
+      <div class="inline-error-box">
+        <h4>Oups, ça a merdé.</h4>
+        <p>${escapeHtml(message)}</p>
       </div>
     `;
   }
 
-  function renderCorrection(data, docId) {
-    const title = data.label || data.title || docId;
-    const description = data.description || "Correction du custom sélectionné.";
-    const sections = normalizeCollection(data.sections);
+  function renderCorrection(data, docId, meta) {
+    const title = data.label || meta.label || docId;
+    const description = data.description || `Réponses et configuration attendue pour le custom ${meta.vehicle}.`;
+    const sections = normalizeSections(data.sections);
 
-    correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
     correctionHeroKicker.textContent = "Corrigé";
     correctionTitle.textContent = title;
     correctionDescription.textContent = description;
+    correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
 
     correctionTags.innerHTML = `
-      <span class="detail-tag">${escapeHtml(title)}</span>
-      <span class="detail-tag">ID : ${escapeHtml(docId)}</span>
-      <span class="detail-tag">${sections.length} section(s)</span>
+      <span class="inline-tag">${escapeHtml(meta.label)}</span>
+      <span class="inline-tag">${escapeHtml(meta.vehicle)}</span>
+      <span class="inline-tag">${sections.length} section(s)</span>
     `;
 
     if (!sections.length) {
       correctionSections.innerHTML = `
-        <div class="detail-empty">
-          Aucune section trouvée dans ce document.
+        <div class="inline-empty-box">
+          Aucune section disponible pour cette correction.
         </div>
       `;
       return;
     }
 
-    const sectionsHtml = sections.map((section, index) => {
+    correctionSections.innerHTML = sections.map((section, index) => {
       const sectionTitle = section.title || section.label || `Section ${index + 1}`;
-      const items = normalizeCollection(section.items);
+      const items = normalizeItems(section.items);
 
       const itemsHtml = items.length
         ? items.map((item) => {
@@ -210,56 +156,74 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemValue = item.value ?? item.valeur ?? "Non renseigné";
 
             return `
-              <div class="detail-item">
-                <div class="detail-item-label">${escapeHtml(itemLabel)}</div>
-                <div class="detail-item-value">${escapeHtml(itemValue)}</div>
+              <div class="inline-detail-item">
+                <div class="inline-detail-item-label">${escapeHtml(itemLabel)}</div>
+                <div class="inline-detail-item-value">${escapeHtml(itemValue)}</div>
               </div>
             `;
           }).join("")
         : `
-          <div class="detail-empty">Aucun élément dans cette section.</div>
+          <div class="inline-empty-box">
+            Aucun élément dans cette section.
+          </div>
         `;
 
       return `
-        <article class="detail-section">
-          <div class="detail-section-head">
-            <h3 class="detail-section-title">${escapeHtml(sectionTitle)}</h3>
-            <span class="detail-section-count">${items.length} élément(s)</span>
+        <article class="inline-detail-section">
+          <div class="inline-detail-section-head">
+            <h4>${escapeHtml(sectionTitle)}</h4>
+            <span>${items.length} élément(s)</span>
           </div>
 
-          <div class="detail-items">
+          <div class="inline-detail-items">
             ${itemsHtml}
           </div>
         </article>
       `;
     }).join("");
-
-    correctionSections.innerHTML = sectionsHtml;
   }
 
-  async function loadCorrection(customKey, customLabel) {
-    const docId = DOC_ID_MAP[customKey] || customKey;
+  async function waitForFirebaseReady() {
+    if (window.profFirebase?.db) {
+      return window.profFirebase;
+    }
 
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error("Firebase n’est pas prêt. Vérifie prof-auth.js."));
+      }, 6000);
+
+      window.addEventListener("profFirebaseReady", () => {
+        clearTimeout(timeout);
+        resolve(window.profFirebase);
+      }, { once: true });
+    });
+  }
+
+  async function loadCorrection(docId, meta) {
     try {
-      renderLoading(customLabel, docId);
+      renderLoading(meta.label);
 
-      const firebase = await getFirebaseServices();
+      const firebase = await waitForFirebaseReady();
 
-      if (!firebase.auth.currentUser) {
-        renderError("Tu dois être connecté pour consulter les corrections.");
+      if (!window.currentProfUser) {
+        renderError("Tu dois être connecté pour lire les corrections.");
         return;
       }
 
-      const snap = await firebase.getDoc(
-        firebase.doc(firebase.db, "customAnswerKeys", docId)
-      );
+      const correctionRef = firebase.doc(firebase.db, "customAnswerKeys", docId);
+      const correctionSnap = await firebase.getDoc(correctionRef);
 
-      if (!snap.exists()) {
-        renderError(`Aucun document trouvé pour "${docId}".`);
+      if (!correctionSnap.exists()) {
+        renderError(`Aucune correction trouvée pour : ${docId}`);
         return;
       }
 
-      renderCorrection(snap.data(), docId);
+      renderCorrection(correctionSnap.data(), docId, meta);
+
+      setTimeout(() => {
+        inlineCorrections.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
 
     } catch (error) {
       console.error("Erreur chargement correction :", error);
@@ -267,43 +231,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  openCorrectionsBtn.addEventListener("click", openCorrectionsInterface);
+  openCorrectionsBtn.addEventListener("click", openInlineCorrections);
 
-  if (closeCorrectionsBtn) {
-    closeCorrectionsBtn.addEventListener("click", closeCorrectionsInterface);
+  if (minimizeCorrectionsBtn) {
+    minimizeCorrectionsBtn.addEventListener("click", closeInlineCorrections);
   }
 
-  if (closeCorrectionsDetailBtn) {
-    closeCorrectionsDetailBtn.addEventListener("click", closeCorrectionsInterface);
-  }
-
-  if (backToCorrectionCards) {
-    backToCorrectionCards.addEventListener("click", showCorrectionsList);
+  if (backToCustomsBtn) {
+    backToCustomsBtn.addEventListener("click", showChooser);
   }
 
   correctionCards.forEach((card) => {
     card.addEventListener("click", () => {
-      const customKey = card.dataset.custom;
-      const customLabel = card.querySelector("h3")?.textContent?.trim() || "Correction";
+      const docId = card.dataset.doc;
+      const label = card.dataset.label || "Custom";
+      const vehicle = card.dataset.vehicle || docId;
 
-      if (!customKey) {
-        renderError("Attribut data-custom manquant sur la carte.");
+      if (!docId) {
+        renderError("data-doc manquant sur la carte.");
         return;
       }
 
-      loadCorrection(customKey, customLabel);
+      loadCorrection(docId, { label, vehicle });
     });
-  });
-
-  correctionsInterface.addEventListener("click", (e) => {
-    if (e.target === correctionsInterface) {
-      closeCorrectionsInterface();
-    }
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !correctionsInterface.hidden) {
-      closeCorrectionsInterface();
-    }
   });
 });
