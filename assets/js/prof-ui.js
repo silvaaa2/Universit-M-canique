@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const openCorrectionsBtn = document.getElementById("openCorrectionsBtn");
   const closeCorrectionsBtn = document.getElementById("closeCorrectionsBtn");
+  const closeCorrectionsDetailBtn = document.getElementById("closeCorrectionsDetailBtn");
   const correctionsInterface = document.getElementById("correctionsInterface");
 
   const correctionsChooserHead = document.getElementById("correctionsChooserHead");
@@ -10,14 +11,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const correctionDetailView = document.getElementById("correctionDetailView");
   const backToCorrectionCards = document.getElementById("backToCorrectionCards");
 
+  const correctionPath = document.getElementById("correctionPath");
+  const correctionHeroKicker = document.getElementById("correctionHeroKicker");
   const correctionTitle = document.getElementById("correctionTitle");
   const correctionDescription = document.getElementById("correctionDescription");
-  const correctionPath = document.getElementById("correctionPath");
   const correctionTags = document.getElementById("correctionTags");
   const correctionSections = document.getElementById("correctionSections");
 
+  const DOC_ID_MAP = {
+    facile: "dukes",
+    moyen: "sentinel",
+    difficile: "rumina"
+  };
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
+    authDomain: "universit-4b11e.firebaseapp.com",
+    projectId: "universit-4b11e",
+    storageBucket: "universit-4b11e.firebasestorage.app",
+    messagingSenderId: "11363330953",
+    appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
+    measurementId: "G-Z5B51BQCNL"
+  };
+
+  let firebaseServices = null;
+
   if (!openCorrectionsBtn || !correctionsInterface) {
-    console.error("Interface Corrigés introuvable.");
+    console.error("Éléments de l'interface corrigés introuvables.");
     return;
   }
 
@@ -30,24 +50,53 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("'", "&#039;");
   }
 
-  function normalizeArray(value) {
-    if (!value) return [];
-
-    if (Array.isArray(value)) {
-      return value;
-    }
-
-    if (typeof value === "object") {
-      return Object.values(value);
-    }
-
+  function normalizeCollection(rawValue) {
+    if (!rawValue) return [];
+    if (Array.isArray(rawValue)) return rawValue;
+    if (typeof rawValue === "object") return Object.values(rawValue);
     return [];
+  }
+
+  async function getFirebaseServices() {
+    if (firebaseServices) return firebaseServices;
+
+    const [
+      firebaseAppModule,
+      firebaseAuthModule,
+      firebaseFirestoreModule
+    ] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
+    ]);
+
+    const {
+      initializeApp,
+      getApps,
+      getApp
+    } = firebaseAppModule;
+
+    const { getAuth } = firebaseAuthModule;
+
+    const {
+      getFirestore,
+      doc,
+      getDoc
+    } = firebaseFirestoreModule;
+
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    firebaseServices = { app, auth, db, doc, getDoc };
+    return firebaseServices;
   }
 
   function openCorrectionsInterface() {
     correctionsInterface.hidden = false;
     document.body.classList.add("modal-open");
-    showCorrectionCards();
+
+    showCorrectionsList();
 
     requestAnimationFrame(() => {
       correctionsInterface.classList.add("active");
@@ -60,78 +109,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       correctionsInterface.hidden = true;
-      showCorrectionCards();
-    }, 300);
+      showCorrectionsList();
+    }, 280);
   }
 
-  function showCorrectionCards() {
-    if (correctionsChooserHead) {
-      correctionsChooserHead.hidden = false;
-    }
+  function showCorrectionsList() {
+    correctionsChooserHead.hidden = false;
+    correctionCardsList.hidden = false;
 
-    if (correctionCardsList) {
-      correctionCardsList.hidden = false;
-      correctionCardsList.style.display = "grid";
-    }
+    correctionDetailView.hidden = true;
+    correctionDetailView.classList.remove("active");
 
-    if (correctionDetailView) {
-      correctionDetailView.hidden = true;
-      correctionDetailView.classList.remove("active");
-    }
-
-    if (correctionSections) {
-      correctionSections.innerHTML = "";
-    }
-
-    if (correctionTags) {
-      correctionTags.innerHTML = "";
-    }
+    correctionSections.innerHTML = "";
+    correctionTags.innerHTML = "";
   }
 
-  function showCorrectionDetail() {
-    if (correctionsChooserHead) {
-      correctionsChooserHead.hidden = true;
-    }
+  function showCorrectionDetailView() {
+    correctionsChooserHead.hidden = true;
+    correctionCardsList.hidden = true;
 
-    if (correctionCardsList) {
-      correctionCardsList.hidden = true;
-      correctionCardsList.style.display = "none";
-    }
+    correctionDetailView.hidden = false;
 
-    if (correctionDetailView) {
-      correctionDetailView.hidden = false;
-
-      requestAnimationFrame(() => {
-        correctionDetailView.classList.add("active");
-      });
-    }
+    requestAnimationFrame(() => {
+      correctionDetailView.classList.add("active");
+    });
   }
 
-  function renderLoading(customName) {
-    showCorrectionDetail();
+  function renderLoading(customLabel, docId) {
+    showCorrectionDetailView();
 
-    correctionTitle.textContent = "Chargement...";
-    correctionDescription.textContent = `Récupération de la correction ${customName}.`;
-    correctionPath.textContent = "Connexion à Firebase...";
+    correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
+    correctionHeroKicker.textContent = "Chargement";
+    correctionTitle.textContent = customLabel;
+    correctionDescription.textContent = "Récupération de la fiche de correction...";
 
     correctionTags.innerHTML = `
       <span class="detail-tag">Chargement</span>
     `;
 
     correctionSections.innerHTML = `
-      <div class="detail-empty correction-loading-box">
-        <div class="correction-loader"></div>
-        <span>Chargement de la fiche de correction...</span>
+      <div class="detail-empty">
+        <div class="correction-loading-box">
+          <div class="correction-loader"></div>
+          <span>Chargement de la correction...</span>
+        </div>
       </div>
     `;
   }
 
   function renderError(message) {
-    showCorrectionDetail();
+    showCorrectionDetailView();
 
-    correctionTitle.textContent = "Erreur";
-    correctionDescription.textContent = "Impossible de charger la correction.";
-    correctionPath.textContent = "Firebase / erreur";
+    correctionHeroKicker.textContent = "Erreur";
+    correctionTitle.textContent = "Impossible de charger";
+    correctionDescription.textContent = "La fiche n’a pas pu être récupérée.";
 
     correctionTags.innerHTML = `
       <span class="detail-tag">Erreur</span>
@@ -139,48 +170,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
     correctionSections.innerHTML = `
       <div class="detail-empty">
-        <strong>Oups, ça a merdé.</strong><br>
         ${escapeHtml(message)}
       </div>
     `;
   }
 
-  function renderTags(data, docId, sections) {
-    const tags = [];
+  function renderCorrection(data, docId) {
+    const title = data.label || data.title || docId;
+    const description = data.description || "Correction du custom sélectionné.";
+    const sections = normalizeCollection(data.sections);
 
-    if (data?.label) {
-      tags.push(data.label);
-    }
+    correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
+    correctionHeroKicker.textContent = "Corrigé";
+    correctionTitle.textContent = title;
+    correctionDescription.textContent = description;
 
-    if (docId) {
-      tags.push(`ID : ${docId}`);
-    }
+    correctionTags.innerHTML = `
+      <span class="detail-tag">${escapeHtml(title)}</span>
+      <span class="detail-tag">ID : ${escapeHtml(docId)}</span>
+      <span class="detail-tag">${sections.length} section(s)</span>
+    `;
 
-    tags.push(`${sections.length} section(s)`);
-
-    correctionTags.innerHTML = tags
-      .map((tag) => `<span class="detail-tag">${escapeHtml(tag)}</span>`)
-      .join("");
-  }
-
-  function renderSections(sections) {
     if (!sections.length) {
       correctionSections.innerHTML = `
         <div class="detail-empty">
-          Aucune section trouvée pour cette correction.
+          Aucune section trouvée dans ce document.
         </div>
       `;
       return;
     }
 
-    correctionSections.innerHTML = sections.map((section, index) => {
+    const sectionsHtml = sections.map((section, index) => {
       const sectionTitle = section.title || section.label || `Section ${index + 1}`;
-      const items = normalizeArray(section.items);
+      const items = normalizeCollection(section.items);
 
       const itemsHtml = items.length
         ? items.map((item) => {
             const itemLabel = item.label || "Élément";
-            const itemValue = item.value ?? item.valeur ?? "-";
+            const itemValue = item.value ?? item.valeur ?? "Non renseigné";
 
             return `
               <div class="detail-item">
@@ -190,9 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
           }).join("")
         : `
-          <div class="detail-empty">
-            Aucun élément dans cette section.
-          </div>
+          <div class="detail-empty">Aucun élément dans cette section.</div>
         `;
 
       return `
@@ -208,60 +233,34 @@ document.addEventListener("DOMContentLoaded", () => {
         </article>
       `;
     }).join("");
+
+    correctionSections.innerHTML = sectionsHtml;
   }
 
-  function renderCorrection(data, docId) {
-    const title = data.label || data.title || data.titre || "Correction";
-    const description = data.description || "Correction du custom sélectionné.";
-    const sections = normalizeArray(data.sections);
+  async function loadCorrection(customKey, customLabel) {
+    const docId = DOC_ID_MAP[customKey] || customKey;
 
-    correctionTitle.textContent = title;
-    correctionDescription.textContent = description;
-    correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
-
-    renderTags(data, docId, sections);
-    renderSections(sections);
-
-    showCorrectionDetail();
-  }
-
-  async function waitForFirebaseReady() {
-    if (window.profFirebase?.db) {
-      return window.profFirebase;
-    }
-
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error("Firebase n’est pas prêt. Vérifie prof-auth.js."));
-      }, 6000);
-
-      window.addEventListener("profFirebaseReady", () => {
-        clearTimeout(timeout);
-        resolve(window.profFirebase);
-      }, { once: true });
-    });
-  }
-
-  async function loadCorrection(customDocId, customName) {
     try {
-      renderLoading(customName);
+      renderLoading(customLabel, docId);
 
-      const firebase = await waitForFirebaseReady();
+      const firebase = await getFirebaseServices();
 
-      if (!window.currentProfUser) {
-        renderError("Tu dois être connecté pour lire les corrections.");
+      if (!firebase.auth.currentUser) {
+        renderError("Tu dois être connecté pour consulter les corrections.");
         return;
       }
 
-      const correctionRef = firebase.doc(firebase.db, "customAnswerKeys", customDocId);
-      const correctionSnap = await firebase.getDoc(correctionRef);
+      const snap = await firebase.getDoc(
+        firebase.doc(firebase.db, "customAnswerKeys", docId)
+      );
 
-      if (!correctionSnap.exists()) {
-        renderError(`Aucune correction trouvée pour : ${customDocId}`);
+      if (!snap.exists()) {
+        renderError(`Aucun document trouvé pour "${docId}".`);
         return;
       }
 
-      renderCorrection(correctionSnap.data(), customDocId);
+      renderCorrection(snap.data(), docId);
+
     } catch (error) {
       console.error("Erreur chargement correction :", error);
       renderError(error.message || "Erreur inconnue pendant le chargement.");
@@ -274,21 +273,25 @@ document.addEventListener("DOMContentLoaded", () => {
     closeCorrectionsBtn.addEventListener("click", closeCorrectionsInterface);
   }
 
+  if (closeCorrectionsDetailBtn) {
+    closeCorrectionsDetailBtn.addEventListener("click", closeCorrectionsInterface);
+  }
+
   if (backToCorrectionCards) {
-    backToCorrectionCards.addEventListener("click", showCorrectionCards);
+    backToCorrectionCards.addEventListener("click", showCorrectionsList);
   }
 
   correctionCards.forEach((card) => {
     card.addEventListener("click", () => {
-      const customDocId = card.dataset.custom;
-      const customName = card.querySelector("h3")?.textContent || "custom";
+      const customKey = card.dataset.custom;
+      const customLabel = card.querySelector("h3")?.textContent?.trim() || "Correction";
 
-      if (!customDocId) {
-        renderError("data-custom manquant sur cette carte.");
+      if (!customKey) {
+        renderError("Attribut data-custom manquant sur la carte.");
         return;
       }
 
-      loadCorrection(customDocId, customName);
+      loadCorrection(customKey, customLabel);
     });
   });
 
@@ -299,11 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape" || correctionsInterface.hidden) return;
-
-    if (correctionDetailView && !correctionDetailView.hidden) {
-      showCorrectionCards();
-    } else {
+    if (e.key === "Escape" && !correctionsInterface.hidden) {
       closeCorrectionsInterface();
     }
   });
