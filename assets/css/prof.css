@@ -300,18 +300,12 @@ body.modal-open {
   z-index: 9997;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
-  padding: 28px;
+  padding: 90px 28px 28px;
 
-  background:
-    radial-gradient(circle at 18% 18%, rgba(214,180,106,.14), transparent 26%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,.05), transparent 22%),
-    linear-gradient(180deg, rgba(7,7,7,.92), rgba(3,3,3,.96));
-
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(0, 0, 0, .10);
 
   opacity: 0;
   visibility: hidden;
@@ -332,18 +326,18 @@ body.modal-open {
 
 .corrections-shell {
   width: min(1120px, 100%);
-  max-height: calc(100vh - 56px);
+  max-height: calc(100vh - 120px);
   overflow: hidden;
 
   border-radius: 30px;
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.10);
 
   background:
-    linear-gradient(145deg, rgba(30,30,30,.96), rgba(18,18,18,.98));
+    linear-gradient(145deg, rgba(32,32,32,.96), rgba(20,20,20,.98));
 
   box-shadow:
-    0 30px 90px rgba(0,0,0,.52),
-    0 0 0 1px rgba(255,255,255,.03) inset;
+    0 24px 70px rgba(0,0,0,.28),
+    0 0 0 1px rgba(255,255,255,.025) inset;
 
   transform: translateY(20px) scale(.985);
   opacity: 0;
@@ -356,10 +350,10 @@ body.modal-open {
 }
 
 .corrections-shell-inner {
-  max-height: calc(100vh - 56px);
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 28px;
+  padding: 34px 28px 28px;
   scrollbar-width: thin;
   scrollbar-color: rgba(214,180,106,.45) rgba(255,255,255,.04);
 }
@@ -559,7 +553,7 @@ body.modal-open {
   align-items: flex-start;
   gap: 22px;
 
-  padding: 28px;
+  padding: 34px 28px 28px;
   border-radius: 24px;
   border: 1px solid rgba(255,255,255,.08);
 
@@ -591,8 +585,10 @@ body.modal-open {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: flex-start;
   gap: 10px;
   max-width: 280px;
+  margin-top: 18px;
 }
 
 .detail-tag {
@@ -719,15 +715,16 @@ body.modal-open {
   }
 
   .corrections-interface {
-    padding: 16px;
+    align-items: flex-start;
+    padding: 78px 16px 16px;
   }
 
   .corrections-shell {
-    max-height: calc(100vh - 32px);
+    max-height: calc(100vh - 94px);
   }
 
   .corrections-shell-inner {
-    max-height: calc(100vh - 32px);
+    max-height: calc(100vh - 94px);
     padding: 20px;
   }
 
@@ -746,6 +743,7 @@ body.modal-open {
   .detail-tags {
     justify-content: flex-start;
     max-width: unset;
+    margin-top: 8px;
   }
 
   .detail-item {
@@ -774,16 +772,16 @@ body.modal-open {
   }
 
   .corrections-interface {
-    padding: 12px;
+    padding: 72px 12px 12px;
   }
 
   .corrections-shell {
     border-radius: 22px;
-    max-height: calc(100vh - 24px);
+    max-height: calc(100vh - 84px);
   }
 
   .corrections-shell-inner {
-    max-height: calc(100vh - 24px);
+    max-height: calc(100vh - 84px);
     padding: 14px;
   }
 
