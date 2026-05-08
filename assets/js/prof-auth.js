@@ -92,14 +92,22 @@ async function startFirebaseAuth() {
   try {
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
     const firebaseAuth = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
+    const firebaseFirestore = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
 
     const { initializeApp } = firebaseApp;
+
     const {
       getAuth,
       signInWithEmailAndPassword,
       onAuthStateChanged,
       signOut
     } = firebaseAuth;
+
+    const {
+      getFirestore,
+      doc,
+      getDoc
+    } = firebaseFirestore;
 
     const firebaseConfig = {
       apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -113,10 +121,25 @@ async function startFirebaseAuth() {
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // On rend Firebase dispo pour prof-ui.js
+    window.profFirebase = {
+      app,
+      auth,
+      db,
+      doc,
+      getDoc
+    };
+
+    // Signal pour dire à prof-ui.js que Firebase est prêt
+    window.dispatchEvent(new Event("profFirebaseReady"));
 
     showLogin();
 
     onAuthStateChanged(auth, (user) => {
+      window.currentProfUser = user;
+
       if (isManualLoginTransition) return;
 
       if (user) {
@@ -163,6 +186,7 @@ async function startFirebaseAuth() {
 
     logoutBtn.addEventListener("click", async () => {
       await signOut(auth);
+      window.currentProfUser = null;
       showLogin();
     });
 
