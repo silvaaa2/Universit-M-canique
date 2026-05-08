@@ -110,75 +110,71 @@
 
     </div>
 
-    <section class="corrections-interface" id="correctionsInterface" hidden>
-      <div class="corrections-shell">
-        <div class="corrections-shell-inner">
+    <section class="inline-corrections" id="inlineCorrections" hidden>
+      <div class="inline-corrections-card">
 
-          <div class="corrections-head" id="correctionsChooserHead">
-            <div>
-              <p class="kicker">Corrigés</p>
-              <h2>Choisir un custom</h2>
-              <p>
-                Sélectionnez le custom souhaité pour consulter sa fiche de correction.
+        <div class="inline-corrections-head">
+          <div>
+            <p class="kicker">Corrigés</p>
+            <h2>Centre de correction</h2>
+            <p>
+              Choisissez un custom pour afficher sa correction directement ici, sans fenêtre intrusive.
+            </p>
+          </div>
+
+          <button type="button" class="inline-corrections-minimize" id="minimizeCorrectionsBtn">
+            −
+          </button>
+        </div>
+
+        <div class="inline-correction-chooser" id="inlineCorrectionChooser">
+
+          <button type="button" class="inline-custom-btn" data-doc="dukes" data-label="Custom Facile" data-vehicle="Dukes">
+            <span>01</span>
+            <h3>Custom Facile</h3>
+            <p>Dukes</p>
+          </button>
+
+          <button type="button" class="inline-custom-btn" data-doc="sentinel" data-label="Custom Moyen" data-vehicle="Sentinel XS4">
+            <span>02</span>
+            <h3>Custom Moyen</h3>
+            <p>Sentinel XS4</p>
+          </button>
+
+          <button type="button" class="inline-custom-btn" data-doc="rumina" data-label="Custom Difficile" data-vehicle="Annis Rumina">
+            <span>03</span>
+            <h3>Custom Difficile</h3>
+            <p>Annis Rumina</p>
+          </button>
+
+        </div>
+
+        <section class="inline-correction-detail" id="inlineCorrectionDetail" hidden>
+          <div class="inline-detail-toolbar">
+            <button type="button" class="inline-back-btn" id="backToCustomsBtn">
+              ← Retour aux customs
+            </button>
+
+            <p class="inline-detail-path" id="correctionPath">
+              Firestore / customAnswerKeys / dukes
+            </p>
+          </div>
+
+          <div class="inline-detail-hero">
+            <div class="inline-detail-hero-left">
+              <p class="kicker" id="correctionHeroKicker">Corrigé</p>
+              <h3 id="correctionTitle">Custom Facile</h3>
+              <p class="inline-detail-description" id="correctionDescription">
+                Réponses et configuration attendue pour le custom Dukes.
               </p>
             </div>
 
-            <button type="button" class="close-interface-btn" id="closeCorrectionsBtn">×</button>
+            <div class="inline-detail-tags" id="correctionTags"></div>
           </div>
 
-          <div class="correction-cards" id="correctionCardsList">
+          <div class="inline-detail-sections" id="correctionSections"></div>
+        </section>
 
-            <button type="button" class="correction-card" data-custom="facile">
-              <span>01</span>
-              <h3>Custom Facile</h3>
-              <p>Dukes</p>
-            </button>
-
-            <button type="button" class="correction-card" data-custom="moyen">
-              <span>02</span>
-              <h3>Custom Moyen</h3>
-              <p>Sentinel XS4</p>
-            </button>
-
-            <button type="button" class="correction-card" data-custom="difficile">
-              <span>03</span>
-              <h3>Custom Difficile</h3>
-              <p>Annis Rumina</p>
-            </button>
-
-          </div>
-
-          <section class="correction-detail-view" id="correctionDetailView" hidden>
-            <div class="detail-topbar">
-              <div class="detail-topbar-left">
-                <button type="button" class="back-corrections-btn" id="backToCorrectionCards">
-                  ← Retour aux customs
-                </button>
-
-                <p class="detail-path" id="correctionPath">
-                  Firestore / customAnswerKeys / dukes
-                </p>
-              </div>
-
-              <button type="button" class="detail-close-btn" id="closeCorrectionsDetailBtn">×</button>
-            </div>
-
-            <div class="detail-hero">
-              <div class="detail-hero-left">
-                <p class="kicker" id="correctionHeroKicker">Corrigé</p>
-                <h2 id="correctionTitle">Custom Facile</h2>
-                <p class="detail-description" id="correctionDescription">
-                  Réponses et configuration attendue pour le custom Dukes.
-                </p>
-              </div>
-
-              <div class="detail-tags" id="correctionTags"></div>
-            </div>
-
-            <div class="detail-sections" id="correctionSections"></div>
-          </section>
-
-        </div>
       </div>
     </section>
 
