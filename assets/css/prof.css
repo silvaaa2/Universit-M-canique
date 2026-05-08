@@ -684,3 +684,84 @@ body.modal-open {
     font-size: 32px;
   }
 }
+/* TEST VISUEL MODAL - À GARDER SI ÇA MARCHE */
+
+.corrections-interface {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(214,180,106,.32), transparent 30%),
+    radial-gradient(circle at 80% 25%, rgba(255,255,255,.12), transparent 28%),
+    rgba(0,0,0,.82) !important;
+  backdrop-filter: blur(35px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(35px) saturate(145%) !important;
+}
+
+.corrections-head,
+.correction-cards {
+  width: min(1120px, 92vw) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.045)) !important;
+  border-color: rgba(214,180,106,.28) !important;
+  box-shadow:
+    0 45px 140px rgba(0,0,0,.65),
+    0 0 90px rgba(214,180,106,.16),
+    inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+
+.corrections-head {
+  transform: translateY(40px) scale(.94) !important;
+  filter: blur(12px) !important;
+}
+
+.corrections-interface.active .corrections-head {
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0) !important;
+  animation: modalHeadIn .65s cubic-bezier(.22, 1, .36, 1) both !important;
+}
+
+.correction-cards {
+  transform: translateY(55px) scale(.94) !important;
+  filter: blur(14px) !important;
+}
+
+.corrections-interface.active .correction-cards {
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0) !important;
+  animation: modalCardsIn .75s cubic-bezier(.22, 1, .36, 1) both !important;
+}
+
+.correction-card {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.18), rgba(255,255,255,.055)) !important;
+  border-color: rgba(255,255,255,.18) !important;
+  box-shadow:
+    0 22px 80px rgba(0,0,0,.35),
+    inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+
+@keyframes modalHeadIn {
+  from {
+    opacity: 0;
+    transform: translateY(55px) scale(.92);
+    filter: blur(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes modalCardsIn {
+  from {
+    opacity: 0;
+    transform: translateY(70px) scale(.92);
+    filter: blur(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
