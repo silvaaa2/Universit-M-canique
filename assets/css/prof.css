@@ -294,10 +294,11 @@ body.modal-open {
   inset: 0;
   z-index: 9997;
 
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 
-  padding: 28px;
+  padding: 84px 28px 36px;
 
   background:
     radial-gradient(circle at 18% 22%, rgba(214,180,106,.20), transparent 26%),
@@ -311,7 +312,8 @@ body.modal-open {
   visibility: hidden;
   pointer-events: none;
 
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   transition:
     opacity .35s ease,
@@ -370,8 +372,8 @@ body.modal-open {
 /* ===== Shell unique ===== */
 
 .corrections-shell {
-  width: min(1060px, calc(100vw - 72px));
-  max-height: calc(100vh - 70px);
+  width: min(1140px, calc(100vw - 72px));
+  max-height: calc(100vh - 120px);
   position: relative;
   z-index: 5;
   overflow-y: auto;
@@ -585,7 +587,7 @@ body.modal-open {
 /* ===== Fiche correction Firestore ===== */
 
 .correction-detail-view {
-  padding: 34px 38px 38px;
+  padding: 20px 38px 56px;
   animation: correctionDetailIn .38s ease both;
 }
 
@@ -652,7 +654,7 @@ body.modal-open {
   justify-content: space-between;
   align-items: flex-start;
   gap: 28px;
-  padding: 28px;
+  padding: 24px 28px 26px;
   margin-bottom: 26px;
   border-radius: 30px;
 
@@ -821,9 +823,10 @@ body.modal-open {
   }
 
   .corrections-interface {
-    align-items: start;
+    align-items: flex-start;
+    justify-content: center;
     overflow-y: auto;
-    padding: 18px;
+    padding: 72px 18px 24px;
   }
 
   .corrections-shell {
@@ -879,12 +882,13 @@ body.modal-open {
   }
 
   .corrections-interface {
-    padding: 12px;
+    padding: 66px 12px 20px;
   }
 
   .corrections-shell {
     width: calc(100vw - 24px);
     border-radius: 28px;
+    max-height: none;
   }
 
   .corrections-head {
@@ -910,11 +914,11 @@ body.modal-open {
   }
 
   .correction-detail-view {
-    padding: 22px 20px 24px;
+    padding: 18px 20px 34px;
   }
 
   .detail-hero {
-    padding: 22px;
+    padding: 20px;
     border-radius: 24px;
   }
 
