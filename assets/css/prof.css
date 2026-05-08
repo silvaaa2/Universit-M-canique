@@ -236,7 +236,6 @@
     opacity: 0;
     transform: translateY(18px) scale(.96);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -525,7 +524,7 @@
 }
 
 /* =========================================================
-   SECTIONS COMPACTES
+   SECTIONS
 ========================================================= */
 
 .inline-detail-sections {
@@ -572,9 +571,10 @@
   text-transform: uppercase;
 }
 
+/* >>> TOUT EN COLONNE <<< */
 .inline-detail-items {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -582,8 +582,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
-  min-height: 74px;
+  gap: 6px;
+  min-height: 64px;
   padding: 12px 14px;
   border-radius: 15px;
   background:
@@ -596,20 +596,28 @@
   font-size: 12px;
   font-weight: 800;
   line-height: 1.2;
-  text-align: center;
+  text-align: left;
 }
 
 .inline-detail-item-value {
   color: var(--text);
   font-size: 15px;
   font-weight: 900;
-  line-height: 1.2;
-  text-align: center;
+  line-height: 1.3;
+  text-align: left;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-/* ===== Sous-sections ===== */
+.inline-detail-item.no-label {
+  gap: 0;
+}
+
+.inline-detail-item.no-label .inline-detail-item-value {
+  font-size: 15px;
+}
+
+/* ===== Sous-sections : aussi en colonne ===== */
 
 .inline-detail-section > .inline-detail-items > .inline-subsections {
   grid-column: 1 / -1;
@@ -618,7 +626,7 @@
 .inline-subsections {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 14px;
   margin-top: 0;
 }
@@ -646,12 +654,13 @@
 }
 
 .inline-subsections .inline-detail-items {
+  display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
 }
 
 .inline-subsections .inline-detail-item {
-  min-height: 62px;
+  min-height: 58px;
   padding: 10px 12px;
   border-radius: 14px;
 }
@@ -708,16 +717,6 @@
 
 /* ===== Responsive ===== */
 
-@media (max-width: 1350px) {
-  .inline-detail-items {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .inline-subsections {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 950px) {
   .prof-grid {
     grid-template-columns: 1fr;
@@ -740,20 +739,6 @@
     justify-content: flex-start;
     max-width: unset;
     margin-top: 8px;
-  }
-
-  .inline-detail-items,
-  .inline-subsections {
-    grid-template-columns: 1fr;
-  }
-
-  .inline-detail-item {
-    min-height: auto;
-  }
-
-  .inline-detail-item-label,
-  .inline-detail-item-value {
-    text-align: left;
   }
 }
 
