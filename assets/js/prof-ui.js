@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "titre",
     "description",
     "sections",
-    "columns",
     "wide",
     "updatedAt",
     "createdAt",
@@ -356,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (shouldIgnoreKey(key, value)) return "";
 
     if (key === "columns") {
-      return renderColumnsAsSubSections(value);
+      return `<div class="inline-subsections">${renderColumnsAsSubSections(value)}</div>`;
     }
 
     const title = prettifyKey(key);
