@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const correctionTags = document.getElementById("correctionTags");
   const correctionSections = document.getElementById("correctionSections");
 
-  const IGNORED_ROOT_KEYS = [
+  const IGNORED_KEYS = [
     "label",
     "title",
     "titre",
@@ -54,15 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function normalizeArray(rawValue) {
     if (!rawValue) return [];
-
-    if (Array.isArray(rawValue)) {
-      return rawValue;
-    }
-
-    if (isPlainObject(rawValue)) {
-      return Object.values(rawValue);
-    }
-
+    if (Array.isArray(rawValue)) return rawValue;
+    if (isPlainObject(rawValue)) return Object.values(rawValue);
     return [];
   }
 
@@ -83,8 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  function shouldIgnoreKey(key) {
-    return IGNORED_ROOT_KEYS.includes(key);
+  function shouldIgnoreKey(key, value) {
+    return IGNORED_KEYS.includes(key) || isTimestampLike(value);
   }
 
   function openInlineCorrections() {
@@ -163,25 +156,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderValue(value) {
-    if (value === null || value === undefined || value === "") {
-      return "Non renseigné";
-    }
+    if (value === null || value === undefined || value === "") return "Non renseigné";
+    if (isTimestampLike(value)) return "";
 
-    if (isTimestampLike(value)) {
-      return "";
-    }
-
-    if (typeof value === "boolean") {
-      return value ? "Oui" : "Non";
-    }
-
-    if (typeof value === "number") {
-      return String(value);
-    }
-
-    if (typeof value === "string") {
-      return value;
-    }
+    if (typeof value === "boolean") return value ? "Oui" : "Non";
+    if (typeof value === "number") return String(value);
+    if (typeof value === "string") return value;
 
     if (Array.isArray(value)) {
       if (!value.length) return "Aucun élément";
@@ -197,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             return Object.entries(entry)
-              .filter(([key, val]) => !shouldIgnoreKey(key) && !isTimestampLike(val))
+              .filter(([key, val]) => !shouldIgnoreKey(key, val))
               .map(([key, val]) => `${prettifyKey(key)} : ${renderValue(val)}`)
               .join("\n");
           }
@@ -209,10 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (isPlainObject(value)) {
-      if (isTimestampLike(value)) return "";
-
       return Object.entries(value)
-        .filter(([key, val]) => !shouldIgnoreKey(key) && !isTimestampLike(val))
+        .filter(([key, val]) => !shouldIgnoreKey(key, val))
         .map(([key, val]) => `${prettifyKey(key)} : ${renderValue(val)}`)
         .filter(Boolean)
         .join("\n");
@@ -223,7 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderItemLine(label, value) {
     const renderedValue = renderValue(value);
-
     if (!renderedValue) return "";
 
     return `
@@ -253,48 +230,77 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  function extractItemsFromObject(obj) {
+  function isSectionLike(value) {
+    return isPlainObject(value) && (
+      "items" in value ||
+      "title" in value ||
+      "label" in value ||
+      "nom" in value ||
+      "name" in value
+    );
+  }
+
+  function getSectionTitle(section, fallback) {
+    return section.title || section.label || section.nom || section.name || fallback;
+  }
+
+  function extractSimpleItems(obj) {
     if (!isPlainObject(obj)) return [];
 
-    const ignoredKeys = [
-      "title",
-      "label",
-      "nom",
-      "name",
-      "items"
-    ];
+    const ignored = ["title", "label", "nom", "name", "items", "columns"];
 
-    const directItems = normalizeArray(obj.items);
+    const baseItems = normalizeArray(obj.items).map((item) => {
+      if (isPlainObject(item)) return item;
+      return { label: "Élément", value: item };
+    });
 
     const extraItems = Object.entries(obj)
-      .filter(([key, value]) => !ignoredKeys.includes(key) && !shouldIgnoreKey(key) && !isTimestampLike(value))
+      .filter(([key, value]) => !ignored.includes(key) && !shouldIgnoreKey(key, value))
       .map(([key, value]) => ({
         label: prettifyKey(key),
         value
       }));
 
-    return [...directItems, ...extraItems];
+    return [...baseItems, ...extraItems];
   }
 
   function renderItems(items) {
     return items.map((item) => {
       if (isPlainObject(item)) {
-        const itemLabel = item.label || item.title || item.nom || item.name || "Élément";
-        const itemValue = item.value ?? item.valeur ?? item.reponse ?? item.answer ?? item;
+        const label = item.label || item.title || item.nom || item.name || "Élément";
 
-        if (itemValue === item) {
-          const nestedEntries = Object.entries(item)
-            .filter(([key, value]) => !["label", "title", "nom", "name"].includes(key) && !isTimestampLike(value));
-
-          return nestedEntries
-            .map(([key, value]) => renderItemLine(prettifyKey(key), value))
-            .join("");
+        if ("value" in item || "valeur" in item || "reponse" in item || "answer" in item) {
+          const value = item.value ?? item.valeur ?? item.reponse ?? item.answer;
+          return renderItemLine(label, value);
         }
 
-        return renderItemLine(itemLabel, itemValue);
+        const entries = Object.entries(item)
+          .filter(([key, value]) => !["label", "title", "nom", "name"].includes(key) && !shouldIgnoreKey(key, value));
+
+        return entries
+          .map(([key, value]) => renderItemLine(prettifyKey(key), value))
+          .join("");
       }
 
       return renderItemLine("Élément", item);
+    }).join("");
+  }
+
+  function renderColumnsAsSubSections(columns) {
+    const columnGroups = normalizeArray(columns);
+
+    if (!columnGroups.length) return "";
+
+    return columnGroups.map((group, index) => {
+      if (!isPlainObject(group)) {
+        return renderSectionCard(`Colonne ${index + 1}`, renderItemLine("Valeur", group), "1 élément");
+      }
+
+      const title = getSectionTitle(group, `Groupe ${index + 1}`);
+      const items = extractSimpleItems(group);
+      const html = renderItems(items);
+
+      return renderSectionCard(title, html, `${items.length} élément(s)`);
     }).join("");
   }
 
@@ -307,32 +313,39 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }
 
-    const sectionTitle = section.title || section.label || section.nom || section.name || `Section ${index + 1}`;
-    const items = extractItemsFromObject(section);
-    const html = renderItems(items);
+    const sectionTitle = getSectionTitle(section, `Section ${index + 1}`);
 
-    return renderSectionCard(sectionTitle, html, `${items.length} élément(s)`);
+    let html = "";
+
+    const normalItems = extractSimpleItems(section);
+    html += renderItems(normalItems);
+
+    if (section.columns) {
+      html += `
+        <div class="inline-subsections">
+          ${renderColumnsAsSubSections(section.columns)}
+        </div>
+      `;
+    }
+
+    const totalCount = normalItems.length + normalizeArray(section.columns).length;
+
+    return renderSectionCard(sectionTitle, html, `${totalCount} élément(s)`);
   }
 
   function renderSmartRootField(key, value) {
-    if (shouldIgnoreKey(key) || isTimestampLike(value)) {
-      return "";
-    }
+    if (shouldIgnoreKey(key, value)) return "";
 
     const title = prettifyKey(key);
 
-    if (Array.isArray(value)) {
-      const allAreSections = value.every((entry) => {
-        return isPlainObject(entry) && (
-          "items" in entry ||
-          "title" in entry ||
-          "label" in entry ||
-          "nom" in entry ||
-          "name" in entry
-        );
-      });
+    if (key === "columns") {
+      return renderColumnsAsSubSections(value);
+    }
 
-      if (allAreSections) {
+    if (Array.isArray(value)) {
+      const allSectionLike = value.every(isSectionLike);
+
+      if (allSectionLike) {
         return value.map((entry, index) => renderKnownSection(entry, index)).join("");
       }
 
@@ -341,27 +354,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isPlainObject(value)) {
       const values = Object.values(value);
-
-      const looksLikeSectionList = values.length > 0 && values.every((entry) => {
-        return isPlainObject(entry) && (
-          "items" in entry ||
-          "title" in entry ||
-          "label" in entry ||
-          "nom" in entry ||
-          "name" in entry
-        );
-      });
+      const looksLikeSectionList = values.length > 0 && values.every(isSectionLike);
 
       if (looksLikeSectionList) {
         return values.map((entry, index) => renderKnownSection(entry, index)).join("");
       }
 
-      if ("items" in value || "title" in value || "label" in value || "nom" in value || "name" in value) {
+      if (isSectionLike(value)) {
         return renderKnownSection(value, 0);
       }
 
       const entries = Object.entries(value)
-        .filter(([childKey, childValue]) => !shouldIgnoreKey(childKey) && !isTimestampLike(childValue));
+        .filter(([childKey, childValue]) => !shouldIgnoreKey(childKey, childValue));
 
       const html = entries
         .map(([childKey, childValue]) => renderItemLine(prettifyKey(childKey), childValue))
@@ -375,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderExtraRootFields(data) {
     return Object.entries(data)
-      .filter(([key, value]) => !shouldIgnoreKey(key) && !isTimestampLike(value))
+      .filter(([key, value]) => !shouldIgnoreKey(key, value))
       .map(([key, value]) => renderSmartRootField(key, value))
       .filter(Boolean)
       .join("");
@@ -384,7 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderCorrection(data, docId, meta) {
     const title = data.label || data.title || data.titre || meta.label || docId;
     const description = data.description || `Réponses et configuration attendue pour le custom ${meta.vehicle}.`;
-
     const sections = normalizeArray(data.sections);
 
     correctionHeroKicker.textContent = "Corrigé";
