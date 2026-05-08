@@ -802,3 +802,147 @@
     font-size: 22px;
   }
 }
+/* =========================================================
+   FIX FINAL - REMETTRE LES INFOS EN COLONNES PROPRES
+   À COLLER TOUT EN BAS DE prof.css
+========================================================= */
+
+/* Toutes les infos principales en colonnes */
+.inline-detail-items {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* Chaque info = petite carte compacte */
+.inline-detail-item {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  min-height: 74px !important;
+  padding: 12px 14px !important;
+
+  border-radius: 15px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025)) !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+}
+
+/* Label au-dessus */
+.inline-detail-item-label {
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+}
+
+/* Valeur en dessous */
+.inline-detail-item-value {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  text-align: center !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* Si pas de label, on centre juste la valeur */
+.inline-detail-item.no-label {
+  gap: 0 !important;
+}
+
+.inline-detail-item.no-label .inline-detail-item-value {
+  text-align: center !important;
+}
+
+/* Sous-sections : Roues / Accessoires / Carrosserie / Néons */
+.inline-detail-section > .inline-detail-items > .inline-subsections {
+  grid-column: 1 / -1 !important;
+}
+
+.inline-subsections {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 0 !important;
+}
+
+/* Cartes internes des sous-sections */
+.inline-subsections .inline-detail-section {
+  margin: 0 !important;
+  padding: 15px !important;
+  border-radius: 18px !important;
+
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025)) !important;
+  border-color: rgba(214,180,106,.14) !important;
+}
+
+/* Titre des sous-sections */
+.inline-subsections .inline-detail-section-head {
+  margin-bottom: 12px !important;
+}
+
+.inline-subsections .inline-detail-section-head h4 {
+  font-size: 20px !important;
+}
+
+.inline-subsections .inline-detail-section-head span {
+  font-size: 10px !important;
+  padding: 7px 10px !important;
+}
+
+/* Items dans Roues / Accessoires / etc. restent empilés dans leur petite carte */
+.inline-subsections .inline-detail-items {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+.inline-subsections .inline-detail-item {
+  min-height: 58px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+}
+
+.inline-subsections .inline-detail-item-label {
+  font-size: 11px !important;
+  text-align: center !important;
+}
+
+.inline-subsections .inline-detail-item-value {
+  font-size: 14px !important;
+  text-align: center !important;
+}
+
+/* Responsive */
+@media (max-width: 1350px) {
+  .inline-detail-items {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .inline-detail-items,
+  .inline-subsections {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inline-detail-item {
+    min-height: auto !important;
+  }
+
+  .inline-detail-item-label,
+  .inline-detail-item-value {
+    text-align: left !important;
+  }
+}
