@@ -119,39 +119,43 @@
     </div>
 
     <section class="corrections-interface" id="correctionsInterface" hidden>
-      <div class="corrections-head">
-        <div>
-          <p class="kicker">Corrigés</p>
-          <h2>Choisir un custom</h2>
-          <p>
-            Sélectionnez le custom souhaité pour consulter sa fiche de correction.
-          </p>
+      <div class="corrections-shell">
+
+        <div class="corrections-head">
+          <div>
+            <p class="kicker">Corrigés</p>
+            <h2>Choisir un custom</h2>
+            <p>
+              Sélectionnez le custom souhaité pour consulter sa fiche de correction.
+            </p>
+          </div>
+
+          <button type="button" class="close-interface-btn" id="closeCorrectionsBtn">
+            ×
+          </button>
         </div>
 
-        <button type="button" class="close-interface-btn" id="closeCorrectionsBtn">
-          ×
-        </button>
-      </div>
+        <div class="correction-cards">
 
-      <div class="correction-cards">
+          <button type="button" class="correction-card" data-custom="facile">
+            <span>01</span>
+            <h3>Custom Facile</h3>
+            <p>Dukes</p>
+          </button>
 
-        <button type="button" class="correction-card">
-          <span>01</span>
-          <h3>Custom Facile</h3>
-          <p>Dukes</p>
-        </button>
+          <button type="button" class="correction-card" data-custom="moyen">
+            <span>02</span>
+            <h3>Custom Moyen</h3>
+            <p>Sentinel XS4</p>
+          </button>
 
-        <button type="button" class="correction-card">
-          <span>02</span>
-          <h3>Custom Moyen</h3>
-          <p>Sentinel XS4</p>
-        </button>
+          <button type="button" class="correction-card" data-custom="difficile">
+            <span>03</span>
+            <h3>Custom Difficile</h3>
+            <p>Annis Rumina</p>
+          </button>
 
-        <button type="button" class="correction-card">
-          <span>03</span>
-          <h3>Custom Difficile</h3>
-          <p>Annis Rumina</p>
-        </button>
+        </div>
 
       </div>
     </section>
