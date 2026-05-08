@@ -77,9 +77,7 @@
     <div class="prof-dashboard-top">
       <div>
         <p class="kicker">Module 4 - Mécanique</p>
-
         <h1>Tableau Prof</h1>
-
         <p class="intro">
           Bienvenue dans l’espace sécurisé. Ici on ajoutera les corrigés et les réponses élèves.
         </p>
@@ -95,94 +93,92 @@
       <button type="button" class="prof-panel prof-panel-btn" id="openCorrectionsBtn">
         <span class="panel-number">01</span>
         <h2>Corrigés</h2>
-        <p>
-          Accéder aux corrigés des customs.
-        </p>
+        <p>Accéder aux corrigés des customs.</p>
       </button>
 
       <button type="button" class="prof-panel prof-panel-btn">
         <span class="panel-number">02</span>
         <h2>Réponses élèves</h2>
-        <p>
-          Zone prévue pour afficher les réponses des élèves.
-        </p>
+        <p>Zone prévue pour afficher les réponses des élèves.</p>
       </button>
 
       <button type="button" class="prof-panel prof-panel-btn">
         <span class="panel-number">03</span>
         <h2>Examens</h2>
-        <p>
-          Zone prévue pour gérer les examens plus tard.
-        </p>
+        <p>Zone prévue pour gérer les examens plus tard.</p>
       </button>
 
     </div>
 
     <section class="corrections-interface" id="correctionsInterface" hidden>
       <div class="corrections-shell">
+        <div class="corrections-shell-inner">
 
-        <div class="corrections-head" id="correctionsChooserHead">
-          <div>
-            <p class="kicker">Corrigés</p>
-            <h2>Choisir un custom</h2>
-            <p>
-              Sélectionnez le custom souhaité pour consulter sa fiche de correction.
-            </p>
-          </div>
-
-          <button type="button" class="close-interface-btn" id="closeCorrectionsBtn">
-            ×
-          </button>
-        </div>
-
-        <div class="correction-cards" id="correctionCardsList">
-
-          <button type="button" class="correction-card" data-custom="dukes">
-            <span>01</span>
-            <h3>Custom Facile</h3>
-            <p>Dukes</p>
-          </button>
-
-          <button type="button" class="correction-card" data-custom="sentinel">
-            <span>02</span>
-            <h3>Custom Moyen</h3>
-            <p>Sentinel XS4</p>
-          </button>
-
-          <button type="button" class="correction-card" data-custom="rumina">
-            <span>03</span>
-            <h3>Custom Difficile</h3>
-            <p>Annis Rumina</p>
-          </button>
-
-        </div>
-
-        <section class="correction-detail-view" id="correctionDetailView" hidden>
-          <div class="detail-topbar">
-            <button type="button" class="back-corrections-btn" id="backToCorrectionCards">
-              ← Retour aux customs
-            </button>
-
-            <p class="detail-path" id="correctionPath">
-              Firestore / customAnswerKeys / document
-            </p>
-          </div>
-
-          <div class="detail-hero">
-            <div class="detail-hero-left">
-              <p class="kicker" id="correctionHeroKicker">Corrigé</p>
-              <h2 id="correctionTitle">Correction</h2>
-              <p class="detail-description" id="correctionDescription">
-                Sélectionnez un custom pour afficher sa correction.
+          <div class="corrections-head" id="correctionsChooserHead">
+            <div>
+              <p class="kicker">Corrigés</p>
+              <h2>Choisir un custom</h2>
+              <p>
+                Sélectionnez le custom souhaité pour consulter sa fiche de correction.
               </p>
             </div>
 
-            <div class="detail-tags" id="correctionTags"></div>
+            <button type="button" class="close-interface-btn" id="closeCorrectionsBtn">×</button>
           </div>
 
-          <div class="detail-sections" id="correctionSections"></div>
-        </section>
+          <div class="correction-cards" id="correctionCardsList">
 
+            <button type="button" class="correction-card" data-custom="facile">
+              <span>01</span>
+              <h3>Custom Facile</h3>
+              <p>Dukes</p>
+            </button>
+
+            <button type="button" class="correction-card" data-custom="moyen">
+              <span>02</span>
+              <h3>Custom Moyen</h3>
+              <p>Sentinel XS4</p>
+            </button>
+
+            <button type="button" class="correction-card" data-custom="difficile">
+              <span>03</span>
+              <h3>Custom Difficile</h3>
+              <p>Annis Rumina</p>
+            </button>
+
+          </div>
+
+          <section class="correction-detail-view" id="correctionDetailView" hidden>
+            <div class="detail-topbar">
+              <div class="detail-topbar-left">
+                <button type="button" class="back-corrections-btn" id="backToCorrectionCards">
+                  ← Retour aux customs
+                </button>
+
+                <p class="detail-path" id="correctionPath">
+                  Firestore / customAnswerKeys / dukes
+                </p>
+              </div>
+
+              <button type="button" class="detail-close-btn" id="closeCorrectionsDetailBtn">×</button>
+            </div>
+
+            <div class="detail-hero">
+              <div class="detail-hero-left">
+                <p class="kicker" id="correctionHeroKicker">Corrigé</p>
+                <h2 id="correctionTitle">Custom Facile</h2>
+                <p class="detail-description" id="correctionDescription">
+                  Réponses et configuration attendue pour le custom Dukes.
+                </p>
+              </div>
+
+              <div class="detail-tags" id="correctionTags"></div>
+            </div>
+
+            <div class="detail-sections" id="correctionSections"></div>
+          </section>
+
+        </div>
       </div>
     </section>
 
