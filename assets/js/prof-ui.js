@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("_", " ")
       .replaceAll("-", " ")
       .replace(/([a-z])([A-Z])/g, "$1 $2")
-      .replace(/\b\w/g, letter => letter.toUpperCase());
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 
   function isTimestampLike(value) {
@@ -79,6 +79,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function shouldIgnoreKey(key, value) {
     return IGNORED_KEYS.includes(key) || isTimestampLike(value);
+  }
+
+  function getExplicitLabel(item) {
+    return item.label || item.title || item.nom || item.name || "";
   }
 
   function openInlineCorrections() {
@@ -168,24 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!value.length) return "Aucun élément";
 
       return value
-        .map((entry) => {
-          if (isPlainObject(entry)) {
-            const label = entry.label || entry.title || entry.nom || entry.name || "Élément";
-            const itemValue = entry.value ?? entry.valeur ?? entry.reponse ?? entry.answer ?? "";
-
-            if (itemValue !== "") {
-              return `${label} : ${renderValue(itemValue)}`;
-            }
-
-            return Object.entries(entry)
-              .filter(([key, val]) => !shouldIgnoreKey(key, val))
-              .map(([key, val]) => `${prettifyKey(key)} : ${renderValue(val)}`)
-              .filter(Boolean)
-              .join("\n");
-          }
-
-          return renderValue(entry);
-        })
+        .map((entry) => renderValue(entry))
         .filter(Boolean)
         .join("\n");
     }
@@ -205,9 +192,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const renderedValue = renderValue(value);
     if (!renderedValue) return "";
 
+    const cleanLabel = String(label || "").trim();
+
     return `
-      <div class="inline-detail-item">
-        <div class="inline-detail-item-label">${escapeHtml(label)}</div>
+      <div class="inline-detail-item ${cleanLabel ? "" : "no-label"}">
+        ${cleanLabel ? `<div class="inline-detail-item-label">${escapeHtml(cleanLabel)}</div>` : ""}
         <div class="inline-detail-item-value">${escapeHtml(renderedValue)}</div>
       </div>
     `;
@@ -262,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const baseItems = normalizeArray(obj.items).map((item) => {
       if (isPlainObject(item)) return item;
-      return { label: "Élément", value: item };
+      return { value: item };
     });
 
     const extraItems = Object.entries(obj)
@@ -275,26 +264,56 @@ document.addEventListener("DOMContentLoaded", () => {
     return [...baseItems, ...extraItems];
   }
 
-  function renderItems(items) {
-    return items.map((item) => {
-      if (isPlainObject(item)) {
-        const label = item.label || item.title || item.nom || item.name || "Élément";
+  function normalizeRenderableEntries(item) {
+    if (!isPlainObject(item)) {
+      return [{ label: "", value: item }];
+    }
 
-        if ("value" in item || "valeur" in item || "reponse" in item || "answer" in item) {
-          const value = item.value ?? item.valeur ?? item.reponse ?? item.answer;
-          return renderItemLine(label, value);
-        }
+    const explicitLabel = getExplicitLabel(item);
 
-        const entries = Object.entries(item)
-          .filter(([key, value]) => !["label", "title", "nom", "name"].includes(key) && !shouldIgnoreKey(key, value));
+    if ("value" in item || "valeur" in item || "reponse" in item || "answer" in item) {
+      const rawValue = item.value ?? item.valeur ?? item.reponse ?? item.answer;
 
-        return entries
-          .map(([key, value]) => renderItemLine(prettifyKey(key), value))
-          .join("");
+      if (explicitLabel) {
+        return [{ label: explicitLabel, value: rawValue }];
       }
 
-      return renderItemLine("Élément", item);
-    }).join("");
+      if (isPlainObject(rawValue)) {
+        const objectEntries = Object.entries(rawValue)
+          .filter(([key, value]) => !shouldIgnoreKey(key, value))
+          .map(([key, value]) => ({
+            label: prettifyKey(key),
+            value
+          }));
+
+        if (objectEntries.length) return objectEntries;
+      }
+
+      return [{ label: "", value: rawValue }];
+    }
+
+    const entries = Object.entries(item)
+      .filter(([key, value]) => !["label", "title", "nom", "name"].includes(key) && !shouldIgnoreKey(key, value));
+
+    if (!entries.length) {
+      return [];
+    }
+
+    if (explicitLabel && entries.length === 1) {
+      return [{ label: explicitLabel, value: entries[0][1] }];
+    }
+
+    return entries.map(([key, value]) => ({
+      label: prettifyKey(key),
+      value
+    }));
+  }
+
+  function renderItems(items) {
+    return items
+      .flatMap((item) => normalizeRenderableEntries(item))
+      .map(({ label, value }) => renderItemLine(label, value))
+      .join("");
   }
 
   function renderColumnsAsSubSections(columns) {
@@ -306,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!isPlainObject(group)) {
         return renderSectionCard(
           `Groupe ${index + 1}`,
-          renderItemLine("Valeur", group),
+          renderItemLine("", group),
           "1 élément"
         );
       }
@@ -323,7 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isPlainObject(section)) {
       return renderSectionCard(
         `Section ${index + 1}`,
-        renderItemLine("Valeur", section),
+        renderItemLine("", section),
         "1 élément"
       );
     }
@@ -367,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return value.map((entry, index) => renderKnownSection(entry, index)).join("");
       }
 
-      return renderSectionCard(title, renderItemLine(title, value), `${value.length} élément(s)`);
+      return renderSectionCard(title, renderItemLine("", value), `${value.length} élément(s)`);
     }
 
     if (isPlainObject(value)) {
@@ -383,16 +402,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const entries = Object.entries(value)
-        .filter(([childKey, childValue]) => !shouldIgnoreKey(childKey, childValue));
+        .filter(([childKey, childValue]) => !shouldIgnoreKey(childKey, childValue))
+        .map(([childKey, childValue]) => ({
+          label: prettifyKey(childKey),
+          value: childValue
+        }));
 
-      const html = entries
-        .map(([childKey, childValue]) => renderItemLine(prettifyKey(childKey), childValue))
-        .join("");
+      const html = renderItems(entries);
 
       return renderSectionCard(title, html, `${entries.length} champ(s)`);
     }
 
-    return renderSectionCard(title, renderItemLine(title, value), "1 champ");
+    return renderSectionCard(title, renderItemLine("", value), "1 champ");
   }
 
   function renderExtraRootFields(data) {
