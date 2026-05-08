@@ -879,3 +879,80 @@
     font-size: 42px !important;
   }
 }
+/* =========================================================
+   FIX TECHNIQUE VISUELLE - SOUS SECTIONS COMPACTES
+========================================================= */
+
+.inline-detail-section > .inline-detail-items > .inline-subsections {
+  grid-column: 1 / -1 !important;
+}
+
+.inline-subsections {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 0 !important;
+}
+
+.inline-subsections .inline-detail-section {
+  padding: 16px !important;
+  border-radius: 20px !important;
+  margin: 0 !important;
+
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025)) !important;
+  border-color: rgba(214,180,106,.14) !important;
+}
+
+.inline-subsections .inline-detail-section-head {
+  margin-bottom: 12px !important;
+}
+
+.inline-subsections .inline-detail-section-head h4 {
+  font-size: 20px !important;
+}
+
+.inline-subsections .inline-detail-items {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+.inline-subsections .inline-detail-item {
+  min-height: auto !important;
+  padding: 11px 12px !important;
+  border-radius: 14px !important;
+}
+
+.inline-subsections .inline-detail-item-label {
+  font-size: 12px !important;
+}
+
+.inline-subsections .inline-detail-item-value {
+  font-size: 14px !important;
+}
+
+.inline-detail-section {
+  padding: 18px !important;
+}
+
+.inline-detail-items {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 1350px) {
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .inline-detail-items {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .inline-subsections,
+  .inline-detail-items {
+    grid-template-columns: 1fr !important;
+  }
+}
