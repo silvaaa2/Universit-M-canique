@@ -124,8 +124,8 @@
         <div class="corrections-head">
           <div>
             <p class="kicker">Corrigés</p>
-            <h2>Choisir un custom</h2>
-            <p>
+            <h2 id="correctionsTitle">Choisir un custom</h2>
+            <p id="correctionsSubtitle">
               Sélectionnez le custom souhaité pour consulter sa fiche de correction.
             </p>
           </div>
@@ -135,26 +135,34 @@
           </button>
         </div>
 
-        <div class="correction-cards">
+        <div class="correction-cards" id="correctionCards">
 
-          <button type="button" class="correction-card" data-custom="facile">
+          <button type="button" class="correction-card" data-custom="dukes">
             <span>01</span>
             <h3>Custom Facile</h3>
             <p>Dukes</p>
           </button>
 
-          <button type="button" class="correction-card" data-custom="moyen">
+          <button type="button" class="correction-card" data-custom="sentinel">
             <span>02</span>
             <h3>Custom Moyen</h3>
             <p>Sentinel XS4</p>
           </button>
 
-          <button type="button" class="correction-card" data-custom="difficile">
+          <button type="button" class="correction-card" data-custom="rumina">
             <span>03</span>
             <h3>Custom Difficile</h3>
             <p>Annis Rumina</p>
           </button>
 
+        </div>
+
+        <div class="correction-detail" id="correctionDetail" hidden>
+          <button type="button" class="back-corrections-btn" id="backCorrectionsBtn">
+            ← Retour aux customs
+          </button>
+
+          <div id="correctionContent"></div>
         </div>
 
       </div>
