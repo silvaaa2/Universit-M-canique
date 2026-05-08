@@ -299,7 +299,7 @@
   margin-bottom: 42px;
 }
 
-/* ===== Interface corrigés full premium ===== */
+/* ===== Interface corrigés modal premium V2 ===== */
 
 body.modal-open {
   overflow: hidden;
@@ -310,28 +310,26 @@ body.modal-open {
   inset: 0;
   z-index: 9997;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  place-items: center;
 
-  padding: 28px;
+  padding: 42px;
 
   background:
-    radial-gradient(circle at 20% 20%, rgba(214,180,106,.12), transparent 30%),
-    radial-gradient(circle at 80% 25%, rgba(255,255,255,.05), transparent 25%),
-    rgba(3,3,3,.56);
+    radial-gradient(circle at 22% 18%, rgba(214,180,106,.16), transparent 30%),
+    radial-gradient(circle at 80% 22%, rgba(255,255,255,.06), transparent 28%),
+    rgba(3,3,3,.68);
 
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 
   transition:
-    opacity .42s ease,
-    visibility .42s ease,
-    backdrop-filter .42s ease;
+    opacity .38s ease,
+    visibility .38s ease;
 }
 
 .corrections-interface.active {
@@ -349,53 +347,44 @@ body.modal-open {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
   background-size: 70px 70px;
-  mask-image: linear-gradient(to bottom, black, transparent 100%);
+  mask-image: linear-gradient(to bottom, black, transparent 95%);
   pointer-events: none;
 }
 
-.corrections-interface::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at center, rgba(214,180,106,.08), transparent 45%);
-  pointer-events: none;
-}
-
+/* on fusionne visuellement le head + les cards */
 .corrections-head,
 .correction-cards {
-  width: min(1280px, 100%);
+  width: min(1180px, 100%);
   position: relative;
   z-index: 2;
 }
 
 .corrections-head {
-  padding: 34px 34px 18px;
-  border-radius: 34px 34px 0 0;
+  padding: 44px 44px 24px;
+  border-radius: 38px 38px 0 0;
 
   background:
-    linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.035));
-  border: 1px solid rgba(255,255,255,.12);
+    linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.14);
   border-bottom: none;
 
   box-shadow:
-    0 24px 80px rgba(0,0,0,.35),
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 0 40px rgba(214,180,106,.08);
+    0 30px 90px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.08);
 
   backdrop-filter: blur(26px);
   -webkit-backdrop-filter: blur(26px);
 
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  align-items: flex-start;
+  gap: 28px;
 
   opacity: 0;
-  transform: translateY(36px) scale(.965);
+  transform: translateY(35px) scale(.96);
   transition:
     opacity .45s cubic-bezier(.22, 1, .36, 1),
     transform .45s cubic-bezier(.22, 1, .36, 1);
@@ -406,16 +395,20 @@ body.modal-open {
   transform: translateY(0) scale(1);
 }
 
+.corrections-head .kicker {
+  margin-bottom: 14px;
+}
+
 .corrections-head h2 {
   margin: 0;
-  font-size: clamp(52px, 6vw, 84px);
+  font-size: clamp(52px, 5.8vw, 86px);
   line-height: .9;
   letter-spacing: -.08em;
 }
 
 .corrections-head p {
-  max-width: 700px;
-  margin: 14px 0 0;
+  max-width: 720px;
+  margin: 18px 0 0;
   color: var(--muted);
   font-weight: 700;
   line-height: 1.6;
@@ -426,13 +419,19 @@ body.modal-open {
   height: 60px;
   min-width: 60px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.05);
+
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.07);
   color: var(--text);
+
   cursor: pointer;
   font-size: 38px;
   font-weight: 900;
   line-height: 1;
+
+  display: grid;
+  place-items: center;
+
   transition:
     transform .25s ease,
     background .25s ease,
@@ -445,35 +444,35 @@ body.modal-open {
   background: linear-gradient(135deg, var(--gold), var(--gold2));
   border-color: transparent;
   transform: rotate(90deg) scale(1.05);
-  box-shadow: 0 14px 35px rgba(214,180,106,.22);
+  box-shadow: 0 16px 40px rgba(214,180,106,.22);
 }
 
 .correction-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
+  gap: 24px;
 
-  padding: 34px;
-  border-radius: 0 0 34px 34px;
+  padding: 30px 44px 44px;
+  border-radius: 0 0 38px 38px;
 
   background:
-    linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.035));
-  border: 1px solid rgba(255,255,255,.12);
+    linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.14);
   border-top: none;
 
   box-shadow:
-    0 28px 100px rgba(0,0,0,.42),
-    inset 0 1px 0 rgba(255,255,255,.05),
-    0 0 40px rgba(214,180,106,.06);
+    0 35px 110px rgba(0,0,0,.52),
+    0 0 70px rgba(214,180,106,.08),
+    inset 0 1px 0 rgba(255,255,255,.05);
 
   backdrop-filter: blur(26px);
   -webkit-backdrop-filter: blur(26px);
 
   opacity: 0;
-  transform: translateY(42px) scale(.97);
+  transform: translateY(40px) scale(.965);
   transition:
-    opacity .52s cubic-bezier(.22, 1, .36, 1) .06s,
-    transform .52s cubic-bezier(.22, 1, .36, 1) .06s;
+    opacity .52s cubic-bezier(.22, 1, .36, 1) .08s,
+    transform .52s cubic-bezier(.22, 1, .36, 1) .08s;
 }
 
 .corrections-interface.active .correction-cards {
@@ -482,32 +481,34 @@ body.modal-open {
 }
 
 .correction-card {
-  min-height: 250px;
-  padding: 30px;
-  border-radius: 30px;
+  min-height: 255px;
+  padding: 32px;
+  border-radius: 32px;
+
   text-align: left;
   cursor: pointer;
 
   color: var(--text);
   background:
-    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.03));
-  border: 1px solid rgba(255,255,255,.10);
+    linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.035));
+  border: 1px solid rgba(255,255,255,.13);
+
   box-shadow:
-    0 18px 60px rgba(0,0,0,.24),
-    inset 0 1px 0 rgba(255,255,255,.05);
+    0 20px 70px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.07);
 
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 
   opacity: 0;
-  transform: translateY(26px);
+  transform: translateY(28px);
 
   transition:
+    opacity .45s ease,
     transform .32s ease,
     border-color .28s ease,
     box-shadow .28s ease,
-    background .28s ease,
-    opacity .45s ease;
+    background .28s ease;
 }
 
 .corrections-interface.active .correction-card {
@@ -516,25 +517,25 @@ body.modal-open {
 }
 
 .corrections-interface.active .correction-card:nth-child(1) {
-  transition-delay: .12s;
+  transition-delay: .14s;
 }
 
 .corrections-interface.active .correction-card:nth-child(2) {
-  transition-delay: .18s;
+  transition-delay: .21s;
 }
 
 .corrections-interface.active .correction-card:nth-child(3) {
-  transition-delay: .24s;
+  transition-delay: .28s;
 }
 
 .correction-card:hover {
-  transform: translateY(-12px) scale(1.01);
-  border-color: rgba(214,180,106,.5);
+  transform: translateY(-12px) scale(1.015);
+  border-color: rgba(214,180,106,.55);
   background:
-    linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+    linear-gradient(145deg, rgba(255,255,255,.15), rgba(255,255,255,.05));
   box-shadow:
-    0 26px 80px rgba(0,0,0,.36),
-    0 0 35px rgba(214,180,106,.10);
+    0 30px 90px rgba(0,0,0,.42),
+    0 0 40px rgba(214,180,106,.13);
 }
 
 .correction-card span {
@@ -544,15 +545,16 @@ body.modal-open {
 }
 
 .correction-card h3 {
-  margin: 74px 0 12px;
-  font-size: 32px;
-  letter-spacing: -.04em;
+  margin: 76px 0 12px;
+  font-size: 34px;
+  letter-spacing: -.045em;
+  line-height: 1;
 }
 
 .correction-card p {
   margin: 0;
   color: var(--muted);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ===== Responsive ===== */
@@ -567,19 +569,19 @@ body.modal-open {
   }
 
   .corrections-interface {
-    align-items: flex-start;
+    align-items: start;
     overflow-y: auto;
-    padding: 18px;
+    padding: 22px;
   }
 
   .corrections-head {
     flex-direction: column;
-    padding: 28px 28px 16px;
+    padding: 32px 28px 18px;
   }
 
   .correction-cards {
     grid-template-columns: 1fr;
-    padding: 28px;
+    padding: 24px 28px 32px;
   }
 
   .close-interface-btn {
@@ -603,21 +605,21 @@ body.modal-open {
   }
 
   .corrections-interface {
-    padding: 12px;
+    padding: 14px;
   }
 
   .corrections-head {
-    padding: 22px 22px 12px;
+    padding: 24px 22px 14px;
     border-radius: 28px 28px 0 0;
   }
 
   .correction-cards {
-    padding: 22px;
+    padding: 20px 22px 24px;
     border-radius: 0 0 28px 28px;
   }
 
   .corrections-head h2 {
-    font-size: 54px;
+    font-size: 52px;
   }
 
   .correction-card {
