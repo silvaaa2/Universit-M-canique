@@ -159,8 +159,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ===== Transition login ===== */
@@ -227,8 +232,13 @@
 }
 
 @keyframes transitionSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes transitionPop {
@@ -282,7 +292,7 @@
 }
 
 /* =========================================================
-   INLINE CORRECTIONS - SANS MODAL, SOUS LES CARTES
+   INLINE CORRECTIONS - SOUS LES CARTES
 ========================================================= */
 
 .inline-corrections {
@@ -319,19 +329,19 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
-  padding: 32px 34px;
+  padding: 24px 30px;
   border-bottom: 1px solid rgba(255,255,255,.075);
 }
 
 .inline-corrections-head h2 {
   margin: 0;
-  font-size: clamp(38px, 5vw, 64px);
+  font-size: clamp(34px, 4vw, 56px);
   line-height: .92;
   letter-spacing: -.06em;
 }
 
 .inline-corrections-head p {
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   color: var(--muted);
   font-weight: 700;
   line-height: 1.55;
@@ -360,6 +370,8 @@
   color: #111;
   transform: scale(1.05);
 }
+
+/* ===== Choix des customs ===== */
 
 .inline-correction-chooser {
   display: grid;
@@ -420,7 +432,9 @@
   font-weight: 800;
 }
 
-/* ===== Détail correction ===== */
+/* =========================================================
+   DETAIL CORRECTION
+========================================================= */
 
 .inline-correction-detail {
   padding: 0 34px 34px;
@@ -470,13 +484,13 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 22px;
-  padding: 28px;
+  padding: 22px 26px;
   border-radius: 26px;
   border: 1px solid rgba(255,255,255,.08);
   background:
     radial-gradient(circle at 18% 18%, rgba(214,180,106,.08), transparent 28%),
     linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .inline-detail-hero-left {
@@ -485,13 +499,13 @@
 
 .inline-detail-hero h3 {
   margin: 0;
-  font-size: clamp(42px, 5vw, 72px);
+  font-size: clamp(38px, 4vw, 58px);
   line-height: .92;
   letter-spacing: -.06em;
 }
 
 .inline-detail-description {
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   max-width: 720px;
   color: var(--muted);
   font-size: 16px;
@@ -520,14 +534,18 @@
   white-space: nowrap;
 }
 
+/* =========================================================
+   SECTIONS COMPACTES
+========================================================= */
+
 .inline-detail-sections {
   display: grid;
   gap: 18px;
 }
 
 .inline-detail-section {
-  padding: 22px;
-  border-radius: 24px;
+  padding: 18px;
+  border-radius: 22px;
   border: 1px solid rgba(255,255,255,.08);
   background:
     linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
@@ -544,12 +562,12 @@
   justify-content: space-between;
   align-items: center;
   gap: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .inline-detail-section-head h4 {
   margin: 0;
-  font-size: 26px;
+  font-size: 22px;
   letter-spacing: -.03em;
 }
 
@@ -564,34 +582,111 @@
   text-transform: uppercase;
 }
 
+/* Toutes les infos en petites cartes */
 .inline-detail-items {
   display: grid;
-  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .inline-detail-item {
-  display: grid;
-  grid-template-columns: minmax(180px, 260px) 1fr;
-  gap: 14px;
-  align-items: center;
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.045);
-  border: 1px solid rgba(255,255,255,.055);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 74px;
+  padding: 12px 14px;
+
+  border-radius: 15px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.065);
 }
 
 .inline-detail-item-label {
   color: var(--muted);
+  font-size: 12px;
   font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .inline-detail-item-value {
   color: var(--text);
+  font-size: 15px;
   font-weight: 900;
-  text-align: right;
+  line-height: 1.2;
+  text-align: center;
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* =========================================================
+   SOUS-SECTIONS : Roues / Accessoires / Carrosserie / Néons
+========================================================= */
+
+.inline-detail-section > .inline-detail-items > .inline-subsections {
+  grid-column: 1 / -1;
+}
+
+.inline-subsections {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 0;
+}
+
+.inline-subsections .inline-detail-section {
+  margin: 0;
+  padding: 15px;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025));
+  border-color: rgba(214,180,106,.14);
+}
+
+.inline-subsections .inline-detail-section-head {
+  margin-bottom: 12px;
+}
+
+.inline-subsections .inline-detail-section-head h4 {
+  font-size: 20px;
+}
+
+.inline-subsections .inline-detail-section-head span {
+  font-size: 10px;
+  padding: 7px 10px;
+}
+
+.inline-subsections .inline-detail-items {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.inline-subsections .inline-detail-item {
+  min-height: 62px;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+.inline-subsections .inline-detail-item-label {
+  font-size: 11px;
+}
+
+.inline-subsections .inline-detail-item-value {
+  font-size: 14px;
+}
+
+.inline-detail-item-value br {
+  display: none;
+}
+
+/* =========================================================
+   LOADING / ERROR
+========================================================= */
 
 .inline-loading-box,
 .inline-error-box,
@@ -629,7 +724,19 @@
   line-height: 1.55;
 }
 
-/* ===== Responsive ===== */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1350px) {
+  .inline-detail-items {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 @media (max-width: 950px) {
   .prof-grid {
@@ -655,11 +762,16 @@
     margin-top: 8px;
   }
 
-  .inline-detail-item {
+  .inline-detail-items,
+  .inline-subsections {
     grid-template-columns: 1fr;
-    align-items: flex-start;
   }
 
+  .inline-detail-item {
+    min-height: auto;
+  }
+
+  .inline-detail-item-label,
   .inline-detail-item-value {
     text-align: left;
   }
@@ -709,7 +821,7 @@
 
   .inline-corrections-head h2,
   .inline-detail-hero h3 {
-    font-size: 44px;
+    font-size: 42px;
   }
 
   .inline-custom-btn {
@@ -723,354 +835,5 @@
 
   .inline-detail-section-head h4 {
     font-size: 22px;
-  }
-}
-.inline-subsections {
-  display: grid;
-  gap: 16px;
-  margin-top: 18px;
-}
-
-.inline-subsections .inline-detail-section {
-  background:
-    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025));
-  border-color: rgba(214,180,106,.14);
-}
-/* =========================================================
-   PATCH COMPACT FINAL - AFFICHAGE EN COLONNES
-   À COLLER TOUT EN BAS DE prof.css
-========================================================= */
-
-/* Tête du centre de correction plus compacte */
-.inline-corrections-head {
-  padding: 24px 30px !important;
-}
-
-.inline-corrections-head h2 {
-  font-size: clamp(34px, 4vw, 56px) !important;
-}
-
-.inline-corrections-head p {
-  margin-top: 10px !important;
-}
-
-/* Hero du custom plus compact */
-.inline-detail-hero {
-  padding: 22px 26px !important;
-  margin-bottom: 18px !important;
-}
-
-.inline-detail-hero h3 {
-  font-size: clamp(38px, 4vw, 58px) !important;
-}
-
-.inline-detail-description {
-  margin-top: 10px !important;
-}
-
-/* Sections plus compactes */
-.inline-detail-section {
-  padding: 20px !important;
-}
-
-.inline-detail-section-head {
-  margin-bottom: 14px !important;
-}
-
-.inline-detail-section-head h4 {
-  font-size: 24px !important;
-}
-
-/* Les éléments passent en colonnes */
-.inline-detail-items {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 12px !important;
-}
-
-/* Chaque élément devient une petite carte compacte */
-.inline-detail-item {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  gap: 8px !important;
-
-  min-height: 84px !important;
-  padding: 14px 15px !important;
-
-  border-radius: 16px !important;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.025)) !important;
-  border: 1px solid rgba(255,255,255,.07) !important;
-}
-
-/* Label au-dessus */
-.inline-detail-item-label {
-  color: var(--muted) !important;
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  line-height: 1.2 !important;
-}
-
-/* Valeur en dessous */
-.inline-detail-item-value {
-  color: var(--text) !important;
-  font-size: 16px !important;
-  font-weight: 900 !important;
-  text-align: left !important;
-  line-height: 1.25 !important;
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
-}
-
-/* Sous-sections genre Roues / Accessoires / Carrosserie / Néons */
-.inline-subsections {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 16px !important;
-  margin-top: 18px !important;
-}
-
-.inline-subsections .inline-detail-section {
-  margin: 0 !important;
-  background:
-    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025)) !important;
-  border-color: rgba(214,180,106,.14) !important;
-}
-
-/* Dans les sous-sections, les items passent en 2 colonnes */
-.inline-subsections .inline-detail-items {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-}
-
-/* Si une valeur est longue, elle ne casse pas tout */
-.inline-detail-item-value br {
-  display: none !important;
-}
-
-/* Responsive tablette */
-@media (max-width: 1100px) {
-  .inline-detail-items {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .inline-subsections {
-    grid-template-columns: 1fr !important;
-  }
-
-  .inline-subsections .inline-detail-items {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-
-/* Responsive mobile */
-@media (max-width: 650px) {
-  .inline-detail-items,
-  .inline-subsections .inline-detail-items {
-    grid-template-columns: 1fr !important;
-  }
-
-  .inline-detail-item {
-    min-height: auto !important;
-  }
-
-  .inline-corrections-head h2,
-  .inline-detail-hero h3 {
-    font-size: 42px !important;
-  }
-}
-/* =========================================================
-   FIX TECHNIQUE VISUELLE - SOUS SECTIONS COMPACTES
-========================================================= */
-
-.inline-detail-section > .inline-detail-items > .inline-subsections {
-  grid-column: 1 / -1 !important;
-}
-
-.inline-subsections {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 14px !important;
-  margin-top: 0 !important;
-}
-
-.inline-subsections .inline-detail-section {
-  padding: 16px !important;
-  border-radius: 20px !important;
-  margin: 0 !important;
-
-  background:
-    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025)) !important;
-  border-color: rgba(214,180,106,.14) !important;
-}
-
-.inline-subsections .inline-detail-section-head {
-  margin-bottom: 12px !important;
-}
-
-.inline-subsections .inline-detail-section-head h4 {
-  font-size: 20px !important;
-}
-
-.inline-subsections .inline-detail-items {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 8px !important;
-}
-
-.inline-subsections .inline-detail-item {
-  min-height: auto !important;
-  padding: 11px 12px !important;
-  border-radius: 14px !important;
-}
-
-.inline-subsections .inline-detail-item-label {
-  font-size: 12px !important;
-}
-
-.inline-subsections .inline-detail-item-value {
-  font-size: 14px !important;
-}
-
-.inline-detail-section {
-  padding: 18px !important;
-}
-
-.inline-detail-items {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-}
-
-@media (max-width: 1350px) {
-  .inline-subsections {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .inline-detail-items {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-}
-
-@media (max-width: 850px) {
-  .inline-subsections,
-  .inline-detail-items {
-    grid-template-columns: 1fr !important;
-  }
-}
-/* =========================================================
-   PATCH FINAL - TOUTES LES SECTIONS EN CARTES COMPACTES
-   Couleurs / Performances / Infos visuelles même style
-========================================================= */
-
-/* Toutes les sections prennent moins de place */
-.inline-detail-section {
-  padding: 18px !important;
-  border-radius: 22px !important;
-}
-
-/* Titre section plus compact */
-.inline-detail-section-head {
-  margin-bottom: 14px !important;
-}
-
-.inline-detail-section-head h4 {
-  font-size: 22px !important;
-}
-
-/* Toutes les listes deviennent des grilles compactes */
-.inline-detail-items {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 12px !important;
-}
-
-/* Toutes les valeurs deviennent des petites cartes */
-.inline-detail-item {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  gap: 8px !important;
-
-  min-height: 74px !important;
-  padding: 12px 14px !important;
-
-  border-radius: 15px !important;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025)) !important;
-  border: 1px solid rgba(255,255,255,.065) !important;
-}
-
-/* Label */
-.inline-detail-item-label {
-  color: var(--muted) !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
-  line-height: 1.2 !important;
-  text-align: center !important;
-}
-
-/* Valeur */
-.inline-detail-item-value {
-  color: var(--text) !important;
-  font-size: 15px !important;
-  font-weight: 900 !important;
-  line-height: 1.2 !important;
-  text-align: center !important;
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
-}
-
-/* Les sous-sections restent propres */
-.inline-subsections {
-  grid-column: 1 / -1 !important;
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 14px !important;
-  margin-top: 0 !important;
-}
-
-/* Sous-cartes Roues / Accessoires / etc. */
-.inline-subsections .inline-detail-section {
-  padding: 15px !important;
-  border-radius: 18px !important;
-}
-
-/* Dans les sous-sections, les items restent en colonne */
-.inline-subsections .inline-detail-items {
-  grid-template-columns: 1fr !important;
-  gap: 8px !important;
-}
-
-.inline-subsections .inline-detail-item {
-  min-height: 62px !important;
-  padding: 10px 12px !important;
-}
-
-.inline-subsections .inline-detail-item-label {
-  font-size: 11px !important;
-}
-
-.inline-subsections .inline-detail-item-value {
-  font-size: 14px !important;
-}
-
-/* Responsive */
-@media (max-width: 1350px) {
-  .inline-detail-items {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-
-  .inline-subsections {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-
-@media (max-width: 850px) {
-  .inline-detail-items,
-  .inline-subsections {
-    grid-template-columns: 1fr !important;
-  }
-
-  .inline-detail-item {
-    min-height: auto !important;
   }
 }
