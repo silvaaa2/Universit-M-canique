@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     "titre",
     "description",
     "sections",
+    "columns",
+    "wide",
     "updatedAt",
     "createdAt",
     "updated_at",
@@ -179,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return Object.entries(entry)
               .filter(([key, val]) => !shouldIgnoreKey(key, val))
               .map(([key, val]) => `${prettifyKey(key)} : ${renderValue(val)}`)
+              .filter(Boolean)
               .join("\n");
           }
 
@@ -236,7 +239,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "title" in value ||
       "label" in value ||
       "nom" in value ||
-      "name" in value
+      "name" in value ||
+      "columns" in value
     );
   }
 
@@ -247,7 +251,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function extractSimpleItems(obj) {
     if (!isPlainObject(obj)) return [];
 
-    const ignored = ["title", "label", "nom", "name", "items", "columns"];
+    const ignored = [
+      "title",
+      "label",
+      "nom",
+      "name",
+      "items",
+      "columns",
+      "wide"
+    ];
 
     const baseItems = normalizeArray(obj.items).map((item) => {
       if (isPlainObject(item)) return item;
@@ -293,7 +305,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return columnGroups.map((group, index) => {
       if (!isPlainObject(group)) {
-        return renderSectionCard(`Colonne ${index + 1}`, renderItemLine("Valeur", group), "1 élément");
+        return renderSectionCard(
+          `Groupe ${index + 1}`,
+          renderItemLine("Valeur", group),
+          "1 élément"
+        );
       }
 
       const title = getSectionTitle(group, `Groupe ${index + 1}`);
@@ -315,32 +331,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const sectionTitle = getSectionTitle(section, `Section ${index + 1}`);
 
-    let html = "";
+    const normalItems = extractSimpleItems(section).filter((item) => {
+      const label = String(item.label || "").toLowerCase().trim();
+      return label !== "wide" && label !== "columns";
+    });
 
-    const normalItems = extractSimpleItems(section);
-    html += renderItems(normalItems);
+    const normalHtml = renderItems(normalItems);
 
-    if (section.columns) {
-      html += `
-        <div class="inline-subsections">
-          ${renderColumnsAsSubSections(section.columns)}
-        </div>
-      `;
-    }
+    const columnsHtml = section.columns
+      ? renderColumnsAsSubSections(section.columns)
+      : "";
+
+    const finalHtml = `
+      ${normalHtml}
+      ${columnsHtml ? `<div class="inline-subsections">${columnsHtml}</div>` : ""}
+    `;
 
     const totalCount = normalItems.length + normalizeArray(section.columns).length;
 
-    return renderSectionCard(sectionTitle, html, `${totalCount} élément(s)`);
+    return renderSectionCard(sectionTitle, finalHtml, `${totalCount} élément(s)`);
   }
 
   function renderSmartRootField(key, value) {
     if (shouldIgnoreKey(key, value)) return "";
 
-    const title = prettifyKey(key);
-
     if (key === "columns") {
       return renderColumnsAsSubSections(value);
     }
+
+    const title = prettifyKey(key);
 
     if (Array.isArray(value)) {
       const allSectionLike = value.every(isSectionLike);
@@ -485,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const vehicle = card.dataset.vehicle || docId;
 
       if (!docId) {
-        renderError("data-doc manquant sur la carte.");
+        renderError("data-doc manquant sur cette carte.");
         return;
       }
 
