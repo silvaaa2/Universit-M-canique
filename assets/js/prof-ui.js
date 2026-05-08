@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "titre",
     "description",
     "sections",
+    "columns",
     "wide",
     "updatedAt",
     "createdAt",
@@ -35,9 +36,36 @@ document.addEventListener("DOMContentLoaded", () => {
     "lastUpdated"
   ];
 
+  const ENTER_DURATION = 320;
+  const EXIT_DURATION = 220;
+
   if (!openCorrectionsBtn || !inlineCorrections) {
     console.error("Interface des corrigés introuvable.");
     return;
+  }
+
+  function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function enterView(el) {
+    if (!el) return;
+    el.classList.remove("is-leaving");
+    void el.offsetWidth;
+    el.classList.add("is-entering");
+
+    setTimeout(() => {
+      el.classList.remove("is-entering");
+    }, ENTER_DURATION);
+  }
+
+  async function leaveView(el) {
+    if (!el || el.hidden) return;
+    el.classList.remove("is-entering");
+    void el.offsetWidth;
+    el.classList.add("is-leaving");
+    await wait(EXIT_DURATION);
+    el.classList.remove("is-leaving");
   }
 
   function escapeHtml(value) {
@@ -65,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("_", " ")
       .replaceAll("-", " ")
       .replace(/([a-z])([A-Z])/g, "$1 $2")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+      .replace(/\b\w/g, letter => letter.toUpperCase());
   }
 
   function isTimestampLike(value) {
@@ -81,10 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return IGNORED_KEYS.includes(key) || isTimestampLike(value);
   }
 
-  function getExplicitLabel(item) {
-    return item.label || item.title || item.nom || item.name || "";
-  }
-
   function openInlineCorrections() {
     if (!inlineCorrections.hidden) {
       inlineCorrections.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -93,11 +117,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     inlineCorrections.hidden = false;
 
+    showChooser(false);
+
     requestAnimationFrame(() => {
       inlineCorrections.classList.add("active");
+      enterView(inlineCorrectionChooser);
     });
-
-    showChooser();
 
     setTimeout(() => {
       inlineCorrections.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -109,30 +134,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       inlineCorrections.hidden = true;
-      showChooser();
+      inlineCorrectionChooser.hidden = false;
+      inlineCorrectionDetail.hidden = true;
+      correctionSections.innerHTML = "";
+      correctionTags.innerHTML = "";
     }, 220);
   }
 
-  function showChooser() {
-    inlineCorrectionChooser.hidden = false;
-    inlineCorrectionDetail.hidden = true;
-
+  async function showChooser(animated = true) {
     correctionSections.innerHTML = "";
     correctionTags.innerHTML = "";
+
+    if (!inlineCorrectionDetail.hidden && animated) {
+      await leaveView(inlineCorrectionDetail);
+    }
+
+    inlineCorrectionDetail.hidden = true;
+    inlineCorrectionChooser.hidden = false;
+
+    if (animated) {
+      enterView(inlineCorrectionChooser);
+    }
   }
 
-  function showDetail() {
+  async function showDetail(animated = true) {
+    if (!inlineCorrectionChooser.hidden && animated) {
+      await leaveView(inlineCorrectionChooser);
+    }
+
     inlineCorrectionChooser.hidden = true;
     inlineCorrectionDetail.hidden = false;
+
+    if (animated) {
+      enterView(inlineCorrectionDetail);
+    }
   }
 
-  function renderLoading(customName) {
-    showDetail();
+  async function renderLoading(customName) {
+    await showDetail(true);
 
     correctionHeroKicker.textContent = "Chargement";
     correctionTitle.textContent = customName;
     correctionDescription.textContent = "Récupération de la correction en cours...";
-    correctionPath.textContent = "Firestore / customAnswerKeys / ...";
+    correctionPath.textContent = "";
     correctionTags.innerHTML = "";
 
     correctionSections.innerHTML = `
@@ -144,12 +188,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderError(message) {
-    showDetail();
-
     correctionHeroKicker.textContent = "Erreur";
     correctionTitle.textContent = "Impossible de charger";
     correctionDescription.textContent = "Une erreur est survenue pendant le chargement.";
-    correctionPath.textContent = "Firestore / customAnswerKeys / erreur";
+    correctionPath.textContent = "";
     correctionTags.innerHTML = "";
 
     correctionSections.innerHTML = `
@@ -172,7 +214,24 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!value.length) return "Aucun élément";
 
       return value
-        .map((entry) => renderValue(entry))
+        .map((entry) => {
+          if (isPlainObject(entry)) {
+            const label = entry.label || entry.title || entry.nom || entry.name || "";
+            const itemValue = entry.value ?? entry.valeur ?? entry.reponse ?? entry.answer ?? "";
+
+            if (itemValue !== "") {
+              return label ? `${label} : ${renderValue(itemValue)}` : `${renderValue(itemValue)}`;
+            }
+
+            return Object.entries(entry)
+              .filter(([key, val]) => !shouldIgnoreKey(key, val))
+              .map(([key, val]) => `${prettifyKey(key)} : ${renderValue(val)}`)
+              .filter(Boolean)
+              .join("\n");
+          }
+
+          return renderValue(entry);
+        })
         .filter(Boolean)
         .join("\n");
     }
@@ -188,16 +247,48 @@ document.addEventListener("DOMContentLoaded", () => {
     return String(value);
   }
 
-  function renderItemLine(label, value) {
+  function splitLabelValue(text) {
+    const cleaned = String(text || "").trim();
+    if (!cleaned) return null;
+
+    const separators = [" : ", ": "];
+
+    for (const sep of separators) {
+      const idx = cleaned.indexOf(sep);
+      if (idx > 0) {
+        const left = cleaned.slice(0, idx).trim();
+        const right = cleaned.slice(idx + sep.length).trim();
+
+        if (left && right) {
+          return { label: left, value: right };
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function renderItemLine(label, value, hideLabel = false) {
     const renderedValue = renderValue(value);
     if (!renderedValue) return "";
 
-    const cleanLabel = String(label || "").trim();
+    let finalLabel = label;
+    let finalValue = renderedValue;
+    let finalHideLabel = hideLabel || !label || label === "Élément";
+
+    if (finalHideLabel) {
+      const split = splitLabelValue(renderedValue);
+      if (split) {
+        finalLabel = split.label;
+        finalValue = split.value;
+        finalHideLabel = false;
+      }
+    }
 
     return `
-      <div class="inline-detail-item ${cleanLabel ? "" : "no-label"}">
-        ${cleanLabel ? `<div class="inline-detail-item-label">${escapeHtml(cleanLabel)}</div>` : ""}
-        <div class="inline-detail-item-value">${escapeHtml(renderedValue)}</div>
+      <div class="inline-detail-item ${finalHideLabel ? "no-label" : ""}">
+        ${finalHideLabel ? "" : `<div class="inline-detail-item-label">${escapeHtml(finalLabel)}</div>`}
+        <div class="inline-detail-item-value">${escapeHtml(finalValue)}</div>
       </div>
     `;
   }
@@ -264,56 +355,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return [...baseItems, ...extraItems];
   }
 
-  function normalizeRenderableEntries(item) {
-    if (!isPlainObject(item)) {
-      return [{ label: "", value: item }];
-    }
-
-    const explicitLabel = getExplicitLabel(item);
-
-    if ("value" in item || "valeur" in item || "reponse" in item || "answer" in item) {
-      const rawValue = item.value ?? item.valeur ?? item.reponse ?? item.answer;
-
-      if (explicitLabel) {
-        return [{ label: explicitLabel, value: rawValue }];
-      }
-
-      if (isPlainObject(rawValue)) {
-        const objectEntries = Object.entries(rawValue)
-          .filter(([key, value]) => !shouldIgnoreKey(key, value))
-          .map(([key, value]) => ({
-            label: prettifyKey(key),
-            value
-          }));
-
-        if (objectEntries.length) return objectEntries;
-      }
-
-      return [{ label: "", value: rawValue }];
-    }
-
-    const entries = Object.entries(item)
-      .filter(([key, value]) => !["label", "title", "nom", "name"].includes(key) && !shouldIgnoreKey(key, value));
-
-    if (!entries.length) {
-      return [];
-    }
-
-    if (explicitLabel && entries.length === 1) {
-      return [{ label: explicitLabel, value: entries[0][1] }];
-    }
-
-    return entries.map(([key, value]) => ({
-      label: prettifyKey(key),
-      value
-    }));
-  }
-
   function renderItems(items) {
-    return items
-      .flatMap((item) => normalizeRenderableEntries(item))
-      .map(({ label, value }) => renderItemLine(label, value))
-      .join("");
+    return items.map((item) => {
+      if (isPlainObject(item)) {
+        const hasCustomLabel = !!(item.label || item.title || item.nom || item.name);
+        const label = item.label || item.title || item.nom || item.name || "";
+
+        if ("value" in item || "valeur" in item || "reponse" in item || "answer" in item) {
+          const value = item.value ?? item.valeur ?? item.reponse ?? item.answer;
+          return renderItemLine(label, value, !hasCustomLabel);
+        }
+
+        const entries = Object.entries(item)
+          .filter(([key, value]) => !["label", "title", "nom", "name"].includes(key) && !shouldIgnoreKey(key, value));
+
+        return entries
+          .map(([key, value]) => renderItemLine(prettifyKey(key), value))
+          .join("");
+      }
+
+      return renderItemLine("", item, true);
+    }).join("");
   }
 
   function renderColumnsAsSubSections(columns) {
@@ -325,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!isPlainObject(group)) {
         return renderSectionCard(
           `Groupe ${index + 1}`,
-          renderItemLine("", group),
+          renderItemLine("", group, true),
           "1 élément"
         );
       }
@@ -342,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isPlainObject(section)) {
       return renderSectionCard(
         `Section ${index + 1}`,
-        renderItemLine("", section),
+        renderItemLine("", section, true),
         "1 élément"
       );
     }
@@ -374,7 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (shouldIgnoreKey(key, value)) return "";
 
     if (key === "columns") {
-      return `<div class="inline-subsections">${renderColumnsAsSubSections(value)}</div>`;
+      return renderColumnsAsSubSections(value);
     }
 
     const title = prettifyKey(key);
@@ -386,7 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return value.map((entry, index) => renderKnownSection(entry, index)).join("");
       }
 
-      return renderSectionCard(title, renderItemLine("", value), `${value.length} élément(s)`);
+      return renderSectionCard(title, renderItemLine(title, value), `${value.length} élément(s)`);
     }
 
     if (isPlainObject(value)) {
@@ -402,18 +464,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const entries = Object.entries(value)
-        .filter(([childKey, childValue]) => !shouldIgnoreKey(childKey, childValue))
-        .map(([childKey, childValue]) => ({
-          label: prettifyKey(childKey),
-          value: childValue
-        }));
+        .filter(([childKey, childValue]) => !shouldIgnoreKey(childKey, childValue));
 
-      const html = renderItems(entries);
+      const html = entries
+        .map(([childKey, childValue]) => renderItemLine(prettifyKey(childKey), childValue))
+        .join("");
 
       return renderSectionCard(title, html, `${entries.length} champ(s)`);
     }
 
-    return renderSectionCard(title, renderItemLine("", value), "1 champ");
+    return renderSectionCard(title, renderItemLine(title, value), "1 champ");
   }
 
   function renderExtraRootFields(data) {
@@ -432,7 +492,7 @@ document.addEventListener("DOMContentLoaded", () => {
     correctionHeroKicker.textContent = "Corrigé";
     correctionTitle.textContent = title;
     correctionDescription.textContent = description;
-    correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
+    correctionPath.textContent = "";
 
     correctionTags.innerHTML = `
       <span class="inline-tag">${escapeHtml(meta.label)}</span>
@@ -478,7 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadCorrection(docId, meta) {
     try {
-      renderLoading(meta.label);
+      await renderLoading(meta.label);
 
       const firebase = await waitForFirebaseReady();
 
@@ -514,11 +574,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (backToCustomsBtn) {
-    backToCustomsBtn.addEventListener("click", showChooser);
+    backToCustomsBtn.addEventListener("click", async () => {
+      await showChooser(true);
+    });
   }
 
   correctionCards.forEach((card) => {
-    card.addEventListener("click", () => {
+    card.addEventListener("click", async () => {
       const docId = card.dataset.doc;
       const label = card.dataset.label || "Custom";
       const vehicle = card.dataset.vehicle || docId;
@@ -528,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      loadCorrection(docId, { label, vehicle });
+      await loadCorrection(docId, { label, vehicle });
     });
   });
 });
