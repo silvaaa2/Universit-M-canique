@@ -725,3 +725,14 @@
     font-size: 22px;
   }
 }
+.inline-subsections {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.inline-subsections .inline-detail-section {
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025));
+  border-color: rgba(214,180,106,.14);
+}
