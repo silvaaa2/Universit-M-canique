@@ -956,3 +956,121 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   PATCH FINAL - TOUTES LES SECTIONS EN CARTES COMPACTES
+   Couleurs / Performances / Infos visuelles même style
+========================================================= */
+
+/* Toutes les sections prennent moins de place */
+.inline-detail-section {
+  padding: 18px !important;
+  border-radius: 22px !important;
+}
+
+/* Titre section plus compact */
+.inline-detail-section-head {
+  margin-bottom: 14px !important;
+}
+
+.inline-detail-section-head h4 {
+  font-size: 22px !important;
+}
+
+/* Toutes les listes deviennent des grilles compactes */
+.inline-detail-items {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* Toutes les valeurs deviennent des petites cartes */
+.inline-detail-item {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 8px !important;
+
+  min-height: 74px !important;
+  padding: 12px 14px !important;
+
+  border-radius: 15px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025)) !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+}
+
+/* Label */
+.inline-detail-item-label {
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+}
+
+/* Valeur */
+.inline-detail-item-value {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+  text-align: center !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* Les sous-sections restent propres */
+.inline-subsections {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 0 !important;
+}
+
+/* Sous-cartes Roues / Accessoires / etc. */
+.inline-subsections .inline-detail-section {
+  padding: 15px !important;
+  border-radius: 18px !important;
+}
+
+/* Dans les sous-sections, les items restent en colonne */
+.inline-subsections .inline-detail-items {
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+.inline-subsections .inline-detail-item {
+  min-height: 62px !important;
+  padding: 10px 12px !important;
+}
+
+.inline-subsections .inline-detail-item-label {
+  font-size: 11px !important;
+}
+
+.inline-subsections .inline-detail-item-value {
+  font-size: 14px !important;
+}
+
+/* Responsive */
+@media (max-width: 1350px) {
+  .inline-detail-items {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .inline-detail-items,
+  .inline-subsections {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inline-detail-item {
+    min-height: auto !important;
+  }
+}
