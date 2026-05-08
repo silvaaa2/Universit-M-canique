@@ -815,3 +815,213 @@ body.modal-open {
     font-size: 15px;
   }
 }
+/* =========================================================
+   PATCH FINAL MODAL PROF - fond propre + popup lisible
+   À COLLER TOUT EN BAS DE prof.css
+========================================================= */
+
+.corrections-interface {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+
+  padding: 118px 28px 32px !important;
+
+  background:
+    radial-gradient(circle at 18% 20%, rgba(214,180,106,.12), transparent 28%),
+    radial-gradient(circle at 82% 20%, rgba(255,255,255,.045), transparent 24%),
+    rgba(3, 3, 3, .84) !important;
+
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+
+  overflow: hidden !important;
+
+  transition:
+    opacity .25s ease,
+    visibility .25s ease !important;
+}
+
+.corrections-interface.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: all !important;
+}
+
+.corrections-interface[hidden] {
+  display: none !important;
+}
+
+/* On bloque la popup dans une vraie fenêtre propre */
+.corrections-shell {
+  width: min(1100px, calc(100vw - 72px)) !important;
+  max-height: calc(100vh - 155px) !important;
+
+  position: relative !important;
+  z-index: 100000 !important;
+
+  overflow: hidden !important;
+
+  border-radius: 30px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+
+  background:
+    linear-gradient(145deg, rgba(28,28,28,.98), rgba(13,13,13,.99)) !important;
+
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.72),
+    0 0 0 1px rgba(255,255,255,.035) inset,
+    0 0 80px rgba(214,180,106,.08) !important;
+
+  transform: translateY(18px) scale(.985) !important;
+  opacity: 0 !important;
+
+  transition:
+    transform .32s ease,
+    opacity .32s ease !important;
+}
+
+.corrections-interface.active .corrections-shell {
+  transform: translateY(0) scale(1) !important;
+  opacity: 1 !important;
+}
+
+/* Le scroll se fait uniquement dans la popup */
+.corrections-shell-inner {
+  max-height: calc(100vh - 155px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  padding: 28px !important;
+
+  background: transparent !important;
+
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(214,180,106,.55) rgba(255,255,255,.045) !important;
+}
+
+.corrections-shell-inner::-webkit-scrollbar {
+  width: 10px !important;
+}
+
+.corrections-shell-inner::-webkit-scrollbar-track {
+  background: rgba(255,255,255,.045) !important;
+  border-radius: 999px !important;
+}
+
+.corrections-shell-inner::-webkit-scrollbar-thumb {
+  background: rgba(214,180,106,.50) !important;
+  border-radius: 999px !important;
+}
+
+/* Topbar mieux séparée */
+.detail-topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+
+  margin: -28px -28px 22px !important;
+  padding: 22px 28px !important;
+
+  background:
+    linear-gradient(180deg, rgba(18,18,18,.98), rgba(18,18,18,.88)) !important;
+
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Hero moins transparent, donc plus de texte derrière visible */
+.detail-hero {
+  background:
+    radial-gradient(circle at 18% 20%, rgba(214,180,106,.08), transparent 28%),
+    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025)) !important;
+
+  border: 1px solid rgba(255,255,255,.11) !important;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.30),
+    inset 0 1px 0 rgba(255,255,255,.055) !important;
+}
+
+/* Les tags descendent et ne collent plus au haut */
+.detail-tags {
+  margin-top: 26px !important;
+}
+
+/* Les cartes de contenu ressortent mieux */
+.detail-section {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025)) !important;
+
+  border: 1px solid rgba(255,255,255,.095) !important;
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+
+.detail-item {
+  background: rgba(255,255,255,.055) !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+}
+
+/* Bouton fermeture toujours visible */
+.detail-close-btn,
+.close-interface-btn {
+  z-index: 25 !important;
+}
+
+/* Responsive */
+@media (max-width: 950px) {
+  .corrections-interface {
+    padding: 92px 16px 20px !important;
+  }
+
+  .corrections-shell {
+    width: calc(100vw - 32px) !important;
+    max-height: calc(100vh - 112px) !important;
+  }
+
+  .corrections-shell-inner {
+    max-height: calc(100vh - 112px) !important;
+    padding: 20px !important;
+  }
+
+  .detail-topbar {
+    margin: -20px -20px 20px !important;
+    padding: 18px 20px !important;
+  }
+
+  .detail-tags {
+    margin-top: 8px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .corrections-interface {
+    padding: 82px 12px 14px !important;
+  }
+
+  .corrections-shell {
+    width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 96px) !important;
+    border-radius: 22px !important;
+  }
+
+  .corrections-shell-inner {
+    max-height: calc(100vh - 96px) !important;
+    padding: 14px !important;
+  }
+
+  .detail-topbar {
+    margin: -14px -14px 18px !important;
+    padding: 16px 14px !important;
+  }
+}
