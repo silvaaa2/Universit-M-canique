@@ -946,3 +946,62 @@
     text-align: left !important;
   }
 }
+/* =========================================================
+   PATCH ANIMATIONS + MASQUAGE DU PATH
+========================================================= */
+
+/* On vire complètement le texte Firestore / customAnswerKeys / ... */
+.inline-detail-path {
+  display: none !important;
+}
+
+/* Animations entrée / sortie */
+.inline-correction-chooser,
+.inline-correction-detail {
+  will-change: opacity, transform;
+}
+
+.inline-correction-chooser.is-entering,
+.inline-correction-detail.is-entering {
+  animation: correctionFadeIn .32s ease both;
+}
+
+.inline-correction-chooser.is-leaving,
+.inline-correction-detail.is-leaving {
+  animation: correctionFadeOut .22s ease both;
+}
+
+@keyframes correctionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(.985);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes correctionFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(.985);
+    filter: blur(4px);
+  }
+}
+
+/* Si on cache le label "Élément", on centre juste la valeur */
+.inline-detail-item.no-label {
+  justify-content: center !important;
+}
+
+.inline-detail-item.no-label .inline-detail-item-value {
+  text-align: center !important;
+}
