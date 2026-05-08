@@ -736,3 +736,146 @@
     linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025));
   border-color: rgba(214,180,106,.14);
 }
+/* =========================================================
+   PATCH COMPACT FINAL - AFFICHAGE EN COLONNES
+   À COLLER TOUT EN BAS DE prof.css
+========================================================= */
+
+/* Tête du centre de correction plus compacte */
+.inline-corrections-head {
+  padding: 24px 30px !important;
+}
+
+.inline-corrections-head h2 {
+  font-size: clamp(34px, 4vw, 56px) !important;
+}
+
+.inline-corrections-head p {
+  margin-top: 10px !important;
+}
+
+/* Hero du custom plus compact */
+.inline-detail-hero {
+  padding: 22px 26px !important;
+  margin-bottom: 18px !important;
+}
+
+.inline-detail-hero h3 {
+  font-size: clamp(38px, 4vw, 58px) !important;
+}
+
+.inline-detail-description {
+  margin-top: 10px !important;
+}
+
+/* Sections plus compactes */
+.inline-detail-section {
+  padding: 20px !important;
+}
+
+.inline-detail-section-head {
+  margin-bottom: 14px !important;
+}
+
+.inline-detail-section-head h4 {
+  font-size: 24px !important;
+}
+
+/* Les éléments passent en colonnes */
+.inline-detail-items {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* Chaque élément devient une petite carte compacte */
+.inline-detail-item {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+
+  min-height: 84px !important;
+  padding: 14px 15px !important;
+
+  border-radius: 16px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.025)) !important;
+  border: 1px solid rgba(255,255,255,.07) !important;
+}
+
+/* Label au-dessus */
+.inline-detail-item-label {
+  color: var(--muted) !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+/* Valeur en dessous */
+.inline-detail-item-value {
+  color: var(--text) !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  text-align: left !important;
+  line-height: 1.25 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* Sous-sections genre Roues / Accessoires / Carrosserie / Néons */
+.inline-subsections {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  margin-top: 18px !important;
+}
+
+.inline-subsections .inline-detail-section {
+  margin: 0 !important;
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.025)) !important;
+  border-color: rgba(214,180,106,.14) !important;
+}
+
+/* Dans les sous-sections, les items passent en 2 colonnes */
+.inline-subsections .inline-detail-items {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Si une valeur est longue, elle ne casse pas tout */
+.inline-detail-item-value br {
+  display: none !important;
+}
+
+/* Responsive tablette */
+@media (max-width: 1100px) {
+  .inline-detail-items {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .inline-subsections {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inline-subsections .inline-detail-items {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Responsive mobile */
+@media (max-width: 650px) {
+  .inline-detail-items,
+  .inline-subsections .inline-detail-items {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inline-detail-item {
+    min-height: auto !important;
+  }
+
+  .inline-corrections-head h2,
+  .inline-detail-hero h3 {
+    font-size: 42px !important;
+  }
+}
