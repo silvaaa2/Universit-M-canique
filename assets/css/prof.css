@@ -159,13 +159,8 @@
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ===== Transition login ===== */
@@ -232,13 +227,8 @@
 }
 
 @keyframes transitionSpin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes transitionPop {
@@ -292,7 +282,7 @@
 }
 
 /* =========================================================
-   INLINE CORRECTIONS - SOUS LES CARTES
+   INLINE CORRECTIONS
 ========================================================= */
 
 .inline-corrections {
@@ -371,7 +361,7 @@
   transform: scale(1.05);
 }
 
-/* ===== Choix des customs ===== */
+/* ===== Choix customs ===== */
 
 .inline-correction-chooser {
   display: grid;
@@ -433,7 +423,7 @@
 }
 
 /* =========================================================
-   DETAIL CORRECTION
+   DETAIL
 ========================================================= */
 
 .inline-correction-detail {
@@ -582,7 +572,6 @@
   text-transform: uppercase;
 }
 
-/* Toutes les infos en petites cartes */
 .inline-detail-items {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -594,10 +583,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 8px;
-
   min-height: 74px;
   padding: 12px 14px;
-
   border-radius: 15px;
   background:
     linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
@@ -622,9 +609,7 @@
   word-break: break-word;
 }
 
-/* =========================================================
-   SOUS-SECTIONS : Roues / Accessoires / Carrosserie / Néons
-========================================================= */
+/* ===== Sous-sections ===== */
 
 .inline-detail-section > .inline-detail-items > .inline-subsections {
   grid-column: 1 / -1;
@@ -661,7 +646,6 @@
 }
 
 .inline-subsections .inline-detail-items {
-  display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
 }
@@ -684,9 +668,7 @@
   display: none;
 }
 
-/* =========================================================
-   LOADING / ERROR
-========================================================= */
+/* ===== Loading / errors ===== */
 
 .inline-loading-box,
 .inline-error-box,
@@ -724,9 +706,7 @@
   line-height: 1.55;
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+/* ===== Responsive ===== */
 
 @media (max-width: 1350px) {
   .inline-detail-items {
