@@ -32,18 +32,30 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("'", "&#039;");
   }
 
-  function normalizeSections(rawSections) {
-    if (!rawSections) return [];
-    if (Array.isArray(rawSections)) return rawSections;
-    if (typeof rawSections === "object") return Object.values(rawSections);
+  function normalizeArray(rawValue) {
+    if (!rawValue) return [];
+
+    if (Array.isArray(rawValue)) {
+      return rawValue;
+    }
+
+    if (typeof rawValue === "object") {
+      return Object.values(rawValue);
+    }
+
     return [];
   }
 
-  function normalizeItems(rawItems) {
-    if (!rawItems) return [];
-    if (Array.isArray(rawItems)) return rawItems;
-    if (typeof rawItems === "object") return Object.values(rawItems);
-    return [];
+  function isPlainObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function prettifyKey(key) {
+    return String(key)
+      .replaceAll("_", " ")
+      .replaceAll("-", " ")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/\b\w/g, letter => letter.toUpperCase());
   }
 
   function openInlineCorrections() {
@@ -121,66 +133,191 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
+  function renderValue(value) {
+    if (value === null || value === undefined || value === "") {
+      return "Non renseigné";
+    }
+
+    if (typeof value === "boolean") {
+      return value ? "Oui" : "Non";
+    }
+
+    if (typeof value === "number") {
+      return String(value);
+    }
+
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (Array.isArray(value)) {
+      if (!value.length) return "Aucun élément";
+
+      return value.map((entry) => {
+        if (typeof entry === "string" || typeof entry === "number" || typeof entry === "boolean") {
+          return `• ${renderValue(entry)}`;
+        }
+
+        if (isPlainObject(entry)) {
+          const label = entry.label || entry.title || entry.nom || entry.name || "Élément";
+          const itemValue = entry.value ?? entry.valeur ?? entry.reponse ?? entry.answer ?? "";
+
+          if (itemValue !== "") {
+            return `• ${label} : ${renderValue(itemValue)}`;
+          }
+
+          return Object.entries(entry)
+            .map(([key, val]) => `• ${prettifyKey(key)} : ${renderValue(val)}`)
+            .join("\n");
+        }
+
+        return `• ${String(entry)}`;
+      }).join("\n");
+    }
+
+    if (isPlainObject(value)) {
+      return Object.entries(value)
+        .map(([key, val]) => `${prettifyKey(key)} : ${renderValue(val)}`)
+        .join("\n");
+    }
+
+    return String(value);
+  }
+
+  function renderItemLine(label, value) {
+    return `
+      <div class="inline-detail-item">
+        <div class="inline-detail-item-label">${escapeHtml(label)}</div>
+        <div class="inline-detail-item-value">${escapeHtml(renderValue(value))}</div>
+      </div>
+    `;
+  }
+
+  function renderSectionCard(title, itemsHtml, countText = "") {
+    return `
+      <article class="inline-detail-section">
+        <div class="inline-detail-section-head">
+          <h4>${escapeHtml(title)}</h4>
+          <span>${escapeHtml(countText || "Données")}</span>
+        </div>
+
+        <div class="inline-detail-items">
+          ${itemsHtml || `
+            <div class="inline-empty-box">
+              Aucun élément dans cette section.
+            </div>
+          `}
+        </div>
+      </article>
+    `;
+  }
+
+  function renderKnownSection(section, index) {
+    const sectionTitle = section.title || section.label || section.nom || `Section ${index + 1}`;
+    const items = normalizeArray(section.items);
+
+    let html = "";
+
+    if (items.length) {
+      html += items.map((item) => {
+        if (isPlainObject(item)) {
+          const itemLabel = item.label || item.title || item.nom || item.name || "Élément";
+          const itemValue = item.value ?? item.valeur ?? item.reponse ?? item.answer ?? "Non renseigné";
+          return renderItemLine(itemLabel, itemValue);
+        }
+
+        return renderItemLine("Élément", item);
+      }).join("");
+    }
+
+    const ignoredKeys = ["title", "label", "nom", "name", "items"];
+
+    const extraFieldsHtml = Object.entries(section)
+      .filter(([key]) => !ignoredKeys.includes(key))
+      .map(([key, value]) => renderItemLine(prettifyKey(key), value))
+      .join("");
+
+    html += extraFieldsHtml;
+
+    const count = items.length + Object.entries(section).filter(([key]) => !ignoredKeys.includes(key)).length;
+
+    return renderSectionCard(sectionTitle, html, `${count} élément(s)`);
+  }
+
+  function renderExtraRootFields(data) {
+    const ignoredRootKeys = [
+      "label",
+      "title",
+      "titre",
+      "description",
+      "sections"
+    ];
+
+    const extraEntries = Object.entries(data)
+      .filter(([key]) => !ignoredRootKeys.includes(key));
+
+    if (!extraEntries.length) return "";
+
+    const html = extraEntries
+      .map(([key, value]) => renderItemLine(prettifyKey(key), value))
+      .join("");
+
+    return renderSectionCard("Autres informations", html, `${extraEntries.length} champ(s)`);
+  }
+
   function renderCorrection(data, docId, meta) {
-    const title = data.label || meta.label || docId;
+    const title = data.label || data.title || data.titre || meta.label || docId;
     const description = data.description || `Réponses et configuration attendue pour le custom ${meta.vehicle}.`;
-    const sections = normalizeSections(data.sections);
+
+    const sections = normalizeArray(data.sections);
 
     correctionHeroKicker.textContent = "Corrigé";
     correctionTitle.textContent = title;
     correctionDescription.textContent = description;
     correctionPath.textContent = `Firestore / customAnswerKeys / ${docId}`;
 
+    const extraRootCount = Object.keys(data).filter(key => ![
+      "label",
+      "title",
+      "titre",
+      "description",
+      "sections"
+    ].includes(key)).length;
+
     correctionTags.innerHTML = `
       <span class="inline-tag">${escapeHtml(meta.label)}</span>
       <span class="inline-tag">${escapeHtml(meta.vehicle)}</span>
       <span class="inline-tag">${sections.length} section(s)</span>
+      ${extraRootCount ? `<span class="inline-tag">${extraRootCount} champ(s) bonus</span>` : ""}
     `;
 
-    if (!sections.length) {
-      correctionSections.innerHTML = `
-        <div class="inline-empty-box">
-          Aucune section disponible pour cette correction.
-        </div>
-      `;
-      return;
+    let finalHtml = "";
+
+    if (sections.length) {
+      finalHtml += sections.map((section, index) => {
+        if (isPlainObject(section)) {
+          return renderKnownSection(section, index);
+        }
+
+        return renderSectionCard(
+          `Section ${index + 1}`,
+          renderItemLine("Valeur", section),
+          "1 élément"
+        );
+      }).join("");
     }
 
-    correctionSections.innerHTML = sections.map((section, index) => {
-      const sectionTitle = section.title || section.label || `Section ${index + 1}`;
-      const items = normalizeItems(section.items);
+    finalHtml += renderExtraRootFields(data);
 
-      const itemsHtml = items.length
-        ? items.map((item) => {
-            const itemLabel = item.label || "Élément";
-            const itemValue = item.value ?? item.valeur ?? "Non renseigné";
-
-            return `
-              <div class="inline-detail-item">
-                <div class="inline-detail-item-label">${escapeHtml(itemLabel)}</div>
-                <div class="inline-detail-item-value">${escapeHtml(itemValue)}</div>
-              </div>
-            `;
-          }).join("")
-        : `
-          <div class="inline-empty-box">
-            Aucun élément dans cette section.
-          </div>
-        `;
-
-      return `
-        <article class="inline-detail-section">
-          <div class="inline-detail-section-head">
-            <h4>${escapeHtml(sectionTitle)}</h4>
-            <span>${items.length} élément(s)</span>
-          </div>
-
-          <div class="inline-detail-items">
-            ${itemsHtml}
-          </div>
-        </article>
+    if (!finalHtml.trim()) {
+      finalHtml = `
+        <div class="inline-empty-box">
+          Aucune donnée disponible pour cette correction.
+        </div>
       `;
-    }).join("");
+    }
+
+    correctionSections.innerHTML = finalHtml;
   }
 
   async function waitForFirebaseReady() {
