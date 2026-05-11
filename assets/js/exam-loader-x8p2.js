@@ -125,17 +125,31 @@ function rowsToAnswers(rows) {
 
   return dataRows.map(row => {
     const answer = {};
+    const orderedFields = [];
 
     headers.forEach((header, index) => {
       if (!header) return;
-      answer[header] = row[index] || "";
+
+      const value = row[index] || "";
+
+      answer[header] = value;
+
+      orderedFields.push({
+        label: header,
+        value,
+        index
+      });
     });
+
+    answer.__orderedFields = orderedFields;
 
     return answer;
   });
 }
 
-/* ===== Firebase statuts ===== */
+/* =========================================================
+   FIREBASE STATUTS
+========================================================= */
 
 function waitForFirebaseReady() {
   if (window.profFirebase?.db) {
@@ -154,9 +168,30 @@ function waitForFirebaseReady() {
   });
 }
 
+function getStudentName(answer, index) {
+  const ordered = answer.__orderedFields || [];
+
+  const byHeader = getField(answer, [
+    "Prénom / Nom (RP)",
+    "Prénom - Nom (RP)",
+    "Prénom / Nom",
+    "Prénom - Nom",
+    "Nom RP",
+    "Nom",
+    "Pseudo"
+  ]);
+
+  if (byHeader) return byHeader;
+
+  const columnD = ordered[3]?.value;
+  if (columnD) return columnD;
+
+  return `Copie ${index + 1}`;
+}
+
 function buildAnswerKey(answer, sheetId, index) {
   const horodateur = getField(answer, ["Horodateur", "Timestamp"]);
-  const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom", "Nom RP"]);
+  const nom = getStudentName(answer, index);
   const email = getField(answer, ["Adresse e-mail", "Email", "Adresse mail"]);
 
   return `${sheetId}__${index}__${horodateur}__${nom}__${email}`;
@@ -233,133 +268,69 @@ function getAnswerStatus(answerKey) {
   return answerStatuses[answerKey] || "pending";
 }
 
-/* ===== Champs ===== */
+/* =========================================================
+   RENDER
+========================================================= */
 
-function renderField(label, value) {
+function renderExamLine(label, value, index) {
   const cleanValue = getValue(value);
 
   if (isLink(cleanValue)) {
     return `
-      <a class="student-answer-field student-link-card" href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
-        <span>${escapeHtml(label)}</span>
-        <strong>Ouvrir le lien</strong>
-      </a>
+      <div class="exam-line">
+        <div class="exam-line-number">${String(index + 1).padStart(2, "0")}</div>
+
+        <div class="exam-line-content">
+          <span>${escapeHtml(label)}</span>
+          <a href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
+            Ouvrir le lien
+          </a>
+        </div>
+      </div>
     `;
   }
 
   return `
-    <div class="student-answer-field">
-      <span>${escapeHtml(label)}</span>
-      <strong>${escapeHtml(cleanValue)}</strong>
+    <div class="exam-line">
+      <div class="exam-line-number">${String(index + 1).padStart(2, "0")}</div>
+
+      <div class="exam-line-content">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(cleanValue)}</strong>
+      </div>
     </div>
   `;
 }
 
-function renderSection(title, fieldsHtml) {
+function renderExamAnswersSection(answer) {
+  const orderedFields = answer.__orderedFields || [];
+
+  const html = orderedFields
+    .filter(field => String(field.label || "").trim() !== "")
+    .map((field, index) => renderExamLine(field.label, field.value, index))
+    .join("");
+
   return `
-    <section class="student-section">
+    <section class="student-section exam-ordered-section">
       <div class="student-section-head">
-        <h3>${escapeHtml(title)}</h3>
+        <h3>Réponses dans l’ordre du formulaire</h3>
       </div>
 
-      <div class="student-section-grid">
-        ${fieldsHtml}
+      <div class="exam-lines-list">
+        ${html || `<div class="student-empty">Aucune réponse trouvée.</div>`}
       </div>
     </section>
   `;
 }
 
-function getMainName(answer, index) {
-  return (
-    getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom RP", "Nom", "Pseudo"]) ||
-    getField(answer, ["Adresse e-mail", "Email", "Adresse mail"]) ||
-    `Copie ${index + 1}`
-  );
-}
-
-function getIdentityFields(answer) {
-  const preferred = [
-    "Horodateur",
-    "Adresse e-mail",
-    "Email",
-    "Prénom - Nom (RP)",
-    "Prénom - Nom",
-    "Nom",
-    "Nom RP",
-    "ID Unique",
-    "ID"
-  ];
-
-  const used = new Set();
-
-  const fields = preferred
-    .map(label => {
-      const key = Object.keys(answer).find(k => normalizeHeader(k) === normalizeHeader(label));
-      if (!key) return null;
-
-      used.add(key);
-      return [key, answer[key]];
-    })
-    .filter(Boolean);
-
-  return { fields, used };
-}
-
-function getPhotoFields(answer) {
-  return Object.entries(answer).filter(([key, value]) => {
-    const normalizedKey = normalizeHeader(key);
-    const cleanValue = String(value || "").trim();
-
-    if (!cleanValue) return false;
-
-    return (
-      normalizedKey.includes("photo") ||
-      normalizedKey.includes("image") ||
-      normalizedKey.includes("screen") ||
-      normalizedKey.includes("final") ||
-      isLink(cleanValue)
-    );
-  });
-}
-
-function getOtherFields(answer, usedKeys, photoKeys) {
-  return Object.entries(answer).filter(([key, value]) => {
-    if (!key || !String(key).trim()) return false;
-    if (!String(value || "").trim()) return false;
-    if (usedKeys.has(key)) return false;
-    if (photoKeys.has(key)) return false;
-
-    return true;
-  });
-}
-
-/* ===== Carte examen ===== */
-
 function renderAnswerCard(answer, index, sheet) {
-  const name = getMainName(answer, index);
+  const name = getStudentName(answer, index);
   const idUnique = getField(answer, ["ID Unique", "ID"]);
   const score = getField(answer, ["Score", "Note", "Résultat"]);
 
   const answerKey = buildAnswerKey(answer, sheet.id, index);
   const status = getAnswerStatus(answerKey);
   const statusMeta = getStatusMeta(status);
-
-  const identityData = getIdentityFields(answer);
-  const photoFields = getPhotoFields(answer);
-  const photoKeys = new Set(photoFields.map(([key]) => key));
-  const otherFields = getOtherFields(answer, identityData.used, photoKeys);
-
-  const identityHtml = identityData.fields.length
-    ? identityData.fields.map(([key, value]) => renderField(key, value)).join("")
-    : `<div class="student-empty">Aucune identité renseignée.</div>`;
-
-  const photosHtml = photoFields.length
-    ? photoFields.map(([key, value]) => renderField(key, value)).join("")
-    : `<div class="student-empty">Aucun lien ou photo renseigné.</div>`;
-
-  const answersHtml = otherFields.length
-    ? otherFields.map(([key, value]) => renderField(key, value)).join("")
-    : `<div class="student-empty">Aucune réponse supplémentaire.</div>`;
 
   return `
     <article
@@ -401,15 +372,15 @@ function renderAnswerCard(answer, index, sheet) {
           </button>
         </div>
 
-        ${renderSection("Identité", identityHtml)}
-        ${renderSection("Liens / Photos", photosHtml)}
-        ${renderSection("Réponses examen", answersHtml)}
+        ${renderExamAnswersSection(answer)}
       </div>
     </article>
   `;
 }
 
-/* ===== UI états ===== */
+/* =========================================================
+   UI STATES
+========================================================= */
 
 function setLoading(sheetLabel) {
   sheetStatus.hidden = false;
@@ -448,7 +419,9 @@ function setEmpty(sheetLabel) {
   sheetContent.hidden = true;
 }
 
-/* ===== Render ===== */
+/* =========================================================
+   RENDER ANSWERS
+========================================================= */
 
 async function renderAnswers(answers, sheet) {
   if (!answers.length) {
@@ -516,7 +489,9 @@ async function loadSheet(sheet) {
   }
 }
 
-/* ===== Tabs ===== */
+/* =========================================================
+   TABS
+========================================================= */
 
 function setActiveTab(sheetId) {
   document.querySelectorAll(".student-sheet-tab").forEach(btn => {
@@ -539,7 +514,9 @@ function renderTabs() {
   });
 }
 
-/* ===== Cartes open/close ===== */
+/* =========================================================
+   CARDS OPEN / CLOSE
+========================================================= */
 
 function bindCardToggles() {
   const cards = document.querySelectorAll("[data-answer-card]");
@@ -585,7 +562,9 @@ function bindCardToggles() {
   });
 }
 
-/* ===== Statuts ===== */
+/* =========================================================
+   STATUS BUTTONS
+========================================================= */
 
 function updateCardStatus(card, status) {
   const meta = getStatusMeta(status);
@@ -643,7 +622,9 @@ function bindStatusButtons() {
   });
 }
 
-/* ===== Minimiser global ===== */
+/* =========================================================
+   MINIMIZE GLOBAL
+========================================================= */
 
 function bindMinimize() {
   if (minimizeAnswersBtn) {
@@ -674,7 +655,9 @@ function bindMinimize() {
   }
 }
 
-/* ===== Init ===== */
+/* =========================================================
+   INIT
+========================================================= */
 
 renderTabs();
 bindMinimize();
