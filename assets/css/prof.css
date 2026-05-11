@@ -1429,3 +1429,162 @@
     font-size: 22px;
   }
 }
+/* =========================================================
+   FIX FINAL REPONSES ELEVES - AFFICHAGE CLEAN SANS VIDE
+========================================================= */
+
+/* Le conteneur principal ne doit PAS être une grille */
+#sheetContent.student-sheet-content {
+  display: block !important;
+  width: 100% !important;
+}
+
+/* Titre feuille + compteur */
+.student-results-head {
+  width: 100% !important;
+  margin-bottom: 22px !important;
+  padding: 20px 22px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(214,180,106,.08), transparent 32%),
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.020)) !important;
+
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.student-results-head h2 {
+  margin: 0 !important;
+  font-size: clamp(38px, 4vw, 58px) !important;
+  line-height: .9 !important;
+  letter-spacing: -.06em !important;
+}
+
+/* Grille des étiquettes : prend toute la largeur proprement */
+#sheetContent .student-answer-grid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+/* Carte fermée = étiquette compacte */
+.student-answer-card.collapsed {
+  grid-column: auto !important;
+  min-height: 118px !important;
+  padding: 16px !important;
+  border-radius: 24px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Étiquette centrée */
+.student-answer-card.collapsed .student-card-top {
+  width: 100% !important;
+  height: 100% !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  gap: 10px !important;
+  text-align: center !important;
+}
+
+.student-answer-card.collapsed .student-card-main {
+  width: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.student-answer-card.collapsed .student-card-top h2 {
+  max-width: 100% !important;
+  font-size: 26px !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* En fermé, on garde seulement statut + bouton */
+.student-answer-card.collapsed .student-id-badge {
+  display: none !important;
+}
+
+.student-answer-card.collapsed .student-tags {
+  justify-content: center !important;
+}
+
+/* Carte ouverte = gros panneau large */
+.student-answer-card.is-open {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+
+  padding: 24px !important;
+  border-radius: 30px !important;
+
+  display: block !important;
+}
+
+/* Header ouvert propre */
+.student-answer-card.is-open .student-card-top {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  align-items: start !important;
+  gap: 24px !important;
+  margin-bottom: 20px !important;
+}
+
+.student-answer-card.is-open .student-card-top h2 {
+  font-size: clamp(42px, 5vw, 70px) !important;
+  line-height: .88 !important;
+  letter-spacing: -.065em !important;
+}
+
+/* Les boutons approuver/refuser prennent pas 50km */
+.student-status-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin: 0 0 16px !important;
+}
+
+/* Sections internes en grille propre */
+.student-answer-card.is-open .student-card-body {
+  display: grid !important;
+  gap: 16px !important;
+}
+
+.student-answer-card.is-open .student-section-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* Évite les champs trop hauts pour rien */
+.student-answer-field,
+.student-link-card,
+.student-empty {
+  min-height: 72px !important;
+}
+
+/* Mobile */
+@media (max-width: 850px) {
+  .student-answer-card.is-open .student-card-top {
+    grid-template-columns: 1fr !important;
+  }
+
+  .student-status-actions {
+    justify-content: flex-start !important;
+  }
+}
