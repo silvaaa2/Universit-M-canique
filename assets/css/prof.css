@@ -1221,3 +1221,172 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   REPONSES ELEVES - ETIQUETTES MINIMISÉES CÔTE À CÔTE
+========================================================= */
+
+.student-answer-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+/* Carte ouverte = pleine largeur */
+.student-answer-card:not(.collapsed) {
+  grid-column: 1 / -1 !important;
+  padding: 22px !important;
+  border-radius: 28px !important;
+  border-color: rgba(214,180,106,.22) !important;
+
+  background:
+    radial-gradient(circle at 16% 0%, rgba(214,180,106,.12), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025)) !important;
+
+  box-shadow:
+    0 28px 80px rgba(0,0,0,.34),
+    0 0 45px rgba(214,180,106,.07),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+
+  animation: openAnswerCard .28s ease both !important;
+}
+
+/* Carte fermée = petite étiquette */
+.student-answer-card.collapsed {
+  grid-column: auto !important;
+  padding: 14px 16px !important;
+  min-height: 92px !important;
+  border-radius: 22px !important;
+  cursor: pointer !important;
+
+  background:
+    radial-gradient(circle at 20% 0%, rgba(214,180,106,.10), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.060), rgba(255,255,255,.022)) !important;
+
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    box-shadow .22s ease,
+    background .22s ease !important;
+}
+
+.student-answer-card.collapsed:hover {
+  transform: translateY(-5px) !important;
+  border-color: rgba(214,180,106,.35) !important;
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.30),
+    0 0 30px rgba(214,180,106,.08) !important;
+}
+
+/* Header compact quand fermé */
+.student-answer-card.collapsed .student-card-top {
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.student-answer-card.collapsed .student-kicker {
+  margin-bottom: 6px !important;
+  font-size: 10px !important;
+}
+
+.student-answer-card.collapsed .student-card-top h2 {
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: -.04em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 220px !important;
+}
+
+/* Tags plus petits en étiquette */
+.student-answer-card.collapsed .student-tags {
+  gap: 6px !important;
+  justify-content: flex-end !important;
+}
+
+.student-answer-card.collapsed .student-tags span {
+  padding: 7px 10px !important;
+  font-size: 10px !important;
+}
+
+/* Corps caché quand fermé */
+.student-answer-card.collapsed .student-card-body {
+  display: none !important;
+}
+
+/* Bouton + / - propre */
+.student-toggle-icon {
+  min-width: 32px !important;
+  height: 32px !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  font-size: 16px !important;
+  background: rgba(255,255,255,.06) !important;
+}
+
+/* Corps ouvert plus smooth */
+.student-answer-card:not(.collapsed) .student-card-body {
+  animation: answerBodyIn .25s ease both !important;
+}
+
+.student-answer-card:not(.collapsed) .student-section {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.052), rgba(255,255,255,.020)) !important;
+  border-color: rgba(255,255,255,.085) !important;
+}
+
+/* Animation ouverture */
+@keyframes openAnswerCard {
+  from {
+    opacity: .75;
+    transform: translateY(10px) scale(.99);
+    filter: blur(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes answerBodyIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1350px) {
+  .student-answer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .student-answer-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .student-answer-card.collapsed .student-card-top h2 {
+    max-width: 100% !important;
+  }
+
+  .student-answer-card.collapsed .student-card-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .student-answer-card.collapsed .student-tags {
+    justify-content: flex-start !important;
+  }
+}
