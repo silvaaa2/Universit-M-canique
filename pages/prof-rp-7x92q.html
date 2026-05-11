@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Réponses Élèves - Module 4</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="../assets/css/base.css?v=2000">
+  <link rel="stylesheet" href="../assets/css/header.css?v=2000">
+  <link rel="stylesheet" href="../assets/css/buttons.css?v=2000">
+  <link rel="stylesheet" href="../assets/css/loader.css?v=2000">
+  <link rel="stylesheet" href="../assets/css/prof.css?v=2000">
+</head>
+
+<body>
+
+<header>
+  <div class="logo" onclick="goPage('../index.html')">
+    <img src="../Images/logo.png" alt="Logo Module 4">
+    <span>Module 4 - Mécanique</span>
+  </div>
+
+  <nav>
+    <button onclick="goPage('../index.html')">Accueil</button>
+    <button onclick="goPage('espace-prof.html')">Espace Prof</button>
+  </nav>
+</header>
+
+<main>
+
+  <section id="guardLoader" class="prof-login-page">
+    <div class="prof-login-card">
+      <p class="kicker">Accès sécurisé</p>
+      <h1>Vérification</h1>
+      <p class="intro">
+        Vérification de votre session professeur...
+      </p>
+
+      <div style="margin-top: 28px; display: flex; align-items: center; gap: 14px;">
+        <div class="inline-loader"></div>
+        <p class="intro" style="margin: 0;">Chargement sécurisé...</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="protectedContent" class="prof-dashboard" hidden>
+    <div class="prof-dashboard-top">
+      <div>
+        <p class="kicker">Module 4 - Mécanique</p>
+        <h1>Réponses élèves</h1>
+        <p class="intro">
+          Tableau réservé aux professeurs. Les données sont chargées depuis Google Sheets.
+        </p>
+      </div>
+
+      <button class="btn secondary" onclick="goPage('espace-prof.html')">
+        Retour
+      </button>
+    </div>
+
+    <div class="inline-corrections active">
+      <div class="inline-corrections-card">
+
+        <div class="inline-corrections-head">
+          <div>
+            <p class="kicker">Réponses</p>
+            <h2>Tableau des élèves</h2>
+            <p>
+              Les réponses s’affichent ici uniquement après vérification de l’accès professeur.
+            </p>
+          </div>
+
+          <button type="button" class="inline-corrections-minimize" onclick="goPage('espace-prof.html')">
+            ×
+          </button>
+        </div>
+
+        <div class="inline-correction-detail" style="padding-top: 34px;">
+          <div id="sheetStatus" class="inline-loading-box">
+            <div class="inline-loader"></div>
+            <p>Chargement des réponses élèves...</p>
+          </div>
+
+          <div id="sheetContent" class="student-answer-grid" hidden></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="../assets/js/navigation.js?v=2000"></script>
+<script type="module" src="../assets/js/prof-guard.js?v=2000"></script>
+
+</body>
+</html>
