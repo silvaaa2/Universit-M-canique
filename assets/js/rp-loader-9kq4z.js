@@ -411,16 +411,47 @@ function renderTabs() {
 }
 
 function bindCardToggles() {
+  const cards = document.querySelectorAll("[data-answer-card]");
+
+  cards.forEach((card, index) => {
+    if (index !== 0) {
+      card.classList.add("collapsed");
+    } else {
+      card.classList.remove("collapsed");
+    }
+
+    const icon = card.querySelector(".student-toggle-icon");
+    if (icon) {
+      icon.textContent = card.classList.contains("collapsed") ? "+" : "−";
+    }
+  });
+
   document.querySelectorAll("[data-toggle-card]").forEach(button => {
     button.addEventListener("click", () => {
-      const card = button.closest("[data-answer-card]");
-      if (!card) return;
+      const selectedCard = button.closest("[data-answer-card]");
+      if (!selectedCard) return;
 
-      card.classList.toggle("collapsed");
+      const wasCollapsed = selectedCard.classList.contains("collapsed");
 
-      const icon = card.querySelector(".student-toggle-icon");
-      if (icon) {
-        icon.textContent = card.classList.contains("collapsed") ? "+" : "−";
+      cards.forEach(card => {
+        card.classList.add("collapsed");
+
+        const icon = card.querySelector(".student-toggle-icon");
+        if (icon) icon.textContent = "+";
+      });
+
+      if (wasCollapsed) {
+        selectedCard.classList.remove("collapsed");
+
+        const icon = selectedCard.querySelector(".student-toggle-icon");
+        if (icon) icon.textContent = "−";
+
+        setTimeout(() => {
+          selectedCard.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }, 120);
       }
     });
   });
