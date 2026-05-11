@@ -413,17 +413,12 @@ function renderTabs() {
 function bindCardToggles() {
   const cards = document.querySelectorAll("[data-answer-card]");
 
-  cards.forEach((card, index) => {
-    if (index !== 0) {
-      card.classList.add("collapsed");
-    } else {
-      card.classList.remove("collapsed");
-    }
+  cards.forEach((card) => {
+    card.classList.add("collapsed");
+    card.classList.remove("is-open");
 
     const icon = card.querySelector(".student-toggle-icon");
-    if (icon) {
-      icon.textContent = card.classList.contains("collapsed") ? "+" : "−";
-    }
+    if (icon) icon.textContent = "+";
   });
 
   document.querySelectorAll("[data-toggle-card]").forEach(button => {
@@ -431,17 +426,19 @@ function bindCardToggles() {
       const selectedCard = button.closest("[data-answer-card]");
       if (!selectedCard) return;
 
-      const wasCollapsed = selectedCard.classList.contains("collapsed");
+      const isAlreadyOpen = selectedCard.classList.contains("is-open");
 
       cards.forEach(card => {
         card.classList.add("collapsed");
+        card.classList.remove("is-open");
 
         const icon = card.querySelector(".student-toggle-icon");
         if (icon) icon.textContent = "+";
       });
 
-      if (wasCollapsed) {
+      if (!isAlreadyOpen) {
         selectedCard.classList.remove("collapsed");
+        selectedCard.classList.add("is-open");
 
         const icon = selectedCard.querySelector(".student-toggle-icon");
         if (icon) icon.textContent = "−";
