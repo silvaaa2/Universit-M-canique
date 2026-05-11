@@ -10,7 +10,7 @@ const SHEETS = [
 
 const STATUS_COLLECTION = "examAnswerStatuses";
 
-const EXAM_MAX_POINTS = 52;
+const EXAM_DISPLAY_MAX_POINTS = 50;
 const EXAM_PASS_POINTS = 40;
 
 const QUESTION_POINTS = {
@@ -26,6 +26,7 @@ const QUESTION_POINTS = {
   "Quels sont les différents garages": 7,
 
   "Comme appelle t'on ce qui est montré sur l'image ?": 1,
+
   "Quel est la procédure d’une réparation au garage ?": 4,
   "Quel est la procédure d'une réparation au garage ?": 4,
 
@@ -54,7 +55,8 @@ const answersMiniBar = document.getElementById("answersMiniBar");
 const answersBody = document.getElementById("answersBody");
 
 const cache = new Map();
-let answerStatuses = {};
+
+let answerRecords = {};
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -190,7 +192,7 @@ function rowsToAnswers(rows) {
 }
 
 /* =========================================================
-   FIREBASE STATUTS
+   FIREBASE
 ========================================================= */
 
 function waitForFirebaseReady() {
@@ -231,39 +233,6 @@ function getStudentName(answer, index) {
   return `Copie ${index + 1}`;
 }
 
-function getRawScore(answer) {
-  return getField(answer, [
-    "Score",
-    "Note",
-    "Résultat",
-    "Resultat"
-  ]);
-}
-
-function parseScore(value) {
-  const raw = String(value || "").trim();
-
-  if (!raw) return null;
-
-  const match = raw.match(/-?\d+(?:[.,]\d+)?/);
-
-  if (!match) return null;
-
-  const score = Number(match[0].replace(",", "."));
-
-  if (Number.isNaN(score)) return null;
-
-  return score;
-}
-
-function getAutoStatusFromScore(score) {
-  if (score === null || score === undefined || Number.isNaN(score)) {
-    return "pending";
-  }
-
-  return score >= EXAM_PASS_POINTS ? "approved" : "rejected";
-}
-
 function buildAnswerKey(answer, sheetId, index) {
   const horodateur = getField(answer, ["Horodateur", "Timestamp"]);
   const nom = getStudentName(answer, index);
@@ -276,7 +245,7 @@ function buildStatusDocId(answerKey) {
   return encodeURIComponent(answerKey);
 }
 
-async function loadStatusesForSheet(sheetId) {
+async function loadRecordsForSheet(sheetId) {
   try {
     const firebase = await waitForFirebaseReady();
 
@@ -284,22 +253,27 @@ async function loadStatusesForSheet(sheetId) {
     const q = firebase.query(statusesRef, firebase.where("sheetId", "==", sheetId));
     const snap = await firebase.getDocs(q);
 
-    answerStatuses = {};
+    answerRecords = {};
 
     snap.forEach(docSnap => {
       const data = docSnap.data();
 
-      if (data.answerKey && data.status) {
-        answerStatuses[data.answerKey] = data.status;
+      if (data.answerKey) {
+        answerRecords[data.answerKey] = {
+          status: data.status || "pending",
+          fieldScores: data.fieldScores || {},
+          totalScore: Number(data.totalScore || 0),
+          hasScoring: Boolean(data.hasScoring)
+        };
       }
     });
   } catch (error) {
     console.error("Erreur chargement statuts Firebase examens :", error);
-    answerStatuses = {};
+    answerRecords = {};
   }
 }
 
-async function saveAnswerStatusToFirebase(answerKey, sheetId, status) {
+async function saveExamRecordToFirebase(answerKey, sheetId, record) {
   const firebase = await waitForFirebaseReady();
   const docId = buildStatusDocId(answerKey);
 
@@ -308,11 +282,19 @@ async function saveAnswerStatusToFirebase(answerKey, sheetId, status) {
   await firebase.setDoc(ref, {
     answerKey,
     sheetId,
-    status,
+    status: record.status || "pending",
+    fieldScores: record.fieldScores || {},
+    totalScore: Number(record.totalScore || 0),
+    maxScore: EXAM_DISPLAY_MAX_POINTS,
+    hasScoring: Boolean(record.hasScoring),
     updatedBy: window.currentProfUser?.email || "professeur inconnu",
     updatedAt: firebase.serverTimestamp()
   }, { merge: true });
 }
+
+/* =========================================================
+   STATUTS / SCORE
+========================================================= */
 
 function getStatusMeta(status) {
   switch (status) {
@@ -339,14 +321,6 @@ function getStatusMeta(status) {
   }
 }
 
-function getAnswerStatus(answerKey, autoStatus) {
-  return answerStatuses[answerKey] || autoStatus || "pending";
-}
-
-/* =========================================================
-   POINTS
-========================================================= */
-
 function getQuestionPoints(label) {
   const normalizedLabel = normalizeQuestion(label);
 
@@ -359,80 +333,65 @@ function getQuestionPoints(label) {
   return QUESTION_POINTS[foundKey];
 }
 
-function renderPointsBadge(points) {
-  if (points === null || points === undefined) {
-    return "";
-  }
-
-  const suffix = points > 1 ? "pts" : "pt";
-
-  return `
-    <div class="exam-points-badge">
-      +${escapeHtml(points)} ${suffix}
-    </div>
-  `;
+function buildFieldScoreKey(field) {
+  return `${field.index}__${normalizeQuestion(field.label)}`;
 }
 
-function renderScoreBadge(score) {
-  if (score === null || score === undefined || Number.isNaN(score)) {
+function getDefaultRecord() {
+  return {
+    status: "pending",
+    fieldScores: {},
+    totalScore: 0,
+    hasScoring: false
+  };
+}
+
+function getAnswerRecord(answerKey) {
+  return answerRecords[answerKey] || getDefaultRecord();
+}
+
+function calculateTotalScore(fieldScores) {
+  const realTotal = Object.values(fieldScores || {}).reduce((sum, value) => {
+    const number = Number(value || 0);
+    return sum + (Number.isNaN(number) ? 0 : number);
+  }, 0);
+
+  return Math.min(realTotal, EXAM_DISPLAY_MAX_POINTS);
+}
+
+function calculateRealScore(fieldScores) {
+  return Object.values(fieldScores || {}).reduce((sum, value) => {
+    const number = Number(value || 0);
+    return sum + (Number.isNaN(number) ? 0 : number);
+  }, 0);
+}
+
+function getAutoStatusFromManualScore(totalScore, hasScoring) {
+  if (!hasScoring) return "pending";
+  return totalScore >= EXAM_PASS_POINTS ? "approved" : "rejected";
+}
+
+function renderScoreBadge(totalScore, hasScoring) {
+  if (!hasScoring) {
     return `
-      <span class="student-score-badge score-pending">
-        Score inconnu
+      <span class="student-score-badge score-pending" data-total-score-badge>
+        0 / ${EXAM_DISPLAY_MAX_POINTS}
       </span>
     `;
   }
 
-  const scoreClass = score >= EXAM_PASS_POINTS ? "score-approved" : "score-rejected";
+  const scoreClass = totalScore >= EXAM_PASS_POINTS ? "score-approved" : "score-rejected";
 
   return `
-    <span class="student-score-badge ${scoreClass}">
-      ${escapeHtml(score)} / ${EXAM_MAX_POINTS}
+    <span class="student-score-badge ${scoreClass}" data-total-score-badge>
+      ${escapeHtml(totalScore)} / ${EXAM_DISPLAY_MAX_POINTS}
     </span>
   `;
 }
 
 /* =========================================================
-   RENDER
+   RENDER LIGNES EXAM
 ========================================================= */
-
-function renderExamLine(label, value, index) {
-  const cleanValue = getValue(value);
-  const points = getQuestionPoints(label);
-
-  if (isLink(cleanValue)) {
-    return `
-      <div class="exam-line">
-        <div class="exam-line-number">${String(index + 1).padStart(2, "0")}</div>
-
-        <div class="exam-line-content">
-          <div class="exam-line-head">
-            <span>${escapeHtml(label)}</span>
-            ${renderPointsBadge(points)}
-          </div>
-
-          <a href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
-            Ouvrir le lien
-          </a>
-        </div>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="exam-line">
-      <div class="exam-line-number">${String(index + 1).padStart(2, "0")}</div>
-
-      <div class="exam-line-content">
-        <div class="exam-line-head">
-          <span>${escapeHtml(label)}</span>
-          ${renderPointsBadge(points)}
-        </div>
-
-        <strong>${escapeHtml(cleanValue)}</strong>
-      </div>
-    </div>
-  `;
-}
 
 function shouldDisplayExamField(field) {
   const label = normalizeHeader(field.label);
@@ -448,19 +407,75 @@ function shouldDisplayExamField(field) {
   return true;
 }
 
-function renderExamAnswersSection(answer) {
-  const orderedFields = answer.__orderedFields || [];
+function renderScoreControl(field, currentScore) {
+  const maxPoints = getQuestionPoints(field.label);
 
+  if (maxPoints === null || maxPoints === undefined) {
+    return `
+      <div class="exam-score-control disabled">
+        <span>—</span>
+      </div>
+    `;
+  }
+
+  const safeCurrent = Math.max(0, Math.min(Number(currentScore || 0), maxPoints));
+
+  return `
+    <div
+      class="exam-score-control"
+      data-score-control
+      data-field-key="${escapeHtml(buildFieldScoreKey(field))}"
+      data-max-points="${escapeHtml(maxPoints)}"
+    >
+      <button type="button" data-score-delta="-1">−</button>
+
+      <strong>
+        <span data-current-score>${escapeHtml(safeCurrent)}</span>
+        <small>/ ${escapeHtml(maxPoints)}</small>
+      </strong>
+
+      <button type="button" data-score-delta="1">+</button>
+    </div>
+  `;
+}
+
+function renderExamLine(field, displayIndex, record) {
+  const cleanValue = getValue(field.value);
+  const fieldKey = buildFieldScoreKey(field);
+  const currentScore = record.fieldScores?.[fieldKey] || 0;
+
+  const valueHtml = isLink(cleanValue)
+    ? `<a href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">Ouvrir le lien</a>`
+    : `<strong>${escapeHtml(cleanValue)}</strong>`;
+
+  return `
+    <div class="exam-line">
+      <div class="exam-line-number">${String(displayIndex + 1).padStart(2, "0")}</div>
+
+      <div class="exam-line-content">
+        <span>${escapeHtml(field.label)}</span>
+        ${valueHtml}
+      </div>
+
+      <div class="exam-line-score">
+        ${renderScoreControl(field, currentScore)}
+      </div>
+    </div>
+  `;
+}
+
+function renderExamAnswersSection(answer, record) {
+  const orderedFields = answer.__orderedFields || [];
   const displayFields = orderedFields.filter(shouldDisplayExamField);
 
   const html = displayFields
-    .map((field, index) => renderExamLine(field.label, field.value, index))
+    .map((field, index) => renderExamLine(field, index, record))
     .join("");
 
   return `
     <section class="student-section exam-ordered-section">
       <div class="student-section-head">
-        <h3>Réponses dans l’ordre du formulaire</h3>
+        <h3>Correction de l’examen</h3>
       </div>
 
       <div class="exam-lines-list">
@@ -474,12 +489,15 @@ function renderAnswerCard(answer, index, sheet) {
   const name = getStudentName(answer, index);
   const idUnique = getField(answer, ["ID Unique", "ID"]);
 
-  const rawScore = getRawScore(answer);
-  const score = parseScore(rawScore);
-  const autoStatus = getAutoStatusFromScore(score);
-
   const answerKey = buildAnswerKey(answer, sheet.id, index);
-  const status = getAnswerStatus(answerKey, autoStatus);
+
+  const record = getAnswerRecord(answerKey);
+  const totalScore = calculateTotalScore(record.fieldScores);
+  const realScore = calculateRealScore(record.fieldScores);
+  const hasScoring = record.hasScoring || realScore > 0;
+
+  const autoStatus = getAutoStatusFromManualScore(totalScore, hasScoring);
+  const status = record.status && record.status !== "pending" ? record.status : autoStatus;
   const statusMeta = getStatusMeta(status);
 
   return `
@@ -499,7 +517,7 @@ function renderAnswerCard(answer, index, sheet) {
         <div class="student-tags">
           <span class="student-id-badge">${escapeHtml(idUnique || "Copie")}</span>
 
-          ${renderScoreBadge(score)}
+          ${renderScoreBadge(totalScore, hasScoring)}
 
           <span class="student-status-badge status-${escapeHtml(statusMeta.className)}" data-status-badge>
             ${escapeHtml(statusMeta.shortLabel)}
@@ -524,7 +542,7 @@ function renderAnswerCard(answer, index, sheet) {
           </button>
         </div>
 
-        ${renderExamAnswersSection(answer)}
+        ${renderExamAnswersSection(answer, record)}
       </div>
     </article>
   `;
@@ -581,7 +599,7 @@ async function renderAnswers(answers, sheet) {
     return;
   }
 
-  await loadStatusesForSheet(sheet.id);
+  await loadRecordsForSheet(sheet.id);
 
   sheetStatus.hidden = true;
   sheetStatus.style.display = "none";
@@ -604,6 +622,7 @@ async function renderAnswers(answers, sheet) {
 
   bindCardToggles();
   bindStatusButtons();
+  bindScoreControls();
 }
 
 async function loadSheet(sheet) {
@@ -667,7 +686,7 @@ function renderTabs() {
 }
 
 /* =========================================================
-   CARDS OPEN / CLOSE
+   CARD OPEN / CLOSE
 ========================================================= */
 
 function bindCardToggles() {
@@ -715,7 +734,7 @@ function bindCardToggles() {
 }
 
 /* =========================================================
-   STATUS BUTTONS
+   UPDATE STATUS UI
 ========================================================= */
 
 function updateCardStatus(card, status) {
@@ -737,6 +756,94 @@ function updateCardStatus(card, status) {
   });
 }
 
+function updateScoreUi(card, record) {
+  const totalScore = calculateTotalScore(record.fieldScores);
+  const realScore = calculateRealScore(record.fieldScores);
+  const hasScoring = record.hasScoring || realScore > 0;
+
+  record.totalScore = totalScore;
+  record.hasScoring = hasScoring;
+  record.status = getAutoStatusFromManualScore(totalScore, hasScoring);
+
+  const scoreBadge = card.querySelector("[data-total-score-badge]");
+
+  if (scoreBadge) {
+    scoreBadge.classList.remove("score-approved", "score-rejected", "score-pending");
+
+    if (!hasScoring) {
+      scoreBadge.classList.add("score-pending");
+      scoreBadge.textContent = `0 / ${EXAM_DISPLAY_MAX_POINTS}`;
+    } else if (totalScore >= EXAM_PASS_POINTS) {
+      scoreBadge.classList.add("score-approved");
+      scoreBadge.textContent = `${totalScore} / ${EXAM_DISPLAY_MAX_POINTS}`;
+    } else {
+      scoreBadge.classList.add("score-rejected");
+      scoreBadge.textContent = `${totalScore} / ${EXAM_DISPLAY_MAX_POINTS}`;
+    }
+  }
+
+  updateCardStatus(card, record.status);
+}
+
+/* =========================================================
+   SCORE CONTROLS
+========================================================= */
+
+function bindScoreControls() {
+  document.querySelectorAll("[data-score-delta]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const control = button.closest("[data-score-control]");
+      const card = button.closest("[data-answer-card]");
+
+      if (!control || !card) return;
+
+      const answerKey = card.dataset.answerKey;
+      const sheetId = card.dataset.sheetId;
+      const fieldKey = control.dataset.fieldKey;
+      const maxPoints = Number(control.dataset.maxPoints || 0);
+      const delta = Number(button.dataset.scoreDelta || 0);
+
+      if (!answerKey || !sheetId || !fieldKey) return;
+
+      const currentSpan = control.querySelector("[data-current-score]");
+
+      const record = answerRecords[answerKey] || getDefaultRecord();
+      const currentScore = Number(record.fieldScores?.[fieldKey] || 0);
+
+      const newScore = Math.max(0, Math.min(currentScore + delta, maxPoints));
+
+      record.fieldScores = {
+        ...(record.fieldScores || {}),
+        [fieldKey]: newScore
+      };
+
+      record.hasScoring = true;
+
+      answerRecords[answerKey] = record;
+
+      if (currentSpan) {
+        currentSpan.textContent = String(newScore);
+      }
+
+      updateScoreUi(card, record);
+
+      try {
+        await saveExamRecordToFirebase(answerKey, sheetId, record);
+      } catch (error) {
+        console.error("Erreur sauvegarde score Firebase :", error);
+        alert("Impossible de sauvegarder les points dans Firebase.");
+      }
+    });
+  });
+}
+
+/* =========================================================
+   MANUAL STATUS BUTTONS
+========================================================= */
+
 function bindStatusButtons() {
   document.querySelectorAll("[data-set-status]").forEach((button) => {
     button.addEventListener("click", async (event) => {
@@ -751,20 +858,18 @@ function bindStatusButtons() {
 
       if (!answerKey || !sheetId || !newStatus) return;
 
-      const oldStatus = card.dataset.status || "pending";
+      const record = answerRecords[answerKey] || getDefaultRecord();
+
+      record.status = newStatus;
+      answerRecords[answerKey] = record;
 
       updateCardStatus(card, newStatus);
-      answerStatuses[answerKey] = newStatus;
 
       try {
-        await saveAnswerStatusToFirebase(answerKey, sheetId, newStatus);
+        await saveExamRecordToFirebase(answerKey, sheetId, record);
       } catch (error) {
         console.error("Erreur sauvegarde statut Firebase examens :", error);
-
-        updateCardStatus(card, oldStatus);
-        answerStatuses[answerKey] = oldStatus;
-
-        alert("Impossible de sauvegarder le statut dans Firebase. Vérifie les règles Firestore.");
+        alert("Impossible de sauvegarder le statut dans Firebase.");
       }
     });
   });
