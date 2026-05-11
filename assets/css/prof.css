@@ -2274,3 +2274,71 @@
     padding: 10px !important;
   }
 }
+/* =========================================================
+   PATCH FINAL EXAM - PAS DE BOUTON DANS BOUTON
+========================================================= */
+
+.student-card-open-zone {
+  appearance: none !important;
+  border: none !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-family: inherit !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  text-align: inherit !important;
+}
+
+.student-card-open-zone:hover h2 {
+  color: var(--gold2) !important;
+}
+
+.student-toggle-icon {
+  appearance: none !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+}
+
+.student-answer-card.collapsed .student-card-body,
+.student-answer-card:not(.is-open) .student-card-body {
+  display: none !important;
+}
+
+.student-answer-card.is-open .student-card-body {
+  display: grid !important;
+}
+
+/* Le bouton copier ne doit jamais déclencher l’ouverture */
+.copy-result-btn {
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+/* Header fermé propre */
+.student-answer-card.collapsed .student-card-top {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  text-align: center !important;
+}
+
+.student-answer-card.collapsed .student-card-main {
+  width: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+/* Header ouvert propre */
+.student-answer-card.is-open .student-card-top {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  align-items: start !important;
+  gap: 24px !important;
+  margin-bottom: 20px !important;
+}
