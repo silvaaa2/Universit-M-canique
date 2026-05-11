@@ -2033,3 +2033,244 @@
     padding: 10px !important;
   }
 }
+/* =========================================================
+   PATCH FINAL EXAMENS - INPUT NOTE + COPIER RÉSULTAT
+   À COLLER TOUT EN BAS DE prof.css
+========================================================= */
+
+/* Conteneur lignes */
+.exam-lines-list {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+/* Ligne : numéro | question/réponse | note */
+.exam-line {
+  display: grid !important;
+  grid-template-columns: 58px minmax(0, 1fr) 165px !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+
+  padding: 0 !important;
+  border-radius: 17px !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+  overflow: hidden !important;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.052), rgba(255,255,255,.020)) !important;
+}
+
+/* Numéro */
+.exam-line-number {
+  display: grid !important;
+  place-items: center !important;
+
+  background: rgba(214,180,106,.10) !important;
+  border-right: 1px solid rgba(214,180,106,.14) !important;
+
+  color: var(--gold2) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+/* Question + réponse */
+.exam-line-content {
+  padding: 13px 15px !important;
+  min-width: 0 !important;
+}
+
+.exam-line-content span {
+  display: block !important;
+  margin-bottom: 6px !important;
+
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.exam-line-content strong,
+.exam-line-content a {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+.exam-line-content a {
+  color: var(--gold2) !important;
+  text-decoration: none !important;
+}
+
+.exam-line-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* Zone note à droite */
+.exam-line-score {
+  display: grid !important;
+  place-items: center !important;
+
+  border-left: 1px solid rgba(255,255,255,.07) !important;
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.018)) !important;
+}
+
+/* Bloc input note */
+.exam-score-control {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+
+  padding: 8px 10px !important;
+  border-radius: 999px !important;
+
+  border: 1px solid rgba(214,180,106,.22) !important;
+  background: rgba(214,180,106,.10) !important;
+}
+
+/* Cache anciens boutons + / - si un vieux CSS/JS traîne */
+.exam-score-control button {
+  display: none !important;
+}
+
+/* Input note */
+.exam-score-control input {
+  width: 52px !important;
+  height: 34px !important;
+
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 999px !important;
+
+  background: rgba(0,0,0,.24) !important;
+  color: var(--text) !important;
+
+  text-align: center !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+
+  outline: none !important;
+}
+
+.exam-score-control input:focus {
+  border-color: rgba(214,180,106,.55) !important;
+  box-shadow: 0 0 0 4px rgba(214,180,106,.12) !important;
+}
+
+.exam-score-control strong {
+  min-width: auto !important;
+  color: var(--muted) !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+/* Si barème manquant */
+.exam-score-control.exam-score-missing {
+  opacity: .85 !important;
+  border-color: rgba(248,113,113,.25) !important;
+  background: rgba(248,113,113,.08) !important;
+}
+
+.exam-score-control.exam-score-missing span {
+  color: #fca5a5 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+/* Badge score total */
+.student-score-badge {
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.student-score-badge.score-approved {
+  border: 1px solid rgba(74, 222, 128, .30) !important;
+  background: rgba(74, 222, 128, .12) !important;
+  color: #86efac !important;
+}
+
+.student-score-badge.score-rejected {
+  border: 1px solid rgba(248, 113, 113, .30) !important;
+  background: rgba(248, 113, 113, .12) !important;
+  color: #fca5a5 !important;
+}
+
+.student-score-badge.score-pending {
+  border: 1px solid rgba(214,180,106,.24) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+}
+
+/* Bouton copier résultat */
+.copy-result-btn {
+  appearance: none !important;
+  border: 1px solid rgba(214,180,106,.24) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+
+  cursor: pointer !important;
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease,
+    color .18s ease !important;
+}
+
+.copy-result-btn:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(214,180,106,.45) !important;
+  background: rgba(214,180,106,.16) !important;
+}
+
+.copy-result-btn.copied {
+  border-color: rgba(74, 222, 128, .35) !important;
+  background: rgba(74, 222, 128, .14) !important;
+  color: #86efac !important;
+}
+
+/* Étiquette fermée : bouton visible proprement */
+.student-answer-card.collapsed .copy-result-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Évite que les badges explosent l’étiquette */
+.student-answer-card.collapsed .student-tags {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+/* Mobile */
+@media (max-width: 850px) {
+  .exam-line {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+  }
+
+  .exam-line-score {
+    grid-column: 1 / -1 !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,.07) !important;
+    padding: 10px !important;
+  }
+}
