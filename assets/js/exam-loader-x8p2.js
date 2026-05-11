@@ -10,6 +10,40 @@ const SHEETS = [
 
 const STATUS_COLLECTION = "examAnswerStatuses";
 
+const EXAM_MAX_POINTS = 52;
+const EXAM_PASS_POINTS = 40;
+
+const QUESTION_POINTS = {
+  "Prénom / Nom (RP)": 1,
+  "Prénom - Nom (RP)": 1,
+  "ID Unique": 1,
+
+  "Pourquoi voulez vous devenir mécano ?": 1,
+  "Quelles sont les qualités d'un mécano pour vous ? (Citez en 6)": 6,
+  "Citez 2 services que peut vendre un mécano.": 2,
+  "Quel véhicule personnel un mécanicien peut-il utiliser": 3,
+  "Citez 4 pièces de carrosserie": 4,
+  "Quels sont les différents garages": 7,
+
+  "Comme appelle t'on ce qui est montré sur l'image ?": 1,
+  "Quel est la procédure d’une réparation au garage ?": 4,
+  "Quel est la procédure d'une réparation au garage ?": 4,
+
+  "Indiquez tout ce qui ne va pas sur cette image": 5,
+
+  "Vous êtes en custom pour une peinture et vous avez changé la couleur secondaire, mais elle n’est pas visible. Que faites vous ?": 3,
+  "Vous êtes en custom pour une peinture et vous avez changé la couleur secondaire, mais elle n'est pas visible. Que faites vous ?": 3,
+
+  "Dans quelles situations un mécanicien est autorisé à mettre un véhicule en fourrière": 4,
+
+  "Vous êtes en poste avec plusieurs mécaniciens. Quelles sont les règles à respecter pour que tout se passe bien entre mécaniciens ?": 3,
+
+  "Citez 3 Outils de mécanique": 3,
+
+  "Un client arrive masqué au garage pour une full perf mais il lui manque une portière . Que faites-vous ?": 4,
+  "Un client arrive masqué au garage pour une full perf mais il lui manque une portière. Que faites-vous ?": 4
+};
+
 const sheetTabs = document.getElementById("sheetTabs");
 const sheetStatus = document.getElementById("sheetStatus");
 const sheetContent = document.getElementById("sheetContent");
@@ -93,7 +127,15 @@ function normalizeHeader(value) {
     .trim()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’]/g, "'")
+    .replace(/\s+/g, " ");
+}
+
+function normalizeQuestion(value) {
+  return normalizeHeader(value)
+    .replace(/[?.!]+$/g, "")
+    .replace(/\s+/g, " ");
 }
 
 function getField(answer, possibleNames) {
@@ -189,6 +231,39 @@ function getStudentName(answer, index) {
   return `Copie ${index + 1}`;
 }
 
+function getRawScore(answer) {
+  return getField(answer, [
+    "Score",
+    "Note",
+    "Résultat",
+    "Resultat"
+  ]);
+}
+
+function parseScore(value) {
+  const raw = String(value || "").trim();
+
+  if (!raw) return null;
+
+  const match = raw.match(/-?\d+(?:[.,]\d+)?/);
+
+  if (!match) return null;
+
+  const score = Number(match[0].replace(",", "."));
+
+  if (Number.isNaN(score)) return null;
+
+  return score;
+}
+
+function getAutoStatusFromScore(score) {
+  if (score === null || score === undefined || Number.isNaN(score)) {
+    return "pending";
+  }
+
+  return score >= EXAM_PASS_POINTS ? "approved" : "rejected";
+}
+
 function buildAnswerKey(answer, sheetId, index) {
   const horodateur = getField(answer, ["Horodateur", "Timestamp"]);
   const nom = getStudentName(answer, index);
@@ -264,8 +339,56 @@ function getStatusMeta(status) {
   }
 }
 
-function getAnswerStatus(answerKey) {
-  return answerStatuses[answerKey] || "pending";
+function getAnswerStatus(answerKey, autoStatus) {
+  return answerStatuses[answerKey] || autoStatus || "pending";
+}
+
+/* =========================================================
+   POINTS
+========================================================= */
+
+function getQuestionPoints(label) {
+  const normalizedLabel = normalizeQuestion(label);
+
+  const foundKey = Object.keys(QUESTION_POINTS).find(key => {
+    return normalizeQuestion(key) === normalizedLabel;
+  });
+
+  if (!foundKey) return null;
+
+  return QUESTION_POINTS[foundKey];
+}
+
+function renderPointsBadge(points) {
+  if (points === null || points === undefined) {
+    return "";
+  }
+
+  const suffix = points > 1 ? "pts" : "pt";
+
+  return `
+    <div class="exam-points-badge">
+      +${escapeHtml(points)} ${suffix}
+    </div>
+  `;
+}
+
+function renderScoreBadge(score) {
+  if (score === null || score === undefined || Number.isNaN(score)) {
+    return `
+      <span class="student-score-badge score-pending">
+        Score inconnu
+      </span>
+    `;
+  }
+
+  const scoreClass = score >= EXAM_PASS_POINTS ? "score-approved" : "score-rejected";
+
+  return `
+    <span class="student-score-badge ${scoreClass}">
+      ${escapeHtml(score)} / ${EXAM_MAX_POINTS}
+    </span>
+  `;
 }
 
 /* =========================================================
@@ -274,6 +397,7 @@ function getAnswerStatus(answerKey) {
 
 function renderExamLine(label, value, index) {
   const cleanValue = getValue(value);
+  const points = getQuestionPoints(label);
 
   if (isLink(cleanValue)) {
     return `
@@ -281,7 +405,11 @@ function renderExamLine(label, value, index) {
         <div class="exam-line-number">${String(index + 1).padStart(2, "0")}</div>
 
         <div class="exam-line-content">
-          <span>${escapeHtml(label)}</span>
+          <div class="exam-line-head">
+            <span>${escapeHtml(label)}</span>
+            ${renderPointsBadge(points)}
+          </div>
+
           <a href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
             Ouvrir le lien
           </a>
@@ -295,18 +423,37 @@ function renderExamLine(label, value, index) {
       <div class="exam-line-number">${String(index + 1).padStart(2, "0")}</div>
 
       <div class="exam-line-content">
-        <span>${escapeHtml(label)}</span>
+        <div class="exam-line-head">
+          <span>${escapeHtml(label)}</span>
+          ${renderPointsBadge(points)}
+        </div>
+
         <strong>${escapeHtml(cleanValue)}</strong>
       </div>
     </div>
   `;
 }
 
+function shouldDisplayExamField(field) {
+  const label = normalizeHeader(field.label);
+
+  if (!label) return false;
+
+  if (label === normalizeHeader("Horodateur")) return false;
+  if (label === normalizeHeader("Adresse e-mail")) return false;
+  if (label === normalizeHeader("Email")) return false;
+  if (label === normalizeHeader("Adresse mail")) return false;
+  if (label === normalizeHeader("Score")) return false;
+
+  return true;
+}
+
 function renderExamAnswersSection(answer) {
   const orderedFields = answer.__orderedFields || [];
 
-  const html = orderedFields
-    .filter(field => String(field.label || "").trim() !== "")
+  const displayFields = orderedFields.filter(shouldDisplayExamField);
+
+  const html = displayFields
     .map((field, index) => renderExamLine(field.label, field.value, index))
     .join("");
 
@@ -326,10 +473,13 @@ function renderExamAnswersSection(answer) {
 function renderAnswerCard(answer, index, sheet) {
   const name = getStudentName(answer, index);
   const idUnique = getField(answer, ["ID Unique", "ID"]);
-  const score = getField(answer, ["Score", "Note", "Résultat"]);
+
+  const rawScore = getRawScore(answer);
+  const score = parseScore(rawScore);
+  const autoStatus = getAutoStatusFromScore(score);
 
   const answerKey = buildAnswerKey(answer, sheet.id, index);
-  const status = getAnswerStatus(answerKey);
+  const status = getAnswerStatus(answerKey, autoStatus);
   const statusMeta = getStatusMeta(status);
 
   return `
@@ -347,7 +497,9 @@ function renderAnswerCard(answer, index, sheet) {
         </div>
 
         <div class="student-tags">
-          <span class="student-id-badge">${escapeHtml(idUnique || score || "Copie")}</span>
+          <span class="student-id-badge">${escapeHtml(idUnique || "Copie")}</span>
+
+          ${renderScoreBadge(score)}
 
           <span class="student-status-badge status-${escapeHtml(statusMeta.className)}" data-status-badge>
             ${escapeHtml(statusMeta.shortLabel)}
