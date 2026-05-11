@@ -45,9 +45,7 @@ function parseCsv(text) {
     }
 
     if ((char === "\n" || char === "\r") && !insideQuotes) {
-      if (char === "\r" && nextChar === "\n") {
-        i++;
-      }
+      if (char === "\r" && nextChar === "\n") i++;
 
       currentRow.push(currentValue);
 
@@ -72,6 +70,158 @@ function parseCsv(text) {
   return rows;
 }
 
+function normalizeHeader(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getField(answer, possibleNames) {
+  for (const name of possibleNames) {
+    const foundKey = Object.keys(answer).find(key => normalizeHeader(key) === normalizeHeader(name));
+    if (foundKey) return answer[foundKey] || "";
+  }
+
+  return "";
+}
+
+function isLink(value) {
+  return /^https?:\/\//i.test(String(value || "").trim());
+}
+
+function getValue(value) {
+  const cleaned = String(value || "").trim();
+  return cleaned || "Non renseigné";
+}
+
+function renderField(label, value) {
+  const cleanValue = getValue(value);
+
+  if (isLink(cleanValue)) {
+    return `
+      <a class="student-link-card" href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
+        <span>${escapeHtml(label)}</span>
+        <strong>Ouvrir le lien</strong>
+      </a>
+    `;
+  }
+
+  return `
+    <div class="student-answer-field">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(cleanValue)}</strong>
+    </div>
+  `;
+}
+
+function renderSection(title, fieldsHtml) {
+  return `
+    <section class="student-section">
+      <div class="student-section-head">
+        <h3>${escapeHtml(title)}</h3>
+      </div>
+
+      <div class="student-section-grid">
+        ${fieldsHtml}
+      </div>
+    </section>
+  `;
+}
+
+function renderAnswerCard(answer, index) {
+  const horodateur = getField(answer, ["Horodateur"]);
+  const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
+  const idUnique = getField(answer, ["ID Unique", "ID"]);
+
+  const couleurPrincipale = getField(answer, ["Couleur principale"]);
+  const couleurSecondaire = getField(answer, ["Couleur secondaire"]);
+  const couleurInterieur = getField(answer, ["Couleur intérieur", "Couleur intérieure"]);
+  const nacre = getField(answer, ["Nacré", "Nacre"]);
+
+  const score = getField(answer, ["Score"]);
+  const email = getField(answer, ["Adresse e-mail", "Email", "Adresse mail"]);
+
+  const photoFields = Object.entries(answer).filter(([key, value]) => {
+    const normalizedKey = normalizeHeader(key);
+    return normalizedKey.includes("photo") || normalizedKey.includes("final");
+  });
+
+  const ignoredHeaders = [
+    "horodateur",
+    "prenom - nom (rp)",
+    "prenom - nom",
+    "nom",
+    "id unique",
+    "id",
+    "couleur principale",
+    "couleur secondaire",
+    "couleur interieur",
+    "couleur interieure",
+    "nacre",
+    "nacre",
+    "score",
+    "adresse e-mail",
+    "email",
+    "adresse mail"
+  ];
+
+  const extraFields = Object.entries(answer).filter(([key, value]) => {
+    const normalizedKey = normalizeHeader(key);
+
+    if (!key || !String(key).trim()) return false;
+    if (ignoredHeaders.includes(normalizedKey)) return false;
+    if (normalizedKey.includes("photo")) return false;
+    if (normalizedKey.includes("final")) return false;
+
+    return String(value || "").trim() !== "";
+  });
+
+  const identityHtml = [
+    renderField("Nom RP", nom),
+    renderField("ID Unique", idUnique),
+    renderField("Horodateur", horodateur),
+    renderField("E-mail", email)
+  ].join("");
+
+  const colorsHtml = [
+    renderField("Couleur principale", couleurPrincipale),
+    renderField("Couleur secondaire", couleurSecondaire),
+    renderField("Couleur intérieure", couleurInterieur),
+    renderField("Nacré", nacre)
+  ].join("");
+
+  const photosHtml = photoFields.length
+    ? photoFields.map(([key, value]) => renderField(key, value)).join("")
+    : `<div class="student-empty">Aucune photo renseignée.</div>`;
+
+  const extraHtml = extraFields.length
+    ? extraFields.map(([key, value]) => renderField(key, value)).join("")
+    : `<div class="student-empty">Aucune information supplémentaire.</div>`;
+
+  return `
+    <article class="student-answer-card">
+      <div class="student-card-top">
+        <div>
+          <p class="student-kicker">Réponse ${index + 1}</p>
+          <h2>${escapeHtml(nom || `Élève ${index + 1}`)}</h2>
+        </div>
+
+        <div class="student-tags">
+          <span>${escapeHtml(idUnique || "ID inconnu")}</span>
+          <span>${escapeHtml(score || "Score non renseigné")}</span>
+        </div>
+      </div>
+
+      ${renderSection("Identité", identityHtml)}
+      ${renderSection("Couleurs", colorsHtml)}
+      ${renderSection("Photos envoyées", photosHtml)}
+      ${renderSection("Autres réponses", extraHtml)}
+    </article>
+  `;
+}
+
 function renderAnswers(rows) {
   if (!rows.length) {
     sheetStatus.innerHTML = `
@@ -83,9 +233,9 @@ function renderAnswers(rows) {
   }
 
   const headers = rows[0].map(header => String(header || "").trim());
-  const answers = rows.slice(1);
+  const dataRows = rows.slice(1).filter(row => row.some(cell => String(cell || "").trim() !== ""));
 
-  if (!answers.length) {
+  if (!dataRows.length) {
     sheetStatus.innerHTML = `
       <div class="inline-empty-box">
         Le fichier existe, mais aucune réponse élève n’est encore présente.
@@ -94,36 +244,28 @@ function renderAnswers(rows) {
     return;
   }
 
-  const cardsHtml = answers.map((row, index) => {
-    const fieldsHtml = headers.map((header, cellIndex) => {
-      if (!header) return "";
+  const answers = dataRows.map(row => {
+    const answer = {};
 
-      const value = row[cellIndex] || "Non renseigné";
+    headers.forEach((header, index) => {
+      if (!header) return;
+      answer[header] = row[index] || "";
+    });
 
-      return `
-        <div class="student-answer-field">
-          <span>${escapeHtml(header)}</span>
-          <strong>${escapeHtml(value)}</strong>
-        </div>
-      `;
-    }).join("");
+    return answer;
+  });
 
-    return `
-      <article class="student-answer-card">
-        <div class="student-answer-card-head">
-          <span>Réponse ${index + 1}</span>
-        </div>
-
-        <div class="student-answer-fields">
-          ${fieldsHtml}
-        </div>
-      </article>
-    `;
-  }).join("");
+  const cardsHtml = answers.map((answer, index) => renderAnswerCard(answer, index)).join("");
 
   sheetStatus.hidden = true;
+  sheetStatus.style.display = "none";
+
   sheetContent.hidden = false;
-  sheetContent.innerHTML = cardsHtml;
+  sheetContent.innerHTML = `
+    <div class="student-answer-grid">
+      ${cardsHtml}
+    </div>
+  `;
 }
 
 async function loadSheetAnswers() {
