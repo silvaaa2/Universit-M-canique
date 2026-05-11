@@ -509,11 +509,11 @@ function renderAnswerCard(answer, index, sheet) {
       data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
     >
-      <button type="button" class="student-card-top" data-toggle-card>
-        <div class="student-card-main">
+      <div class="student-card-top">
+        <button type="button" class="student-card-main student-card-open-zone" data-toggle-card>
           <p class="student-kicker">${escapeHtml(sheet.label)} · Copie ${index + 1}</p>
           <h2>${escapeHtml(name)}</h2>
-        </div>
+        </button>
 
         <div class="student-tags">
           <span class="student-id-badge">${escapeHtml(idUnique || "Copie")}</span>
@@ -534,9 +534,11 @@ function renderAnswerCard(answer, index, sheet) {
             Copier résultat
           </button>
 
-          <span class="student-toggle-icon">+</span>
+          <button type="button" class="student-toggle-icon" data-toggle-card>
+            +
+          </button>
         </div>
-      </button>
+      </div>
 
       <div class="student-card-body">
         <div class="student-status-actions">
