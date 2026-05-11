@@ -30,18 +30,25 @@ onAuthStateChanged(auth, async (user) => {
 
   if (guardLoader) {
     guardLoader.hidden = true;
+    guardLoader.style.display = "none";
   }
 
   if (protectedContent) {
     protectedContent.hidden = false;
+    protectedContent.style.display = "block";
+
+    requestAnimationFrame(() => {
+      protectedContent.classList.add("dashboard-visible");
+    });
   }
 
   try {
-    await import("./rp-loader-9kq4z.js?v=2000");
+    await import("./rp-loader-9kq4z.js?v=2001");
   } catch (error) {
     console.error("Erreur chargement loader réponses :", error);
 
     const sheetStatus = document.getElementById("sheetStatus");
+
     if (sheetStatus) {
       sheetStatus.innerHTML = `
         <div class="inline-error-box">
