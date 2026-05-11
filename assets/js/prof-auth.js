@@ -106,7 +106,13 @@ async function startFirebaseAuth() {
     const {
       getFirestore,
       doc,
-      getDoc
+      getDoc,
+      setDoc,
+      collection,
+      getDocs,
+      query,
+      where,
+      serverTimestamp
     } = firebaseFirestore;
 
     const firebaseConfig = {
@@ -123,16 +129,23 @@ async function startFirebaseAuth() {
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // On rend Firebase dispo pour prof-ui.js
     window.profFirebase = {
       app,
       auth,
       db,
+
       doc,
-      getDoc
+      getDoc,
+      setDoc,
+
+      collection,
+      getDocs,
+      query,
+      where,
+
+      serverTimestamp
     };
 
-    // Signal pour dire à prof-ui.js que Firebase est prêt
     window.dispatchEvent(new Event("profFirebaseReady"));
 
     showLogin();
