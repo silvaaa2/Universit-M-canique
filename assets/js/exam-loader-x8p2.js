@@ -524,6 +524,16 @@ function renderAnswerCard(answer, index, sheet) {
             ${escapeHtml(statusMeta.shortLabel)}
           </span>
 
+          <button
+            type="button"
+            class="copy-result-btn"
+            data-copy-result
+            data-copy-name="${escapeHtml(name)}"
+            data-copy-score="${escapeHtml(totalScore)}"
+          >
+            Copier résultat
+          </button>
+
           <span class="student-toggle-icon">+</span>
         </div>
       </button>
@@ -624,6 +634,7 @@ async function renderAnswers(answers, sheet) {
   bindCardToggles();
   bindStatusButtons();
   bindScoreControls();
+  bindCopyResultButtons();
 }
 
 async function loadSheet(sheet) {
@@ -784,6 +795,11 @@ function updateScoreUi(card, record) {
   }
 
   updateCardStatus(card, record.status);
+
+  const copyButton = card.querySelector("[data-copy-result]");
+  if (copyButton) {
+    copyButton.dataset.copyScore = String(totalScore);
+  }
 }
 
 /* =========================================================
@@ -844,6 +860,40 @@ function bindScoreControls() {
       } catch (error) {
         console.error("Erreur sauvegarde score Firebase :", error);
         alert("Impossible de sauvegarder les points dans Firebase.");
+      }
+    });
+  });
+}
+
+/* =========================================================
+   COPY RESULT
+========================================================= */
+
+function bindCopyResultButtons() {
+  document.querySelectorAll("[data-copy-result]").forEach((button) => {
+    button.addEventListener("click", async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const name = button.dataset.copyName || "Élève";
+      const score = button.dataset.copyScore || "0";
+
+      const textToCopy = `${name} ${score}/${EXAM_DISPLAY_MAX_POINTS}`;
+
+      try {
+        await navigator.clipboard.writeText(textToCopy);
+
+        const oldText = button.textContent;
+        button.textContent = "Copié ✅";
+        button.classList.add("copied");
+
+        setTimeout(() => {
+          button.textContent = oldText;
+          button.classList.remove("copied");
+        }, 1200);
+      } catch (error) {
+        console.error("Erreur copie presse-papier :", error);
+        alert(`Résultat à copier : ${textToCopy}`);
       }
     });
   });
