@@ -1689,3 +1689,175 @@
     padding: 12px !important;
   }
 }
+/* =========================================================
+   EXAMENS - CORRECTION MANUELLE 0/MAX À DROITE
+========================================================= */
+
+.exam-lines-list {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.exam-line {
+  display: grid !important;
+  grid-template-columns: 58px minmax(0, 1fr) 150px !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+
+  border-radius: 17px !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+  overflow: hidden !important;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.052), rgba(255,255,255,.020)) !important;
+}
+
+.exam-line-number {
+  display: grid !important;
+  place-items: center !important;
+
+  background: rgba(214,180,106,.10) !important;
+  border-right: 1px solid rgba(214,180,106,.14) !important;
+
+  color: var(--gold2) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+.exam-line-content {
+  padding: 13px 15px !important;
+  min-width: 0 !important;
+}
+
+.exam-line-content span {
+  display: block !important;
+  margin-bottom: 6px !important;
+
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.exam-line-content strong,
+.exam-line-content a {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+.exam-line-content a {
+  color: var(--gold2) !important;
+  text-decoration: none !important;
+}
+
+.exam-line-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* Zone score à droite */
+.exam-line-score {
+  display: grid !important;
+  place-items: center !important;
+
+  border-left: 1px solid rgba(255,255,255,.07) !important;
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.055), rgba(255,255,255,.018)) !important;
+}
+
+.exam-score-control {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+
+  padding: 8px 10px !important;
+  border-radius: 999px !important;
+
+  border: 1px solid rgba(214,180,106,.22) !important;
+  background: rgba(214,180,106,.10) !important;
+}
+
+.exam-score-control button {
+  width: 28px !important;
+  height: 28px !important;
+
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 999px !important;
+
+  background: rgba(255,255,255,.075) !important;
+  color: var(--text) !important;
+
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  transition: .18s ease !important;
+}
+
+.exam-score-control button:hover {
+  transform: scale(1.08) !important;
+  background: rgba(214,180,106,.16) !important;
+  border-color: rgba(214,180,106,.32) !important;
+}
+
+.exam-score-control strong {
+  min-width: 46px !important;
+  text-align: center !important;
+
+  color: var(--text) !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+}
+
+.exam-score-control small {
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+.exam-score-control.disabled {
+  opacity: .45 !important;
+}
+
+/* Score total */
+.student-score-badge {
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.student-score-badge.score-approved {
+  border: 1px solid rgba(74, 222, 128, .30) !important;
+  background: rgba(74, 222, 128, .12) !important;
+  color: #86efac !important;
+}
+
+.student-score-badge.score-rejected {
+  border: 1px solid rgba(248, 113, 113, .30) !important;
+  background: rgba(248, 113, 113, .12) !important;
+  color: #fca5a5 !important;
+}
+
+.student-score-badge.score-pending {
+  border: 1px solid rgba(214,180,106,.24) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+}
+
+@media (max-width: 850px) {
+  .exam-line {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+  }
+
+  .exam-line-score {
+    grid-column: 1 / -1 !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,.07) !important;
+    padding: 10px !important;
+  }
+}
