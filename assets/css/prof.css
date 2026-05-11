@@ -1588,3 +1588,104 @@
     justify-content: flex-start !important;
   }
 }
+/* =========================================================
+   EXAMENS - RÉPONSES EN LIGNES DANS L'ORDRE DU SHEETS
+========================================================= */
+
+.exam-ordered-section {
+  padding: 18px !important;
+}
+
+.exam-lines-list {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.exam-line {
+  display: grid !important;
+  grid-template-columns: 58px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+
+  padding: 0 !important;
+  border-radius: 17px !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+  overflow: hidden !important;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.052), rgba(255,255,255,.020)) !important;
+}
+
+.exam-line-number {
+  display: grid !important;
+  place-items: center !important;
+
+  background: rgba(214,180,106,.10) !important;
+  border-right: 1px solid rgba(214,180,106,.14) !important;
+
+  color: var(--gold2) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+
+.exam-line-content {
+  padding: 13px 15px !important;
+  min-width: 0 !important;
+}
+
+.exam-line-content span {
+  display: block !important;
+  margin-bottom: 6px !important;
+
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+
+.exam-line-content strong,
+.exam-line-content a {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+.exam-line-content a {
+  display: inline-flex !important;
+  text-decoration: none !important;
+  color: var(--gold2) !important;
+}
+
+.exam-line-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* Le contenu examen ouvert respire mieux */
+.student-answer-card.is-open .exam-ordered-section {
+  grid-column: 1 / -1 !important;
+}
+
+/* En examen, pas de grille éclatée pour les réponses */
+.student-answer-card.is-open .exam-lines-list {
+  grid-template-columns: 1fr !important;
+}
+
+/* Titre long en haut, évite le mail énorme dégueu */
+.student-answer-card.is-open .student-card-top h2 {
+  max-width: 900px !important;
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 650px) {
+  .exam-line {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+  }
+
+  .exam-line-content {
+    padding: 12px !important;
+  }
+}
