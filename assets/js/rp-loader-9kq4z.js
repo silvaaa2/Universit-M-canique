@@ -1,8 +1,33 @@
 const SPREADSHEET_ID = "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc";
-const SHEET_GID = "1133112226";
 
+const SHEETS = [
+  {
+    id: "dukes",
+    label: "Dukes",
+    gid: "1133112226"
+  },
+  {
+    id: "sentinel",
+    label: "Sentinel XS4",
+    gid: "1138787690"
+  },
+  {
+    id: "rumina",
+    label: "Annis Rumina",
+    gid: "49030161"
+  }
+];
+
+const sheetTabs = document.getElementById("sheetTabs");
 const sheetStatus = document.getElementById("sheetStatus");
 const sheetContent = document.getElementById("sheetContent");
+
+const minimizeAnswersBtn = document.getElementById("minimizeAnswersBtn");
+const restoreAnswersBtn = document.getElementById("restoreAnswersBtn");
+const answersMiniBar = document.getElementById("answersMiniBar");
+const answersBody = document.getElementById("answersBody");
+
+const cache = new Map();
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -13,8 +38,8 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function buildCsvUrl() {
-  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${SHEET_GID}`;
+function buildCsvUrl(gid) {
+  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
 }
 
 function parseCsv(text) {
@@ -101,7 +126,7 @@ function renderField(label, value) {
 
   if (isLink(cleanValue)) {
     return `
-      <a class="student-link-card" href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
+      <a class="student-answer-field student-link-card" href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
         <span>${escapeHtml(label)}</span>
         <strong>Ouvrir le lien</strong>
       </a>
@@ -130,24 +155,44 @@ function renderSection(title, fieldsHtml) {
   `;
 }
 
-function renderAnswerCard(answer, index) {
-  const horodateur = getField(answer, ["Horodateur"]);
-  const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
-  const idUnique = getField(answer, ["ID Unique", "ID"]);
+function rowsToAnswers(rows) {
+  if (!rows.length) return [];
 
-  const couleurPrincipale = getField(answer, ["Couleur principale"]);
-  const couleurSecondaire = getField(answer, ["Couleur secondaire"]);
-  const couleurInterieur = getField(answer, ["Couleur intérieur", "Couleur intérieure"]);
-  const nacre = getField(answer, ["Nacré", "Nacre"]);
+  const headers = rows[0].map(header => String(header || "").trim());
 
-  const score = getField(answer, ["Score"]);
-  const email = getField(answer, ["Adresse e-mail", "Email", "Adresse mail"]);
+  const dataRows = rows
+    .slice(1)
+    .filter(row => row.some(cell => String(cell || "").trim() !== ""));
 
-  const photoFields = Object.entries(answer).filter(([key, value]) => {
-    const normalizedKey = normalizeHeader(key);
-    return normalizedKey.includes("photo") || normalizedKey.includes("final");
+  return dataRows.map(row => {
+    const answer = {};
+
+    headers.forEach((header, index) => {
+      if (!header) return;
+      answer[header] = row[index] || "";
+    });
+
+    return answer;
   });
+}
 
+function getPhotoFields(answer) {
+  return Object.entries(answer).filter(([key, value]) => {
+    const normalizedKey = normalizeHeader(key);
+    const cleanValue = String(value || "").trim();
+
+    if (!cleanValue) return false;
+
+    return (
+      normalizedKey.includes("photo") ||
+      normalizedKey.includes("final") ||
+      normalizedKey.includes("screen") ||
+      normalizedKey.includes("image")
+    );
+  });
+}
+
+function getExtraFields(answer) {
   const ignoredHeaders = [
     "horodateur",
     "prenom - nom (rp)",
@@ -167,16 +212,37 @@ function renderAnswerCard(answer, index) {
     "adresse mail"
   ];
 
-  const extraFields = Object.entries(answer).filter(([key, value]) => {
+  return Object.entries(answer).filter(([key, value]) => {
     const normalizedKey = normalizeHeader(key);
 
     if (!key || !String(key).trim()) return false;
+    if (!String(value || "").trim()) return false;
+
     if (ignoredHeaders.includes(normalizedKey)) return false;
     if (normalizedKey.includes("photo")) return false;
     if (normalizedKey.includes("final")) return false;
+    if (normalizedKey.includes("screen")) return false;
+    if (normalizedKey.includes("image")) return false;
 
-    return String(value || "").trim() !== "";
+    return true;
   });
+}
+
+function renderAnswerCard(answer, index, sheetLabel) {
+  const horodateur = getField(answer, ["Horodateur"]);
+  const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
+  const idUnique = getField(answer, ["ID Unique", "ID"]);
+
+  const couleurPrincipale = getField(answer, ["Couleur principale"]);
+  const couleurSecondaire = getField(answer, ["Couleur secondaire"]);
+  const couleurInterieur = getField(answer, ["Couleur intérieur", "Couleur intérieure"]);
+  const nacre = getField(answer, ["Nacré", "Nacre"]);
+
+  const score = getField(answer, ["Score"]);
+  const email = getField(answer, ["Adresse e-mail", "Email", "Adresse mail"]);
+
+  const photoFields = getPhotoFields(answer);
+  const extraFields = getExtraFields(answer);
 
   const identityHtml = [
     renderField("Nom RP", nom),
@@ -201,81 +267,111 @@ function renderAnswerCard(answer, index) {
     : `<div class="student-empty">Aucune information supplémentaire.</div>`;
 
   return `
-    <article class="student-answer-card">
-      <div class="student-card-top">
+    <article class="student-answer-card" data-answer-card>
+      <button type="button" class="student-card-top" data-toggle-card>
         <div>
-          <p class="student-kicker">Réponse ${index + 1}</p>
+          <p class="student-kicker">${escapeHtml(sheetLabel)} · Réponse ${index + 1}</p>
           <h2>${escapeHtml(nom || `Élève ${index + 1}`)}</h2>
         </div>
 
         <div class="student-tags">
           <span>${escapeHtml(idUnique || "ID inconnu")}</span>
           <span>${escapeHtml(score || "Score non renseigné")}</span>
+          <span class="student-toggle-icon">−</span>
         </div>
-      </div>
+      </button>
 
-      ${renderSection("Identité", identityHtml)}
-      ${renderSection("Couleurs", colorsHtml)}
-      ${renderSection("Photos envoyées", photosHtml)}
-      ${renderSection("Autres réponses", extraHtml)}
+      <div class="student-card-body">
+        ${renderSection("Identité", identityHtml)}
+        ${renderSection("Couleurs", colorsHtml)}
+        ${renderSection("Photos envoyées", photosHtml)}
+        ${renderSection("Autres réponses", extraHtml)}
+      </div>
     </article>
   `;
 }
 
-function renderAnswers(rows) {
-  if (!rows.length) {
-    sheetStatus.innerHTML = `
-      <div class="inline-empty-box">
-        Aucune réponse trouvée.
-      </div>
-    `;
+function setLoading(sheetLabel) {
+  sheetStatus.hidden = false;
+  sheetStatus.style.display = "flex";
+  sheetStatus.innerHTML = `
+    <div class="inline-loader"></div>
+    <p>Chargement des réponses ${escapeHtml(sheetLabel)}...</p>
+  `;
+
+  sheetContent.hidden = true;
+  sheetContent.innerHTML = "";
+}
+
+function setError(message) {
+  sheetStatus.hidden = false;
+  sheetStatus.style.display = "block";
+  sheetStatus.innerHTML = `
+    <div class="inline-error-box">
+      <h4>Impossible de charger les réponses</h4>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  `;
+
+  sheetContent.hidden = true;
+}
+
+function setEmpty(sheetLabel) {
+  sheetStatus.hidden = false;
+  sheetStatus.style.display = "block";
+  sheetStatus.innerHTML = `
+    <div class="inline-empty-box">
+      Aucune réponse trouvée pour ${escapeHtml(sheetLabel)}.
+    </div>
+  `;
+
+  sheetContent.hidden = true;
+}
+
+function renderAnswers(answers, sheet) {
+  if (!answers.length) {
+    setEmpty(sheet.label);
     return;
   }
-
-  const headers = rows[0].map(header => String(header || "").trim());
-  const dataRows = rows.slice(1).filter(row => row.some(cell => String(cell || "").trim() !== ""));
-
-  if (!dataRows.length) {
-    sheetStatus.innerHTML = `
-      <div class="inline-empty-box">
-        Le fichier existe, mais aucune réponse élève n’est encore présente.
-      </div>
-    `;
-    return;
-  }
-
-  const answers = dataRows.map(row => {
-    const answer = {};
-
-    headers.forEach((header, index) => {
-      if (!header) return;
-      answer[header] = row[index] || "";
-    });
-
-    return answer;
-  });
-
-  const cardsHtml = answers.map((answer, index) => renderAnswerCard(answer, index)).join("");
 
   sheetStatus.hidden = true;
   sheetStatus.style.display = "none";
 
   sheetContent.hidden = false;
   sheetContent.innerHTML = `
+    <div class="student-results-head">
+      <div>
+        <p class="student-kicker">Feuille sélectionnée</p>
+        <h2>${escapeHtml(sheet.label)}</h2>
+      </div>
+
+      <span>${answers.length} réponse(s)</span>
+    </div>
+
     <div class="student-answer-grid">
-      ${cardsHtml}
+      ${answers.map((answer, index) => renderAnswerCard(answer, index, sheet.label)).join("")}
     </div>
   `;
+
+  bindCardToggles();
 }
 
-async function loadSheetAnswers() {
+async function loadSheet(sheet) {
   if (!window.currentProfUser) {
     window.location.href = "espace-prof.html";
     return;
   }
 
+  setActiveTab(sheet.id);
+  setLoading(sheet.label);
+
   try {
-    const response = await fetch(buildCsvUrl());
+    if (cache.has(sheet.id)) {
+      renderAnswers(cache.get(sheet.id), sheet);
+      return;
+    }
+
+    const response = await fetch(buildCsvUrl(sheet.gid));
 
     if (!response.ok) {
       throw new Error(`Erreur Google Sheets : ${response.status}`);
@@ -283,21 +379,82 @@ async function loadSheetAnswers() {
 
     const csvText = await response.text();
     const rows = parseCsv(csvText);
+    const answers = rowsToAnswers(rows);
 
-    renderAnswers(rows);
+    cache.set(sheet.id, answers);
+    renderAnswers(answers, sheet);
   } catch (error) {
     console.error("Erreur chargement Google Sheets :", error);
-
-    sheetStatus.innerHTML = `
-      <div class="inline-error-box">
-        <h4>Impossible de charger les réponses</h4>
-        <p>
-          Vérifie que le Google Sheet est bien accessible avec le lien,
-          et que l’ID + GID sont corrects.
-        </p>
-      </div>
-    `;
+    setError("Vérifie que le Google Sheet est bien public avec lien, et que le GID est correct.");
   }
 }
 
-loadSheetAnswers();
+function setActiveTab(sheetId) {
+  document.querySelectorAll(".student-sheet-tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.sheet === sheetId);
+  });
+}
+
+function renderTabs() {
+  sheetTabs.innerHTML = SHEETS.map(sheet => `
+    <button type="button" class="student-sheet-tab" data-sheet="${escapeHtml(sheet.id)}">
+      ${escapeHtml(sheet.label)}
+    </button>
+  `).join("");
+
+  document.querySelectorAll(".student-sheet-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const sheet = SHEETS.find(item => item.id === btn.dataset.sheet);
+      if (sheet) loadSheet(sheet);
+    });
+  });
+}
+
+function bindCardToggles() {
+  document.querySelectorAll("[data-toggle-card]").forEach(button => {
+    button.addEventListener("click", () => {
+      const card = button.closest("[data-answer-card]");
+      if (!card) return;
+
+      card.classList.toggle("collapsed");
+
+      const icon = card.querySelector(".student-toggle-icon");
+      if (icon) {
+        icon.textContent = card.classList.contains("collapsed") ? "+" : "−";
+      }
+    });
+  });
+}
+
+function bindMinimize() {
+  if (minimizeAnswersBtn) {
+    minimizeAnswersBtn.addEventListener("click", () => {
+      const isMinimized = answersBody.hidden;
+
+      if (isMinimized) {
+        answersBody.hidden = false;
+        answersMiniBar.hidden = true;
+        minimizeAnswersBtn.textContent = "−";
+      } else {
+        answersBody.hidden = true;
+        answersMiniBar.hidden = false;
+        minimizeAnswersBtn.textContent = "+";
+      }
+    });
+  }
+
+  if (restoreAnswersBtn) {
+    restoreAnswersBtn.addEventListener("click", () => {
+      answersBody.hidden = false;
+      answersMiniBar.hidden = true;
+
+      if (minimizeAnswersBtn) {
+        minimizeAnswersBtn.textContent = "−";
+      }
+    });
+  }
+}
+
+renderTabs();
+bindMinimize();
+loadSheet(SHEETS[0]);
