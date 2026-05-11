@@ -5,11 +5,11 @@
   <title>Réponses Élèves - Module 4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="../assets/css/base.css?v=2000">
-  <link rel="stylesheet" href="../assets/css/header.css?v=2000">
-  <link rel="stylesheet" href="../assets/css/buttons.css?v=2000">
-  <link rel="stylesheet" href="../assets/css/loader.css?v=2000">
-  <link rel="stylesheet" href="../assets/css/prof.css?v=2000">
+  <link rel="stylesheet" href="../assets/css/base.css?v=3000">
+  <link rel="stylesheet" href="../assets/css/header.css?v=3000">
+  <link rel="stylesheet" href="../assets/css/buttons.css?v=3000">
+  <link rel="stylesheet" href="../assets/css/loader.css?v=3000">
+  <link rel="stylesheet" href="../assets/css/prof.css?v=3000">
 </head>
 
 <body>
@@ -49,7 +49,7 @@
         <p class="kicker">Module 4 - Mécanique</p>
         <h1>Réponses élèves</h1>
         <p class="intro">
-          Tableau réservé aux professeurs. Les données sont chargées depuis Google Sheets.
+          Tableau réservé aux professeurs. Les réponses sont chargées depuis les 3 feuilles Google Sheets.
         </p>
       </div>
 
@@ -66,22 +66,31 @@
             <p class="kicker">Réponses</p>
             <h2>Tableau des élèves</h2>
             <p>
-              Les réponses s’affichent ici uniquement après vérification de l’accès professeur.
+              Sélectionnez un custom pour consulter les réponses. Chaque réponse peut être minimisée.
             </p>
           </div>
 
-          <button type="button" class="inline-corrections-minimize" onclick="goPage('espace-prof.html')">
-            ×
+          <button type="button" class="inline-corrections-minimize" id="minimizeAnswersBtn">
+            −
           </button>
         </div>
 
-        <div class="inline-correction-detail" style="padding-top: 34px;">
-          <div id="sheetStatus" class="inline-loading-box">
-            <div class="inline-loader"></div>
-            <p>Chargement des réponses élèves...</p>
-          </div>
+        <div id="answersMiniBar" class="answers-mini-bar" hidden>
+          <span>Réponses élèves minimisées</span>
+          <button type="button" id="restoreAnswersBtn">Réouvrir</button>
+        </div>
 
-          <div id="sheetContent" class="student-answer-grid" hidden></div>
+        <div id="answersBody" class="answers-body">
+          <div class="inline-correction-detail student-panel">
+            <div id="sheetTabs" class="student-sheet-tabs"></div>
+
+            <div id="sheetStatus" class="inline-loading-box">
+              <div class="inline-loader"></div>
+              <p>Chargement des réponses élèves...</p>
+            </div>
+
+            <div id="sheetContent" class="student-answer-grid" hidden></div>
+          </div>
         </div>
 
       </div>
@@ -90,8 +99,8 @@
 
 </main>
 
-<script src="../assets/js/navigation.js?v=2000"></script>
-<script type="module" src="../assets/js/prof-guard.js?v=2002"></script>
+<script src="../assets/js/navigation.js?v=3000"></script>
+<script type="module" src="../assets/js/prof-guard.js?v=3000"></script>
 
 </body>
 </html>
