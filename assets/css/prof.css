@@ -1172,3 +1172,52 @@
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   PATCH INFOS TECH VISUELLES
+   -> section pleine largeur
+   -> Roues / Accessoires / Carrosserie / Néons sur 1 ligne
+========================================================= */
+
+/* La dernière grosse section (Infos techniques visuelles)
+   prend toute la largeur */
+.inline-detail-sections > .inline-detail-section:last-child {
+  grid-column: 1 / -1 !important;
+}
+
+/* Le conteneur des sous-sections passe en 4 colonnes */
+.inline-subsections {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: start !important;
+}
+
+/* Chaque bloc interne */
+.inline-subsections .inline-detail-section {
+  margin: 0 !important;
+  padding: 16px !important;
+  border-radius: 20px !important;
+  min-height: 100% !important;
+}
+
+/* Les items dans chaque bloc restent empilés */
+.inline-subsections .inline-detail-items {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+/* Responsive tablette */
+@media (max-width: 1350px) {
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Responsive mobile */
+@media (max-width: 850px) {
+  .inline-subsections {
+    grid-template-columns: 1fr !important;
+  }
+}
