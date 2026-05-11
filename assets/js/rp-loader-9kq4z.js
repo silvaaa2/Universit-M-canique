@@ -29,6 +29,22 @@ const answersBody = document.getElementById("answersBody");
 
 const cache = new Map();
 
+const STATUS_STORAGE_KEY = "module4-answer-status-v1";
+
+function loadStatuses() {
+  try {
+    return JSON.parse(localStorage.getItem(STATUS_STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveStatuses(data) {
+  localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(data));
+}
+
+let answerStatuses = loadStatuses();
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -119,6 +135,51 @@ function isLink(value) {
 function getValue(value) {
   const cleaned = String(value || "").trim();
   return cleaned || "Non renseigné";
+}
+
+function buildAnswerKey(answer, sheetId, index) {
+  const horodateur = getField(answer, ["Horodateur"]);
+  const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
+  const idUnique = getField(answer, ["ID Unique", "ID"]);
+
+  return `${sheetId}__${index}__${horodateur}__${nom}__${idUnique}`;
+}
+
+function getStatusMeta(status) {
+  switch (status) {
+    case "approved":
+      return {
+        value: "approved",
+        label: "Approuvé",
+        shortLabel: "✔ Approuvé",
+        className: "approved"
+      };
+
+    case "rejected":
+      return {
+        value: "rejected",
+        label: "Refusé",
+        shortLabel: "✖ Refusé",
+        className: "rejected"
+      };
+
+    default:
+      return {
+        value: "pending",
+        label: "En attente",
+        shortLabel: "• En attente",
+        className: "pending"
+      };
+  }
+}
+
+function getAnswerStatus(answerKey) {
+  return answerStatuses[answerKey] || "pending";
+}
+
+function setAnswerStatus(answerKey, status) {
+  answerStatuses[answerKey] = status;
+  saveStatuses(answerStatuses);
 }
 
 function renderField(label, value) {
@@ -228,7 +289,7 @@ function getExtraFields(answer) {
   });
 }
 
-function renderAnswerCard(answer, index, sheetLabel) {
+function renderAnswerCard(answer, index, sheet) {
   const horodateur = getField(answer, ["Horodateur"]);
   const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
   const idUnique = getField(answer, ["ID Unique", "ID"]);
@@ -238,11 +299,14 @@ function renderAnswerCard(answer, index, sheetLabel) {
   const couleurInterieur = getField(answer, ["Couleur intérieur", "Couleur intérieure"]);
   const nacre = getField(answer, ["Nacré", "Nacre"]);
 
-  const score = getField(answer, ["Score"]);
   const email = getField(answer, ["Adresse e-mail", "Email", "Adresse mail"]);
 
   const photoFields = getPhotoFields(answer);
   const extraFields = getExtraFields(answer);
+
+  const answerKey = buildAnswerKey(answer, sheet.id, index);
+  const status = getAnswerStatus(answerKey);
+  const statusMeta = getStatusMeta(status);
 
   const identityHtml = [
     renderField("Nom RP", nom),
@@ -267,21 +331,44 @@ function renderAnswerCard(answer, index, sheetLabel) {
     : `<div class="student-empty">Aucune information supplémentaire.</div>`;
 
   return `
-    <article class="student-answer-card" data-answer-card>
+    <article
+      class="student-answer-card collapsed status-${escapeHtml(statusMeta.className)}"
+      data-answer-card
+      data-answer-key="${escapeHtml(answerKey)}"
+      data-status="${escapeHtml(statusMeta.value)}"
+    >
       <button type="button" class="student-card-top" data-toggle-card>
-        <div>
-          <p class="student-kicker">${escapeHtml(sheetLabel)} · Réponse ${index + 1}</p>
+        <div class="student-card-main">
+          <p class="student-kicker">${escapeHtml(sheet.label)} · Réponse ${index + 1}</p>
           <h2>${escapeHtml(nom || `Élève ${index + 1}`)}</h2>
         </div>
 
         <div class="student-tags">
-          <span>${escapeHtml(idUnique || "ID inconnu")}</span>
-          <span>${escapeHtml(score || "Score non renseigné")}</span>
-          <span class="student-toggle-icon">−</span>
+          <span class="student-id-badge">${escapeHtml(idUnique || "ID inconnu")}</span>
+
+          <span class="student-status-badge status-${escapeHtml(statusMeta.className)}" data-status-badge>
+            ${escapeHtml(statusMeta.shortLabel)}
+          </span>
+
+          <span class="student-toggle-icon">+</span>
         </div>
       </button>
 
       <div class="student-card-body">
+        <div class="student-status-actions">
+          <button type="button" class="student-status-btn approve" data-set-status="approved">
+            ✔ Approuver
+          </button>
+
+          <button type="button" class="student-status-btn reject" data-set-status="rejected">
+            ✖ Refuser
+          </button>
+
+          <button type="button" class="student-status-btn pending" data-set-status="pending">
+            • En attente
+          </button>
+        </div>
+
         ${renderSection("Identité", identityHtml)}
         ${renderSection("Couleurs", colorsHtml)}
         ${renderSection("Photos envoyées", photosHtml)}
@@ -349,11 +436,12 @@ function renderAnswers(answers, sheet) {
     </div>
 
     <div class="student-answer-grid">
-      ${answers.map((answer, index) => renderAnswerCard(answer, index, sheet.label)).join("")}
+      ${answers.map((answer, index) => renderAnswerCard(answer, index, sheet)).join("")}
     </div>
   `;
 
   bindCardToggles();
+  bindStatusButtons();
 }
 
 async function loadSheet(sheet) {
@@ -451,6 +539,48 @@ function bindCardToggles() {
         }, 120);
       }
     });
+  });
+}
+
+function updateCardStatus(card, status) {
+  const meta = getStatusMeta(status);
+
+  card.dataset.status = meta.value;
+
+  card.classList.remove("status-approved", "status-rejected", "status-pending");
+  card.classList.add(`status-${meta.className}`);
+
+  const badge = card.querySelector("[data-status-badge]");
+  if (badge) {
+    badge.className = `student-status-badge status-${meta.className}`;
+    badge.textContent = meta.shortLabel;
+  }
+
+  card.querySelectorAll("[data-set-status]").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.setStatus === meta.value);
+  });
+}
+
+function bindStatusButtons() {
+  document.querySelectorAll("[data-set-status]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+
+      const card = button.closest("[data-answer-card]");
+      if (!card) return;
+
+      const answerKey = card.dataset.answerKey;
+      const newStatus = button.dataset.setStatus;
+
+      if (!answerKey || !newStatus) return;
+
+      setAnswerStatus(answerKey, newStatus);
+      updateCardStatus(card, newStatus);
+    });
+  });
+
+  document.querySelectorAll("[data-answer-card]").forEach((card) => {
+    updateCardStatus(card, card.dataset.status || "pending");
   });
 }
 
