@@ -1,8 +1,21 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
 import {
   getAuth,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -16,9 +29,29 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 const guardLoader = document.getElementById("guardLoader");
 const protectedContent = document.getElementById("protectedContent");
+
+window.profFirebase = {
+  app,
+  auth,
+  db,
+
+  doc,
+  getDoc,
+  setDoc,
+
+  collection,
+  getDocs,
+  query,
+  where,
+
+  serverTimestamp
+};
+
+window.dispatchEvent(new Event("profFirebaseReady"));
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -43,7 +76,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
-    await import("./rp-loader-9kq4z.js?v=5003");
+    await import("./rp-loader-9kq4z.js?v=6001");
   } catch (error) {
     console.error("Erreur chargement loader réponses :", error);
 
