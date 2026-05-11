@@ -18,6 +18,8 @@ const SHEETS = [
   }
 ];
 
+const STATUS_COLLECTION = "studentAnswerStatuses";
+
 const sheetTabs = document.getElementById("sheetTabs");
 const sheetStatus = document.getElementById("sheetStatus");
 const sheetContent = document.getElementById("sheetContent");
@@ -28,22 +30,7 @@ const answersMiniBar = document.getElementById("answersMiniBar");
 const answersBody = document.getElementById("answersBody");
 
 const cache = new Map();
-
-const STATUS_STORAGE_KEY = "module4-answer-status-v1";
-
-function loadStatuses() {
-  try {
-    return JSON.parse(localStorage.getItem(STATUS_STORAGE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function saveStatuses(data) {
-  localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(data));
-}
-
-let answerStatuses = loadStatuses();
+let answerStatuses = {};
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -137,12 +124,96 @@ function getValue(value) {
   return cleaned || "Non renseigné";
 }
 
+function rowsToAnswers(rows) {
+  if (!rows.length) return [];
+
+  const headers = rows[0].map(header => String(header || "").trim());
+
+  const dataRows = rows
+    .slice(1)
+    .filter(row => row.some(cell => String(cell || "").trim() !== ""));
+
+  return dataRows.map(row => {
+    const answer = {};
+
+    headers.forEach((header, index) => {
+      if (!header) return;
+      answer[header] = row[index] || "";
+    });
+
+    return answer;
+  });
+}
+
+/* =========================================================
+   FIREBASE STATUTS PARTAGÉS
+========================================================= */
+
+function waitForFirebaseReady() {
+  if (window.profFirebase?.db) {
+    return Promise.resolve(window.profFirebase);
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Firebase n’est pas prêt."));
+    }, 6000);
+
+    window.addEventListener("profFirebaseReady", () => {
+      clearTimeout(timeout);
+      resolve(window.profFirebase);
+    }, { once: true });
+  });
+}
+
 function buildAnswerKey(answer, sheetId, index) {
   const horodateur = getField(answer, ["Horodateur"]);
   const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
   const idUnique = getField(answer, ["ID Unique", "ID"]);
 
   return `${sheetId}__${index}__${horodateur}__${nom}__${idUnique}`;
+}
+
+function buildStatusDocId(answerKey) {
+  return encodeURIComponent(answerKey);
+}
+
+async function loadStatusesForSheet(sheetId) {
+  try {
+    const firebase = await waitForFirebaseReady();
+
+    const statusesRef = firebase.collection(firebase.db, STATUS_COLLECTION);
+    const q = firebase.query(statusesRef, firebase.where("sheetId", "==", sheetId));
+    const snap = await firebase.getDocs(q);
+
+    answerStatuses = {};
+
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+
+      if (data.answerKey && data.status) {
+        answerStatuses[data.answerKey] = data.status;
+      }
+    });
+  } catch (error) {
+    console.error("Erreur chargement statuts Firebase :", error);
+    answerStatuses = {};
+  }
+}
+
+async function saveAnswerStatusToFirebase(answerKey, sheetId, status) {
+  const firebase = await waitForFirebaseReady();
+  const docId = buildStatusDocId(answerKey);
+
+  const ref = firebase.doc(firebase.db, STATUS_COLLECTION, docId);
+
+  await firebase.setDoc(ref, {
+    answerKey,
+    sheetId,
+    status,
+    updatedBy: window.currentProfUser?.email || "professeur inconnu",
+    updatedAt: firebase.serverTimestamp()
+  }, { merge: true });
 }
 
 function getStatusMeta(status) {
@@ -177,10 +248,9 @@ function getAnswerStatus(answerKey) {
   return answerStatuses[answerKey] || "pending";
 }
 
-function setAnswerStatus(answerKey, status) {
-  answerStatuses[answerKey] = status;
-  saveStatuses(answerStatuses);
-}
+/* =========================================================
+   RENDER FIELDS
+========================================================= */
 
 function renderField(label, value) {
   const cleanValue = getValue(value);
@@ -214,27 +284,6 @@ function renderSection(title, fieldsHtml) {
       </div>
     </section>
   `;
-}
-
-function rowsToAnswers(rows) {
-  if (!rows.length) return [];
-
-  const headers = rows[0].map(header => String(header || "").trim());
-
-  const dataRows = rows
-    .slice(1)
-    .filter(row => row.some(cell => String(cell || "").trim() !== ""));
-
-  return dataRows.map(row => {
-    const answer = {};
-
-    headers.forEach((header, index) => {
-      if (!header) return;
-      answer[header] = row[index] || "";
-    });
-
-    return answer;
-  });
 }
 
 function getPhotoFields(answer) {
@@ -289,6 +338,10 @@ function getExtraFields(answer) {
   });
 }
 
+/* =========================================================
+   CARTE RÉPONSE
+========================================================= */
+
 function renderAnswerCard(answer, index, sheet) {
   const horodateur = getField(answer, ["Horodateur"]);
   const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
@@ -335,6 +388,7 @@ function renderAnswerCard(answer, index, sheet) {
       class="student-answer-card collapsed status-${escapeHtml(statusMeta.className)}"
       data-answer-card
       data-answer-key="${escapeHtml(answerKey)}"
+      data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
     >
       <button type="button" class="student-card-top" data-toggle-card>
@@ -378,6 +432,10 @@ function renderAnswerCard(answer, index, sheet) {
   `;
 }
 
+/* =========================================================
+   STATES UI
+========================================================= */
+
 function setLoading(sheetLabel) {
   sheetStatus.hidden = false;
   sheetStatus.style.display = "flex";
@@ -415,11 +473,17 @@ function setEmpty(sheetLabel) {
   sheetContent.hidden = true;
 }
 
-function renderAnswers(answers, sheet) {
+/* =========================================================
+   RENDER ANSWERS
+========================================================= */
+
+async function renderAnswers(answers, sheet) {
   if (!answers.length) {
     setEmpty(sheet.label);
     return;
   }
+
+  await loadStatusesForSheet(sheet.id);
 
   sheetStatus.hidden = true;
   sheetStatus.style.display = "none";
@@ -454,28 +518,34 @@ async function loadSheet(sheet) {
   setLoading(sheet.label);
 
   try {
+    let answers;
+
     if (cache.has(sheet.id)) {
-      renderAnswers(cache.get(sheet.id), sheet);
-      return;
+      answers = cache.get(sheet.id);
+    } else {
+      const response = await fetch(buildCsvUrl(sheet.gid));
+
+      if (!response.ok) {
+        throw new Error(`Erreur Google Sheets : ${response.status}`);
+      }
+
+      const csvText = await response.text();
+      const rows = parseCsv(csvText);
+      answers = rowsToAnswers(rows);
+
+      cache.set(sheet.id, answers);
     }
 
-    const response = await fetch(buildCsvUrl(sheet.gid));
-
-    if (!response.ok) {
-      throw new Error(`Erreur Google Sheets : ${response.status}`);
-    }
-
-    const csvText = await response.text();
-    const rows = parseCsv(csvText);
-    const answers = rowsToAnswers(rows);
-
-    cache.set(sheet.id, answers);
-    renderAnswers(answers, sheet);
+    await renderAnswers(answers, sheet);
   } catch (error) {
     console.error("Erreur chargement Google Sheets :", error);
     setError("Vérifie que le Google Sheet est bien public avec lien, et que le GID est correct.");
   }
 }
+
+/* =========================================================
+   TABS
+========================================================= */
 
 function setActiveTab(sheetId) {
   document.querySelectorAll(".student-sheet-tab").forEach(btn => {
@@ -497,6 +567,10 @@ function renderTabs() {
     });
   });
 }
+
+/* =========================================================
+   OPEN / CLOSE CARDS
+========================================================= */
 
 function bindCardToggles() {
   const cards = document.querySelectorAll("[data-answer-card]");
@@ -542,6 +616,10 @@ function bindCardToggles() {
   });
 }
 
+/* =========================================================
+   STATUS BUTTONS
+========================================================= */
+
 function updateCardStatus(card, status) {
   const meta = getStatusMeta(status);
 
@@ -563,19 +641,33 @@ function updateCardStatus(card, status) {
 
 function bindStatusButtons() {
   document.querySelectorAll("[data-set-status]").forEach((button) => {
-    button.addEventListener("click", (event) => {
+    button.addEventListener("click", async (event) => {
       event.stopPropagation();
 
       const card = button.closest("[data-answer-card]");
       if (!card) return;
 
       const answerKey = card.dataset.answerKey;
+      const sheetId = card.dataset.sheetId;
       const newStatus = button.dataset.setStatus;
 
-      if (!answerKey || !newStatus) return;
+      if (!answerKey || !sheetId || !newStatus) return;
 
-      setAnswerStatus(answerKey, newStatus);
+      const oldStatus = card.dataset.status || "pending";
+
       updateCardStatus(card, newStatus);
+      answerStatuses[answerKey] = newStatus;
+
+      try {
+        await saveAnswerStatusToFirebase(answerKey, sheetId, newStatus);
+      } catch (error) {
+        console.error("Erreur sauvegarde statut Firebase :", error);
+
+        updateCardStatus(card, oldStatus);
+        answerStatuses[answerKey] = oldStatus;
+
+        alert("Impossible de sauvegarder le statut dans Firebase. Vérifie les règles Firestore.");
+      }
     });
   });
 
@@ -583,6 +675,10 @@ function bindStatusButtons() {
     updateCardStatus(card, card.dataset.status || "pending");
   });
 }
+
+/* =========================================================
+   MINIMIZE GLOBAL
+========================================================= */
 
 function bindMinimize() {
   if (minimizeAnswersBtn) {
@@ -612,6 +708,10 @@ function bindMinimize() {
     });
   }
 }
+
+/* =========================================================
+   INIT
+========================================================= */
 
 renderTabs();
 bindMinimize();
