@@ -69,7 +69,9 @@
   font-weight: 800;
 }
 
-/* ===== Dashboard ===== */
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
 .prof-dashboard {
   display: block;
@@ -161,7 +163,9 @@
   margin-bottom: 42px;
 }
 
-/* ===== Login loading ===== */
+/* =========================================================
+   LOGIN LOADING
+========================================================= */
 
 #loginBtn {
   display: flex;
@@ -199,7 +203,9 @@
   to { transform: rotate(360deg); }
 }
 
-/* ===== Transition login ===== */
+/* =========================================================
+   TRANSITION LOGIN
+========================================================= */
 
 .login-transition {
   position: fixed;
@@ -280,7 +286,7 @@
 }
 
 /* =========================================================
-   INLINE CARD / PROF BLOCK
+   INLINE CARD GLOBAL
 ========================================================= */
 
 .inline-corrections {
@@ -404,361 +410,8 @@
 }
 
 /* =========================================================
-   REPONSES ELEVES
+   CORRIGÉS - CHOIX CUSTOMS
 ========================================================= */
-
-.student-panel {
-  padding-top: 34px;
-}
-
-.answers-body[hidden],
-.answers-mini-bar[hidden] {
-  display: none !important;
-}
-
-.answers-mini-bar {
-  margin: 28px 34px 34px;
-  padding: 18px 20px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.045);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.answers-mini-bar span {
-  color: var(--text);
-  font-weight: 900;
-}
-
-.answers-mini-bar button {
-  border: 1px solid rgba(214,180,106,.20);
-  background: rgba(214,180,106,.10);
-  color: var(--gold2);
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.student-sheet-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.student-sheet-tab {
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.055);
-  color: var(--text);
-  padding: 12px 16px;
-  border-radius: 999px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: .22s ease;
-}
-
-.student-sheet-tab:hover,
-.student-sheet-tab.active {
-  border-color: rgba(214,180,106,.35);
-  background: rgba(214,180,106,.12);
-  color: var(--gold2);
-  transform: translateY(-2px);
-}
-
-.student-results-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 18px;
-}
-
-.student-results-head h2 {
-  margin: 0;
-  font-size: clamp(30px, 4vw, 48px);
-  line-height: .95;
-  letter-spacing: -.05em;
-}
-
-.student-results-head > span {
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(214,180,106,.18);
-  background: rgba(214,180,106,.10);
-  color: var(--gold2);
-  font-size: 12px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.student-answer-grid {
-  display: grid;
-  gap: 18px;
-  animation: correctionFadeIn .32s ease both;
-}
-
-.student-answer-card {
-  padding: 20px;
-  border-radius: 26px;
-  border: 1px solid rgba(255,255,255,.09);
-  background:
-    radial-gradient(circle at 18% 0%, rgba(214,180,106,.07), transparent 30%),
-    linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.022));
-  box-shadow:
-    0 22px 65px rgba(0,0,0,.26),
-    inset 0 1px 0 rgba(255,255,255,.04);
-}
-
-.student-card-top {
-  width: 100%;
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 18px;
-  text-align: left;
-}
-
-.student-kicker {
-  margin: 0 0 8px;
-  color: var(--gold2);
-  font-size: 12px;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.student-card-top h2 {
-  margin: 0;
-  font-size: clamp(28px, 3vw, 44px);
-  line-height: .95;
-  letter-spacing: -.05em;
-}
-
-.student-tags {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 9px;
-}
-
-.student-tags span {
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(214,180,106,.18);
-  background: rgba(214,180,106,.10);
-  color: var(--gold2);
-  font-size: 11px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.student-toggle-icon {
-  min-width: 34px;
-  text-align: center;
-}
-
-.student-card-body {
-  margin-top: 18px;
-  display: grid;
-  gap: 14px;
-}
-
-.student-answer-card.collapsed .student-card-body {
-  display: none;
-}
-
-.student-section {
-  padding: 16px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,.075);
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018));
-}
-
-.student-section-head {
-  margin-bottom: 12px;
-}
-
-.student-section-head h3 {
-  margin: 0;
-  font-size: 21px;
-  letter-spacing: -.03em;
-}
-
-.student-section-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.student-answer-field,
-.student-link-card,
-.student-empty {
-  min-height: 72px;
-  padding: 12px 13px;
-  border-radius: 15px;
-  border: 1px solid rgba(255,255,255,.065);
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
-}
-
-.student-answer-field span,
-.student-link-card span {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.student-answer-field strong,
-.student-link-card strong {
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 900;
-  line-height: 1.25;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.student-link-card {
-  display: block;
-  text-decoration: none;
-  transition: .22s ease;
-}
-
-.student-link-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(214,180,106,.35);
-  background:
-    linear-gradient(145deg, rgba(214,180,106,.12), rgba(255,255,255,.035));
-}
-
-.student-link-card strong {
-  color: var(--gold2);
-}
-
-.student-empty {
-  color: var(--muted);
-  font-weight: 800;
-}
-
-/* ===== Animation ===== */
-
-@keyframes correctionFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(.985);
-    filter: blur(4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-/* ===== Responsive ===== */
-
-@media (max-width: 1300px) {
-  .student-section-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 950px) {
-  .prof-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .prof-dashboard-top {
-    flex-direction: column;
-  }
-
-  .inline-corrections-head {
-    flex-direction: column;
-  }
-
-  .student-section-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .student-card-top {
-    flex-direction: column;
-  }
-
-  .student-tags {
-    justify-content: flex-start;
-  }
-}
-
-@media (max-width: 650px) {
-  .student-section-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .student-results-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .answers-mini-bar {
-    margin: 20px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 600px) {
-  .prof-login-page {
-    padding: 45px 0;
-  }
-
-  .prof-login-card {
-    padding: 26px;
-    border-radius: 28px;
-  }
-
-  .prof-login-card h1,
-  .prof-dashboard-top h1 {
-    font-size: 46px;
-  }
-
-  .inline-corrections-head,
-  .inline-correction-detail {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .inline-corrections-head {
-    padding-top: 24px;
-    padding-bottom: 24px;
-  }
-
-  .inline-correction-detail {
-    padding-bottom: 22px;
-  }
-
-  .inline-corrections-head h2 {
-    font-size: 42px;
-  }
-}
-/* =========================================================
-   CORRIGÉS - RESTAURATION STYLE PREMIUM + CATÉGORIES EN COLONNES
-   À COLLER TOUT EN BAS DE prof.css
-========================================================= */
-
-/* ===== Choix des customs dans Centre de correction ===== */
 
 .inline-correction-chooser {
   display: grid !important;
@@ -778,19 +431,15 @@
   padding: 26px !important;
   border-radius: 26px !important;
   border: 1px solid rgba(255,255,255,.10) !important;
-
   background:
     radial-gradient(circle at 20% 0%, rgba(214,180,106,.10), transparent 32%),
     linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)) !important;
-
   color: var(--text) !important;
   text-align: left !important;
   cursor: pointer !important;
-
   box-shadow:
     0 20px 55px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.04) !important;
-
   transition:
     transform .22s ease,
     border-color .22s ease,
@@ -827,15 +476,9 @@
   font-weight: 800 !important;
 }
 
-/* ===== Vue détail correction ===== */
-
-.inline-correction-detail {
-  padding: 0 34px 34px !important;
-}
-
-.inline-correction-detail[hidden] {
-  display: none !important;
-}
+/* =========================================================
+   CORRIGÉS - DÉTAIL
+========================================================= */
 
 .inline-detail-toolbar {
   display: flex !important;
@@ -867,26 +510,20 @@
   display: none !important;
 }
 
-/* ===== Hero correction ===== */
-
 .inline-detail-hero {
   display: flex !important;
   justify-content: space-between !important;
   align-items: flex-start !important;
   gap: 24px !important;
-
   padding: 28px !important;
   border-radius: 28px !important;
   border: 1px solid rgba(255,255,255,.09) !important;
-
   background:
     radial-gradient(circle at 16% 18%, rgba(214,180,106,.10), transparent 30%),
     linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)) !important;
-
   box-shadow:
     0 22px 65px rgba(0,0,0,.25),
     inset 0 1px 0 rgba(255,255,255,.05) !important;
-
   margin-bottom: 20px !important;
 }
 
@@ -931,8 +568,6 @@
   white-space: nowrap !important;
 }
 
-/* ===== Sections des corrigés : catégories côte à côte ===== */
-
 .inline-detail-sections {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -940,20 +575,16 @@
   align-items: start !important;
 }
 
-/* Les grosses sections */
 .inline-detail-section {
   padding: 20px !important;
   border-radius: 24px !important;
   border: 1px solid rgba(255,255,255,.085) !important;
-
   background:
     radial-gradient(circle at 18% 0%, rgba(214,180,106,.06), transparent 30%),
     linear-gradient(145deg, rgba(255,255,255,.058), rgba(255,255,255,.022)) !important;
-
   box-shadow:
     0 20px 55px rgba(0,0,0,.22),
     inset 0 1px 0 rgba(255,255,255,.04) !important;
-
   transition: border-color .22s ease, transform .22s ease !important;
 }
 
@@ -988,7 +619,6 @@
   white-space: nowrap !important;
 }
 
-/* Les infos à l’intérieur des catégories */
 .inline-detail-items {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -1000,13 +630,10 @@
   flex-direction: column !important;
   justify-content: center !important;
   gap: 6px !important;
-
   min-height: 70px !important;
   padding: 12px 14px !important;
-
   border-radius: 16px !important;
   border: 1px solid rgba(255,255,255,.065) !important;
-
   background:
     linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025)) !important;
 }
@@ -1029,7 +656,6 @@
   word-break: break-word !important;
 }
 
-/* Quand le JS cache le label "Élément" */
 .inline-detail-item.no-label {
   gap: 0 !important;
 }
@@ -1038,8 +664,6 @@
   text-align: center !important;
 }
 
-/* ===== Sous-sections : Roues / Accessoires / Carrosserie / Néons ===== */
-
 .inline-detail-section > .inline-detail-items > .inline-subsections {
   grid-column: 1 / -1 !important;
 }
@@ -1047,8 +671,9 @@
 .inline-subsections {
   grid-column: 1 / -1 !important;
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 12px !important;
+  align-items: start !important;
   margin-top: 0 !important;
 }
 
@@ -1056,11 +681,10 @@
   margin: 0 !important;
   padding: 16px !important;
   border-radius: 20px !important;
-
+  min-height: 100% !important;
   background:
     radial-gradient(circle at 20% 0%, rgba(214,180,106,.09), transparent 32%),
     linear-gradient(145deg, rgba(214,180,106,.045), rgba(255,255,255,.022)) !important;
-
   border-color: rgba(214,180,106,.14) !important;
 }
 
@@ -1096,7 +720,493 @@
   font-size: 14px !important;
 }
 
-/* ===== Animations corrigés ===== */
+.inline-detail-sections > .inline-detail-section:last-child {
+  grid-column: 1 / -1 !important;
+}
+
+/* =========================================================
+   RÉPONSES ÉLÈVES
+========================================================= */
+
+.student-panel {
+  padding-top: 34px !important;
+}
+
+.answers-body[hidden],
+.answers-mini-bar[hidden] {
+  display: none !important;
+}
+
+.answers-mini-bar {
+  margin: 28px 34px 34px !important;
+  padding: 18px 20px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  background: rgba(255,255,255,.045) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+}
+
+.answers-mini-bar span {
+  color: var(--text) !important;
+  font-weight: 900 !important;
+}
+
+.answers-mini-bar button {
+  border: 1px solid rgba(214,180,106,.20) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+}
+
+.student-sheet-tabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-bottom: 22px !important;
+}
+
+.student-sheet-tab {
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(255,255,255,.055) !important;
+  color: var(--text) !important;
+  padding: 12px 16px !important;
+  border-radius: 999px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  transition: .22s ease !important;
+}
+
+.student-sheet-tab:hover,
+.student-sheet-tab.active {
+  border-color: rgba(214,180,106,.35) !important;
+  background: rgba(214,180,106,.12) !important;
+  color: var(--gold2) !important;
+  transform: translateY(-2px) !important;
+}
+
+.student-results-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin-bottom: 24px !important;
+}
+
+.student-results-head h2 {
+  margin: 0 !important;
+  font-size: clamp(34px, 4vw, 52px) !important;
+  line-height: .92 !important;
+  letter-spacing: -.06em !important;
+}
+
+.student-results-head > span {
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(214,180,106,.18) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.student-answer-grid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 320px)) !important;
+  justify-content: center !important;
+  gap: 18px !important;
+  align-items: start !important;
+  animation: studentFadeIn .28s ease both !important;
+}
+
+.student-answer-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(214,180,106,.09), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025)) !important;
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.26),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    box-shadow .22s ease,
+    background .22s ease !important;
+}
+
+/* ===== Étiquette fermée ===== */
+
+.student-answer-card.collapsed {
+  grid-column: auto !important;
+  min-height: 124px !important;
+  padding: 16px !important;
+  cursor: pointer !important;
+}
+
+.student-answer-card.collapsed:hover {
+  transform: translateY(-5px) !important;
+  box-shadow:
+    0 24px 65px rgba(0,0,0,.34),
+    0 0 30px rgba(214,180,106,.08) !important;
+}
+
+.student-answer-card.collapsed .student-card-body {
+  display: none !important;
+}
+
+.student-answer-card.collapsed .student-card-top {
+  width: 100% !important;
+  height: 100% !important;
+  appearance: none !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text) !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  text-align: center !important;
+}
+
+.student-answer-card.collapsed .student-card-main {
+  min-width: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.student-answer-card.collapsed .student-kicker {
+  margin: 0 0 6px !important;
+  color: var(--gold2) !important;
+  font-size: 10px !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  text-align: center !important;
+}
+
+.student-answer-card.collapsed .student-card-top h2 {
+  margin: 0 !important;
+  max-width: 100% !important;
+  color: var(--text) !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: -.04em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  text-align: center !important;
+}
+
+.student-answer-card.collapsed .student-tags {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.student-answer-card.collapsed .student-id-badge {
+  display: none !important;
+}
+
+/* ===== Carte ouverte ===== */
+
+.student-answer-card.is-open {
+  grid-column: 1 / -1 !important;
+  justify-self: center !important;
+  width: min(1120px, 100%) !important;
+  max-width: 100% !important;
+  padding: 24px !important;
+  border-radius: 30px !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(214,180,106,.13), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.080), rgba(255,255,255,.026)) !important;
+  box-shadow:
+    0 30px 90px rgba(0,0,0,.40),
+    0 0 50px rgba(214,180,106,.08),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+  animation: studentOpenCard .28s ease both !important;
+}
+
+.student-answer-card.is-open .student-card-top {
+  width: 100% !important;
+  appearance: none !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text) !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 22px !important;
+  text-align: left !important;
+  margin-bottom: 20px !important;
+}
+
+.student-answer-card.is-open .student-card-main {
+  min-width: 0 !important;
+}
+
+.student-answer-card.is-open .student-kicker {
+  margin: 0 0 8px !important;
+  color: var(--gold2) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+}
+
+.student-answer-card.is-open .student-card-top h2 {
+  margin: 0 !important;
+  font-size: clamp(42px, 5vw, 66px) !important;
+  line-height: .90 !important;
+  letter-spacing: -.065em !important;
+  white-space: normal !important;
+}
+
+.student-answer-card.is-open .student-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 9px !important;
+}
+
+.student-answer-card.is-open .student-card-body {
+  margin-top: 18px !important;
+  display: grid !important;
+  gap: 15px !important;
+  animation: studentBodyIn .25s ease both !important;
+}
+
+/* ===== Badges statut ===== */
+
+.student-id-badge,
+.student-status-badge,
+.student-toggle-icon {
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.06) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+  color: var(--gold2) !important;
+}
+
+.student-toggle-icon {
+  min-width: 34px !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 17px !important;
+}
+
+.student-status-badge.status-approved {
+  border-color: rgba(74, 222, 128, .30) !important;
+  background: rgba(74, 222, 128, .12) !important;
+  color: #86efac !important;
+}
+
+.student-status-badge.status-rejected {
+  border-color: rgba(248, 113, 113, .30) !important;
+  background: rgba(248, 113, 113, .12) !important;
+  color: #fca5a5 !important;
+}
+
+.student-status-badge.status-pending {
+  border-color: rgba(214,180,106,.24) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+}
+
+/* ===== Contours selon statut ===== */
+
+.student-answer-card.status-approved {
+  border-color: rgba(74, 222, 128, .24) !important;
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.26),
+    0 0 26px rgba(74, 222, 128, .08),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+.student-answer-card.status-approved.collapsed {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(74, 222, 128, .16), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025)) !important;
+}
+
+.student-answer-card.status-rejected {
+  border-color: rgba(248, 113, 113, .24) !important;
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.26),
+    0 0 26px rgba(248, 113, 113, .08),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+.student-answer-card.status-rejected.collapsed {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(248, 113, 113, .16), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025)) !important;
+}
+
+.student-answer-card.status-pending {
+  border-color: rgba(214,180,106,.18) !important;
+}
+
+.student-answer-card.status-pending.collapsed {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(214,180,106,.13), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025)) !important;
+}
+
+/* ===== Boutons approuver / refuser ===== */
+
+.student-status-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin-bottom: 2px !important;
+}
+
+.student-status-btn {
+  appearance: none !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(255,255,255,.05) !important;
+  color: var(--text) !important;
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  transition: .22s ease !important;
+}
+
+.student-status-btn:hover {
+  transform: translateY(-2px) !important;
+}
+
+.student-status-btn.approve.active,
+.student-status-btn.approve:hover {
+  border-color: rgba(74, 222, 128, .32) !important;
+  background: rgba(74, 222, 128, .12) !important;
+  color: #86efac !important;
+}
+
+.student-status-btn.reject.active,
+.student-status-btn.reject:hover {
+  border-color: rgba(248, 113, 113, .32) !important;
+  background: rgba(248, 113, 113, .12) !important;
+  color: #fca5a5 !important;
+}
+
+.student-status-btn.pending.active,
+.student-status-btn.pending:hover {
+  border-color: rgba(214,180,106,.28) !important;
+  background: rgba(214,180,106,.12) !important;
+  color: var(--gold2) !important;
+}
+
+/* ===== Sections internes élèves ===== */
+
+.student-section {
+  padding: 18px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255,255,255,.085) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.050), rgba(255,255,255,.020)) !important;
+}
+
+.student-section-head {
+  margin-bottom: 14px !important;
+}
+
+.student-section-head h3 {
+  margin: 0 !important;
+  font-size: 24px !important;
+  letter-spacing: -.035em !important;
+}
+
+.student-section-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.student-answer-field,
+.student-link-card,
+.student-empty {
+  min-height: 78px !important;
+  padding: 14px 15px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025)) !important;
+}
+
+.student-answer-field span,
+.student-link-card span {
+  display: block !important;
+  margin-bottom: 7px !important;
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+}
+
+.student-answer-field strong,
+.student-link-card strong {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+.student-link-card {
+  display: block !important;
+  text-decoration: none !important;
+  transition: .22s ease !important;
+}
+
+.student-link-card:hover {
+  transform: translateY(-3px) !important;
+  border-color: rgba(214,180,106,.35) !important;
+  background:
+    linear-gradient(145deg, rgba(214,180,106,.12), rgba(255,255,255,.035)) !important;
+}
+
+.student-link-card strong {
+  color: var(--gold2) !important;
+}
+
+.student-empty {
+  color: var(--muted) !important;
+  font-weight: 800 !important;
+}
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
 
 .inline-correction-chooser,
 .inline-correction-detail {
@@ -1141,7 +1251,55 @@
   }
 }
 
-/* ===== Responsive corrigés ===== */
+@keyframes studentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.985);
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes studentOpenCard {
+  from {
+    opacity: .75;
+    transform: translateY(12px) scale(.99);
+    filter: blur(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes studentBodyIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1350px) {
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
 
 @media (max-width: 1200px) {
   .inline-detail-sections {
@@ -1153,7 +1311,19 @@
   }
 }
 
-@media (max-width: 850px) {
+@media (max-width: 950px) {
+  .prof-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .prof-dashboard-top {
+    flex-direction: column;
+  }
+
+  .inline-corrections-head {
+    flex-direction: column;
+  }
+
   .inline-correction-chooser {
     grid-template-columns: 1fr !important;
   }
@@ -1171,452 +1341,7 @@
   .inline-subsections {
     grid-template-columns: 1fr !important;
   }
-}
-/* =========================================================
-   PATCH INFOS TECH VISUELLES
-   -> section pleine largeur
-   -> Roues / Accessoires / Carrosserie / Néons sur 1 ligne
-========================================================= */
 
-/* La dernière grosse section (Infos techniques visuelles)
-   prend toute la largeur */
-.inline-detail-sections > .inline-detail-section:last-child {
-  grid-column: 1 / -1 !important;
-}
-
-/* Le conteneur des sous-sections passe en 4 colonnes */
-.inline-subsections {
-  grid-column: 1 / -1 !important;
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 12px !important;
-  align-items: start !important;
-}
-
-/* Chaque bloc interne */
-.inline-subsections .inline-detail-section {
-  margin: 0 !important;
-  padding: 16px !important;
-  border-radius: 20px !important;
-  min-height: 100% !important;
-}
-
-/* Les items dans chaque bloc restent empilés */
-.inline-subsections .inline-detail-items {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 8px !important;
-}
-
-/* Responsive tablette */
-@media (max-width: 1350px) {
-  .inline-subsections {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-
-/* Responsive mobile */
-@media (max-width: 850px) {
-  .inline-subsections {
-    grid-template-columns: 1fr !important;
-  }
-}
-/* =========================================================
-   REPONSES ELEVES - ETIQUETTES MINIMISÉES CÔTE À CÔTE
-========================================================= */
-
-.student-answer-grid {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  gap: 16px !important;
-  align-items: start !important;
-}
-
-/* Carte ouverte = pleine largeur */
-.student-answer-card:not(.collapsed) {
-  grid-column: 1 / -1 !important;
-  padding: 22px !important;
-  border-radius: 28px !important;
-  border-color: rgba(214,180,106,.22) !important;
-
-  background:
-    radial-gradient(circle at 16% 0%, rgba(214,180,106,.12), transparent 30%),
-    linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025)) !important;
-
-  box-shadow:
-    0 28px 80px rgba(0,0,0,.34),
-    0 0 45px rgba(214,180,106,.07),
-    inset 0 1px 0 rgba(255,255,255,.05) !important;
-
-  animation: openAnswerCard .28s ease both !important;
-}
-
-/* Carte fermée = petite étiquette */
-.student-answer-card.collapsed {
-  grid-column: auto !important;
-  padding: 14px 16px !important;
-  min-height: 92px !important;
-  border-radius: 22px !important;
-  cursor: pointer !important;
-
-  background:
-    radial-gradient(circle at 20% 0%, rgba(214,180,106,.10), transparent 34%),
-    linear-gradient(145deg, rgba(255,255,255,.060), rgba(255,255,255,.022)) !important;
-
-  transition:
-    transform .22s ease,
-    border-color .22s ease,
-    box-shadow .22s ease,
-    background .22s ease !important;
-}
-
-.student-answer-card.collapsed:hover {
-  transform: translateY(-5px) !important;
-  border-color: rgba(214,180,106,.35) !important;
-  box-shadow:
-    0 20px 55px rgba(0,0,0,.30),
-    0 0 30px rgba(214,180,106,.08) !important;
-}
-
-/* Header compact quand fermé */
-.student-answer-card.collapsed .student-card-top {
-  align-items: center !important;
-  gap: 12px !important;
-}
-
-.student-answer-card.collapsed .student-kicker {
-  margin-bottom: 6px !important;
-  font-size: 10px !important;
-}
-
-.student-answer-card.collapsed .student-card-top h2 {
-  font-size: 24px !important;
-  line-height: 1 !important;
-  letter-spacing: -.04em !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  max-width: 220px !important;
-}
-
-/* Tags plus petits en étiquette */
-.student-answer-card.collapsed .student-tags {
-  gap: 6px !important;
-  justify-content: flex-end !important;
-}
-
-.student-answer-card.collapsed .student-tags span {
-  padding: 7px 10px !important;
-  font-size: 10px !important;
-}
-
-/* Corps caché quand fermé */
-.student-answer-card.collapsed .student-card-body {
-  display: none !important;
-}
-
-/* Bouton + / - propre */
-.student-toggle-icon {
-  min-width: 32px !important;
-  height: 32px !important;
-  display: grid !important;
-  place-items: center !important;
-  padding: 0 !important;
-  border-radius: 999px !important;
-  font-size: 16px !important;
-  background: rgba(255,255,255,.06) !important;
-}
-
-/* Corps ouvert plus smooth */
-.student-answer-card:not(.collapsed) .student-card-body {
-  animation: answerBodyIn .25s ease both !important;
-}
-
-.student-answer-card:not(.collapsed) .student-section {
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.052), rgba(255,255,255,.020)) !important;
-  border-color: rgba(255,255,255,.085) !important;
-}
-
-/* Animation ouverture */
-@keyframes openAnswerCard {
-  from {
-    opacity: .75;
-    transform: translateY(10px) scale(.99);
-    filter: blur(3px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes answerBodyIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 1350px) {
-  .student-answer-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-
-@media (max-width: 850px) {
-  .student-answer-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .student-answer-card.collapsed .student-card-top h2 {
-    max-width: 100% !important;
-  }
-
-  .student-answer-card.collapsed .student-card-top {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-
-  .student-answer-card.collapsed .student-tags {
-    justify-content: flex-start !important;
-  }
-}
-/* =========================================================
-   FIX REPONSES ELEVES - ETIQUETTES + OUVERTURE PROPRE
-========================================================= */
-
-.student-answer-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
-  gap: 16px !important;
-  align-items: start !important;
-}
-
-/* Base carte */
-.student-answer-card {
-  width: 100% !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
-}
-
-/* ===============================
-   MODE FERME = ETIQUETTE
-================================ */
-
-.student-answer-card.collapsed {
-  grid-column: auto !important;
-  min-height: 105px !important;
-  padding: 16px !important;
-  border-radius: 22px !important;
-  cursor: pointer !important;
-
-  background:
-    radial-gradient(circle at 18% 0%, rgba(214,180,106,.10), transparent 34%),
-    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.025)) !important;
-
-  border: 1px solid rgba(255,255,255,.10) !important;
-
-  box-shadow:
-    0 16px 44px rgba(0,0,0,.24),
-    inset 0 1px 0 rgba(255,255,255,.04) !important;
-
-  transition:
-    transform .22s ease,
-    border-color .22s ease,
-    box-shadow .22s ease !important;
-}
-
-.student-answer-card.collapsed:hover {
-  transform: translateY(-5px) !important;
-  border-color: rgba(214,180,106,.35) !important;
-  box-shadow:
-    0 22px 60px rgba(0,0,0,.34),
-    0 0 30px rgba(214,180,106,.08) !important;
-}
-
-.student-answer-card.collapsed .student-card-body {
-  display: none !important;
-}
-
-.student-answer-card.collapsed .student-card-top {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  height: 100% !important;
-}
-
-.student-answer-card.collapsed .student-card-top > div:first-child {
-  min-width: 0 !important;
-}
-
-.student-answer-card.collapsed .student-kicker {
-  margin: 0 0 6px !important;
-  font-size: 10px !important;
-  line-height: 1.1 !important;
-}
-
-.student-answer-card.collapsed .student-card-top h2 {
-  font-size: 24px !important;
-  line-height: 1 !important;
-  letter-spacing: -.04em !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  max-width: 210px !important;
-}
-
-.student-answer-card.collapsed .student-tags {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  gap: 6px !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-}
-
-.student-answer-card.collapsed .student-tags span:not(.student-toggle-icon) {
-  display: none !important;
-}
-
-/* ===============================
-   MODE OUVERT = GRANDE CARTE
-================================ */
-
-.student-answer-card.is-open {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-
-  padding: 24px !important;
-  border-radius: 30px !important;
-  border: 1px solid rgba(214,180,106,.22) !important;
-
-  background:
-    radial-gradient(circle at 16% 0%, rgba(214,180,106,.12), transparent 30%),
-    linear-gradient(145deg, rgba(255,255,255,.078), rgba(255,255,255,.025)) !important;
-
-  box-shadow:
-    0 30px 90px rgba(0,0,0,.40),
-    0 0 50px rgba(214,180,106,.08),
-    inset 0 1px 0 rgba(255,255,255,.05) !important;
-
-  animation: studentOpenCard .28s ease both !important;
-}
-
-.student-answer-card.is-open .student-card-top {
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: space-between !important;
-  gap: 22px !important;
-  margin-bottom: 20px !important;
-}
-
-.student-answer-card.is-open .student-card-top h2 {
-  font-size: clamp(38px, 5vw, 64px) !important;
-  line-height: .9 !important;
-  letter-spacing: -.06em !important;
-  max-width: none !important;
-  white-space: normal !important;
-}
-
-.student-answer-card.is-open .student-tags {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-end !important;
-  gap: 9px !important;
-}
-
-.student-answer-card.is-open .student-card-body {
-  display: grid !important;
-  gap: 16px !important;
-  animation: studentBodyIn .25s ease both !important;
-}
-
-/* Sections plus jolies quand ouvert */
-.student-answer-card.is-open .student-section {
-  padding: 18px !important;
-  border-radius: 22px !important;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.052), rgba(255,255,255,.020)) !important;
-  border: 1px solid rgba(255,255,255,.085) !important;
-}
-
-.student-answer-card.is-open .student-section-head h3 {
-  font-size: 24px !important;
-}
-
-/* Champs ouverts : plus larges, pas écrasés */
-.student-answer-card.is-open .student-section-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
-  gap: 12px !important;
-}
-
-.student-answer-card.is-open .student-answer-field,
-.student-answer-card.is-open .student-link-card,
-.student-answer-card.is-open .student-empty {
-  min-height: 78px !important;
-  padding: 14px 15px !important;
-  border-radius: 17px !important;
-}
-
-.student-answer-card.is-open .student-answer-field strong,
-.student-answer-card.is-open .student-link-card strong {
-  font-size: 15px !important;
-  line-height: 1.25 !important;
-}
-
-/* Bouton + / - */
-.student-toggle-icon {
-  min-width: 34px !important;
-  width: 34px !important;
-  height: 34px !important;
-  display: grid !important;
-  place-items: center !important;
-  padding: 0 !important;
-  border-radius: 999px !important;
-  font-size: 17px !important;
-  background: rgba(255,255,255,.07) !important;
-}
-
-/* Animations */
-@keyframes studentOpenCard {
-  from {
-    opacity: .70;
-    transform: translateY(12px) scale(.99);
-    filter: blur(3px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes studentBodyIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 900px) {
   .student-answer-card.is-open .student-card-top {
     flex-direction: column !important;
   }
@@ -1625,8 +1350,8 @@
     justify-content: flex-start !important;
   }
 
-  .student-answer-card.collapsed .student-card-top h2 {
-    max-width: 100% !important;
+  .student-status-actions {
+    justify-content: flex-start !important;
   }
 }
 
@@ -1636,11 +1361,71 @@
   }
 
   .student-answer-card.is-open {
+    width: 100% !important;
     padding: 18px !important;
     border-radius: 24px !important;
   }
 
   .student-answer-card.is-open .student-card-top h2 {
     font-size: 42px !important;
+  }
+
+  .student-results-head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .answers-mini-bar {
+    margin: 20px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .prof-login-page {
+    padding: 45px 0;
+  }
+
+  .prof-login-card {
+    padding: 26px;
+    border-radius: 28px;
+  }
+
+  .prof-login-card h1,
+  .prof-dashboard-top h1 {
+    font-size: 46px;
+  }
+
+  .inline-corrections-head,
+  .inline-correction-detail {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .inline-corrections-head {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .inline-correction-detail {
+    padding-bottom: 22px;
+  }
+
+  .inline-corrections-head h2 {
+    font-size: 42px;
+  }
+
+  .inline-custom-btn {
+    min-height: 180px;
+    border-radius: 20px;
+  }
+
+  .inline-custom-btn h3 {
+    font-size: 26px;
+  }
+
+  .inline-detail-section-head h4 {
+    font-size: 22px;
   }
 }
