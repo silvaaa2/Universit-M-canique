@@ -131,13 +131,16 @@ function normalizeHeader(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[’]/g, "'")
+    .replace(/[“”]/g, '"')
     .replace(/\s+/g, " ");
 }
 
 function normalizeQuestion(value) {
   return normalizeHeader(value)
-    .replace(/[?.!]+$/g, "")
-    .replace(/\s+/g, " ");
+    .replace(/[’]/g, "'")
+    .replace(/[\u2019]/g, "'")
+    .replace(/[^\p{L}\p{N}]+/gu, "")
+    .trim();
 }
 
 function getField(answer, possibleNames) {
@@ -268,7 +271,7 @@ async function loadRecordsForSheet(sheetId) {
       }
     });
   } catch (error) {
-    console.error("Erreur chargement statuts Firebase examens :", error);
+    console.error("Erreur chargement Firebase examens :", error);
     answerRecords = {};
   }
 }
@@ -293,7 +296,7 @@ async function saveExamRecordToFirebase(answerKey, sheetId, record) {
 }
 
 /* =========================================================
-   STATUTS / SCORE
+   SCORE / STATUS
 ========================================================= */
 
 function getStatusMeta(status) {
@@ -350,20 +353,16 @@ function getAnswerRecord(answerKey) {
   return answerRecords[answerKey] || getDefaultRecord();
 }
 
-function calculateTotalScore(fieldScores) {
-  const realTotal = Object.values(fieldScores || {}).reduce((sum, value) => {
-    const number = Number(value || 0);
-    return sum + (Number.isNaN(number) ? 0 : number);
-  }, 0);
-
-  return Math.min(realTotal, EXAM_DISPLAY_MAX_POINTS);
-}
-
 function calculateRealScore(fieldScores) {
   return Object.values(fieldScores || {}).reduce((sum, value) => {
     const number = Number(value || 0);
     return sum + (Number.isNaN(number) ? 0 : number);
   }, 0);
+}
+
+function calculateTotalScore(fieldScores) {
+  const realTotal = calculateRealScore(fieldScores);
+  return Math.min(realTotal, EXAM_DISPLAY_MAX_POINTS);
 }
 
 function getAutoStatusFromManualScore(totalScore, hasScoring) {
@@ -390,7 +389,7 @@ function renderScoreBadge(totalScore, hasScoring) {
 }
 
 /* =========================================================
-   RENDER LIGNES EXAM
+   RENDER EXAM
 ========================================================= */
 
 function shouldDisplayExamField(field) {
@@ -412,8 +411,8 @@ function renderScoreControl(field, currentScore) {
 
   if (maxPoints === null || maxPoints === undefined) {
     return `
-      <div class="exam-score-control disabled">
-        <span>—</span>
+      <div class="exam-score-control exam-score-missing">
+        <span>Barème ?</span>
       </div>
     `;
   }
@@ -427,14 +426,16 @@ function renderScoreControl(field, currentScore) {
       data-field-key="${escapeHtml(buildFieldScoreKey(field))}"
       data-max-points="${escapeHtml(maxPoints)}"
     >
-      <button type="button" data-score-delta="-1">−</button>
+      <input
+        type="number"
+        min="0"
+        max="${escapeHtml(maxPoints)}"
+        step="1"
+        value="${escapeHtml(safeCurrent)}"
+        data-score-input
+      >
 
-      <strong>
-        <span data-current-score>${escapeHtml(safeCurrent)}</span>
-        <small>/ ${escapeHtml(maxPoints)}</small>
-      </strong>
-
-      <button type="button" data-score-delta="1">+</button>
+      <strong>/ ${escapeHtml(maxPoints)}</strong>
     </div>
   `;
 }
@@ -734,7 +735,7 @@ function bindCardToggles() {
 }
 
 /* =========================================================
-   UPDATE STATUS UI
+   STATUS UI
 ========================================================= */
 
 function updateCardStatus(card, status) {
@@ -786,17 +787,25 @@ function updateScoreUi(card, record) {
 }
 
 /* =========================================================
-   SCORE CONTROLS
+   SCORE INPUTS
 ========================================================= */
 
 function bindScoreControls() {
-  document.querySelectorAll("[data-score-delta]").forEach((button) => {
-    button.addEventListener("click", async (event) => {
+  document.querySelectorAll("[data-score-input]").forEach((input) => {
+    input.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+
+    input.addEventListener("keydown", (event) => {
+      event.stopPropagation();
+    });
+
+    input.addEventListener("input", async (event) => {
       event.preventDefault();
       event.stopPropagation();
 
-      const control = button.closest("[data-score-control]");
-      const card = button.closest("[data-answer-card]");
+      const control = input.closest("[data-score-control]");
+      const card = input.closest("[data-answer-card]");
 
       if (!control || !card) return;
 
@@ -804,16 +813,20 @@ function bindScoreControls() {
       const sheetId = card.dataset.sheetId;
       const fieldKey = control.dataset.fieldKey;
       const maxPoints = Number(control.dataset.maxPoints || 0);
-      const delta = Number(button.dataset.scoreDelta || 0);
 
       if (!answerKey || !sheetId || !fieldKey) return;
 
-      const currentSpan = control.querySelector("[data-current-score]");
+      let newScore = Number(input.value);
+
+      if (Number.isNaN(newScore)) {
+        newScore = 0;
+      }
+
+      newScore = Math.max(0, Math.min(newScore, maxPoints));
+
+      input.value = String(newScore);
 
       const record = answerRecords[answerKey] || getDefaultRecord();
-      const currentScore = Number(record.fieldScores?.[fieldKey] || 0);
-
-      const newScore = Math.max(0, Math.min(currentScore + delta, maxPoints));
 
       record.fieldScores = {
         ...(record.fieldScores || {}),
@@ -823,10 +836,6 @@ function bindScoreControls() {
       record.hasScoring = true;
 
       answerRecords[answerKey] = record;
-
-      if (currentSpan) {
-        currentSpan.textContent = String(newScore);
-      }
 
       updateScoreUi(card, record);
 
@@ -861,6 +870,8 @@ function bindStatusButtons() {
       const record = answerRecords[answerKey] || getDefaultRecord();
 
       record.status = newStatus;
+      record.hasScoring = true;
+
       answerRecords[answerKey] = record;
 
       updateCardStatus(card, newStatus);
