@@ -753,3 +753,422 @@
     font-size: 42px;
   }
 }
+/* =========================================================
+   CORRIGÉS - RESTAURATION STYLE PREMIUM + CATÉGORIES EN COLONNES
+   À COLLER TOUT EN BAS DE prof.css
+========================================================= */
+
+/* ===== Choix des customs dans Centre de correction ===== */
+
+.inline-correction-chooser {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  padding: 30px 34px 34px !important;
+}
+
+.inline-correction-chooser[hidden] {
+  display: none !important;
+}
+
+.inline-custom-btn {
+  appearance: none !important;
+  font-family: inherit !important;
+  min-height: 190px !important;
+  padding: 26px !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+
+  background:
+    radial-gradient(circle at 20% 0%, rgba(214,180,106,.10), transparent 32%),
+    linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)) !important;
+
+  color: var(--text) !important;
+  text-align: left !important;
+  cursor: pointer !important;
+
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    box-shadow .22s ease,
+    background .22s ease !important;
+}
+
+.inline-custom-btn:hover {
+  transform: translateY(-7px) !important;
+  border-color: rgba(214,180,106,.42) !important;
+  box-shadow:
+    0 26px 70px rgba(0,0,0,.32),
+    0 0 34px rgba(214,180,106,.10) !important;
+}
+
+.inline-custom-btn span {
+  display: inline-block !important;
+  color: var(--gold) !important;
+  font-weight: 900 !important;
+  font-size: 13px !important;
+  margin-bottom: 44px !important;
+}
+
+.inline-custom-btn h3 {
+  margin: 0 0 10px !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
+  letter-spacing: -.04em !important;
+}
+
+.inline-custom-btn p {
+  margin: 0 !important;
+  color: var(--muted) !important;
+  font-weight: 800 !important;
+}
+
+/* ===== Vue détail correction ===== */
+
+.inline-correction-detail {
+  padding: 0 34px 34px !important;
+}
+
+.inline-correction-detail[hidden] {
+  display: none !important;
+}
+
+.inline-detail-toolbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 16px !important;
+  flex-wrap: wrap !important;
+  padding: 24px 0 20px !important;
+}
+
+.inline-back-btn {
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(255,255,255,.055) !important;
+  color: var(--text) !important;
+  padding: 12px 18px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  font-weight: 900 !important;
+  transition: .22s ease !important;
+}
+
+.inline-back-btn:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(214,180,106,.42) !important;
+  background: rgba(214,180,106,.12) !important;
+}
+
+.inline-detail-path {
+  display: none !important;
+}
+
+/* ===== Hero correction ===== */
+
+.inline-detail-hero {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 24px !important;
+
+  padding: 28px !important;
+  border-radius: 28px !important;
+  border: 1px solid rgba(255,255,255,.09) !important;
+
+  background:
+    radial-gradient(circle at 16% 18%, rgba(214,180,106,.10), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)) !important;
+
+  box-shadow:
+    0 22px 65px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.05) !important;
+
+  margin-bottom: 20px !important;
+}
+
+.inline-detail-hero-left {
+  min-width: 0 !important;
+}
+
+.inline-detail-hero h3 {
+  margin: 0 !important;
+  font-size: clamp(44px, 5vw, 72px) !important;
+  line-height: .92 !important;
+  letter-spacing: -.07em !important;
+}
+
+.inline-detail-description {
+  margin: 12px 0 0 !important;
+  max-width: 760px !important;
+  color: var(--muted) !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  line-height: 1.55 !important;
+}
+
+.inline-detail-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  max-width: 340px !important;
+  margin-top: 18px !important;
+}
+
+.inline-tag {
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(214,180,106,.18) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+/* ===== Sections des corrigés : catégories côte à côte ===== */
+
+.inline-detail-sections {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+/* Les grosses sections */
+.inline-detail-section {
+  padding: 20px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,.085) !important;
+
+  background:
+    radial-gradient(circle at 18% 0%, rgba(214,180,106,.06), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,.058), rgba(255,255,255,.022)) !important;
+
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+
+  transition: border-color .22s ease, transform .22s ease !important;
+}
+
+.inline-detail-section:hover {
+  border-color: rgba(214,180,106,.26) !important;
+  transform: translateY(-2px) !important;
+}
+
+.inline-detail-section-head {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin-bottom: 14px !important;
+}
+
+.inline-detail-section-head h4 {
+  margin: 0 !important;
+  font-size: 24px !important;
+  letter-spacing: -.035em !important;
+}
+
+.inline-detail-section-head span {
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  background: rgba(214,180,106,.10) !important;
+  border: 1px solid rgba(214,180,106,.17) !important;
+  color: var(--gold2) !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+/* Les infos à l’intérieur des catégories */
+.inline-detail-items {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.inline-detail-item {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 6px !important;
+
+  min-height: 70px !important;
+  padding: 12px 14px !important;
+
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.065) !important;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025)) !important;
+}
+
+.inline-detail-item-label {
+  color: var(--muted) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+}
+
+.inline-detail-item-value {
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+  text-align: left !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* Quand le JS cache le label "Élément" */
+.inline-detail-item.no-label {
+  gap: 0 !important;
+}
+
+.inline-detail-item.no-label .inline-detail-item-value {
+  text-align: center !important;
+}
+
+/* ===== Sous-sections : Roues / Accessoires / Carrosserie / Néons ===== */
+
+.inline-detail-section > .inline-detail-items > .inline-subsections {
+  grid-column: 1 / -1 !important;
+}
+
+.inline-subsections {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-top: 0 !important;
+}
+
+.inline-subsections .inline-detail-section {
+  margin: 0 !important;
+  padding: 16px !important;
+  border-radius: 20px !important;
+
+  background:
+    radial-gradient(circle at 20% 0%, rgba(214,180,106,.09), transparent 32%),
+    linear-gradient(145deg, rgba(214,180,106,.045), rgba(255,255,255,.022)) !important;
+
+  border-color: rgba(214,180,106,.14) !important;
+}
+
+.inline-subsections .inline-detail-section-head {
+  margin-bottom: 12px !important;
+}
+
+.inline-subsections .inline-detail-section-head h4 {
+  font-size: 21px !important;
+}
+
+.inline-subsections .inline-detail-section-head span {
+  font-size: 10px !important;
+  padding: 7px 10px !important;
+}
+
+.inline-subsections .inline-detail-items {
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+.inline-subsections .inline-detail-item {
+  min-height: 58px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+}
+
+.inline-subsections .inline-detail-item-label {
+  font-size: 11px !important;
+}
+
+.inline-subsections .inline-detail-item-value {
+  font-size: 14px !important;
+}
+
+/* ===== Animations corrigés ===== */
+
+.inline-correction-chooser,
+.inline-correction-detail {
+  will-change: opacity, transform !important;
+}
+
+.inline-correction-chooser.is-entering,
+.inline-correction-detail.is-entering {
+  animation: correctionFadeIn .32s ease both !important;
+}
+
+.inline-correction-chooser.is-leaving,
+.inline-correction-detail.is-leaving {
+  animation: correctionFadeOut .22s ease both !important;
+}
+
+@keyframes correctionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(.985);
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes correctionFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(.985);
+    filter: blur(4px);
+  }
+}
+
+/* ===== Responsive corrigés ===== */
+
+@media (max-width: 1200px) {
+  .inline-detail-sections {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .inline-correction-chooser {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inline-detail-hero {
+    flex-direction: column !important;
+  }
+
+  .inline-detail-tags {
+    justify-content: flex-start !important;
+    max-width: unset !important;
+  }
+
+  .inline-detail-items,
+  .inline-subsections {
+    grid-template-columns: 1fr !important;
+  }
+}
