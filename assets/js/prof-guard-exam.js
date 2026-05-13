@@ -2,7 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/fireba
 
 import {
   getAuth,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 import {
@@ -53,9 +54,68 @@ window.profFirebase = {
 
 window.dispatchEvent(new Event("profFirebaseReady"));
 
+async function getUserRole(user) {
+  if (!user?.email) return null;
+
+  try {
+    const userRef = doc(db, "users", user.email);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) return null;
+
+    return userSnap.data().role || null;
+  } catch (error) {
+    console.error("Erreur lecture rôle utilisateur :", error);
+    return null;
+  }
+}
+
+function showAccessDenied() {
+  if (protectedContent) {
+    protectedContent.hidden = true;
+    protectedContent.style.display = "none";
+  }
+
+  if (guardLoader) {
+    guardLoader.hidden = false;
+    guardLoader.style.display = "grid";
+
+    guardLoader.innerHTML = `
+      <div class="prof-login-card">
+        <p class="kicker">Accès refusé</p>
+        <h1>Refusé</h1>
+        <p class="intro">
+          Ce compte n’est pas autorisé à accéder à la correction des examens.
+        </p>
+
+        <button class="btn secondary" onclick="window.location.href='espace-prof.html'">
+          Retour connexion
+        </button>
+      </div>
+    `;
+  }
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "espace-prof.html";
+    return;
+  }
+
+  const role = await getUserRole(user);
+
+  if (role !== "prof") {
+    console.warn("Accès refusé page examens :", user.email, "role =", role);
+
+    window.currentProfUser = null;
+
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Erreur déconnexion après refus :", error);
+    }
+
+    showAccessDenied();
     return;
   }
 
