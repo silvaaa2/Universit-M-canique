@@ -685,8 +685,8 @@ function renderScoreControl(field, currentScore, answer) {
     const bonusInfo = getAutoBonusInfo(answer);
     const tags = [];
 
-    if (bonusInfo.hasCustom) tags.push("Custom ✅");
-    if (bonusInfo.hasStage) tags.push("Stage ✅");
+    if (bonusInfo.hasCustom) tags.push("Custom");
+    if (bonusInfo.hasStage) tags.push("Stage");
 
     if (tags.length) {
       autoText = `<em class="exam-auto-bonus">${tags.join(" · ")}</em>`;
