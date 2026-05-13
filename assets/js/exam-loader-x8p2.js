@@ -9,6 +9,7 @@ const SHEETS = [
 ];
 
 const STATUS_COLLECTION = "examAnswerStatuses";
+const CUSTOM_STATUS_COLLECTION = "studentAnswerStatuses";
 
 const EXAM_DISPLAY_MAX_POINTS = 50;
 const EXAM_PASS_POINTS = 40;
@@ -57,6 +58,7 @@ const answersBody = document.getElementById("answersBody");
 const cache = new Map();
 
 let answerRecords = {};
+let approvedCustomIds = new Set();
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -141,6 +143,13 @@ function normalizeQuestion(value) {
     .replace(/[\u2019]/g, "'")
     .replace(/[^\p{L}\p{N}]+/gu, "")
     .trim();
+}
+
+function normalizeIdUnique(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
 }
 
 function getField(answer, possibleNames) {
@@ -276,6 +285,33 @@ async function loadRecordsForSheet(sheetId) {
   }
 }
 
+async function loadApprovedCustomIds() {
+  try {
+    const firebase = await waitForFirebaseReady();
+
+    const statusesRef = firebase.collection(firebase.db, CUSTOM_STATUS_COLLECTION);
+    const q = firebase.query(statusesRef, firebase.where("status", "==", "approved"));
+    const snap = await firebase.getDocs(q);
+
+    approvedCustomIds = new Set();
+
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+
+      const normalizedId =
+        data.normalizedIdUnique ||
+        normalizeIdUnique(data.idUnique || "");
+
+      if (normalizedId) {
+        approvedCustomIds.add(normalizedId);
+      }
+    });
+  } catch (error) {
+    console.error("Erreur chargement customs approuvées :", error);
+    approvedCustomIds = new Set();
+  }
+}
+
 async function saveExamRecordToFirebase(answerKey, sheetId, record) {
   const firebase = await waitForFirebaseReady();
   const docId = buildStatusDocId(answerKey);
@@ -370,6 +406,18 @@ function getAutoStatusFromManualScore(totalScore, hasScoring) {
   return totalScore >= EXAM_PASS_POINTS ? "approved" : "rejected";
 }
 
+function syncRecordScoreAndStatus(record) {
+  const totalScore = calculateTotalScore(record.fieldScores);
+  const realScore = calculateRealScore(record.fieldScores);
+  const hasScoring = record.hasScoring || realScore > 0;
+
+  record.totalScore = totalScore;
+  record.hasScoring = hasScoring;
+  record.status = getAutoStatusFromManualScore(totalScore, hasScoring);
+
+  return record;
+}
+
 function renderScoreBadge(totalScore, hasScoring) {
   if (!hasScoring) {
     return `
@@ -386,6 +434,71 @@ function renderScoreBadge(totalScore, hasScoring) {
       ${escapeHtml(totalScore)} / ${EXAM_DISPLAY_MAX_POINTS}
     </span>
   `;
+}
+
+/* =========================================================
+   BONUS AUTO CUSTOM APPROUVÉE
+========================================================= */
+
+function findIdUniqueField(answer) {
+  const orderedFields = answer.__orderedFields || [];
+
+  return orderedFields.find(field => {
+    const label = normalizeHeader(field.label);
+    return (
+      label === normalizeHeader("ID Unique") ||
+      label === normalizeHeader("ID")
+    );
+  });
+}
+
+async function applyApprovedCustomBonus(answers, sheet) {
+  const savePromises = [];
+
+  answers.forEach((answer, index) => {
+    const examIdUnique = getField(answer, ["ID Unique", "ID"]);
+    const normalizedExamId = normalizeIdUnique(examIdUnique);
+
+    if (!normalizedExamId) return;
+    if (!approvedCustomIds.has(normalizedExamId)) return;
+
+    const idField = findIdUniqueField(answer);
+    if (!idField) return;
+
+    const maxPoints = getQuestionPoints(idField.label);
+    if (maxPoints === null || maxPoints === undefined) return;
+
+    const answerKey = buildAnswerKey(answer, sheet.id, index);
+    const record = getAnswerRecord(answerKey);
+    const fieldKey = buildFieldScoreKey(idField);
+
+    const currentScore = Number(record.fieldScores?.[fieldKey] || 0);
+    const bonusScore = Math.min(1, maxPoints);
+
+    if (currentScore >= bonusScore) return;
+
+    record.fieldScores = {
+      ...(record.fieldScores || {}),
+      [fieldKey]: bonusScore
+    };
+
+    record.hasScoring = true;
+    syncRecordScoreAndStatus(record);
+
+    answerRecords[answerKey] = record;
+
+    savePromises.push(
+      saveExamRecordToFirebase(answerKey, sheet.id, record)
+    );
+  });
+
+  if (savePromises.length) {
+    try {
+      await Promise.all(savePromises);
+    } catch (error) {
+      console.error("Erreur sauvegarde bonus ID Unique auto :", error);
+    }
+  }
 }
 
 /* =========================================================
@@ -419,6 +532,14 @@ function renderScoreControl(field, currentScore) {
 
   const safeCurrent = Math.max(0, Math.min(Number(currentScore || 0), maxPoints));
 
+  const isIdUniqueField =
+    normalizeHeader(field.label) === normalizeHeader("ID Unique") ||
+    normalizeHeader(field.label) === normalizeHeader("ID");
+
+  const autoText = isIdUniqueField && safeCurrent >= 1
+    ? `<em class="exam-auto-bonus">Auto custom ✅</em>`
+    : "";
+
   return `
     <div
       class="exam-score-control"
@@ -436,6 +557,7 @@ function renderScoreControl(field, currentScore) {
       >
 
       <strong>/ ${escapeHtml(maxPoints)}</strong>
+      ${autoText}
     </div>
   `;
 }
@@ -613,6 +735,8 @@ async function renderAnswers(answers, sheet) {
   }
 
   await loadRecordsForSheet(sheet.id);
+  await loadApprovedCustomIds();
+  await applyApprovedCustomBonus(answers, sheet);
 
   sheetStatus.hidden = true;
   sheetStatus.style.display = "none";
@@ -771,13 +895,10 @@ function updateCardStatus(card, status) {
 }
 
 function updateScoreUi(card, record) {
-  const totalScore = calculateTotalScore(record.fieldScores);
-  const realScore = calculateRealScore(record.fieldScores);
-  const hasScoring = record.hasScoring || realScore > 0;
+  syncRecordScoreAndStatus(record);
 
-  record.totalScore = totalScore;
-  record.hasScoring = hasScoring;
-  record.status = getAutoStatusFromManualScore(totalScore, hasScoring);
+  const totalScore = record.totalScore;
+  const hasScoring = record.hasScoring;
 
   const scoreBadge = card.querySelector("[data-total-score-badge]");
 
@@ -852,6 +973,7 @@ function bindScoreControls() {
       };
 
       record.hasScoring = true;
+      syncRecordScoreAndStatus(record);
 
       answerRecords[answerKey] = record;
 
