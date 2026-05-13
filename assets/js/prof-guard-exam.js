@@ -136,7 +136,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
-    await import("./exam-loader-x8p2.js?v=7011");
+    await import("./exam-loader-x8p2.js?v=9010");
   } catch (error) {
     console.error("Erreur chargement loader examens :", error);
 
