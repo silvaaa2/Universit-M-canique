@@ -245,6 +245,18 @@ function getStudentName(answer, index) {
   return `Copie ${index + 1}`;
 }
 
+function getExamIdentity(answer, index) {
+  const studentName = getStudentName(answer, index);
+  const idUnique = getField(answer, ["ID Unique", "ID"]);
+  const normalizedIdUnique = normalizeIdUnique(idUnique);
+
+  return {
+    studentName,
+    idUnique,
+    normalizedIdUnique
+  };
+}
+
 function buildAnswerKey(answer, sheetId, index) {
   const horodateur = getField(answer, ["Horodateur", "Timestamp"]);
   const nom = getStudentName(answer, index);
@@ -275,7 +287,11 @@ async function loadRecordsForSheet(sheetId) {
           status: data.status || "pending",
           fieldScores: data.fieldScores || {},
           totalScore: Number(data.totalScore || 0),
-          hasScoring: Boolean(data.hasScoring)
+          hasScoring: Boolean(data.hasScoring),
+
+          studentName: data.studentName || "",
+          idUnique: data.idUnique || "",
+          normalizedIdUnique: data.normalizedIdUnique || ""
         };
       }
     });
@@ -312,7 +328,7 @@ async function loadApprovedCustomIds() {
   }
 }
 
-async function saveExamRecordToFirebase(answerKey, sheetId, record) {
+async function saveExamRecordToFirebase(answerKey, sheetId, record, identity = {}) {
   const firebase = await waitForFirebaseReady();
   const docId = buildStatusDocId(answerKey);
 
@@ -321,6 +337,11 @@ async function saveExamRecordToFirebase(answerKey, sheetId, record) {
   await firebase.setDoc(ref, {
     answerKey,
     sheetId,
+
+    studentName: identity.studentName || record.studentName || "",
+    idUnique: identity.idUnique || record.idUnique || "",
+    normalizedIdUnique: identity.normalizedIdUnique || record.normalizedIdUnique || "",
+
     status: record.status || "pending",
     fieldScores: record.fieldScores || {},
     totalScore: Number(record.totalScore || 0),
@@ -329,6 +350,37 @@ async function saveExamRecordToFirebase(answerKey, sheetId, record) {
     updatedBy: window.currentProfUser?.email || "professeur inconnu",
     updatedAt: firebase.serverTimestamp()
   }, { merge: true });
+}
+
+async function ensureExamParticipantsInFirebase(answers, sheet) {
+  const savePromises = [];
+
+  answers.forEach((answer, index) => {
+    const answerKey = buildAnswerKey(answer, sheet.id, index);
+    const identity = getExamIdentity(answer, index);
+
+    if (!identity.normalizedIdUnique) return;
+
+    const record = getAnswerRecord(answerKey);
+
+    record.studentName = identity.studentName;
+    record.idUnique = identity.idUnique;
+    record.normalizedIdUnique = identity.normalizedIdUnique;
+
+    answerRecords[answerKey] = record;
+
+    savePromises.push(
+      saveExamRecordToFirebase(answerKey, sheet.id, record, identity)
+    );
+  });
+
+  if (savePromises.length) {
+    try {
+      await Promise.all(savePromises);
+    } catch (error) {
+      console.error("Erreur sauvegarde participants examens :", error);
+    }
+  }
 }
 
 /* =========================================================
@@ -381,7 +433,10 @@ function getDefaultRecord() {
     status: "pending",
     fieldScores: {},
     totalScore: 0,
-    hasScoring: false
+    hasScoring: false,
+    studentName: "",
+    idUnique: "",
+    normalizedIdUnique: ""
   };
 }
 
@@ -483,12 +538,18 @@ async function applyApprovedCustomBonus(answers, sheet) {
     };
 
     record.hasScoring = true;
+
+    const identity = getExamIdentity(answer, index);
+    record.studentName = identity.studentName;
+    record.idUnique = identity.idUnique;
+    record.normalizedIdUnique = identity.normalizedIdUnique;
+
     syncRecordScoreAndStatus(record);
 
     answerRecords[answerKey] = record;
 
     savePromises.push(
-      saveExamRecordToFirebase(answerKey, sheet.id, record)
+      saveExamRecordToFirebase(answerKey, sheet.id, record, identity)
     );
   });
 
@@ -611,6 +672,7 @@ function renderExamAnswersSection(answer, record) {
 function renderAnswerCard(answer, index, sheet) {
   const name = getStudentName(answer, index);
   const idUnique = getField(answer, ["ID Unique", "ID"]);
+  const normalizedIdUnique = normalizeIdUnique(idUnique);
 
   const answerKey = buildAnswerKey(answer, sheet.id, index);
 
@@ -630,6 +692,9 @@ function renderAnswerCard(answer, index, sheet) {
       data-answer-key="${escapeHtml(answerKey)}"
       data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
+      data-student-name="${escapeHtml(name)}"
+      data-id-unique="${escapeHtml(idUnique)}"
+      data-normalized-id-unique="${escapeHtml(normalizedIdUnique)}"
     >
       <div class="student-card-top">
         <button type="button" class="student-card-main student-card-open-zone" data-toggle-card>
@@ -735,6 +800,7 @@ async function renderAnswers(answers, sheet) {
   }
 
   await loadRecordsForSheet(sheet.id);
+  await ensureExamParticipantsInFirebase(answers, sheet);
   await loadApprovedCustomIds();
   await applyApprovedCustomBonus(answers, sheet);
 
@@ -925,6 +991,14 @@ function updateScoreUi(card, record) {
   }
 }
 
+function getIdentityFromCard(card) {
+  return {
+    studentName: card.dataset.studentName || "",
+    idUnique: card.dataset.idUnique || "",
+    normalizedIdUnique: card.dataset.normalizedIdUnique || ""
+  };
+}
+
 /* =========================================================
    SCORE INPUTS
 ========================================================= */
@@ -966,11 +1040,16 @@ function bindScoreControls() {
       input.value = String(newScore);
 
       const record = answerRecords[answerKey] || getDefaultRecord();
+      const identity = getIdentityFromCard(card);
 
       record.fieldScores = {
         ...(record.fieldScores || {}),
         [fieldKey]: newScore
       };
+
+      record.studentName = identity.studentName;
+      record.idUnique = identity.idUnique;
+      record.normalizedIdUnique = identity.normalizedIdUnique;
 
       record.hasScoring = true;
       syncRecordScoreAndStatus(record);
@@ -980,7 +1059,7 @@ function bindScoreControls() {
       updateScoreUi(card, record);
 
       try {
-        await saveExamRecordToFirebase(answerKey, sheetId, record);
+        await saveExamRecordToFirebase(answerKey, sheetId, record, identity);
       } catch (error) {
         console.error("Erreur sauvegarde score Firebase :", error);
         alert("Impossible de sauvegarder les points dans Firebase.");
@@ -1042,16 +1121,21 @@ function bindStatusButtons() {
       if (!answerKey || !sheetId || !newStatus) return;
 
       const record = answerRecords[answerKey] || getDefaultRecord();
+      const identity = getIdentityFromCard(card);
 
       record.status = newStatus;
       record.hasScoring = true;
+
+      record.studentName = identity.studentName;
+      record.idUnique = identity.idUnique;
+      record.normalizedIdUnique = identity.normalizedIdUnique;
 
       answerRecords[answerKey] = record;
 
       updateCardStatus(card, newStatus);
 
       try {
-        await saveExamRecordToFirebase(answerKey, sheetId, record);
+        await saveExamRecordToFirebase(answerKey, sheetId, record, identity);
       } catch (error) {
         console.error("Erreur sauvegarde statut Firebase examens :", error);
         alert("Impossible de sauvegarder le statut dans Firebase.");
