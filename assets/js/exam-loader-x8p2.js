@@ -10,14 +10,17 @@ const SHEETS = [
 
 const STATUS_COLLECTION = "examAnswerStatuses";
 const CUSTOM_STATUS_COLLECTION = "studentAnswerStatuses";
+const STAGE_COLLECTION = "stageValidations";
 
 const EXAM_DISPLAY_MAX_POINTS = 50;
 const EXAM_PASS_POINTS = 40;
 
 const QUESTION_POINTS = {
-  "Prénom / Nom (RP)": 1,
-  "Prénom - Nom (RP)": 1,
-  "ID Unique": 1,
+  "Prénom / Nom (RP)": 0,
+  "Prénom - Nom (RP)": 0,
+
+  "ID Unique": 2,
+  "ID": 2,
 
   "Pourquoi voulez vous devenir mécano ?": 1,
   "Quelles sont les qualités d'un mécano pour vous ? (Citez en 6)": 6,
@@ -59,6 +62,7 @@ const cache = new Map();
 
 let answerRecords = {};
 let approvedCustomIds = new Set();
+let approvedStageIds = new Set();
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -328,6 +332,32 @@ async function loadApprovedCustomIds() {
   }
 }
 
+async function loadApprovedStageIds() {
+  try {
+    const firebase = await waitForFirebaseReady();
+
+    const stagesRef = firebase.collection(firebase.db, STAGE_COLLECTION);
+    const snap = await firebase.getDocs(stagesRef);
+
+    approvedStageIds = new Set();
+
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+
+      const normalizedId =
+        data.normalizedIdUnique ||
+        normalizeIdUnique(data.idUnique || "");
+
+      if (normalizedId) {
+        approvedStageIds.add(normalizedId);
+      }
+    });
+  } catch (error) {
+    console.error("Erreur chargement stages validés :", error);
+    approvedStageIds = new Set();
+  }
+}
+
 async function saveExamRecordToFirebase(answerKey, sheetId, record, identity = {}) {
   const firebase = await waitForFirebaseReady();
   const docId = buildStatusDocId(answerKey);
@@ -424,6 +454,20 @@ function getQuestionPoints(label) {
   return QUESTION_POINTS[foundKey];
 }
 
+function getQuestionPointsFromFieldKey(fieldKey) {
+  const normalizedFieldKey = String(fieldKey || "").split("__").slice(1).join("__");
+
+  if (!normalizedFieldKey) return null;
+
+  const foundKey = Object.keys(QUESTION_POINTS).find(key => {
+    return normalizeQuestion(key) === normalizedFieldKey;
+  });
+
+  if (!foundKey) return null;
+
+  return QUESTION_POINTS[foundKey];
+}
+
 function buildFieldScoreKey(field) {
   return `${field.index}__${normalizeQuestion(field.label)}`;
 }
@@ -445,9 +489,19 @@ function getAnswerRecord(answerKey) {
 }
 
 function calculateRealScore(fieldScores) {
-  return Object.values(fieldScores || {}).reduce((sum, value) => {
+  return Object.entries(fieldScores || {}).reduce((sum, [fieldKey, value]) => {
+    const maxPoints = getQuestionPointsFromFieldKey(fieldKey);
     const number = Number(value || 0);
-    return sum + (Number.isNaN(number) ? 0 : number);
+
+    if (Number.isNaN(number)) return sum;
+
+    if (maxPoints === 0) return sum;
+
+    if (maxPoints !== null && maxPoints !== undefined) {
+      return sum + Math.max(0, Math.min(number, maxPoints));
+    }
+
+    return sum + Math.max(0, number);
   }, 0);
 }
 
@@ -492,7 +546,7 @@ function renderScoreBadge(totalScore, hasScoring) {
 }
 
 /* =========================================================
-   BONUS AUTO CUSTOM APPROUVÉE
+   BONUS AUTO CUSTOM + STAGE
 ========================================================= */
 
 function findIdUniqueField(answer) {
@@ -507,34 +561,54 @@ function findIdUniqueField(answer) {
   });
 }
 
-async function applyApprovedCustomBonus(answers, sheet) {
+function getAutoBonusInfo(answer) {
+  const examIdUnique = getField(answer, ["ID Unique", "ID"]);
+  const normalizedExamId = normalizeIdUnique(examIdUnique);
+
+  if (!normalizedExamId) {
+    return {
+      total: 0,
+      hasCustom: false,
+      hasStage: false
+    };
+  }
+
+  const hasCustom = approvedCustomIds.has(normalizedExamId);
+  const hasStage = approvedStageIds.has(normalizedExamId);
+
+  return {
+    total: Number(hasCustom) + Number(hasStage),
+    hasCustom,
+    hasStage
+  };
+}
+
+async function applyAutomaticIdUniqueBonuses(answers, sheet) {
   const savePromises = [];
 
   answers.forEach((answer, index) => {
-    const examIdUnique = getField(answer, ["ID Unique", "ID"]);
-    const normalizedExamId = normalizeIdUnique(examIdUnique);
+    const bonusInfo = getAutoBonusInfo(answer);
 
-    if (!normalizedExamId) return;
-    if (!approvedCustomIds.has(normalizedExamId)) return;
+    if (bonusInfo.total <= 0) return;
 
     const idField = findIdUniqueField(answer);
     if (!idField) return;
 
     const maxPoints = getQuestionPoints(idField.label);
-    if (maxPoints === null || maxPoints === undefined) return;
+    if (maxPoints === null || maxPoints === undefined || maxPoints <= 0) return;
 
     const answerKey = buildAnswerKey(answer, sheet.id, index);
     const record = getAnswerRecord(answerKey);
     const fieldKey = buildFieldScoreKey(idField);
 
     const currentScore = Number(record.fieldScores?.[fieldKey] || 0);
-    const bonusScore = Math.min(1, maxPoints);
+    const autoScore = Math.min(bonusInfo.total, maxPoints);
 
-    if (currentScore >= bonusScore) return;
+    if (currentScore >= autoScore) return;
 
     record.fieldScores = {
       ...(record.fieldScores || {}),
-      [fieldKey]: bonusScore
+      [fieldKey]: autoScore
     };
 
     record.hasScoring = true;
@@ -580,7 +654,7 @@ function shouldDisplayExamField(field) {
   return true;
 }
 
-function renderScoreControl(field, currentScore) {
+function renderScoreControl(field, currentScore, answer) {
   const maxPoints = getQuestionPoints(field.label);
 
   if (maxPoints === null || maxPoints === undefined) {
@@ -591,15 +665,33 @@ function renderScoreControl(field, currentScore) {
     `;
   }
 
+  if (maxPoints === 0) {
+    return `
+      <div class="exam-score-control exam-score-noted">
+        <span>Non noté</span>
+      </div>
+    `;
+  }
+
   const safeCurrent = Math.max(0, Math.min(Number(currentScore || 0), maxPoints));
 
   const isIdUniqueField =
     normalizeHeader(field.label) === normalizeHeader("ID Unique") ||
     normalizeHeader(field.label) === normalizeHeader("ID");
 
-  const autoText = isIdUniqueField && safeCurrent >= 1
-    ? `<em class="exam-auto-bonus">Auto custom ✅</em>`
-    : "";
+  let autoText = "";
+
+  if (isIdUniqueField) {
+    const bonusInfo = getAutoBonusInfo(answer);
+    const tags = [];
+
+    if (bonusInfo.hasCustom) tags.push("Custom ✅");
+    if (bonusInfo.hasStage) tags.push("Stage ✅");
+
+    if (tags.length) {
+      autoText = `<em class="exam-auto-bonus">${tags.join(" · ")}</em>`;
+    }
+  }
 
   return `
     <div
@@ -623,7 +715,7 @@ function renderScoreControl(field, currentScore) {
   `;
 }
 
-function renderExamLine(field, displayIndex, record) {
+function renderExamLine(field, displayIndex, record, answer) {
   const cleanValue = getValue(field.value);
   const fieldKey = buildFieldScoreKey(field);
   const currentScore = record.fieldScores?.[fieldKey] || 0;
@@ -642,7 +734,7 @@ function renderExamLine(field, displayIndex, record) {
       </div>
 
       <div class="exam-line-score">
-        ${renderScoreControl(field, currentScore)}
+        ${renderScoreControl(field, currentScore, answer)}
       </div>
     </div>
   `;
@@ -653,7 +745,7 @@ function renderExamAnswersSection(answer, record) {
   const displayFields = orderedFields.filter(shouldDisplayExamField);
 
   const html = displayFields
-    .map((field, index) => renderExamLine(field, index, record))
+    .map((field, index) => renderExamLine(field, index, record, answer))
     .join("");
 
   return `
@@ -802,7 +894,8 @@ async function renderAnswers(answers, sheet) {
   await loadRecordsForSheet(sheet.id);
   await ensureExamParticipantsInFirebase(answers, sheet);
   await loadApprovedCustomIds();
-  await applyApprovedCustomBonus(answers, sheet);
+  await loadApprovedStageIds();
+  await applyAutomaticIdUniqueBonuses(answers, sheet);
 
   sheetStatus.hidden = true;
   sheetStatus.style.display = "none";
