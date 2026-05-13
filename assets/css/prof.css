@@ -2342,3 +2342,12 @@
   gap: 24px !important;
   margin-bottom: 20px !important;
 }
+.exam-auto-bonus {
+  display: block !important;
+  margin-left: 4px !important;
+  color: #86efac !important;
+  font-size: 10px !important;
+  font-style: normal !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
