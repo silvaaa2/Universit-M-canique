@@ -106,6 +106,13 @@ function normalizeHeader(value) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+function normalizeIdUnique(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
+}
+
 function getField(answer, possibleNames) {
   for (const name of possibleNames) {
     const foundKey = Object.keys(answer).find(key => normalizeHeader(key) === normalizeHeader(name));
@@ -201,16 +208,25 @@ async function loadStatusesForSheet(sheetId) {
   }
 }
 
-async function saveAnswerStatusToFirebase(answerKey, sheetId, status) {
+async function saveAnswerStatusToFirebase(answerKey, sheetId, status, meta = {}) {
   const firebase = await waitForFirebaseReady();
   const docId = buildStatusDocId(answerKey);
 
   const ref = firebase.doc(firebase.db, STATUS_COLLECTION, docId);
 
+  const idUnique = meta.idUnique || "";
+
   await firebase.setDoc(ref, {
     answerKey,
     sheetId,
     status,
+
+    idUnique,
+    normalizedIdUnique: normalizeIdUnique(idUnique),
+
+    studentName: meta.studentName || "",
+    customLabel: meta.customLabel || "",
+
     updatedBy: window.currentProfUser?.email || "professeur inconnu",
     updatedAt: firebase.serverTimestamp()
   }, { merge: true });
@@ -361,6 +377,8 @@ function renderAnswerCard(answer, index, sheet) {
   const status = getAnswerStatus(answerKey);
   const statusMeta = getStatusMeta(status);
 
+  const studentName = nom || `Élève ${index + 1}`;
+
   const identityHtml = [
     renderField("Nom RP", nom),
     renderField("ID Unique", idUnique),
@@ -390,11 +408,14 @@ function renderAnswerCard(answer, index, sheet) {
       data-answer-key="${escapeHtml(answerKey)}"
       data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
+      data-id-unique="${escapeHtml(idUnique)}"
+      data-student-name="${escapeHtml(studentName)}"
+      data-custom-label="${escapeHtml(sheet.label)}"
     >
       <button type="button" class="student-card-top" data-toggle-card>
         <div class="student-card-main">
           <p class="student-kicker">${escapeHtml(sheet.label)} · Réponse ${index + 1}</p>
-          <h2>${escapeHtml(nom || `Élève ${index + 1}`)}</h2>
+          <h2>${escapeHtml(studentName)}</h2>
         </div>
 
         <div class="student-tags">
@@ -655,11 +676,17 @@ function bindStatusButtons() {
 
       const oldStatus = card.dataset.status || "pending";
 
+      const meta = {
+        idUnique: card.dataset.idUnique || "",
+        studentName: card.dataset.studentName || "",
+        customLabel: card.dataset.customLabel || ""
+      };
+
       updateCardStatus(card, newStatus);
       answerStatuses[answerKey] = newStatus;
 
       try {
-        await saveAnswerStatusToFirebase(answerKey, sheetId, newStatus);
+        await saveAnswerStatusToFirebase(answerKey, sheetId, newStatus, meta);
       } catch (error) {
         console.error("Erreur sauvegarde statut Firebase :", error);
 
