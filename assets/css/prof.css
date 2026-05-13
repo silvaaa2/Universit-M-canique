@@ -2421,3 +2421,40 @@
   font-weight: 1000;
   white-space: nowrap;
 }
+/* =========================================================
+   PATCH SCORE ID UNIQUE - BONUS EN DESSOUS
+========================================================= */
+
+.exam-line-score {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.exam-line-score .exam-score-control {
+  min-width: 132px;
+  max-width: 180px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.exam-line-score .exam-score-control input[data-score-input] {
+  width: 38px;
+  min-width: 38px;
+}
+
+.exam-line-score .exam-score-control strong {
+  min-width: 28px;
+}
+
+.exam-line-score .exam-auto-bonus {
+  width: 100%;
+  margin: 2px 0 0;
+  padding: 5px 8px;
+  text-align: center;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
