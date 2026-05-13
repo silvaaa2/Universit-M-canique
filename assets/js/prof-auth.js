@@ -129,6 +129,38 @@ async function startFirebaseAuth() {
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    async function getUserRole(user) {
+      if (!user?.email) return null;
+
+      const userRef = doc(db, "users", user.email);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) return null;
+
+      return userSnap.data().role || null;
+    }
+
+    async function isUserProf(user) {
+      const role = await getUserRole(user);
+      return role === "prof";
+    }
+
+    async function refuseAccess(user) {
+      console.warn("Accès refusé :", user?.email || "email inconnu");
+
+      window.currentProfUser = null;
+
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Erreur déconnexion après refus :", error);
+      }
+
+      loginError.textContent = "Accès refusé. Ce compte n’est pas autorisé sur l’espace professeur.";
+      loginSection.classList.remove("leaving");
+      showLogin();
+    }
+
     window.profFirebase = {
       app,
       auth,
@@ -150,16 +182,24 @@ async function startFirebaseAuth() {
 
     showLogin();
 
-    onAuthStateChanged(auth, (user) => {
-      window.currentProfUser = user;
-
+    onAuthStateChanged(auth, async (user) => {
       if (isManualLoginTransition) return;
 
-      if (user) {
-        showDashboardInstant();
-      } else {
+      if (!user) {
+        window.currentProfUser = null;
         showLogin();
+        return;
       }
+
+      const allowed = await isUserProf(user);
+
+      if (!allowed) {
+        await refuseAccess(user);
+        return;
+      }
+
+      window.currentProfUser = user;
+      showDashboardInstant();
     });
 
     loginForm.addEventListener("submit", async (e) => {
@@ -173,10 +213,22 @@ async function startFirebaseAuth() {
       isManualLoginTransition = true;
 
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+        const user = credential.user;
+
+        const allowed = await isUserProf(user);
+
+        if (!allowed) {
+          isManualLoginTransition = false;
+          await refuseAccess(user);
+          return;
+        }
+
+        window.currentProfUser = user;
         await showDashboardWithTransition();
+
       } catch (error) {
-        console.error("Erreur Firebase :", error.code);
+        console.error("Erreur Firebase :", error.code, error.message);
 
         if (error.code === "auth/invalid-credential") {
           loginError.textContent = "Email ou mot de passe incorrect.";
@@ -186,6 +238,8 @@ async function startFirebaseAuth() {
           loginError.textContent = "Domaine non autorisé dans Firebase.";
         } else if (error.code === "auth/network-request-failed") {
           loginError.textContent = "Erreur réseau.";
+        } else if (error.code === "permission-denied") {
+          loginError.textContent = "Accès refusé. Rôle utilisateur introuvable ou non autorisé.";
         } else {
           loginError.textContent = "Erreur de connexion.";
         }
