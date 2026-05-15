@@ -908,7 +908,13 @@ async function renderAnswers(answers, sheet) {
         <h2>${escapeHtml(sheet.label)}</h2>
       </div>
 
-      <span>${answers.length} copie(s)</span>
+      <div class="student-results-actions">
+        <span>${answers.length} copie(s)</span>
+
+        <button type="button" class="copy-all-results-btn" data-copy-all-results>
+          Copier liste
+        </button>
+      </div>
     </div>
 
     <div class="student-answer-grid">
@@ -920,6 +926,7 @@ async function renderAnswers(answers, sheet) {
   bindStatusButtons();
   bindScoreControls();
   bindCopyResultButtons();
+  bindCopyAllResultsButton();
 }
 
 async function loadSheet(sheet) {
@@ -1192,6 +1199,65 @@ function bindCopyResultButtons() {
         alert(`Résultat à copier : ${textToCopy}`);
       }
     });
+  });
+}
+
+/* =========================================================
+   COPY ALL RESULTS
+========================================================= */
+
+function buildSimpleResultsListFromCards() {
+  const cards = Array.from(document.querySelectorAll("[data-answer-card]"));
+
+  return cards
+    .map(card => {
+      const name =
+        card.dataset.studentName ||
+        card.querySelector("h2")?.textContent?.trim() ||
+        "Élève";
+
+      const score =
+        card.querySelector("[data-total-score-badge]")?.textContent
+          ?.replace(/\s+/g, " ")
+          .replace(/\s*\/\s*/g, "/")
+          .trim() ||
+        `0/${EXAM_DISPLAY_MAX_POINTS}`;
+
+      return `${name} ${score}`;
+    })
+    .join("\n");
+}
+
+function bindCopyAllResultsButton() {
+  const button = document.querySelector("[data-copy-all-results]");
+  if (!button) return;
+
+  button.addEventListener("click", async event => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const textToCopy = buildSimpleResultsListFromCards();
+
+    if (!textToCopy.trim()) {
+      alert("Aucun résultat à copier.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+
+      const oldText = button.textContent;
+      button.textContent = "Liste copiée ✅";
+      button.classList.add("copied");
+
+      setTimeout(() => {
+        button.textContent = oldText;
+        button.classList.remove("copied");
+      }, 1400);
+    } catch (error) {
+      console.error("Erreur copie liste résultats :", error);
+      alert(`Liste à copier :\n\n${textToCopy}`);
+    }
   });
 }
 
