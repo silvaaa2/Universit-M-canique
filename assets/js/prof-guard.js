@@ -136,7 +136,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
-    await import("./rp-loader-9kq4z.js?v=7010");
+    await import("./rp-loader-9kq4z.js?v=9015");
   } catch (error) {
     console.error("Erreur chargement loader réponses :", error);
 
