@@ -44,3 +44,67 @@ main {
   z-index: 2;
   padding: 0 7vw;
 }
+/* =========================================================
+   FOND IMAGE SOMBRE - SITE MODULE 4
+========================================================= */
+
+body {
+  background:
+    linear-gradient(rgba(0,0,0,.76), rgba(0,0,0,.92)),
+    linear-gradient(rgba(255,255,255,.030) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.030) 1px, transparent 1px),
+    radial-gradient(circle at 12% 10%, rgba(214,180,106,.16), transparent 28%),
+    radial-gradient(circle at 86% 20%, rgba(255,255,255,.06), transparent 24%),
+    url("../img/images.png"),
+    #050505 !important;
+
+  background-size:
+    auto,
+    70px 70px,
+    70px 70px,
+    auto,
+    auto,
+    540px auto,
+    auto !important;
+
+  background-position:
+    center,
+    center,
+    center,
+    center,
+    center,
+    center 35px,
+    center !important;
+
+  background-repeat:
+    no-repeat,
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat !important;
+
+  background-attachment: fixed !important;
+}
+
+/* Header plus noir / propre */
+.site-header,
+header {
+  background: rgba(0,0,0,.78) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+/* Cartes plus lisibles avec l’image derrière */
+.card,
+.home-card,
+.module-card,
+.custom-card,
+.prof-panel,
+.hero-card,
+section article {
+  backdrop-filter: blur(18px) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(214,180,106,.10), transparent 30%),
+    linear-gradient(145deg, rgba(18,18,18,.80), rgba(8,8,8,.70)) !important;
+}
