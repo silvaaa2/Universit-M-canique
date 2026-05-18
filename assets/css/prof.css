@@ -2526,3 +2526,71 @@
     justify-content: flex-start !important;
   }
 }
+/* =========================================================
+   FOND IMAGE SOMBRE - SITE PROF
+========================================================= */
+
+body {
+  background:
+    linear-gradient(rgba(0,0,0,.74), rgba(0,0,0,.90)),
+    linear-gradient(rgba(255,255,255,.030) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.030) 1px, transparent 1px),
+    radial-gradient(circle at 12% 10%, rgba(214,180,106,.16), transparent 28%),
+    radial-gradient(circle at 86% 20%, rgba(255,255,255,.06), transparent 24%),
+    url("../../Images/images.png"),
+    var(--bg) !important;
+
+  background-size:
+    auto,
+    70px 70px,
+    70px 70px,
+    auto,
+    auto,
+    540px auto,
+    auto !important;
+
+  background-position:
+    center,
+    center,
+    center,
+    center,
+    center,
+    center 20px,
+    center !important;
+
+  background-repeat:
+    no-repeat,
+    repeat,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat !important;
+
+  background-attachment: fixed !important;
+}
+
+/* Lisibilité des blocs avec l’image derrière */
+.prof-login-card,
+.prof-panel,
+.inline-corrections-card,
+.inline-custom-btn,
+.inline-detail-hero,
+.inline-detail-section,
+.student-answer-card,
+.student-results-head,
+.inline-loading-box,
+.inline-error-box,
+.inline-empty-box {
+  backdrop-filter: blur(18px) !important;
+}
+
+.prof-login-card,
+.prof-panel,
+.inline-corrections-card,
+.student-answer-card,
+.student-results-head {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(214,180,106,.10), transparent 30%),
+    linear-gradient(145deg, rgba(18,18,18,.80), rgba(8,8,8,.70)) !important;
+}
