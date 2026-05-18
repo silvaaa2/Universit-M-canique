@@ -58,23 +58,23 @@ body {
     url("../../Images/images.png"),
     #050505 !important;
 
-  background-size:
-    auto,
-    70px 70px,
-    70px 70px,
-    auto,
-    auto,
-    540px auto,
-    auto !important;
+background-size:
+  auto,
+  70px 70px,
+  70px 70px,
+  auto,
+  auto,
+  390px auto,
+  auto !important;
 
-  background-position:
-    center,
-    center,
-    center,
-    center,
-    center,
-    center 35px,
-    center !important;
+background-position:
+  center,
+  center,
+  center,
+  center,
+  center,
+  center 95px,
+  center !important;
 
   background-repeat:
     no-repeat,
