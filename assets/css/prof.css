@@ -2594,3 +2594,244 @@ body {
     radial-gradient(circle at 18% 0%, rgba(214,180,106,.10), transparent 30%),
     linear-gradient(145deg, rgba(18,18,18,.80), rgba(8,8,8,.70)) !important;
 }
+/* =========================================================
+   PATCH EXAM DASHBOARD - RECHERCHE / FILTRES / STATS
+========================================================= */
+
+.exam-dashboard-tools {
+  margin-bottom: 22px !important;
+  display: grid !important;
+  gap: 16px !important;
+}
+
+.exam-stats-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.exam-stat-card {
+  min-height: 92px !important;
+  padding: 16px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255,255,255,.085) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(214,180,106,.10), transparent 32%),
+    linear-gradient(145deg, rgba(18,18,18,.78), rgba(8,8,8,.68)) !important;
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.exam-stat-card span {
+  display: block !important;
+  margin-bottom: 12px !important;
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  font-weight: 1000 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .04em !important;
+}
+
+.exam-stat-card strong {
+  display: block !important;
+  color: var(--text) !important;
+  font-size: clamp(26px, 3vw, 40px) !important;
+  line-height: .9 !important;
+  font-weight: 1000 !important;
+  letter-spacing: -.055em !important;
+}
+
+.exam-stat-card.approved {
+  border-color: rgba(74,222,128,.22) !important;
+}
+
+.exam-stat-card.approved strong {
+  color: #86efac !important;
+}
+
+.exam-stat-card.rejected {
+  border-color: rgba(248,113,113,.22) !important;
+}
+
+.exam-stat-card.rejected strong {
+  color: #fca5a5 !important;
+}
+
+.exam-stat-card.pending strong,
+.exam-stat-card.average strong {
+  color: var(--gold2) !important;
+}
+
+.exam-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 1fr) auto !important;
+  gap: 12px !important;
+  align-items: center !important;
+  padding: 14px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(214,180,106,.08), transparent 30%),
+    linear-gradient(145deg, rgba(18,18,18,.72), rgba(8,8,8,.62)) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.exam-search-box {
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.exam-search-box span {
+  color: var(--muted) !important;
+  font-size: 11px !important;
+  font-weight: 1000 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .04em !important;
+}
+
+.exam-search-box input {
+  width: 100% !important;
+  height: 46px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(0,0,0,.28) !important;
+  color: var(--text) !important;
+  padding: 0 17px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  outline: none !important;
+}
+
+.exam-search-box input::placeholder {
+  color: rgba(255,247,232,.38) !important;
+}
+
+.exam-search-box input:focus {
+  border-color: rgba(214,180,106,.50) !important;
+  box-shadow: 0 0 0 4px rgba(214,180,106,.12) !important;
+}
+
+.exam-filter-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+.exam-filter-buttons button {
+  height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(255,255,255,.055) !important;
+  color: var(--text) !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 1000 !important;
+  cursor: pointer !important;
+  transition:
+    transform .18s ease,
+    background .18s ease,
+    border-color .18s ease,
+    color .18s ease !important;
+}
+
+.exam-filter-buttons button:hover,
+.exam-filter-buttons button.active {
+  transform: translateY(-1px) !important;
+  border-color: rgba(214,180,106,.35) !important;
+  background: rgba(214,180,106,.13) !important;
+  color: var(--gold2) !important;
+}
+
+.student-results-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+.student-results-actions > span {
+  padding: 10px 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(214,180,106,.18) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.copy-all-results-btn {
+  appearance: none !important;
+  height: 38px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(214,180,106,.24) !important;
+  background: rgba(214,180,106,.10) !important;
+  color: var(--gold2) !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 1000 !important;
+  cursor: pointer !important;
+  transition: .18s ease !important;
+}
+
+.copy-all-results-btn:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(214,180,106,.45) !important;
+  background: rgba(214,180,106,.16) !important;
+}
+
+.copy-all-results-btn.copied {
+  border-color: rgba(74,222,128,.35) !important;
+  background: rgba(74,222,128,.14) !important;
+  color: #86efac !important;
+}
+
+.exam-empty-filter {
+  margin-bottom: 16px !important;
+  padding: 18px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(214,180,106,.18) !important;
+  background: rgba(214,180,106,.08) !important;
+  color: var(--gold2) !important;
+  font-weight: 1000 !important;
+  text-align: center !important;
+}
+
+.exam-empty-filter[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 1100px) {
+  .exam-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .exam-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .exam-filter-buttons {
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .exam-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .student-results-actions {
+    justify-content: flex-start !important;
+  }
+
+  .exam-filter-buttons button {
+    flex: 1 1 auto !important;
+  }
+}
