@@ -64,6 +64,9 @@ let answerRecords = {};
 let approvedCustomIds = new Set();
 let approvedStageIds = new Set();
 
+let currentExamSearch = "";
+let currentExamFilter = "all";
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -546,6 +549,124 @@ function renderScoreBadge(totalScore, hasScoring) {
 }
 
 /* =========================================================
+   EXAM TOOLS - RECHERCHE / FILTRES / STATS
+========================================================= */
+
+function normalizeSearchValue(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getVisibleExamCards() {
+  return Array.from(document.querySelectorAll("[data-answer-card]"))
+    .filter(card => card.style.display !== "none");
+}
+
+function getAllExamCards() {
+  return Array.from(document.querySelectorAll("[data-answer-card]"));
+}
+
+function getScoreFromCard(card) {
+  const scoreText =
+    card.querySelector("[data-total-score-badge]")?.textContent || "0";
+
+  const number = Number(String(scoreText).split("/")[0].trim());
+
+  return Number.isNaN(number) ? 0 : number;
+}
+
+function applyExamDashboardTools() {
+  const cards = getAllExamCards();
+
+  const search = normalizeSearchValue(currentExamSearch);
+  const filter = currentExamFilter;
+
+  cards.forEach(card => {
+    const name = normalizeSearchValue(card.dataset.studentName || "");
+    const idUnique = normalizeSearchValue(card.dataset.idUnique || "");
+    const status = card.dataset.status || "pending";
+
+    const matchSearch =
+      !search ||
+      name.includes(search) ||
+      idUnique.includes(search);
+
+    const matchFilter =
+      filter === "all" ||
+      status === filter;
+
+    card.style.display = matchSearch && matchFilter ? "" : "none";
+  });
+
+  updateExamStats();
+}
+
+function updateExamStats() {
+  const visibleCards = getVisibleExamCards();
+
+  const total = visibleCards.length;
+
+  const approved = visibleCards.filter(card => card.dataset.status === "approved").length;
+  const rejected = visibleCards.filter(card => card.dataset.status === "rejected").length;
+  const pending = visibleCards.filter(card => card.dataset.status === "pending").length;
+
+  const scores = visibleCards.map(getScoreFromCard);
+  const average = scores.length
+    ? Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10
+    : 0;
+
+  const totalEl = document.querySelector("[data-stat-total]");
+  const approvedEl = document.querySelector("[data-stat-approved]");
+  const rejectedEl = document.querySelector("[data-stat-rejected]");
+  const pendingEl = document.querySelector("[data-stat-pending]");
+  const averageEl = document.querySelector("[data-stat-average]");
+  const emptyEl = document.querySelector("[data-exam-empty-filter]");
+
+  if (totalEl) totalEl.textContent = String(total);
+  if (approvedEl) approvedEl.textContent = String(approved);
+  if (rejectedEl) rejectedEl.textContent = String(rejected);
+  if (pendingEl) pendingEl.textContent = String(pending);
+  if (averageEl) averageEl.textContent = `${average} / ${EXAM_DISPLAY_MAX_POINTS}`;
+
+  if (emptyEl) {
+    emptyEl.hidden = total > 0;
+  }
+}
+
+function bindExamDashboardTools() {
+  const searchInput = document.querySelector("[data-exam-search]");
+  const filterButtons = document.querySelectorAll("[data-exam-filter]");
+
+  if (searchInput) {
+    searchInput.value = currentExamSearch;
+
+    searchInput.addEventListener("input", () => {
+      currentExamSearch = searchInput.value;
+      applyExamDashboardTools();
+    });
+  }
+
+  filterButtons.forEach(button => {
+    button.classList.toggle("active", button.dataset.examFilter === currentExamFilter);
+
+    button.addEventListener("click", () => {
+      currentExamFilter = button.dataset.examFilter || "all";
+
+      filterButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.examFilter === currentExamFilter);
+      });
+
+      applyExamDashboardTools();
+    });
+  });
+
+  applyExamDashboardTools();
+}
+
+/* =========================================================
    BONUS AUTO CUSTOM + STAGE
 ========================================================= */
 
@@ -902,6 +1023,53 @@ async function renderAnswers(answers, sheet) {
 
   sheetContent.hidden = false;
   sheetContent.innerHTML = `
+    <div class="exam-dashboard-tools">
+      <div class="exam-stats-grid">
+        <div class="exam-stat-card">
+          <span>Total copies</span>
+          <strong data-stat-total>0</strong>
+        </div>
+
+        <div class="exam-stat-card approved">
+          <span>Approuvés</span>
+          <strong data-stat-approved>0</strong>
+        </div>
+
+        <div class="exam-stat-card rejected">
+          <span>Refusés</span>
+          <strong data-stat-rejected>0</strong>
+        </div>
+
+        <div class="exam-stat-card pending">
+          <span>En attente</span>
+          <strong data-stat-pending>0</strong>
+        </div>
+
+        <div class="exam-stat-card average">
+          <span>Moyenne</span>
+          <strong data-stat-average>0 / ${EXAM_DISPLAY_MAX_POINTS}</strong>
+        </div>
+      </div>
+
+      <div class="exam-toolbar">
+        <div class="exam-search-box">
+          <span>Recherche</span>
+          <input
+            type="text"
+            placeholder="Nom, prénom ou ID Unique..."
+            data-exam-search
+          >
+        </div>
+
+        <div class="exam-filter-buttons">
+          <button type="button" data-exam-filter="all" class="active">Tous</button>
+          <button type="button" data-exam-filter="approved">Approuvés</button>
+          <button type="button" data-exam-filter="rejected">Refusés</button>
+          <button type="button" data-exam-filter="pending">En attente</button>
+        </div>
+      </div>
+    </div>
+
     <div class="student-results-head">
       <div>
         <p class="student-kicker">Feuille sélectionnée</p>
@@ -917,6 +1085,10 @@ async function renderAnswers(answers, sheet) {
       </div>
     </div>
 
+    <div class="exam-empty-filter" data-exam-empty-filter hidden>
+      Aucun résultat ne correspond à cette recherche.
+    </div>
+
     <div class="student-answer-grid">
       ${answers.map((answer, index) => renderAnswerCard(answer, index, sheet)).join("")}
     </div>
@@ -927,6 +1099,7 @@ async function renderAnswers(answers, sheet) {
   bindScoreControls();
   bindCopyResultButtons();
   bindCopyAllResultsButton();
+  bindExamDashboardTools();
 }
 
 async function loadSheet(sheet) {
@@ -1058,6 +1231,8 @@ function updateCardStatus(card, status) {
   card.querySelectorAll("[data-set-status]").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.setStatus === meta.value);
   });
+
+  applyExamDashboardTools();
 }
 
 function updateScoreUi(card, record) {
@@ -1089,6 +1264,8 @@ function updateScoreUi(card, record) {
   if (copyButton) {
     copyButton.dataset.copyScore = String(totalScore);
   }
+
+  applyExamDashboardTools();
 }
 
 function getIdentityFromCard(card) {
@@ -1207,7 +1384,7 @@ function bindCopyResultButtons() {
 ========================================================= */
 
 function buildSimpleResultsListFromCards() {
-  const cards = Array.from(document.querySelectorAll("[data-answer-card]"));
+  const cards = getVisibleExamCards();
 
   return cards
     .map(card => {
