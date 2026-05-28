@@ -1,8 +1,9 @@
 const images = [
-  "../Images/sentinelxs4-1.png",
-  "../Images/sentinelxs4-2.png",
-  "../Images/sentinelxs4-3.png",
-  "../Images/sentinelxs4-4.png"
+  "../Images/FINAL RS2 (2).png",
+  "../Images/DEVANT RS2 (2).png",
+  "../Images/COTÉ RS2 (2).png",
+  "../Images/COTÉ GAUCHE RS2 (2).png",
+  "../Images/DERRIÈRE RS2 (2).png"
 ];
 
 let currentIndex = 0;
@@ -26,11 +27,17 @@ function changeImage(direction) {
     currentIndex = 0;
   }
 
+  if (!vehicleImage) return;
+
   vehicleImage.classList.add("fade-out");
 
   setTimeout(() => {
     vehicleImage.src = images[currentIndex];
-    currentImage.textContent = currentIndex + 1;
+
+    if (currentImage) {
+      currentImage.textContent = currentIndex + 1;
+    }
+
     vehicleImage.classList.remove("fade-out");
   }, 180);
 }
