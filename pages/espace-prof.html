@@ -7,11 +7,11 @@
 
   <link rel="icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="shortcut icon" type="image/png" href="../Images/logo.png?v=22">
-  <link rel="stylesheet" href="../assets/css/base.css?v=1000">
-  <link rel="stylesheet" href="../assets/css/header.css?v=1000">
-  <link rel="stylesheet" href="../assets/css/buttons.css?v=1000">
-  <link rel="stylesheet" href="../assets/css/loader.css?v=1000">
-  <link rel="stylesheet" href="../assets/css/prof.css?v=9028">
+  <link rel="stylesheet" href="../assets/css/base.css?v=1001">
+  <link rel="stylesheet" href="../assets/css/header.css?v=1001">
+  <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
+  <link rel="stylesheet" href="../assets/css/loader.css?v=1001">
+  <link rel="stylesheet" href="../assets/css/prof.css?v=9029">
 </head>
 
 <body>
@@ -98,17 +98,17 @@
         <p>Accéder aux corrigés des customs.</p>
       </button>
 
-     <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-rp-7x92q.html')">
-  <span class="panel-number">02</span>
-  <h2>Réponses élèves</h2>
-  <p>Consulter les réponses des élèves.</p>
-</button>
+      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-rp-7x92q.html')">
+        <span class="panel-number">02</span>
+        <h2>Réponses élèves</h2>
+        <p>Consulter les réponses des élèves.</p>
+      </button>
 
-<button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-exam-4x91q.html')">
-  <span class="panel-number">03</span>
-  <h2>Examens</h2>
-  <p>Consulter les réponses d’examen.</p>
-</button>
+      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-exam-4x91q.html')">
+        <span class="panel-number">03</span>
+        <h2>Examens</h2>
+        <p>Consulter les réponses d’examen.</p>
+      </button>
 
     </div>
 
@@ -131,22 +131,40 @@
 
         <div class="inline-correction-chooser" id="inlineCorrectionChooser">
 
-          <button type="button" class="inline-custom-btn" data-doc="dukes" data-label="Custom Facile" data-vehicle="Dukes">
+          <button
+            type="button"
+            class="inline-custom-btn"
+            data-doc="sentinelClassic"
+            data-label="Custom Facile"
+            data-vehicle="Sentinel Classic"
+          >
             <span>01</span>
             <h3>Custom Facile</h3>
-            <p>Dukes</p>
+            <p>Sentinel Classic</p>
           </button>
 
-          <button type="button" class="inline-custom-btn" data-doc="sentinel" data-label="Custom Moyen" data-vehicle="Sentinel XS4">
+          <button
+            type="button"
+            class="inline-custom-btn"
+            data-doc="argento2f"
+            data-label="Custom Moyen"
+            data-vehicle="Argento 2F"
+          >
             <span>02</span>
             <h3>Custom Moyen</h3>
-            <p>Sentinel XS4</p>
+            <p>Argento 2F</p>
           </button>
 
-          <button type="button" class="inline-custom-btn" data-doc="rumina" data-label="Custom Difficile" data-vehicle="Annis Rumina">
+          <button
+            type="button"
+            class="inline-custom-btn"
+            data-doc="cypher"
+            data-label="Custom Difficile"
+            data-vehicle="Cypher"
+          >
             <span>03</span>
             <h3>Custom Difficile</h3>
-            <p>Annis Rumina</p>
+            <p>Cypher</p>
           </button>
 
         </div>
@@ -158,16 +176,16 @@
             </button>
 
             <p class="inline-detail-path" id="correctionPath">
-              Firestore / customAnswerKeys / dukes
+              Firestore / customAnswerKeys
             </p>
           </div>
 
           <div class="inline-detail-hero">
             <div class="inline-detail-hero-left">
               <p class="kicker" id="correctionHeroKicker">Corrigé</p>
-              <h3 id="correctionTitle">Custom Facile</h3>
+              <h3 id="correctionTitle">Custom</h3>
               <p class="inline-detail-description" id="correctionDescription">
-                Réponses et configuration attendue pour le custom Dukes.
+                Réponses et configuration attendue pour le custom sélectionné.
               </p>
             </div>
 
@@ -184,10 +202,10 @@
 
 </main>
 
-<script src="../assets/js/loader.js?v=1000"></script>
-<script src="../assets/js/navigation.js?v=1000"></script>
-<script src="../assets/js/prof-ui.js?v=1000"></script>
-<script type="module" src="../assets/js/prof-auth.js?v=1000"></script>
+<script src="../assets/js/loader.js?v=1001"></script>
+<script src="../assets/js/navigation.js?v=1001"></script>
+<script src="../assets/js/prof-ui.js?v=1001"></script>
+<script type="module" src="../assets/js/prof-auth.js?v=1001"></script>
 
 </body>
 </html>
