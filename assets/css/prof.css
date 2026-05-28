@@ -2835,3 +2835,88 @@ body {
     flex: 1 1 auto !important;
   }
 }
+/* =========================================================
+   PATCH CORRIGÉS - SECTIONS 2 PAR 2 PROPRES
+   À COLLER TOUT EN BAS DE prof.css
+========================================================= */
+
+/* Conteneur des grosses sections : 2 cartes par ligne */
+.inline-detail-sections {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(420px, 1fr)) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+/* Chaque section reste dans sa case, même la dernière */
+.inline-detail-sections > .inline-detail-section,
+.inline-detail-sections > .inline-detail-section:last-child {
+  grid-column: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Section plus compacte et régulière */
+.inline-detail-section {
+  height: auto !important;
+  padding: 20px !important;
+}
+
+/* Head de section propre */
+.inline-detail-section-head {
+  align-items: flex-start !important;
+}
+
+.inline-detail-section-head h4 {
+  line-height: 1.05 !important;
+}
+
+/* Items dans chaque section : 2 champs par ligne */
+.inline-detail-items {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+}
+
+/* Les petites cases ont toutes une hauteur propre */
+.inline-detail-item {
+  min-width: 0 !important;
+  min-height: 68px !important;
+}
+
+/* Les sous-sections ne doivent pas exploser en 4 colonnes */
+.inline-subsections {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+/* Les items des sous-sections restent en une seule colonne */
+.inline-subsections .inline-detail-items {
+  grid-template-columns: 1fr !important;
+}
+
+/* Écrans moyens : on garde encore 2 sections par ligne */
+@media (max-width: 1350px) {
+  .inline-detail-sections {
+    grid-template-columns: repeat(2, minmax(360px, 1fr)) !important;
+  }
+
+  .inline-subsections {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Tablette / petit écran : là seulement on passe en 1 colonne */
+@media (max-width: 950px) {
+  .inline-detail-sections {
+    grid-template-columns: 1fr !important;
+  }
+
+  .inline-detail-items,
+  .inline-subsections {
+    grid-template-columns: 1fr !important;
+  }
+}
