@@ -2920,3 +2920,36 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   PATCH ORDRE DES CORRIGES - SECTIONS UNE PAR LIGNE
+========================================================= */
+
+.inline-detail-sections {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 22px;
+}
+
+.inline-detail-section {
+  width: 100%;
+}
+
+/* On garde les petits champs dans chaque section en 2 colonnes */
+.inline-detail-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* Si tu as des sous-sections, on les met aussi une sous l'autre */
+.inline-subsections {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .inline-detail-items {
+    grid-template-columns: 1fr;
+  }
+}
