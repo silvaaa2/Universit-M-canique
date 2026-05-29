@@ -2953,3 +2953,15 @@ body {
     grid-template-columns: 1fr;
   }
 }
+/* =========================================================
+   PATCH LECTURE PAR LIGNE DANS CHAQUE SECTION
+========================================================= */
+
+.inline-detail-items {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 12px;
+}
+.inline-subsections .inline-detail-items {
+  grid-template-columns: 1fr !important;
+}
