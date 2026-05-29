@@ -3060,3 +3060,59 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+/* =========================================================
+   PATCH FINAL PROPRE - SECTIONS COMPACTES SANS GROS TROUS
+========================================================= */
+
+/* conteneur des sections */
+.inline-correction-detail .inline-detail-sections,
+.inline-detail-sections {
+  display: block !important;
+  column-count: 2 !important;
+  column-gap: 22px !important;
+}
+
+/* chaque grosse section */
+.inline-correction-detail .inline-detail-section,
+.inline-detail-sections > .inline-detail-section {
+  display: inline-block !important;
+  width: 100% !important;
+  margin: 0 0 22px !important;
+  break-inside: avoid !important;
+  -webkit-column-break-inside: avoid !important;
+  page-break-inside: avoid !important;
+  vertical-align: top !important;
+}
+
+/* à l'intérieur d'une section :
+   lecture dans l'ordre, ligne par ligne */
+.inline-correction-detail .inline-detail-items,
+.inline-detail-section .inline-detail-items,
+.inline-detail-items {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+
+/* sous-sections si y'en a */
+.inline-correction-detail .inline-subsections,
+.inline-subsections {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 16px !important;
+}
+
+/* chaque item */
+.inline-correction-detail .inline-detail-item,
+.inline-detail-item {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* responsive */
+@media (max-width: 1100px) {
+  .inline-correction-detail .inline-detail-sections,
+  .inline-detail-sections {
+    column-count: 1 !important;
+  }
+}
