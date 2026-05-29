@@ -2965,3 +2965,43 @@ body {
 .inline-subsections .inline-detail-items {
   grid-template-columns: 1fr !important;
 }
+/* =========================================================
+   PATCH SECTIONS COTE A COTE + CONTENU PAR LIGNE
+========================================================= */
+
+.inline-detail-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  align-items: start;
+}
+
+.inline-detail-section {
+  min-width: 0;
+  height: fit-content;
+}
+
+/* Dans chaque section : lecture verticale */
+.inline-detail-items {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 12px;
+}
+
+/* Pareil pour les sous-sections */
+.inline-subsections {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.inline-subsections .inline-detail-items {
+  grid-template-columns: 1fr !important;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .inline-detail-sections {
+    grid-template-columns: 1fr;
+  }
+}
