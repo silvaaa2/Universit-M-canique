@@ -1,20 +1,21 @@
-const SPREADSHEET_ID = "1oGwdggjcA4X2Zxsj4TD_iKrablfK6_pK4hXjXiptCBc";
-
 const SHEETS = [
   {
-    id: "dukes",
-    label: "Dukes",
-    gid: "1133112226"
+    id: "sentinelClassic",
+    label: "Sentinel Classic",
+    spreadsheetId: "1rroFCRTih9jdnIJmp5n2WvXagITjaARiv4i0b-JejvU",
+    gid: "574123607"
   },
   {
-    id: "sentinel",
-    label: "Sentinel XS4",
-    gid: "1138787690"
+    id: "argento2f",
+    label: "Argento 2F",
+    spreadsheetId: "1Vv6XRfEKpCJGVFtGKoauE0rFyOTlEhuLHR_qUyfwqZw",
+    gid: "848029927"
   },
   {
-    id: "rumina",
-    label: "Annis Rumina",
-    gid: "49030161"
+    id: "cypher",
+    label: "Cypher",
+    spreadsheetId: "1mkKA6K9f6n6sScfG93hShySKkOgxCDZQXwDL0LafvEQ",
+    gid: "154372807"
   }
 ];
 
@@ -41,8 +42,8 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function buildCsvUrl(gid) {
-  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
+function buildCsvUrl(sheet) {
+  return `https://docs.google.com/spreadsheets/d/${sheet.spreadsheetId}/export?format=csv&gid=${sheet.gid}`;
 }
 
 function parseCsv(text) {
@@ -544,7 +545,7 @@ async function loadSheet(sheet) {
     if (cache.has(sheet.id)) {
       answers = cache.get(sheet.id);
     } else {
-      const response = await fetch(buildCsvUrl(sheet.gid));
+      const response = await fetch(buildCsvUrl(sheet));
 
       if (!response.ok) {
         throw new Error(`Erreur Google Sheets : ${response.status}`);
