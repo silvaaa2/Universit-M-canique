@@ -12,19 +12,22 @@ function injectAdminPolishStyles() {
     .prof-admin-message-banner.prof-admin-message-toast {
       position: fixed !important;
       top: 22px !important;
-      right: 22px !important;
+      right: 18px !important;
       z-index: 12000 !important;
       width: min(390px, calc(100vw - 32px)) !important;
       margin: 0 !important;
       overflow: hidden;
-      padding: 16px 46px 18px 18px !important;
-      border-radius: 8px !important;
-      border: 1px solid rgba(214,180,106,.30) !important;
+      padding: 17px 48px 19px 20px !important;
+      border-radius: 18px !important;
+      border: 1px solid rgba(237,204,132,.52) !important;
       background:
-        linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.030)),
+        linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.030)),
         rgba(10,10,10,.96) !important;
       color: var(--text) !important;
       box-shadow:
+        0 0 0 1px rgba(237,204,132,.12),
+        0 0 24px rgba(237,204,132,.34),
+        0 0 62px rgba(214,180,106,.20),
         0 22px 70px rgba(0,0,0,.52),
         inset 0 1px 0 rgba(255,255,255,.08) !important;
       backdrop-filter: blur(18px);
@@ -52,6 +55,7 @@ function injectAdminPolishStyles() {
       inset: 0 auto 0 0;
       width: 4px;
       background: linear-gradient(180deg, var(--gold), var(--gold2));
+      box-shadow: 0 0 18px rgba(237,204,132,.65);
     }
 
     .prof-admin-toast-close {
@@ -61,7 +65,7 @@ function injectAdminPolishStyles() {
       width: 30px;
       height: 30px;
       border: 1px solid rgba(255,255,255,.12);
-      border-radius: 8px;
+      border-radius: 12px;
       background: rgba(255,255,255,.055);
       color: var(--muted);
       font-size: 18px;
@@ -83,6 +87,7 @@ function injectAdminPolishStyles() {
       bottom: 0;
       height: 3px;
       background: linear-gradient(90deg, var(--gold), var(--gold2));
+      box-shadow: 0 0 16px rgba(237,204,132,.70);
       transform-origin: left center;
       animation: profAdminToastTimer 10s linear forwards;
     }
@@ -169,6 +174,10 @@ function promoteBannerToToast(banner) {
   banner.classList.add("prof-admin-message-toast");
   banner.querySelector(".prof-admin-toast-close")?.remove();
   banner.querySelector(".prof-admin-toast-progress")?.remove();
+
+  if (banner.parentElement !== document.body) {
+    document.body.appendChild(banner);
+  }
 
   const closeButton = document.createElement("button");
   closeButton.type = "button";
