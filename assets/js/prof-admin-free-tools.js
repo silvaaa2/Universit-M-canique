@@ -75,9 +75,12 @@ function injectFreeToolStyles() {
         inset 0 1px 0 rgba(255,255,255,.08) !important;
     }
 
-    .prof-admin-message-toast.priority-info::before,
+    .prof-admin-message-toast.priority-info::before {
+      display: none !important;
+    }
+
     .prof-admin-message-toast.priority-info .prof-admin-toast-progress {
-      background: linear-gradient(180deg, #7dd3fc, #d6b46a) !important;
+      background: linear-gradient(90deg, #7dd3fc, rgba(255,255,255,.72)) !important;
     }
 
     .prof-admin-message-toast.priority-important {
