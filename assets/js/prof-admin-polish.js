@@ -156,10 +156,19 @@ function dismissToast(toast = document.getElementById("profAdminMessageBanner"))
 }
 
 function promoteBannerToToast(banner) {
-  if (!banner || banner.dataset.toastReady === "true") return;
+  if (!banner) return;
+
+  const needsControls = (
+    !banner.querySelector(".prof-admin-toast-close") ||
+    !banner.querySelector(".prof-admin-toast-progress")
+  );
+
+  if (banner.dataset.toastReady === "true" && !needsControls) return;
 
   banner.dataset.toastReady = "true";
   banner.classList.add("prof-admin-message-toast");
+  banner.querySelector(".prof-admin-toast-close")?.remove();
+  banner.querySelector(".prof-admin-toast-progress")?.remove();
 
   const closeButton = document.createElement("button");
   closeButton.type = "button";
