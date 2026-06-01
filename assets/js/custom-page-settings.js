@@ -39,6 +39,15 @@ function normalizeImages(images) {
   return Array.isArray(images) ? images.map(String).filter(Boolean) : [];
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function applyGallery(images) {
   const galleryImages = normalizeImages(images);
   const vehicleImage = document.getElementById("vehicleImage");
@@ -89,8 +98,8 @@ function applyInfoRows(rows) {
 
       return `
         <div class="info-line">
-          <span>${label}</span>
-          <b class="${tone}">${value}</b>
+          <span>${escapeHtml(label)}</span>
+          <b class="${tone}">${escapeHtml(value)}</b>
         </div>
       `;
     })
