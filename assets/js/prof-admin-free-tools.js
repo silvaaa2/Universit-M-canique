@@ -28,13 +28,14 @@ let currentUser = null;
 let currentUserIsAdmin = false;
 let freeToolsStarted = false;
 let previewDebounce = null;
+let expirationTimer = null;
 
 onAuthStateChanged(auth, async user => {
   currentUser = user || null;
   currentUserIsAdmin = await loadAdminAccess(user);
 
   if (currentUserIsAdmin) {
-    setTimeout(loadMessagePriorityIntoEditor, 500);
+    setTimeout(loadMessageMetaIntoEditor, 500);
     setTimeout(styleToastFromFirestore, 500);
   }
 });
@@ -111,6 +112,36 @@ function injectFreeToolStyles() {
     .prof-admin-message-toast.priority-urgent::before,
     .prof-admin-message-toast.priority-urgent .prof-admin-toast-progress {
       background: linear-gradient(180deg, #f87171, #fbbf24) !important;
+    }
+
+    .prof-admin-date-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .prof-admin-date-actions input {
+      min-width: 0;
+    }
+
+    .prof-admin-mini-btn {
+      height: 42px;
+      padding: 0 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      background: rgba(255,255,255,.055);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 1000;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .prof-admin-mini-btn:hover {
+      border-color: rgba(214,180,106,.34);
+      color: var(--gold2);
+      background: rgba(214,180,106,.12);
     }
 
     .prof-admin-image-row-enhanced {
@@ -205,7 +236,15 @@ function getPriorityInput() {
   return document.getElementById("messagePriorityInput");
 }
 
-function ensureMessagePriorityControl() {
+function getExpirationInput() {
+  return document.getElementById("messageExpiresAtInput");
+}
+
+function getClearExpirationButton() {
+  return document.getElementById("clearMessageExpirationBtn");
+}
+
+function ensureMessageMetaControls() {
   const panel = document.querySelector('[data-admin-panel="message"]');
   const grid = panel?.querySelector(".prof-admin-field-grid");
 
@@ -220,20 +259,85 @@ function ensureMessagePriorityControl() {
         <option value="urgent">Urgent</option>
       </select>
     </div>
+
+    <div class="prof-admin-field">
+      <label for="messageExpiresAtInput">Fin d'affichage</label>
+      <div class="prof-admin-date-actions">
+        <input id="messageExpiresAtInput" type="datetime-local" class="prof-admin-input">
+        <button type="button" class="prof-admin-mini-btn" id="clearMessageExpirationBtn">Retirer</button>
+      </div>
+    </div>
   `);
+
+  getClearExpirationButton()?.addEventListener("click", () => {
+    const input = getExpirationInput();
+    if (input) input.value = "";
+  });
 }
 
-async function loadMessagePriorityIntoEditor() {
-  const input = getPriorityInput();
-  if (!input) return;
+function getDateFromStoredValue(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  if (typeof value.seconds === "number") return new Date(value.seconds * 1000);
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function toDatetimeLocalValue(date) {
+  if (!date) return "";
+
+  const pad = value => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function getExpirationIsoFromEditor() {
+  const value = getExpirationInput()?.value || "";
+  if (!value) return null;
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function messageIsExpired(data = {}) {
+  const expiresAt = getDateFromStoredValue(data.expiresAt);
+  return Boolean(expiresAt && expiresAt.getTime() <= Date.now());
+}
+
+function scheduleMessageExpirationCheck(data = {}) {
+  if (expirationTimer) {
+    clearTimeout(expirationTimer);
+    expirationTimer = null;
+  }
+
+  const expiresAt = getDateFromStoredValue(data.expiresAt);
+  if (!expiresAt) return;
+
+  const delay = expiresAt.getTime() - Date.now();
+  if (delay <= 0 || delay > 2147483000) return;
+
+  expirationTimer = setTimeout(styleToastFromFirestore, delay + 400);
+}
+
+async function loadMessageMetaIntoEditor() {
+  const priorityInput = getPriorityInput();
+  const expirationInput = getExpirationInput();
+  if (!priorityInput && !expirationInput) return;
 
   try {
     const data = await getAdminMessage();
-    input.value = ["info", "important", "urgent"].includes(data.priority)
-      ? data.priority
-      : "info";
+
+    if (priorityInput) {
+      priorityInput.value = ["info", "important", "urgent"].includes(data.priority)
+        ? data.priority
+        : "info";
+    }
+
+    if (expirationInput) {
+      expirationInput.value = toDatetimeLocalValue(getDateFromStoredValue(data.expiresAt));
+    }
   } catch (error) {
-    console.warn("Priorité du message indisponible :", error);
+    console.warn("Réglages du message indisponibles :", error);
   }
 }
 
@@ -253,30 +357,48 @@ function applyPriorityToToast(priority = "info") {
 async function styleToastFromFirestore() {
   try {
     const data = await getAdminMessage();
+    scheduleMessageExpirationCheck(data);
+
+    const toast = document.getElementById("profAdminMessageBanner");
+    if (toast && messageIsExpired(data)) {
+      toast.dataset.expiredHidden = "true";
+      toast.hidden = true;
+      toast.style.display = "none";
+      return;
+    }
+
+    if (toast?.dataset.expiredHidden === "true") {
+      delete toast.dataset.expiredHidden;
+      toast.hidden = false;
+      toast.style.display = "";
+    }
+
     applyPriorityToToast(data.priority || "info");
   } catch (error) {
     console.warn("Style priorité indisponible :", error);
   }
 }
 
-function saveMessagePriorityAfterCoreSave() {
-  const input = getPriorityInput();
-  if (!input || !currentUserIsAdmin) return;
+function saveMessageMetaAfterCoreSave() {
+  const priorityInput = getPriorityInput();
+  if (!priorityInput || !currentUserIsAdmin) return;
 
-  const priority = input.value || "info";
+  const priority = priorityInput.value || "info";
+  const expiresAt = getExpirationIsoFromEditor();
 
   [900, 1800, 3200].forEach(delay => {
     setTimeout(async () => {
       try {
         await setDoc(doc(db, "profSettings", "adminMessage"), {
           priority,
+          expiresAt,
           updatedAt: serverTimestamp(),
           updatedBy: currentUser?.email || null
         }, { merge: true });
 
-        applyPriorityToToast(priority);
+        await styleToastFromFirestore();
       } catch (error) {
-        console.warn("Priorité non sauvegardée :", error);
+        console.warn("Réglages du message non sauvegardés :", error);
       }
     }, delay);
   });
@@ -287,11 +409,11 @@ function enhanceMessagePanel() {
   if (!panel || panel.dataset.priorityEnhanced === "true") return;
 
   panel.dataset.priorityEnhanced = "true";
-  ensureMessagePriorityControl();
-  loadMessagePriorityIntoEditor();
+  ensureMessageMetaControls();
+  loadMessageMetaIntoEditor();
 
   const saveButton = document.getElementById("saveMessageBtn");
-  saveButton?.addEventListener("click", saveMessagePriorityAfterCoreSave);
+  saveButton?.addEventListener("click", saveMessageMetaAfterCoreSave);
 }
 
 function setImagePreview(row, html, tone = "") {
