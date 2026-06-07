@@ -93,6 +93,18 @@ function injectDriveStyles() {
       font-weight: 900;
     }
 
+    .prof-admin-drive-status[data-tone="ok"] {
+      color: #86efac;
+    }
+
+    .prof-admin-drive-status[data-tone="error"] {
+      color: #fca5a5;
+    }
+
+    .prof-admin-drive-status[data-tone="info"] {
+      color: #7dd3fc;
+    }
+
     .prof-admin-drive-upload.is-busy {
       opacity: .74;
       pointer-events: none;
@@ -114,15 +126,28 @@ function getDrivePanel() {
 
 function setDriveStatus(message) {
   const status = document.getElementById("driveUploadStatus");
-  if (status) status.textContent = message || "";
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.dataset.tone = "";
+}
+
+function setDriveStatusTone(message, tone = "") {
+  const status = document.getElementById("driveUploadStatus");
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.dataset.tone = tone;
 }
 
 function setDriveBusy(isBusy) {
   const panel = getDrivePanel();
+  const connectButton = document.getElementById("driveConnectButton");
   const uploadButton = document.getElementById("driveUploadButton");
   const saveButton = document.getElementById("saveDriveSettingsBtn");
 
   panel?.classList.toggle("is-busy", isBusy);
+  if (connectButton) connectButton.disabled = isBusy;
   if (uploadButton) uploadButton.disabled = isBusy;
   if (saveButton) saveButton.disabled = isBusy;
 }
@@ -158,10 +183,10 @@ async function saveDriveSettings() {
     }, { merge: true });
 
     driveSettingsLoaded = false;
-    setDriveStatus("Réglages Google Drive enregistrés.");
+    setDriveStatusTone("Réglages Google Drive enregistrés.", "ok");
   } catch (error) {
     console.error("Réglages Drive non sauvegardés :", error);
-    setDriveStatus("Impossible d'enregistrer les réglages Drive.");
+    setDriveStatusTone("Impossible d'enregistrer les réglages Drive.", "error");
   } finally {
     setDriveBusy(false);
   }
@@ -199,8 +224,12 @@ function loadScriptOnce(src, id) {
   });
 }
 
+function hasDriveToken() {
+  return Boolean(driveAccessToken && Date.now() < driveTokenExpiresAt - 60000);
+}
+
 async function getDriveAccessToken(clientId) {
-  if (driveAccessToken && Date.now() < driveTokenExpiresAt - 60000) {
+  if (hasDriveToken()) {
     return driveAccessToken;
   }
 
@@ -231,6 +260,31 @@ async function getDriveAccessToken(clientId) {
       prompt: driveAccessToken ? "" : "consent"
     });
   });
+}
+
+async function connectGoogleDrive() {
+  const settings = getDriveSettingsFromEditor();
+
+  if (!settings.clientId) {
+    setDriveStatusTone("Colle le Client ID Google puis enregistre Drive.", "error");
+    return false;
+  }
+
+  try {
+    setDriveBusy(true);
+    setDriveStatusTone("Connexion Google...", "info");
+
+    await getDriveAccessToken(settings.clientId);
+    setDriveStatusTone("Google Drive connecté. Tu peux uploader.", "ok");
+    return true;
+  } catch (error) {
+    console.error("Connexion Drive impossible :", error);
+    setDriveStatusTone("Connexion Google Drive impossible.", "error");
+    alert(`Connexion Google Drive impossible : ${error.message || error}`);
+    return false;
+  } finally {
+    setDriveBusy(false);
+  }
 }
 
 function cleanDriveFolderId(value) {
@@ -316,6 +370,11 @@ function appendDriveImageToEditor(url) {
 
   editor.appendChild(row);
   editor.dispatchEvent(new Event("change", { bubbles: true }));
+  row.querySelector("[data-image-url]")?.dispatchEvent(new Event("input", { bubbles: true }));
+
+  setTimeout(() => {
+    editor.dispatchEvent(new Event("change", { bubbles: true }));
+  }, 200);
 }
 
 async function handleDriveFileSelected(event) {
@@ -326,25 +385,30 @@ async function handleDriveFileSelected(event) {
 
   const settings = getDriveSettingsFromEditor();
   if (!settings.clientId) {
-    setDriveStatus("Ajoute d'abord le Client ID Google.");
+    setDriveStatusTone("Ajoute d'abord le Client ID Google.", "error");
+    return;
+  }
+
+  if (!hasDriveToken()) {
+    setDriveStatusTone("Clique d'abord sur Connecter Google.", "error");
     return;
   }
 
   if (!file.type.startsWith("image/")) {
-    setDriveStatus("Choisis une image.");
+    setDriveStatusTone("Choisis une image.", "error");
     return;
   }
 
   try {
     setDriveBusy(true);
-    setDriveStatus("Connexion Google...");
+    setDriveStatusTone("Upload vers Google Drive...", "info");
 
     const uploadedFile = await uploadImageToDrive(file, settings);
     appendDriveImageToEditor(uploadedFile.imageUrl);
-    setDriveStatus("Image ajoutée. Enregistre la page pour publier.");
+    setDriveStatusTone("Image ajoutée. Enregistre la page pour publier.", "ok");
   } catch (error) {
     console.error("Upload Drive impossible :", error);
-    setDriveStatus("Upload Google Drive impossible.");
+    setDriveStatusTone("Upload Google Drive impossible.", "error");
     alert(`Upload Google Drive impossible : ${error.message || error}`);
   } finally {
     setDriveBusy(false);
@@ -378,6 +442,7 @@ function ensureDriveUploadPanel() {
           Visible avec le lien
         </label>
         <button type="button" class="prof-admin-small-btn" id="saveDriveSettingsBtn">Enregistrer Drive</button>
+        <button type="button" class="prof-admin-small-btn" id="driveConnectButton">Connecter Google</button>
         <button type="button" class="prof-admin-small-btn gold" id="driveUploadButton">Uploader depuis le PC</button>
         <input id="driveUploadFileInput" type="file" accept="image/*" hidden>
         <span class="prof-admin-drive-status" id="driveUploadStatus"></span>
@@ -386,7 +451,13 @@ function ensureDriveUploadPanel() {
   `);
 
   document.getElementById("saveDriveSettingsBtn")?.addEventListener("click", saveDriveSettings);
+  document.getElementById("driveConnectButton")?.addEventListener("click", connectGoogleDrive);
   document.getElementById("driveUploadButton")?.addEventListener("click", () => {
+    if (!hasDriveToken()) {
+      setDriveStatusTone("Clique d'abord sur Connecter Google.", "error");
+      return;
+    }
+
     document.getElementById("driveUploadFileInput")?.click();
   });
   document.getElementById("driveUploadFileInput")?.addEventListener("change", handleDriveFileSelected);
