@@ -28,13 +28,12 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
+const DEFAULT_EXAM_GID = "282279229";
+const DEFAULT_EXAM_LABEL = "Réponses formulaire";
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-const DEFAULT_EXAM_SHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
-const DEFAULT_EXAM_GID = "282279229";
-const DEFAULT_EXAM_LABEL = "Réponses formulaire";
 
 const guardLoader = document.getElementById("guardLoader");
 const protectedContent = document.getElementById("protectedContent");
@@ -43,16 +42,13 @@ window.profFirebase = {
   app,
   auth,
   db,
-
   doc,
   getDoc,
   setDoc,
-
   collection,
   getDocs,
   query,
   where,
-
   serverTimestamp
 };
 
@@ -64,34 +60,6 @@ function extractSpreadsheetId(value) {
   if (match?.[1]) return match[1];
   if (/^[a-zA-Z0-9-_]{20,}$/.test(text)) return text;
   return "";
-}
-
-function installExamSheetFetchProxy() {
-  if (window.__examSheetFetchProxyInstalled) return;
-  window.__examSheetFetchProxyInstalled = true;
-
-  const originalFetch = window.fetch.bind(window);
-
-  window.fetch = (input, init) => {
-    const settings = window.__examResponsesSettings;
-    const sourceUrl = typeof input === "string" ? input : input?.url || "";
-
-    if (settings?.spreadsheetId && sourceUrl.includes(`/spreadsheets/d/${DEFAULT_EXAM_SHEET_ID}/export`)) {
-      const nextUrl = new URL(sourceUrl);
-      nextUrl.pathname = `/spreadsheets/d/${settings.spreadsheetId}/export`;
-      nextUrl.searchParams.set("gid", settings.gid || DEFAULT_EXAM_GID);
-
-      if (typeof input === "string") {
-        return originalFetch(nextUrl.toString(), init);
-      }
-
-      if (input instanceof Request) {
-        return originalFetch(new Request(nextUrl.toString(), input), init);
-      }
-    }
-
-    return originalFetch(input, init);
-  };
 }
 
 function normalizeQuestionPoints(value) {
@@ -110,53 +78,39 @@ function normalizeQuestionPoints(value) {
 }
 
 async function loadExamResponsesSettings() {
-  try {
-    const settingsRef = doc(db, "profSettings", "examResponses");
-    const settingsSnap = await getDoc(settingsRef);
-    const data = settingsSnap.exists() ? settingsSnap.data() : {};
+  const settingsRef = doc(db, "profSettings", "examResponses");
+  const settingsSnap = await getDoc(settingsRef);
+  const data = settingsSnap.exists() ? settingsSnap.data() : {};
+  const spreadsheetId = extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId);
 
-    window.__examResponsesSettings = {
-      spreadsheetId: extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId) || DEFAULT_EXAM_SHEET_ID,
-      gid: String(data.gid || DEFAULT_EXAM_GID),
-      label: String(data.label || DEFAULT_EXAM_LABEL),
-      questionPoints: normalizeQuestionPoints(data.questionPoints)
-    };
-  } catch (error) {
-    console.warn("Réglages examens indisponibles :", error);
-    window.__examResponsesSettings = {
-      spreadsheetId: DEFAULT_EXAM_SHEET_ID,
-      gid: DEFAULT_EXAM_GID,
-      label: DEFAULT_EXAM_LABEL,
-      questionPoints: {}
-    };
+  if (!spreadsheetId) {
+    throw new Error("Aucun lien Google Sheet examen n'est configuré.");
   }
 
-  installExamSheetFetchProxy();
+  window.__examResponsesSettings = {
+    spreadsheetId,
+    gid: String(data.gid || DEFAULT_EXAM_GID),
+    label: String(data.label || DEFAULT_EXAM_LABEL),
+    questionPoints: normalizeQuestionPoints(data.questionPoints)
+  };
 }
 
-function applyExamLabel() {
-  const label = window.__examResponsesSettings?.label;
-  if (!label) return;
-
-  requestAnimationFrame(() => {
-    const tab = document.querySelector(".student-sheet-tab[data-sheet='exam-form-1']");
-    if (tab) tab.textContent = label;
-  });
-}
-
-async function getUserRole(user) {
-  if (!user?.email) return null;
+async function getUserAccess(user) {
+  if (!user?.email) return { role: null, isAdmin: false };
 
   try {
     const userRef = doc(db, "users", user.email);
     const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return { role: null, isAdmin: false };
 
-    if (!userSnap.exists()) return null;
-
-    return userSnap.data().role || null;
+    const data = userSnap.data();
+    return {
+      role: data.role || null,
+      isAdmin: data.admin === true
+    };
   } catch (error) {
-    console.error("Erreur lecture rôle utilisateur :", error);
-    return null;
+    console.error("Erreur lecture accès utilisateur :", error);
+    return { role: null, isAdmin: false };
   }
 }
 
@@ -169,15 +123,13 @@ function showAccessDenied() {
   if (guardLoader) {
     guardLoader.hidden = false;
     guardLoader.style.display = "grid";
-
     guardLoader.innerHTML = `
       <div class="prof-login-card">
         <p class="kicker">Accès refusé</p>
         <h1>Refusé</h1>
         <p class="intro">
-          Ce compte n’est pas autorisé à accéder à la correction des examens.
+          Ce compte n'est pas autorisé à accéder à la correction des examens.
         </p>
-
         <button class="btn secondary" onclick="window.location.href='espace-prof.html'">
           Retour connexion
         </button>
@@ -186,17 +138,30 @@ function showAccessDenied() {
   }
 }
 
-onAuthStateChanged(auth, async (user) => {
+function showExamConfigError(message) {
+  const sheetStatus = document.getElementById("sheetStatus");
+
+  if (sheetStatus) {
+    sheetStatus.innerHTML = `
+      <div class="inline-error-box">
+        <h4>Réglage examen manquant</h4>
+        <p>${String(message || "Impossible de charger les réglages examens.")}</p>
+      </div>
+    `;
+  }
+}
+
+onAuthStateChanged(auth, async user => {
   if (!user) {
     window.location.href = "espace-prof.html";
     return;
   }
 
-  const role = await getUserRole(user);
+  const access = await getUserAccess(user);
+  const allowed = access.role === "prof" || access.isAdmin;
 
-  if (role !== "prof") {
-    console.warn("Accès refusé page examens :", user.email, "role =", role);
-
+  if (!allowed) {
+    console.warn("Accès refusé page examens :", user.email, "role =", access.role);
     window.currentProfUser = null;
 
     try {
@@ -219,7 +184,6 @@ onAuthStateChanged(auth, async (user) => {
   if (protectedContent) {
     protectedContent.hidden = false;
     protectedContent.style.display = "block";
-
     requestAnimationFrame(() => {
       protectedContent.classList.add("dashboard-visible");
     });
@@ -227,21 +191,9 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     await loadExamResponsesSettings();
-    await import("./exam-loader-x8p2.js?v=9030");
-    await import("./exam-grading-settings.js?v=1001");
-    applyExamLabel();
+    await import("./exam-loader-secure.js?v=1001");
   } catch (error) {
-    console.error("Erreur chargement loader examens :", error);
-
-    const sheetStatus = document.getElementById("sheetStatus");
-
-    if (sheetStatus) {
-      sheetStatus.innerHTML = `
-        <div class="inline-error-box">
-          <h4>Erreur de chargement</h4>
-          <p>Impossible de charger le module des examens.</p>
-        </div>
-      `;
-    }
+    console.error("Erreur chargement examens :", error);
+    showExamConfigError(error.message);
   }
 });
