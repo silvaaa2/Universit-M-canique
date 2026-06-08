@@ -1,33 +1,6 @@
 const EXAM_SETTINGS_DOC = "examResponses";
-const DEFAULT_EXAM_SETTINGS = {
-  spreadsheetId: "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY",
-  gid: "282279229",
-  label: "Réponses formulaire"
-};
-
-const DEFAULT_EXAM_QUESTION_POINTS = {
-  "Prénom / Nom (RP)": 0,
-  "ID Unique": 2,
-  "Pourquoi voulez vous devenir mécano ?": 1,
-  "Quelles sont les qualités d'un mécano pour vous ? (Citez en 6)": 6,
-  "Citez 2 services que peut vendre un mécano.": 2,
-  "Quel véhicule personnel un mécanicien peut-il utiliser": 3,
-  "Citez 4 pièces de carrosserie": 4,
-  "Citez 4 pièces de carrosserie (Pas répétée)": 4,
-  "Quels sont les différents garages": 7,
-  "Comme appelle t'on ce qui est montré sur l'image ?": 1,
-  "Quel est la procédure d'une réparation au garage ?": 4,
-  "Indiquez tout ce qui ne va pas sur cette image": 5,
-  "Vous êtes en custom pour une peinture et vous avez changé la couleur secondaire, mais elle n'est pas visible. Que faites vous ?": 3,
-  "Pouvez-vous retirer une FP (Full Perf) lors d'une custom ? (Justifiez)": 3,
-  "Dans quelles situations un mécanicien est autorisé à mettre un véhicule en fourrière": 4,
-  "Les 3 métiers les plus important": 3,
-  "Vous arrivez sur un dépannage et un mécano de la concurrence est déjà en train de réparer le véhicule. Que faites-vous par rapport au client ?": 4,
-  "Vous êtes en poste avec plusieurs mécaniciens. Quelles sont les règles à respecter pour que tout se passe bien entre mécaniciens ?": 3,
-  "Quels sont les étapes pour changer un pneu ?": 4,
-  "Citez 3 Outils de mécanique": 3,
-  "Un client arrive masqué au garage pour une full perf mais il lui manque une portière. Que faites-vous ?": 4
-};
+const DEFAULT_EXAM_GID = "282279229";
+const DEFAULT_EXAM_LABEL = "Réponses formulaire";
 
 let currentUser = null;
 let currentUserIsAdmin = false;
@@ -42,10 +15,6 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-function buildDefaultSheetUrl(settings = DEFAULT_EXAM_SETTINGS) {
-  return `https://docs.google.com/spreadsheets/d/${settings.spreadsheetId}/edit#gid=${settings.gid}`;
 }
 
 function extractSpreadsheetId(value) {
@@ -109,14 +78,6 @@ function injectExamSettingsStyles() {
       padding: 16px;
     }
 
-    .prof-admin-exam-card-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
     .prof-admin-exam-note {
       margin: 0;
       color: var(--muted);
@@ -147,57 +108,6 @@ function injectExamSettingsStyles() {
     .prof-admin-panel.is-busy {
       opacity: .74;
       pointer-events: none;
-    }
-
-    .prof-admin-scale-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .prof-admin-scale-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 92px 42px;
-      gap: 10px;
-      align-items: stretch;
-    }
-
-    .prof-admin-scale-question,
-    .prof-admin-scale-points {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,.11);
-      border-radius: 8px;
-      background: rgba(255,255,255,.055);
-      color: var(--text);
-      padding: 10px;
-      font: inherit;
-      font-size: 13px;
-      outline: none;
-    }
-
-    .prof-admin-scale-question {
-      min-height: 42px;
-      resize: vertical;
-      line-height: 1.35;
-    }
-
-    .prof-admin-scale-points {
-      text-align: center;
-      font-weight: 1000;
-    }
-
-    .prof-admin-scale-remove {
-      border: 1px solid rgba(248,113,113,.28);
-      border-radius: 8px;
-      background: rgba(248,113,113,.09);
-      color: #fecaca;
-      font-weight: 1000;
-      cursor: pointer;
-    }
-
-    @media (max-width: 760px) {
-      .prof-admin-scale-row {
-        grid-template-columns: minmax(0, 1fr) 78px 38px;
-      }
     }
   `;
 
@@ -262,32 +172,23 @@ function ensureExamSettingsPanel() {
           <div class="prof-admin-field-grid">
             <div class="prof-admin-field full">
               <label for="examSheetUrlInput">Lien Google Sheet examen</label>
-              <input id="examSheetUrlInput" class="prof-admin-input" type="url" autocomplete="off" placeholder="${escapeHtml(buildDefaultSheetUrl())}">
+              <input id="examSheetUrlInput" class="prof-admin-input" type="url" autocomplete="off" placeholder="Colle le lien Google Sheet ici">
             </div>
 
             <div class="prof-admin-field">
               <label for="examSheetGidInput">GID de l'onglet</label>
-              <input id="examSheetGidInput" class="prof-admin-input" type="text" inputmode="numeric" autocomplete="off" placeholder="${escapeHtml(DEFAULT_EXAM_SETTINGS.gid)}">
+              <input id="examSheetGidInput" class="prof-admin-input" type="text" inputmode="numeric" autocomplete="off" placeholder="${escapeHtml(DEFAULT_EXAM_GID)}">
             </div>
 
             <div class="prof-admin-field">
               <label for="examSheetLabelInput">Nom affiché</label>
-              <input id="examSheetLabelInput" class="prof-admin-input" type="text" autocomplete="off" placeholder="${escapeHtml(DEFAULT_EXAM_SETTINGS.label)}">
+              <input id="examSheetLabelInput" class="prof-admin-input" type="text" autocomplete="off" placeholder="${escapeHtml(DEFAULT_EXAM_LABEL)}">
             </div>
           </div>
         </div>
 
         <div class="prof-admin-exam-card">
-          <div class="prof-admin-exam-card-head">
-            <p class="prof-admin-exam-note">
-              Barème des questions. Le texte doit correspondre au libellé de la question dans Google Forms.
-            </p>
-            <button type="button" class="prof-admin-small-btn" id="addExamScaleRowBtn">
-              Ajouter une question
-            </button>
-          </div>
-
-          <div class="prof-admin-scale-list" id="examScaleRows"></div>
+          <div id="examScaleRows"></div>
         </div>
       </section>
     `);
@@ -321,17 +222,6 @@ function bindExamSettingsEvents(modal) {
 
     if (target.closest("#reloadExamSettingsBtn")) {
       hydrateExamSettings(true);
-      return;
-    }
-
-    if (target.closest("#addExamScaleRowBtn")) {
-      addExamScaleRow("", 0);
-      return;
-    }
-
-    const removeButton = target.closest("[data-remove-exam-scale-row]");
-    if (removeButton) {
-      removeButton.closest("[data-exam-scale-row]")?.remove();
     }
   });
 
@@ -383,8 +273,8 @@ function getExamSettingsFromEditor() {
 
   const spreadsheetUrl = urlInput?.value?.trim() || "";
   const spreadsheetId = extractSpreadsheetId(spreadsheetUrl);
-  const gid = gidInput?.value?.trim() || extractGid(spreadsheetUrl) || DEFAULT_EXAM_SETTINGS.gid;
-  const label = labelInput?.value?.trim() || DEFAULT_EXAM_SETTINGS.label;
+  const gid = gidInput?.value?.trim() || extractGid(spreadsheetUrl) || DEFAULT_EXAM_GID;
+  const label = labelInput?.value?.trim() || DEFAULT_EXAM_LABEL;
 
   if (!spreadsheetId) {
     throw new Error("Lien Google Sheet invalide.");
@@ -396,60 +286,6 @@ function getExamSettingsFromEditor() {
     gid,
     label
   };
-}
-
-function normalizeQuestionPointsMap(source) {
-  if (!source || typeof source !== "object" || Array.isArray(source)) return {};
-
-  return Object.entries(source).reduce((points, [label, score]) => {
-    const cleanLabel = String(label || "").trim();
-    const cleanScore = Number(score);
-
-    if (cleanLabel && Number.isFinite(cleanScore)) {
-      points[cleanLabel] = Math.max(0, cleanScore);
-    }
-
-    return points;
-  }, {});
-}
-
-function getExamQuestionPointsFromEditor() {
-  const rows = document.querySelectorAll("[data-exam-scale-row]");
-
-  return Array.from(rows).reduce((points, row) => {
-    const label = row.querySelector("[data-exam-scale-question]")?.value?.trim() || "";
-    const score = Number(row.querySelector("[data-exam-scale-points]")?.value || 0);
-
-    if (label && Number.isFinite(score)) {
-      points[label] = Math.max(0, score);
-    }
-
-    return points;
-  }, {});
-}
-
-function addExamScaleRow(label = "", score = 0) {
-  const list = document.getElementById("examScaleRows");
-  if (!list) return;
-
-  list.insertAdjacentHTML("beforeend", `
-    <div class="prof-admin-scale-row" data-exam-scale-row>
-      <textarea class="prof-admin-scale-question" data-exam-scale-question>${escapeHtml(label)}</textarea>
-      <input class="prof-admin-scale-points" data-exam-scale-points type="number" min="0" step="1" value="${escapeHtml(score)}">
-      <button type="button" class="prof-admin-scale-remove" data-remove-exam-scale-row title="Supprimer">×</button>
-    </div>
-  `);
-}
-
-function renderExamScaleRows(questionPoints) {
-  const list = document.getElementById("examScaleRows");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  Object.entries(questionPoints).forEach(([label, score]) => {
-    addExamScaleRow(label, score);
-  });
 }
 
 async function loadExamSettings() {
@@ -467,26 +303,23 @@ async function hydrateExamSettings(force = false) {
     setExamStatus("Chargement...", "info");
 
     const settings = await loadExamSettings();
-    const spreadsheetId = extractSpreadsheetId(settings.spreadsheetUrl) || extractSpreadsheetId(settings.spreadsheetId) || DEFAULT_EXAM_SETTINGS.spreadsheetId;
-    const gid = String(settings.gid || DEFAULT_EXAM_SETTINGS.gid);
-    const label = String(settings.label || DEFAULT_EXAM_SETTINGS.label);
-    const questionPoints = {
-      ...DEFAULT_EXAM_QUESTION_POINTS,
-      ...normalizeQuestionPointsMap(settings.questionPoints)
-    };
     const urlInput = document.getElementById("examSheetUrlInput");
     const gidInput = document.getElementById("examSheetGidInput");
     const labelInput = document.getElementById("examSheetLabelInput");
 
     if (!urlInput || !gidInput || !labelInput) return;
 
-    urlInput.value = settings.spreadsheetUrl || buildDefaultSheetUrl({ spreadsheetId, gid });
-    gidInput.value = gid;
-    labelInput.value = label;
-    renderExamScaleRows(questionPoints);
+    urlInput.value = settings.spreadsheetUrl || "";
+    gidInput.value = String(settings.gid || DEFAULT_EXAM_GID);
+    labelInput.value = String(settings.label || DEFAULT_EXAM_LABEL);
 
     examSettingsLoaded = true;
-    setExamStatus("Lien examen chargé.", "ok");
+
+    if (extractSpreadsheetId(settings.spreadsheetUrl) || extractSpreadsheetId(settings.spreadsheetId)) {
+      setExamStatus("Lien examen chargé.", "ok");
+    } else {
+      setExamStatus("Aucun lien examen configuré.", "info");
+    }
   } catch (error) {
     console.warn("Réglages examens indisponibles :", error);
     setExamStatus("Impossible de charger le lien examen.", "error");
@@ -503,11 +336,9 @@ async function saveExamSettings() {
     setExamStatus("Enregistrement...", "info");
 
     const settings = getExamSettingsFromEditor();
-    const questionPoints = getExamQuestionPointsFromEditor();
 
     await firebase.setDoc(firebase.doc(firebase.db, "profSettings", EXAM_SETTINGS_DOC), {
       ...settings,
-      questionPoints,
       updatedAt: firebase.serverTimestamp(),
       updatedBy: currentUser?.email || null
     }, { merge: true });
