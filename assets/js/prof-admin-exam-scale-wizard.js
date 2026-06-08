@@ -1,29 +1,7 @@
 const EXAM_SETTINGS_DOC = "examResponses";
 
-const DEFAULT_SCALE = [
-  { label: "Pourquoi voulez vous devenir mécano ?", points: 1 },
-  { label: "Quelles sont les qualités d'un mécano pour vous ? (Citez en 6)", points: 6 },
-  { label: "Citez 2 services que peut vendre un mécano.", points: 2 },
-  { label: "Quel véhicule personnel un mécanicien peut-il utiliser", points: 3 },
-  { label: "Citez 4 pièces de carrosserie", points: 4 },
-  { label: "Citez 4 pièces de carrosserie (Pas répétée)", points: 4 },
-  { label: "Quels sont les différents garages", points: 7 },
-  { label: "Comme appelle t'on ce qui est montré sur l'image ?", points: 1 },
-  { label: "Quel est la procédure d'une réparation au garage ?", points: 4 },
-  { label: "Indiquez tout ce qui ne va pas sur cette image", points: 5 },
-  { label: "Vous êtes en custom pour une peinture et vous avez changé la couleur secondaire, mais elle n'est pas visible. Que faites vous ?", points: 3 },
-  { label: "Pouvez-vous retirer une FP (Full Perf) lors d'une custom ? (Justifiez)", points: 3 },
-  { label: "Dans quelles situations un mécanicien est autorisé à mettre un véhicule en fourrière", points: 4 },
-  { label: "Les 3 métiers les plus important", points: 3 },
-  { label: "Vous arrivez sur un dépannage et un mécano de la concurrence est déjà en train de réparer le véhicule. Que faites-vous par rapport au client ?", points: 4 },
-  { label: "Vous êtes en poste avec plusieurs mécaniciens. Quelles sont les règles à respecter pour que tout se passe bien entre mécaniciens ?", points: 3 },
-  { label: "Quels sont les étapes pour changer un pneu ?", points: 4 },
-  { label: "Citez 3 Outils de mécanique", points: 3 },
-  { label: "Un client arrive masqué au garage pour une full perf mais il lui manque une portière. Que faites-vous ?", points: 4 }
-];
-
 let currentSettings = {};
-let currentScale = [...DEFAULT_SCALE];
+let currentScale = [];
 let wizardOpenedOnce = false;
 let isSaving = false;
 
@@ -34,6 +12,33 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function extractSpreadsheetId(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (match?.[1]) return match[1];
+  if (/^[a-zA-Z0-9-_]{20,}$/.test(text)) return text;
+  return "";
+}
+
+function extractGid(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+
+  try {
+    const url = new URL(text);
+    const searchGid = url.searchParams.get("gid");
+    if (searchGid) return searchGid;
+
+    const hashGid = url.hash.match(/gid=([0-9]+)/);
+    if (hashGid?.[1]) return hashGid[1];
+  } catch (error) {
+    const rawGid = text.match(/gid=([0-9]+)/);
+    if (rawGid?.[1]) return rawGid[1];
+  }
+
+  return "";
 }
 
 function waitForProfFirebase() {
@@ -59,7 +64,7 @@ function normalizeQuestion(value) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[’]/g, "'")
+    .replace(/[\u2019]/g, "'")
     .replace(/[^\p{L}\p{N}]+/gu, "");
 }
 
@@ -81,10 +86,7 @@ function normalizeScale(source) {
     const points = Number(item?.points ?? item?.score ?? 0);
 
     if (label && !isIdentityQuestion(label) && Number.isFinite(points)) {
-      scale.push({
-        label,
-        points: Math.max(0, points)
-      });
+      scale.push({ label, points: Math.max(0, points) });
     }
 
     return scale;
@@ -98,10 +100,7 @@ function scaleFromPointsMap(pointsMap) {
     const cleanPoints = Number(points);
 
     if (label && !isIdentityQuestion(label) && Number.isFinite(cleanPoints)) {
-      scale.push({
-        label,
-        points: Math.max(0, cleanPoints)
-      });
+      scale.push({ label, points: Math.max(0, cleanPoints) });
     }
 
     return scale;
@@ -131,10 +130,7 @@ function getScaleFromEditor() {
     const points = Number(row.querySelector("[data-scale-wizard-points]")?.value || 0);
 
     if (label && !isIdentityQuestion(label) && Number.isFinite(points)) {
-      scale.push({
-        label,
-        points: Math.max(0, points)
-      });
+      scale.push({ label, points: Math.max(0, points) });
     }
 
     return scale;
@@ -143,8 +139,8 @@ function getScaleFromEditor() {
 
 function getSettingsFromEditor() {
   const spreadsheetUrl = document.getElementById("examSheetUrlInput")?.value?.trim() || currentSettings.spreadsheetUrl || "";
-  const spreadsheetId = currentSettings.spreadsheetId || "";
-  const gid = document.getElementById("examSheetGidInput")?.value?.trim() || currentSettings.gid || "282279229";
+  const spreadsheetId = extractSpreadsheetId(spreadsheetUrl) || extractSpreadsheetId(currentSettings.spreadsheetId) || "";
+  const gid = document.getElementById("examSheetGidInput")?.value?.trim() || extractGid(spreadsheetUrl) || currentSettings.gid || "282279229";
   const label = document.getElementById("examSheetLabelInput")?.value?.trim() || currentSettings.label || "Réponses formulaire";
 
   return {
@@ -397,6 +393,12 @@ function renderScale(scale) {
   if (!list) return;
 
   list.innerHTML = "";
+
+  if (!scale.length) {
+    addScaleRow("", 0);
+    return;
+  }
+
   scale.forEach(item => addScaleRow(item.label, item.points));
   refreshIndexes();
   updateSummary();
@@ -442,7 +444,6 @@ function openWizard() {
   if (!overlay) return;
 
   overlay.hidden = false;
-
   requestAnimationFrame(() => {
     overlay.classList.add("active");
   });
@@ -453,7 +454,6 @@ function closeWizard() {
   if (!overlay) return;
 
   overlay.classList.remove("active");
-
   setTimeout(() => {
     overlay.hidden = true;
   }, 180);
@@ -462,6 +462,7 @@ function closeWizard() {
 function bindWizardEvents() {
   const overlay = document.getElementById("examScaleWizardOverlay");
   if (!overlay || overlay.dataset.bound === "true") return;
+
   overlay.dataset.bound = "true";
 
   overlay.addEventListener("click", event => {
@@ -534,12 +535,11 @@ async function loadSettings() {
   const storedScale = normalizeScale(currentSettings.questionScale);
   const fallbackScale = scaleFromPointsMap(currentSettings.questionPoints);
 
-  currentScale = storedScale.length ? storedScale : (fallbackScale.length ? fallbackScale : [...DEFAULT_SCALE]);
-
+  currentScale = storedScale.length ? storedScale : fallbackScale;
   renderScale(currentScale);
   updateSummary();
 
-  if (!wizardOpenedOnce && !storedScale.length) {
+  if (!wizardOpenedOnce && !storedScale.length && !fallbackScale.length) {
     wizardOpenedOnce = true;
     openWizard();
   }
