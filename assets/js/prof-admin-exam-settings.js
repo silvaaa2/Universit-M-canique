@@ -1,19 +1,3 @@
-import "./prof-admin-drive-tools.js?v=1013";
-
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
-  authDomain: "universit-4b11e.firebaseapp.com",
-  projectId: "universit-4b11e",
-  storageBucket: "universit-4b11e.firebasestorage.app",
-  messagingSenderId: "11363330953",
-  appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
-  measurementId: "G-Z5B51BQCNL"
-};
-
 const EXAM_SETTINGS_DOC = "examResponses";
 const DEFAULT_EXAM_SETTINGS = {
   spreadsheetId: "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY",
@@ -21,32 +5,11 @@ const DEFAULT_EXAM_SETTINGS = {
   label: "Réponses formulaire"
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
 let currentUser = null;
 let currentUserIsAdmin = false;
 let examSettingsLoaded = false;
-
-onAuthStateChanged(auth, async user => {
-  currentUser = user || null;
-  currentUserIsAdmin = await loadAdminAccess(user);
-
-  if (currentUserIsAdmin) {
-    setTimeout(() => {
-      ensureExamSettingsPanel();
-      hydrateExamSettings();
-    }, 700);
-  }
-});
-
-async function loadAdminAccess(user) {
-  if (!user?.email) return false;
-
-  const snap = await getDoc(doc(db, "users", user.email));
-  return snap.exists() && snap.data().admin === true;
-}
+let accessCheckRunning = false;
+let eventsBoundForModal = null;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -86,6 +49,23 @@ function extractGid(value) {
   }
 
   return "";
+}
+
+function waitForProfFirebase() {
+  if (window.profFirebase?.db) {
+    return Promise.resolve(window.profFirebase);
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Firebase prof n'est pas prêt."));
+    }, 8000);
+
+    window.addEventListener("profFirebaseReady", () => {
+      clearTimeout(timeout);
+      resolve(window.profFirebase);
+    }, { once: true });
+  });
 }
 
 function injectExamSettingsStyles() {
@@ -221,8 +201,8 @@ function ensureExamSettingsPanel() {
 }
 
 function bindExamSettingsEvents(modal) {
-  if (modal.dataset.examSettingsBound === "true") return;
-  modal.dataset.examSettingsBound = "true";
+  if (eventsBoundForModal === modal) return;
+  eventsBoundForModal = modal;
 
   modal.addEventListener("click", event => {
     const target = event.target;
@@ -237,15 +217,23 @@ function bindExamSettingsEvents(modal) {
     if (target.closest("[data-admin-tab]")) {
       hideExamSettingsPanel();
     }
+
+    if (target.closest("#saveExamSettingsBtn")) {
+      saveExamSettings();
+      return;
+    }
+
+    if (target.closest("#reloadExamSettingsBtn")) {
+      hydrateExamSettings(true);
+    }
   });
 
-  document.getElementById("saveExamSettingsBtn")?.addEventListener("click", saveExamSettings);
-  document.getElementById("reloadExamSettingsBtn")?.addEventListener("click", () => hydrateExamSettings(true));
+  modal.addEventListener("input", event => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || target.id !== "examSheetUrlInput") return;
 
-  document.getElementById("examSheetUrlInput")?.addEventListener("input", () => {
-    const urlInput = document.getElementById("examSheetUrlInput");
     const gidInput = document.getElementById("examSheetGidInput");
-    const gid = extractGid(urlInput?.value || "");
+    const gid = extractGid(target.value || "");
 
     if (gidInput && gid && !gidInput.value.trim()) {
       gidInput.value = gid;
@@ -304,9 +292,8 @@ function getExamSettingsFromEditor() {
 }
 
 async function loadExamSettings() {
-  if (!currentUserIsAdmin) return {};
-
-  const snap = await getDoc(doc(db, "profSettings", EXAM_SETTINGS_DOC));
+  const firebase = await waitForProfFirebase();
+  const snap = await firebase.getDoc(firebase.doc(firebase.db, "profSettings", EXAM_SETTINGS_DOC));
   return snap.exists() ? snap.data() : {};
 }
 
@@ -344,14 +331,16 @@ async function saveExamSettings() {
   if (!currentUserIsAdmin) return;
 
   try {
+    const firebase = await waitForProfFirebase();
+
     setExamBusy(true);
     setExamStatus("Enregistrement...", "info");
 
     const settings = getExamSettingsFromEditor();
 
-    await setDoc(doc(db, "profSettings", EXAM_SETTINGS_DOC), {
+    await firebase.setDoc(firebase.doc(firebase.db, "profSettings", EXAM_SETTINGS_DOC), {
       ...settings,
-      updatedAt: serverTimestamp(),
+      updatedAt: firebase.serverTimestamp(),
       updatedBy: currentUser?.email || null
     }, { merge: true });
 
@@ -365,17 +354,49 @@ async function saveExamSettings() {
   }
 }
 
+async function refreshAdminAccess() {
+  if (accessCheckRunning) return;
+  accessCheckRunning = true;
+
+  try {
+    const firebase = await waitForProfFirebase();
+    const user = window.currentProfUser || firebase.auth?.currentUser || null;
+
+    if (!user?.email) {
+      currentUser = null;
+      currentUserIsAdmin = false;
+      examSettingsLoaded = false;
+      return;
+    }
+
+    currentUser = user;
+
+    const snap = await firebase.getDoc(firebase.doc(firebase.db, "users", user.email));
+    currentUserIsAdmin = snap.exists() && snap.data().admin === true;
+
+    if (currentUserIsAdmin) {
+      ensureExamSettingsPanel();
+      hydrateExamSettings();
+    }
+  } catch (error) {
+    console.warn("Accès admin examen indisponible :", error);
+  } finally {
+    accessCheckRunning = false;
+  }
+}
+
 function startExamSettingsPanel() {
   injectExamSettingsStyles();
 
   const observer = new MutationObserver(() => {
     ensureExamSettingsPanel();
-    hydrateExamSettings();
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
-  ensureExamSettingsPanel();
-  hydrateExamSettings();
+
+  refreshAdminAccess();
+  window.addEventListener("profFirebaseReady", refreshAdminAccess);
+  window.setInterval(refreshAdminAccess, 1200);
 }
 
 if (document.body) {
