@@ -94,6 +94,21 @@ function installExamSheetFetchProxy() {
   };
 }
 
+function normalizeQuestionPoints(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+
+  return Object.entries(value).reduce((points, [label, score]) => {
+    const cleanLabel = String(label || "").trim();
+    const cleanScore = Number(score);
+
+    if (cleanLabel && Number.isFinite(cleanScore)) {
+      points[cleanLabel] = Math.max(0, cleanScore);
+    }
+
+    return points;
+  }, {});
+}
+
 async function loadExamResponsesSettings() {
   try {
     const settingsRef = doc(db, "profSettings", "examResponses");
@@ -103,14 +118,16 @@ async function loadExamResponsesSettings() {
     window.__examResponsesSettings = {
       spreadsheetId: extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId) || DEFAULT_EXAM_SHEET_ID,
       gid: String(data.gid || DEFAULT_EXAM_GID),
-      label: String(data.label || DEFAULT_EXAM_LABEL)
+      label: String(data.label || DEFAULT_EXAM_LABEL),
+      questionPoints: normalizeQuestionPoints(data.questionPoints)
     };
   } catch (error) {
     console.warn("Réglages examens indisponibles :", error);
     window.__examResponsesSettings = {
       spreadsheetId: DEFAULT_EXAM_SHEET_ID,
       gid: DEFAULT_EXAM_GID,
-      label: DEFAULT_EXAM_LABEL
+      label: DEFAULT_EXAM_LABEL,
+      questionPoints: {}
     };
   }
 
@@ -210,7 +227,7 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     await loadExamResponsesSettings();
-    await import("./exam-loader-x8p2.js?v=9029");
+    await import("./exam-loader-x8p2.js?v=9030");
     applyExamLabel();
   } catch (error) {
     console.error("Erreur chargement loader examens :", error);
