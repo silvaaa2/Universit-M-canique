@@ -228,6 +228,7 @@ onAuthStateChanged(auth, async (user) => {
   try {
     await loadExamResponsesSettings();
     await import("./exam-loader-x8p2.js?v=9030");
+    await import("./exam-grading-settings.js?v=1001");
     applyExamLabel();
   } catch (error) {
     console.error("Erreur chargement loader examens :", error);
