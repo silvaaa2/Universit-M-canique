@@ -247,6 +247,36 @@
       display: none !important;
     }
 
+    .modules-loader-box {
+      width: min(360px, 92%);
+      padding: 20px;
+      border: 1px solid rgba(214,180,106,.24);
+      border-radius: 8px;
+      background: rgba(18,18,18,.96);
+      text-align: center;
+    }
+
+    .modules-spinner {
+      width: 34px;
+      height: 34px;
+      margin: 0 auto 12px;
+      border-radius: 999px;
+      border: 3px solid rgba(214,180,106,.18);
+      border-top-color: var(--gold2);
+      animation: modulesSpin .75s linear infinite;
+    }
+
+    @keyframes modulesSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .modules-loader-box p {
+      margin: 0;
+      color: var(--gold2);
+      font-size: 13px;
+      font-weight: 1000;
+    }
+
     @media (max-width: 1100px) {
       .modules-summary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -317,8 +347,8 @@
 
         <div class="modules-table-wrap">
           <div id="modulesLoader" class="modules-page-loader">
-            <div class="prof-admin-loader-box">
-              <div class="prof-admin-spinner"></div>
+            <div class="modules-loader-box">
+              <div class="modules-spinner"></div>
               <p id="modulesLoaderText">Chargement de l’effectif...</p>
             </div>
           </div>
