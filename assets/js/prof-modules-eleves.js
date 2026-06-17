@@ -97,6 +97,32 @@ function extractGid(value) {
   return "";
 }
 
+function getTodayDateValue() {
+  const date = new Date();
+  const pad = value => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function normalizeDateValue(value) {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    const direct = value.match(/^\d{4}-\d{2}-\d{2}/);
+    if (direct) return direct[0];
+  }
+
+  if (typeof value?.toDate === "function") {
+    return normalizeDateValue(value.toDate().toISOString());
+  }
+
+  if (typeof value?.seconds === "number") {
+    return normalizeDateValue(new Date(value.seconds * 1000).toISOString());
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : normalizeDateValue(date.toISOString());
+}
+
 function showLoader(message = "Chargement...") {
   if (modulesLoaderText) modulesLoaderText.textContent = message;
   if (modulesLoader) modulesLoader.hidden = false;
@@ -246,19 +272,33 @@ function getEmptyChecks() {
   }, {});
 }
 
+function getEmptyDates() {
+  return MODULE_COLUMNS.reduce((dates, column) => {
+    dates[column.key] = "";
+    return dates;
+  }, {});
+}
+
 function normalizeProgress(data = {}) {
   const checks = {
     ...getEmptyChecks(),
     ...(data.checks || {})
   };
 
+  const dates = {
+    ...getEmptyDates(),
+    ...(data.dates || {})
+  };
+
   MODULE_COLUMNS.forEach(column => {
     checks[column.key] = checks[column.key] === true;
+    dates[column.key] = normalizeDateValue(dates[column.key] || data.completedAt?.[column.key] || "");
   });
 
   return {
     ...data,
     checks,
+    dates,
     completedAt: data.completedAt || {}
   };
 }
@@ -380,6 +420,24 @@ function renderModuleCheck(row, column, progress) {
   `;
 }
 
+function renderModuleDate(row, column, progress) {
+  const value = progress.dates?.[column.key] || "";
+
+  return `
+    <div class="modules-cell">
+      <input
+        class="module-date"
+        type="date"
+        data-module-date
+        data-student-id="${escapeHtml(row.normalizedIdUnique)}"
+        data-module-key="${escapeHtml(column.key)}"
+        value="${escapeHtml(value)}"
+        aria-label="Date ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}"
+      >
+    </div>
+  `;
+}
+
 function renderTable() {
   if (!modulesTable) return;
 
@@ -400,8 +458,10 @@ function renderTable() {
   const header = `
     <div class="modules-row head">
       <div>Élève</div>
-      <div>ID Unique</div>
-      ${MODULE_COLUMNS.map(column => `<div>${escapeHtml(column.label)}</div>`).join("")}
+      ${MODULE_COLUMNS.map(column => `
+        <div>${escapeHtml(column.label)}</div>
+        <div>Date</div>
+      `).join("")}
     </div>
   `;
 
@@ -412,15 +472,12 @@ function renderTable() {
       <div class="modules-row" data-student-row="${escapeHtml(row.normalizedIdUnique)}">
         <div class="modules-cell modules-student">
           <strong title="${escapeHtml(row.studentName)}">${escapeHtml(row.studentName)}</strong>
-          <span>${escapeHtml(row.idUnique)}</span>
+          <span>ID Unique : ${escapeHtml(row.idUnique)}</span>
         </div>
 
-        <div class="modules-cell modules-id">
-          <strong>${escapeHtml(row.idUnique)}</strong>
-          <span>ID</span>
-        </div>
-
-        ${MODULE_COLUMNS.map(column => renderModuleCheck(row, column, progress)).join("")}
+        ${MODULE_COLUMNS.map(column => (
+          renderModuleCheck(row, column, progress) + renderModuleDate(row, column, progress)
+        )).join("")}
       </div>
     `;
   }).join("");
@@ -437,26 +494,55 @@ function updateCheckVisual(input) {
   if (text) text.textContent = input.checked ? "Fait" : "Non";
 }
 
+async function saveStudentProgress(normalizedIdUnique, nextProgress) {
+  const row = effectifRows.find(item => item.normalizedIdUnique === normalizedIdUnique);
+
+  if (!row) {
+    throw new Error("Élève introuvable.");
+  }
+
+  await setDoc(doc(db, STUDENT_MODULES_COLLECTION, normalizedIdUnique), {
+    idUnique: row.idUnique,
+    normalizedIdUnique: row.normalizedIdUnique,
+    studentName: row.studentName,
+    checks: nextProgress.checks,
+    dates: nextProgress.dates,
+    completedAt: nextProgress.completedAt,
+    updatedAt: serverTimestamp(),
+    updatedBy: currentUser?.email || null
+  }, { merge: true });
+}
+
 async function saveModuleCheck(input) {
   const normalizedIdUnique = input.dataset.studentId || "";
   const moduleKey = input.dataset.moduleKey || "";
-  const row = effectifRows.find(item => item.normalizedIdUnique === normalizedIdUnique);
   const label = input.closest("[data-module-label]");
+  const dateInput = modulesTable?.querySelector(`[data-module-date][data-student-id="${CSS.escape(normalizedIdUnique)}"][data-module-key="${CSS.escape(moduleKey)}"]`);
 
-  if (!row || !MODULE_COLUMNS.some(column => column.key === moduleKey)) {
+  if (!effectifRows.some(item => item.normalizedIdUnique === normalizedIdUnique) || !MODULE_COLUMNS.some(column => column.key === moduleKey)) {
     alert("Élève ou module introuvable.");
     return;
   }
 
   const previousProgress = getProgressForStudent(normalizedIdUnique);
   const previousChecked = previousProgress.checks?.[moduleKey] === true;
+  const previousDate = previousProgress.dates?.[moduleKey] || "";
   const nextChecked = input.checked === true;
+  const nextDate = nextChecked && !dateInput?.value ? getTodayDateValue() : (dateInput?.value || previousDate);
+
+  if (dateInput && nextChecked && !dateInput.value) {
+    dateInput.value = nextDate;
+  }
 
   const nextProgress = normalizeProgress({
     ...previousProgress,
     checks: {
       ...previousProgress.checks,
       [moduleKey]: nextChecked
+    },
+    dates: {
+      ...previousProgress.dates,
+      [moduleKey]: nextDate
     },
     completedAt: {
       ...(previousProgress.completedAt || {}),
@@ -470,17 +556,10 @@ async function saveModuleCheck(input) {
 
   try {
     label?.classList.add("saving");
+    dateInput?.classList.add("saving");
     setStatus("Enregistrement...", "info");
 
-    await setDoc(doc(db, STUDENT_MODULES_COLLECTION, normalizedIdUnique), {
-      idUnique: row.idUnique,
-      normalizedIdUnique: row.normalizedIdUnique,
-      studentName: row.studentName,
-      checks: nextProgress.checks,
-      completedAt: nextProgress.completedAt,
-      updatedAt: serverTimestamp(),
-      updatedBy: currentUser?.email || null
-    }, { merge: true });
+    await saveStudentProgress(normalizedIdUnique, nextProgress);
 
     writesAvailable = true;
     setStatus("Sauvegardé.", "ok");
@@ -488,6 +567,7 @@ async function saveModuleCheck(input) {
     console.error("Sauvegarde module impossible :", error);
 
     input.checked = previousChecked;
+    if (dateInput) dateInput.value = previousDate;
     progressById.set(normalizedIdUnique, previousProgress);
     updateCheckVisual(input);
     renderSummary();
@@ -497,6 +577,52 @@ async function saveModuleCheck(input) {
     alert(`Sauvegarde impossible : ${error.code || error.message}`);
   } finally {
     label?.classList.remove("saving");
+    dateInput?.classList.remove("saving");
+  }
+}
+
+async function saveModuleDate(input) {
+  const normalizedIdUnique = input.dataset.studentId || "";
+  const moduleKey = input.dataset.moduleKey || "";
+
+  if (!effectifRows.some(item => item.normalizedIdUnique === normalizedIdUnique) || !MODULE_COLUMNS.some(column => column.key === moduleKey)) {
+    alert("Élève ou module introuvable.");
+    return;
+  }
+
+  const previousProgress = getProgressForStudent(normalizedIdUnique);
+  const previousDate = previousProgress.dates?.[moduleKey] || "";
+  const nextDate = input.value || "";
+
+  const nextProgress = normalizeProgress({
+    ...previousProgress,
+    dates: {
+      ...previousProgress.dates,
+      [moduleKey]: nextDate
+    }
+  });
+
+  progressById.set(normalizedIdUnique, nextProgress);
+
+  try {
+    input.classList.add("saving");
+    setStatus("Enregistrement...", "info");
+
+    await saveStudentProgress(normalizedIdUnique, nextProgress);
+
+    writesAvailable = true;
+    setStatus("Date sauvegardée.", "ok");
+  } catch (error) {
+    console.error("Sauvegarde date impossible :", error);
+
+    input.value = previousDate;
+    progressById.set(normalizedIdUnique, previousProgress);
+
+    writesAvailable = false;
+    setStatus("Sauvegarde impossible : règle Firebase à ajouter.", "error");
+    alert(`Sauvegarde impossible : ${error.code || error.message}`);
+  } finally {
+    input.classList.remove("saving");
   }
 }
 
@@ -507,7 +633,7 @@ async function loadAndRenderModules() {
 
     effectifRows = await loadEffectifRows();
 
-    showLoader("Chargement des coches...");
+    showLoader("Chargement des coches et dates...");
     await loadStudentProgress();
 
     renderTable();
@@ -543,10 +669,16 @@ reloadModulesBtn?.addEventListener("click", () => {
 });
 
 modulesTable?.addEventListener("change", event => {
-  const input = event.target.closest("[data-module-check]");
-  if (!input) return;
+  const checkInput = event.target.closest("[data-module-check]");
+  if (checkInput) {
+    saveModuleCheck(checkInput);
+    return;
+  }
 
-  saveModuleCheck(input);
+  const dateInput = event.target.closest("[data-module-date]");
+  if (dateInput) {
+    saveModuleDate(dateInput);
+  }
 });
 
 onAuthStateChanged(auth, async user => {
