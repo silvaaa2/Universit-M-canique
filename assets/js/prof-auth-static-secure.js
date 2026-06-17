@@ -6,6 +6,11 @@ const loginForm = document.getElementById("loginForm");
 const loginError = document.getElementById("loginError");
 const loginBtn = document.getElementById("loginBtn");
 const loginBtnText = loginBtn?.querySelector(".btn-text");
+const loginTransition = document.getElementById("loginTransition");
+const loginTransitionTitle = loginTransition?.querySelector("h2");
+const loginTransitionText = loginTransition?.querySelector("p");
+
+let hideTransitionTimer = null;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -17,15 +22,57 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
-function hideLoader() {
-  ["loader", "loginTransition"].forEach(id => {
-    const element = document.getElementById(id);
-    if (!element) return;
+function hidePageLoader() {
+  const loader = document.getElementById("loader");
+  if (!loader) return;
 
-    element.classList.add("hide");
-    element.classList.remove("active");
-    element.style.pointerEvents = "none";
+  loader.classList.add("hide");
+  loader.style.pointerEvents = "none";
+
+  window.setTimeout(() => {
+    loader.style.display = "none";
+  }, 450);
+}
+
+function setLoginTransitionContent(title, text) {
+  if (loginTransitionTitle) loginTransitionTitle.textContent = title;
+  if (loginTransitionText) loginTransitionText.textContent = text;
+}
+
+function showLoginTransition(
+  title = "Connexion en cours",
+  text = "Vérification de votre accès professeur..."
+) {
+  if (!loginTransition) return;
+
+  window.clearTimeout(hideTransitionTimer);
+  setLoginTransitionContent(title, text);
+  loginTransition.classList.remove("hide");
+  loginTransition.hidden = false;
+  loginTransition.style.pointerEvents = "all";
+
+  requestAnimationFrame(() => {
+    loginTransition.classList.add("active");
   });
+}
+
+function hideLoginTransition() {
+  if (!loginTransition) return;
+
+  window.clearTimeout(hideTransitionTimer);
+  loginTransition.classList.remove("active");
+  loginTransition.style.pointerEvents = "none";
+
+  hideTransitionTimer = window.setTimeout(() => {
+    if (!loginTransition.classList.contains("active")) {
+      loginTransition.hidden = true;
+    }
+  }, 350);
+}
+
+function hideLoader() {
+  hidePageLoader();
+  hideLoginTransition();
 }
 
 function setLoginLoading(isLoading) {
@@ -55,7 +102,17 @@ function showLogin(message = "") {
 }
 
 function showDashboard() {
-  hideLoader();
+  const transitionIsVisible = Boolean(
+    loginTransition && !loginTransition.hidden && loginTransition.classList.contains("active")
+  );
+
+  hidePageLoader();
+
+  if (transitionIsVisible) {
+    setLoginTransitionContent("Connexion validée", "Préparation de l’espace professeur...");
+  } else {
+    hideLoginTransition();
+  }
 
   loginSection.hidden = true;
   loginSection.style.display = "none";
@@ -66,6 +123,10 @@ function showDashboard() {
   requestAnimationFrame(() => {
     profDashboard.classList.add("dashboard-visible");
   });
+
+  window.setTimeout(() => {
+    hideLoginTransition();
+  }, transitionIsVisible ? 650 : 0);
 
   setLoginLoading(false);
   window.scrollTo(0, 0);
@@ -135,8 +196,6 @@ async function startAuth() {
       showDashboard();
     }
 
-    showLogin();
-
     onAuthStateChanged(auth, async user => {
       if (!user) {
         window.currentProfUser = null;
@@ -160,11 +219,14 @@ async function startAuth() {
 
       loginError.textContent = "";
       setLoginLoading(true);
+      showLoginTransition();
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
       } catch (error) {
         console.error("Erreur Firebase :", error.code, error.message);
+
+        hideLoginTransition();
 
         if (error.code === "auth/invalid-credential") {
           loginError.textContent = "Email ou mot de passe incorrect.";
@@ -187,5 +249,4 @@ async function startAuth() {
   }
 }
 
-hideLoader();
 startAuth();
