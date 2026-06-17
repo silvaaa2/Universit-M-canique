@@ -12,13 +12,18 @@ window.goPage = function (url) {
   window.location.assign(url);
 };
 
-(function loadModulesTableStyles() {
+(function loadModulesPageExtras() {
   if (!document.body?.classList.contains("modules-page")) return;
-  if (document.querySelector("link[data-modules-table-colors]")) return;
 
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "../assets/css/prof-modules-eleves.css?v=1001";
-  link.dataset.modulesTableColors = "true";
-  document.head.appendChild(link);
+  if (!document.querySelector("link[data-modules-table-colors]")) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "../assets/css/prof-modules-eleves.css?v=1001";
+    link.dataset.modulesTableColors = "true";
+    document.head.appendChild(link);
+  }
+
+  import("./prof-modules-archives.js?v=1001").catch(error => {
+    console.warn("Archives modules indisponibles :", error);
+  });
 })();
