@@ -1,4 +1,12 @@
 /* Couleurs type tableur pour la page Modules Eleves */
+body.modules-page .modules-toolbar {
+  grid-template-columns: auto minmax(260px, 1fr) auto auto auto !important;
+}
+
+body.modules-page .modules-status[data-tone="ok"] {
+  display: none !important;
+}
+
 .modules-table-wrap {
   background:
     linear-gradient(90deg, rgba(255,255,255,.018), rgba(255,255,255,.006)),
@@ -170,4 +178,10 @@
 .module-check.readonly {
   pointer-events: none !important;
   cursor: default !important;
+}
+
+@media (max-width: 1100px) {
+  body.modules-page .modules-toolbar {
+    grid-template-columns: auto 1fr !important;
+  }
 }
