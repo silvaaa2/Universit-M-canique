@@ -24,6 +24,14 @@
   </div>
 </div>
 
+<div id="loginTransition" class="login-transition" hidden>
+  <div class="transition-box">
+    <div class="transition-spinner"></div>
+    <h2>Connexion validée</h2>
+    <p>Préparation de l’espace professeur...</p>
+  </div>
+</div>
+
 <header>
   <div class="logo" onclick="goPage('../index.html')">
     <img src="../Images/logo.png" alt="Logo Module 4">
@@ -89,17 +97,17 @@
         <p>Accéder aux corrigés des customs.</p>
       </button>
 
-      <a href="prof-rp-7x92q.html" class="prof-panel prof-panel-btn" id="openResponsesBtn" data-prof-nav="prof-rp-7x92q.html">
+      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-rp-7x92q.html')">
         <span class="panel-number">02</span>
         <h2>Réponses élèves</h2>
         <p>Consulter les réponses des élèves.</p>
-      </a>
+      </button>
 
-      <a href="prof-exam-4x91q.html" class="prof-panel prof-panel-btn" id="openExamBtn" data-prof-nav="prof-exam-4x91q.html">
+      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-exam-4x91q.html')">
         <span class="panel-number">03</span>
         <h2>Examens</h2>
         <p>Consulter les réponses d’examen.</p>
-      </a>
+      </button>
     </div>
 
     <section class="inline-corrections" id="inlineCorrections" hidden>
@@ -187,15 +195,13 @@
 
 </main>
 
-<script>window.__profAuthStarted = true;</script>
 <script src="../assets/js/loader.js?v=1001"></script>
 <script src="../assets/js/navigation.js?v=1001"></script>
-<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1001"></script>
 <script src="../assets/js/prof-ui.js?v=1001"></script>
+<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1002"></script>
 <script type="module" src="../assets/js/prof-admin-drive-tools.js?v=1014"></script>
 <script type="module" src="../assets/js/prof-admin-exam-settings.js?v=1019"></script>
 <script type="module" src="../assets/js/prof-admin-exam-scale-wizard.js?v=1004"></script>
-<script src="../assets/js/prof-click-repair.js?v=1001"></script>
 
 </body>
 </html>
