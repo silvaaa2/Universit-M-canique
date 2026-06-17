@@ -18,7 +18,7 @@ window.goPage = function (url) {
   if (!document.querySelector("link[data-modules-table-colors]")) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "../assets/css/prof-modules-eleves.css?v=1001";
+    link.href = "../assets/css/prof-modules-eleves.css?v=1002";
     link.dataset.modulesTableColors = "true";
     document.head.appendChild(link);
   }
