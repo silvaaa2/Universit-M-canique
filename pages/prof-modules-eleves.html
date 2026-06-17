@@ -14,9 +14,43 @@
   <link rel="stylesheet" href="../assets/css/prof.css?v=9036">
 
   <style>
+    body.modules-page main {
+      padding: 0 24px 24px;
+    }
+
+    body.modules-page .prof-dashboard {
+      padding: 24px 0 26px;
+    }
+
+    body.modules-page .prof-dashboard-top {
+      margin: 0 0 22px;
+      align-items: flex-start;
+    }
+
+    body.modules-page .prof-dashboard-top h1 {
+      font-size: clamp(58px, 6vw, 92px);
+      letter-spacing: 0;
+    }
+
+    body.modules-page .prof-dashboard-top .intro {
+      max-width: 920px;
+    }
+
+    body.modules-page .inline-corrections {
+      width: 100%;
+      margin: 0;
+    }
+
+    body.modules-page .inline-corrections-card {
+      width: 100%;
+      max-width: none;
+      padding: 14px;
+      border-radius: 8px;
+    }
+
     .modules-shell {
       display: grid;
-      gap: 18px;
+      gap: 12px;
     }
 
     .modules-summary {
@@ -26,8 +60,8 @@
     }
 
     .modules-stat {
-      min-height: 86px;
-      padding: 14px;
+      min-height: 78px;
+      padding: 13px;
       border: 1px solid rgba(255,255,255,.09);
       border-radius: 8px;
       background:
@@ -37,7 +71,7 @@
 
     .modules-stat span {
       display: block;
-      margin-bottom: 11px;
+      margin-bottom: 9px;
       color: var(--muted);
       font-size: 10px;
       font-weight: 1000;
@@ -47,7 +81,7 @@
     .modules-stat strong {
       display: block;
       color: var(--text);
-      font-size: 26px;
+      font-size: 25px;
       line-height: 1;
       font-weight: 1000;
     }
@@ -58,10 +92,10 @@
 
     .modules-toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) auto auto;
+      grid-template-columns: minmax(260px, 1fr) auto auto;
       gap: 10px;
       align-items: center;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 8px;
       background: rgba(255,255,255,.030);
@@ -69,7 +103,7 @@
 
     .modules-search {
       width: 100%;
-      height: 46px;
+      height: 44px;
       border: 1px solid rgba(255,255,255,.11);
       border-radius: 8px;
       background: rgba(0,0,0,.28);
@@ -86,12 +120,32 @@
       box-shadow: 0 0 0 3px rgba(214,180,106,.10);
     }
 
+    .modules-reload-btn {
+      height: 44px;
+      padding: 0 16px;
+      border: 1px solid rgba(214,180,106,.30);
+      border-radius: 8px;
+      background: rgba(214,180,106,.12);
+      color: var(--gold2);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 1000;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .modules-reload-btn:hover {
+      border-color: rgba(214,180,106,.48);
+      background: rgba(214,180,106,.18);
+    }
+
     .modules-status {
       min-height: 18px;
       color: var(--muted);
       font-size: 12px;
       font-weight: 900;
       text-align: right;
+      white-space: nowrap;
     }
 
     .modules-status[data-tone="ok"] {
@@ -108,7 +162,8 @@
 
     .modules-table-wrap {
       position: relative;
-      min-height: 420px;
+      height: calc(100vh - 392px);
+      min-height: 500px;
       overflow: auto;
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 8px;
@@ -116,13 +171,13 @@
     }
 
     .modules-table {
-      min-width: 1040px;
+      min-width: 1700px;
     }
 
     .modules-row {
       display: grid;
-      grid-template-columns: minmax(240px, 1.35fr) 120px repeat(6, minmax(116px, 1fr));
-      align-items: center;
+      grid-template-columns: minmax(250px, 1.1fr) repeat(6, minmax(118px, .75fr) minmax(148px, .8fr));
+      align-items: stretch;
       border-bottom: 1px solid rgba(255,255,255,.07);
     }
 
@@ -147,12 +202,13 @@
 
     .modules-cell {
       min-width: 0;
-      padding: 11px 12px;
+      display: grid;
+      align-items: center;
+      padding: 9px 12px;
       border-right: 1px solid rgba(255,255,255,.055);
     }
 
-    .modules-student strong,
-    .modules-id strong {
+    .modules-student strong {
       display: block;
       overflow: hidden;
       color: var(--text);
@@ -162,8 +218,7 @@
       white-space: nowrap;
     }
 
-    .modules-student span,
-    .modules-id span {
+    .modules-student span {
       display: block;
       margin-top: 4px;
       color: var(--muted);
@@ -173,7 +228,7 @@
 
     .module-check {
       width: 100%;
-      min-height: 38px;
+      min-height: 36px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -209,9 +264,29 @@
       box-shadow: 0 0 18px rgba(74,222,128,.10);
     }
 
-    .module-check.saving {
+    .module-check.saving,
+    .module-date.saving {
       opacity: .68;
       pointer-events: none;
+    }
+
+    .module-date {
+      width: 100%;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 8px;
+      background: rgba(0,0,0,.30);
+      color: var(--text);
+      padding: 0 9px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      outline: none;
+    }
+
+    .module-date:focus {
+      border-color: rgba(214,180,106,.42);
+      box-shadow: 0 0 0 3px rgba(214,180,106,.10);
     }
 
     .modules-empty,
@@ -278,6 +353,10 @@
     }
 
     @media (max-width: 1100px) {
+      body.modules-page main {
+        padding: 0 14px 18px;
+      }
+
       .modules-summary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -289,11 +368,16 @@
       .modules-status {
         text-align: left;
       }
+
+      .modules-table-wrap {
+        height: calc(100vh - 430px);
+        min-height: 420px;
+      }
     }
   </style>
 </head>
 
-<body>
+<body class="modules-page">
 
 <header>
   <div class="logo" onclick="goPage('../index.html')">
@@ -328,7 +412,7 @@
         <p class="kicker">Suivi modules</p>
         <h1>Modules Élèves</h1>
         <p class="intro">
-          Cochez les modules validés pour chaque élève. L’effectif vient du réglage partagé du site stage.
+          Cochez les modules validés et renseignez la date de chaque cours ou session.
         </p>
       </div>
 
@@ -341,7 +425,7 @@
 
         <div class="modules-toolbar">
           <input id="modulesSearch" class="modules-search" type="text" autocomplete="off" placeholder="Rechercher nom ou ID Unique...">
-          <button type="button" class="prof-admin-small-btn gold" id="reloadModulesBtn">Recharger</button>
+          <button type="button" class="modules-reload-btn" id="reloadModulesBtn">Recharger</button>
           <span id="modulesStatus" class="modules-status"></span>
         </div>
 
@@ -362,7 +446,7 @@
 </main>
 
 <script src="../assets/js/navigation.js?v=1001"></script>
-<script type="module" src="../assets/js/prof-modules-eleves.js?v=1001"></script>
+<script type="module" src="../assets/js/prof-modules-eleves.js?v=1002"></script>
 
 </body>
 </html>
