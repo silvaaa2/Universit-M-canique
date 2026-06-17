@@ -1,0 +1,101 @@
+/* Couleurs type tableur pour la page Modules Eleves */
+.modules-table-wrap {
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.018), rgba(255,255,255,.006)),
+    rgba(0,0,0,.22) !important;
+}
+
+.modules-row {
+  border-bottom-color: rgba(255,247,232,.075) !important;
+}
+
+.modules-row > :nth-child(n+2):nth-child(-n+9) {
+  background:
+    linear-gradient(180deg, rgba(236, 169, 85, .135), rgba(236, 169, 85, .075)) !important;
+}
+
+.modules-row > :nth-child(n+10):nth-child(-n+13) {
+  background:
+    linear-gradient(180deg, rgba(113, 177, 104, .135), rgba(113, 177, 104, .075)) !important;
+}
+
+.modules-row.head > :nth-child(n+2):nth-child(-n+9) {
+  color: #ffdca8 !important;
+  background:
+    linear-gradient(180deg, rgba(236, 169, 85, .245), rgba(236, 169, 85, .145)),
+    rgba(18,18,18,.98) !important;
+}
+
+.modules-row.head > :nth-child(n+10):nth-child(-n+13) {
+  color: #d7f3cf !important;
+  background:
+    linear-gradient(180deg, rgba(113, 177, 104, .255), rgba(113, 177, 104, .145)),
+    rgba(18,18,18,.98) !important;
+}
+
+.modules-row > :nth-child(3),
+.modules-row > :nth-child(5),
+.modules-row > :nth-child(7),
+.modules-row > :nth-child(9),
+.modules-row > :nth-child(11),
+.modules-row > :nth-child(13) {
+  border-right: 2px solid rgba(0,0,0,.55) !important;
+}
+
+.modules-row.head > :nth-child(3),
+.modules-row.head > :nth-child(5),
+.modules-row.head > :nth-child(7),
+.modules-row.head > :nth-child(9),
+.modules-row.head > :nth-child(11),
+.modules-row.head > :nth-child(13) {
+  border-right-color: rgba(0,0,0,.72) !important;
+}
+
+.modules-row > :nth-child(n+2):nth-child(-n+9) .module-check:not(.checked) {
+  border-color: rgba(236, 137, 38, .48) !important;
+  background: rgba(236, 137, 38, .135) !important;
+  color: #ffc58b !important;
+}
+
+.modules-row > :nth-child(n+10):nth-child(-n+13) .module-check:not(.checked) {
+  border-color: rgba(113, 177, 104, .48) !important;
+  background: rgba(113, 177, 104, .125) !important;
+  color: #c9edc1 !important;
+}
+
+.modules-row > :nth-child(n+2):nth-child(-n+9) .module-check input {
+  accent-color: #d97706 !important;
+}
+
+.modules-row > :nth-child(n+10):nth-child(-n+13) .module-check input {
+  accent-color: #5f9d55 !important;
+}
+
+.modules-row > :nth-child(n+2):nth-child(-n+9) .module-date {
+  border-color: rgba(236, 169, 85, .20) !important;
+  background: rgba(31, 21, 10, .46) !important;
+}
+
+.modules-row > :nth-child(n+10):nth-child(-n+13) .module-date {
+  border-color: rgba(113, 177, 104, .22) !important;
+  background: rgba(10, 27, 14, .46) !important;
+}
+
+.modules-row > :nth-child(n+2):nth-child(-n+9) .module-date:focus {
+  border-color: rgba(236, 169, 85, .58) !important;
+  box-shadow: 0 0 0 3px rgba(236, 169, 85, .14) !important;
+}
+
+.modules-row > :nth-child(n+10):nth-child(-n+13) .module-date:focus {
+  border-color: rgba(113, 177, 104, .58) !important;
+  box-shadow: 0 0 0 3px rgba(113, 177, 104, .14) !important;
+}
+
+.module-check.checked {
+  border-color: rgba(74,222,128,.48) !important;
+  background: rgba(74,222,128,.18) !important;
+  color: #a7f3d0 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.035),
+    0 0 18px rgba(74,222,128,.12) !important;
+}
