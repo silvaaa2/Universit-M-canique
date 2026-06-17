@@ -211,18 +211,22 @@ function replaceText(node, replacements) {
   if (!node) return;
 
   const current = node.textContent || "";
-  const next = replacements[current] || current
-    .replaceAll("Modules Eleves", "Modules Élèves")
-    .replaceAll("Modules eleves", "Modules élèves")
-    .replaceAll("Eleve", "Élève")
-    .replaceAll("eleve", "élève")
-    .replaceAll("Donnees", "Données")
-    .replaceAll("donnees", "données")
-    .replaceAll("Reglage", "Réglage")
-    .replaceAll("sauvegardees", "sauvegardées")
-    .replaceAll("partage", "partagé")
-    .replaceAll("Verifie", "Vérifie")
-    .replaceAll("regles", "règles");
+  const next = replacements[current] || (
+    current
+      .replaceAll("Modules Eleves", "Modules Élèves")
+      .replaceAll("Modules eleves", "Modules élèves")
+      .replaceAll("Eleve", "Élève")
+      .replaceAll("eleve", "élève")
+      .replaceAll("Donnees", "Données")
+      .replaceAll("donnees", "données")
+      .replaceAll("chargees", "chargées")
+      .replaceAll("effectuee", "effectuée")
+      .replaceAll("Reglage", "Réglage")
+      .replaceAll("sauvegardees", "sauvegardées")
+      .replaceAll("partage", "partagé")
+      .replaceAll("Verifie", "Vérifie")
+      .replaceAll("regles", "règles")
+  );
 
   if (next !== current) node.textContent = next;
 }
