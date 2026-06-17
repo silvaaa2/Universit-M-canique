@@ -14,54 +14,53 @@
   <link rel="stylesheet" href="../assets/css/prof.css?v=9036">
 
   <style>
+    body.modules-page {
+      height: 100vh;
+      overflow: hidden;
+    }
+
     body.modules-page main {
-      padding: 0 24px 24px;
+      height: calc(100vh - 86px);
+      overflow: hidden;
+      padding: 10px 12px 12px;
     }
 
     body.modules-page .prof-dashboard {
-      padding: 24px 0 26px;
-    }
-
-    body.modules-page .prof-dashboard-top {
-      margin: 0 0 22px;
-      align-items: flex-start;
-    }
-
-    body.modules-page .prof-dashboard-top h1 {
-      font-size: clamp(58px, 6vw, 92px);
-      letter-spacing: 0;
-    }
-
-    body.modules-page .prof-dashboard-top .intro {
-      max-width: 920px;
+      height: 100%;
+      padding: 0;
     }
 
     body.modules-page .inline-corrections {
       width: 100%;
+      height: 100%;
       margin: 0;
     }
 
     body.modules-page .inline-corrections-card {
       width: 100%;
       max-width: none;
-      padding: 14px;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 10px;
+      overflow: hidden;
+      padding: 10px;
       border-radius: 8px;
     }
 
     .modules-shell {
-      display: grid;
-      gap: 12px;
+      min-height: 0;
     }
 
     .modules-summary {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
     }
 
     .modules-stat {
-      min-height: 78px;
-      padding: 13px;
+      min-height: 58px;
+      padding: 9px 11px;
       border: 1px solid rgba(255,255,255,.09);
       border-radius: 8px;
       background:
@@ -71,7 +70,7 @@
 
     .modules-stat span {
       display: block;
-      margin-bottom: 9px;
+      margin-bottom: 6px;
       color: var(--muted);
       font-size: 10px;
       font-weight: 1000;
@@ -81,7 +80,7 @@
     .modules-stat strong {
       display: block;
       color: var(--text);
-      font-size: 25px;
+      font-size: 22px;
       line-height: 1;
       font-weight: 1000;
     }
@@ -95,7 +94,7 @@
       grid-template-columns: minmax(260px, 1fr) auto auto;
       gap: 10px;
       align-items: center;
-      padding: 10px;
+      padding: 9px;
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 8px;
       background: rgba(255,255,255,.030);
@@ -103,7 +102,7 @@
 
     .modules-search {
       width: 100%;
-      height: 44px;
+      height: 42px;
       border: 1px solid rgba(255,255,255,.11);
       border-radius: 8px;
       background: rgba(0,0,0,.28);
@@ -121,7 +120,7 @@
     }
 
     .modules-reload-btn {
-      height: 44px;
+      height: 42px;
       padding: 0 16px;
       border: 1px solid rgba(214,180,106,.30);
       border-radius: 8px;
@@ -162,8 +161,7 @@
 
     .modules-table-wrap {
       position: relative;
-      height: calc(100vh - 392px);
-      min-height: 500px;
+      min-height: 0;
       overflow: auto;
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 8px;
@@ -353,8 +351,21 @@
     }
 
     @media (max-width: 1100px) {
+      body.modules-page {
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+      }
+
       body.modules-page main {
-        padding: 0 14px 18px;
+        height: auto;
+        min-height: calc(100vh - 86px);
+        overflow: visible;
+        padding: 10px 10px 14px;
+      }
+
+      body.modules-page .inline-corrections-card {
+        min-height: calc(100vh - 110px);
       }
 
       .modules-summary {
@@ -370,8 +381,7 @@
       }
 
       .modules-table-wrap {
-        height: calc(100vh - 430px);
-        min-height: 420px;
+        min-height: 480px;
       }
     }
   </style>
@@ -407,18 +417,6 @@
   </section>
 
   <section id="protectedContent" class="prof-dashboard" hidden>
-    <div class="prof-dashboard-top">
-      <div>
-        <p class="kicker">Suivi modules</p>
-        <h1>Modules Élèves</h1>
-        <p class="intro">
-          Cochez les modules validés et renseignez la date de chaque cours ou session.
-        </p>
-      </div>
-
-      <button class="btn secondary" onclick="goPage('espace-prof.html')">Retour</button>
-    </div>
-
     <section class="inline-corrections active">
       <div class="inline-corrections-card modules-shell">
         <div id="modulesSummary" class="modules-summary"></div>
