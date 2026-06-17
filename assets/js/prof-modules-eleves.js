@@ -150,9 +150,9 @@ function showAccessDenied() {
     guardLoader.innerHTML = `
       <div class="prof-login-card">
         <p class="kicker">Accès refusé</p>
-        <h1>Refusé</h1>
-        <p class="intro">Ce compte n'est pas autorisé à accéder au suivi des modules.</p>
-        <button class="btn secondary" onclick="window.location.href='espace-prof.html'">Retour connexion</button>
+        <h1>Admin requis</h1>
+        <p class="intro">Cette catégorie est réservée aux comptes administrateurs.</p>
+        <button class="btn secondary" onclick="window.location.href='espace-prof.html'">Retour espace prof</button>
       </div>
     `;
   }
@@ -688,7 +688,7 @@ onAuthStateChanged(auth, async user => {
   }
 
   const access = await getUserAccess(user);
-  const allowed = access.role === "prof" || access.admin === true;
+  const allowed = access.admin === true;
 
   if (!allowed) {
     try {
