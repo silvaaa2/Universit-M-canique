@@ -19,10 +19,14 @@
       overflow: hidden;
     }
 
+    body.modules-page > header {
+      display: none;
+    }
+
     body.modules-page main {
-      height: calc(100vh - 86px);
+      height: 100vh;
       overflow: hidden;
-      padding: 10px 12px 12px;
+      padding: 8px;
     }
 
     body.modules-page .prof-dashboard {
@@ -91,13 +95,35 @@
 
     .modules-toolbar {
       display: grid;
-      grid-template-columns: minmax(260px, 1fr) auto auto;
+      grid-template-columns: auto minmax(260px, 1fr) auto auto auto;
       gap: 10px;
       align-items: center;
       padding: 9px;
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 8px;
       background: rgba(255,255,255,.030);
+    }
+
+    .modules-back-btn {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 8px;
+      background: rgba(255,255,255,.055);
+      color: var(--text);
+      font: inherit;
+      font-size: 24px;
+      font-weight: 1000;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .modules-back-btn:hover {
+      border-color: rgba(214,180,106,.40);
+      background: rgba(214,180,106,.12);
+      color: var(--gold2);
     }
 
     .modules-search {
@@ -145,6 +171,10 @@
       font-weight: 900;
       text-align: right;
       white-space: nowrap;
+    }
+
+    .modules-status:empty {
+      display: none;
     }
 
     .modules-status[data-tone="ok"] {
@@ -359,13 +389,13 @@
 
       body.modules-page main {
         height: auto;
-        min-height: calc(100vh - 86px);
+        min-height: 100vh;
         overflow: visible;
-        padding: 10px 10px 14px;
+        padding: 8px;
       }
 
       body.modules-page .inline-corrections-card {
-        min-height: calc(100vh - 110px);
+        min-height: calc(100vh - 16px);
       }
 
       .modules-summary {
@@ -373,7 +403,12 @@
       }
 
       .modules-toolbar {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto 1fr;
+      }
+
+      .modules-reload-btn,
+      .modules-status {
+        grid-column: span 1;
       }
 
       .modules-status {
@@ -422,6 +457,7 @@
         <div id="modulesSummary" class="modules-summary"></div>
 
         <div class="modules-toolbar">
+          <button type="button" class="modules-back-btn" title="Retour espace prof" aria-label="Retour espace prof" onclick="goPage('espace-prof.html')">&larr;</button>
           <input id="modulesSearch" class="modules-search" type="text" autocomplete="off" placeholder="Rechercher nom ou ID Unique...">
           <button type="button" class="modules-reload-btn" id="reloadModulesBtn">Recharger</button>
           <span id="modulesStatus" class="modules-status"></span>
