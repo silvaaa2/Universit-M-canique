@@ -99,3 +99,44 @@
     inset 0 0 0 1px rgba(255,255,255,.035),
     0 0 18px rgba(74,222,128,.12) !important;
 }
+
+.module-check {
+  width: 42px !important;
+  min-width: 42px !important;
+  min-height: 32px !important;
+  justify-self: center !important;
+  gap: 0 !important;
+  padding: 0 !important;
+}
+
+.module-check > span {
+  display: none !important;
+}
+
+.module-check input {
+  width: 16px !important;
+  height: 16px !important;
+  flex: 0 0 auto !important;
+}
+
+.module-check.readonly::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  background: rgba(255,255,255,.10);
+  box-sizing: border-box;
+}
+
+.module-check.readonly.checked::before {
+  content: "✓";
+  display: grid;
+  place-items: center;
+  border-color: #86efac;
+  background: #86efac;
+  color: #0b1d10;
+  font-size: 13px;
+  font-weight: 1000;
+  line-height: 1;
+}
