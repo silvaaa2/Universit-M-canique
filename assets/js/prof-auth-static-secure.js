@@ -7,8 +7,6 @@ const loginError = document.getElementById("loginError");
 const loginBtn = document.getElementById("loginBtn");
 const loginBtnText = loginBtn?.querySelector(".btn-text");
 
-let studentModulesLoaded = false;
-
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
   authDomain: "universit-4b11e.firebaseapp.com",
@@ -85,20 +83,6 @@ function bindLogout(signOut, auth) {
   });
 }
 
-function loadStudentModulesAfterAuth() {
-  if (studentModulesLoaded) return;
-  studentModulesLoaded = true;
-
-  setTimeout(async () => {
-    try {
-      await import("./prof-student-modules.js?v=1003");
-      await import("./prof-student-modules-polish.js?v=1002");
-    } catch (error) {
-      console.warn("Modules élèves indisponible :", error);
-    }
-  }, 250);
-}
-
 async function startAuth() {
   try {
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
@@ -149,7 +133,6 @@ async function startAuth() {
       window.currentProfUser = user;
       bindLogout(signOut, auth);
       showDashboard();
-      loadStudentModulesAfterAuth();
     }
 
     showLogin();
