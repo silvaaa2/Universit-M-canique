@@ -127,7 +127,7 @@ async function startModulesNav() {
       }
 
       const access = await loadAccess(firebase, user);
-      const allowed = access.admin === true;
+      const allowed = access.role === "prof" || access.admin === true;
 
       if (!allowed) {
         removeModulesButton();
