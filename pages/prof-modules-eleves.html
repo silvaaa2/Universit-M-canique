@@ -95,7 +95,7 @@
 
     .modules-toolbar {
       display: grid;
-      grid-template-columns: auto minmax(260px, 1fr) auto auto auto;
+      grid-template-columns: auto minmax(260px, 1fr) auto auto auto auto;
       gap: 10px;
       align-items: center;
       padding: 9px;
@@ -162,6 +162,23 @@
     .modules-reload-btn:hover {
       border-color: rgba(214,180,106,.48);
       background: rgba(214,180,106,.18);
+    }
+
+    .modules-sheets-btn {
+      border-color: rgba(74,222,128,.32);
+      background: rgba(74,222,128,.11);
+      color: #86efac;
+    }
+
+    .modules-sheets-btn:hover {
+      border-color: rgba(74,222,128,.52);
+      background: rgba(74,222,128,.17);
+    }
+
+    .modules-sheets-btn:disabled,
+    .modules-reload-btn:disabled {
+      opacity: .55;
+      cursor: wait;
     }
 
     .modules-status {
@@ -481,6 +498,7 @@
 
 <script src="../assets/js/navigation.js?v=1002"></script>
 <script type="module" src="../assets/js/prof-modules-eleves.js?v=1003"></script>
+<script type="module" src="../assets/js/prof-modules-sheets-sync.js?v=1001"></script>
 
 </body>
 </html>
