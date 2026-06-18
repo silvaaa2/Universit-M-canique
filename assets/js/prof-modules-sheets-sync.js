@@ -501,6 +501,8 @@ function getDetectedColumnsText(layout) {
 }
 
 async function syncModulesToGoogleSheets() {
+  if (syncButton?.disabled) return;
+
   if (!currentAccess.admin) {
     alert("Accès admin requis.");
     return;
@@ -556,16 +558,25 @@ async function syncModulesToGoogleSheets() {
     setStatus("Sync Sheets impossible.", "error");
     alert(`Synchronisation Google Sheets impossible : ${error.message || error}`);
   } finally {
-    syncButton.disabled = false;
+    if (syncButton) syncButton.disabled = false;
     hideLoader();
   }
 }
 
+function bindSyncButton(button) {
+  if (!button || button.dataset.sheetsSyncBound === "true") return;
+
+  button.dataset.sheetsSyncBound = "true";
+  button.addEventListener("click", syncModulesToGoogleSheets);
+}
+
 function installSyncButton() {
   if (!currentAccess.admin) return;
-  if (document.getElementById("syncSheetsBtn")) {
-    syncButton = document.getElementById("syncSheetsBtn");
-    syncButton.addEventListener("click", syncModulesToGoogleSheets);
+
+  const existingButton = document.getElementById("syncSheetsBtn");
+  if (existingButton) {
+    syncButton = existingButton;
+    bindSyncButton(syncButton);
     return;
   }
 
@@ -577,7 +588,7 @@ function installSyncButton() {
   syncButton.id = "syncSheetsBtn";
   syncButton.className = "modules-reload-btn modules-sheets-btn";
   syncButton.textContent = "Sync Sheets";
-  syncButton.addEventListener("click", syncModulesToGoogleSheets);
+  bindSyncButton(syncButton);
 
   reloadButton.insertAdjacentElement("afterend", syncButton);
 }
