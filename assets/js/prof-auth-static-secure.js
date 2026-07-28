@@ -11,6 +11,10 @@ const loginTransitionTitle = loginTransition?.querySelector("h2");
 const loginTransitionText = loginTransition?.querySelector("p");
 
 let hideTransitionTimer = null;
+let authResolved = false;
+let authFallbackTimer = null;
+let profCustomControlsLoaded = false;
+let loginAttemptTimer = null;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -21,6 +25,22 @@ const firebaseConfig = {
   appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
   measurementId: "G-Z5B51BQCNL"
 };
+
+function clearAuthFallback() {
+  authResolved = true;
+
+  if (authFallbackTimer) {
+    window.clearTimeout(authFallbackTimer);
+    authFallbackTimer = null;
+  }
+}
+
+function clearLoginAttemptTimer() {
+  if (loginAttemptTimer) {
+    window.clearTimeout(loginAttemptTimer);
+    loginAttemptTimer = null;
+  }
+}
 
 function hidePageLoader() {
   const loader = document.getElementById("loader");
@@ -87,6 +107,8 @@ function setLoginLoading(isLoading) {
 }
 
 function showLogin(message = "") {
+  clearAuthFallback();
+  clearLoginAttemptTimer();
   hideLoader();
 
   profDashboard.classList.remove("dashboard-visible");
@@ -101,7 +123,22 @@ function showLogin(message = "") {
   setLoginLoading(false);
 }
 
+function loadProfCustomControls() {
+  if (profCustomControlsLoaded) return;
+
+  profCustomControlsLoaded = true;
+
+  window.setTimeout(() => {
+    import("./prof-custom-availability.js?v=1002").catch(error => {
+      console.warn("Réglage customs élèves indisponible :", error);
+    });
+  }, 500);
+}
+
 function showDashboard() {
+  clearAuthFallback();
+  clearLoginAttemptTimer();
+
   const transitionIsVisible = Boolean(
     loginTransition && !loginTransition.hidden && loginTransition.classList.contains("active")
   );
@@ -130,6 +167,7 @@ function showDashboard() {
 
   setLoginLoading(false);
   window.scrollTo(0, 0);
+  loadProfCustomControls();
 }
 
 function bindLogout(signOut, auth) {
@@ -144,7 +182,16 @@ function bindLogout(signOut, auth) {
   });
 }
 
+function startAuthFallbackTimer() {
+  authFallbackTimer = window.setTimeout(() => {
+    if (authResolved) return;
+    showLogin("Chargement trop long. Recharge la page si la connexion ne répond pas.");
+  }, 12000);
+}
+
 async function startAuth() {
+  startAuthFallbackTimer();
+
   try {
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
     const firebaseAuth = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
@@ -221,11 +268,19 @@ async function startAuth() {
       setLoginLoading(true);
       showLoginTransition();
 
+      clearLoginAttemptTimer();
+      loginAttemptTimer = window.setTimeout(() => {
+        hideLoginTransition();
+        setLoginLoading(false);
+        loginError.textContent = "Connexion trop longue. Recharge la page si besoin.";
+      }, 14000);
+
       try {
         await signInWithEmailAndPassword(auth, email, password);
       } catch (error) {
         console.error("Erreur Firebase :", error.code, error.message);
 
+        clearLoginAttemptTimer();
         hideLoginTransition();
 
         if (error.code === "auth/invalid-credential") {
