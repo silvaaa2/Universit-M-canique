@@ -9,7 +9,7 @@
   <link rel="shortcut icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="stylesheet" href="../assets/css/base.css?v=1001">
   <link rel="stylesheet" href="../assets/css/header.css?v=1001">
-  <link rel="stylesheet" href="../assets/css/buttons.css?v=1002">
+  <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
 </head>
 
@@ -76,37 +76,29 @@
         </p>
       </div>
 
-      <a id="profModulesElevesBtn" class="btn secondary prof-modules-nav-btn first-action" href="prof-modules-eleves.html" style="margin-left:auto">
-        Modules Élèves
-      </a>
-
-      <button id="profCustomAccessBtn" class="btn secondary prof-custom-access-btn" type="button" onclick="window.openCustomAccessModal ? window.openCustomAccessModal() : window.dispatchEvent(new Event('openProfCustomAccess'))">
-        Customs élèves
-      </button>
-
-      <button id="logoutBtn" class="btn secondary" type="button">
+      <button id="logoutBtn" class="btn secondary">
         Déconnexion
       </button>
     </div>
 
     <div class="prof-grid">
-      <button type="button" class="prof-panel prof-panel-btn" id="openCorrectionsBtn" onclick="window.openProfCorrectionsPanel && window.openProfCorrectionsPanel()">
+      <button type="button" class="prof-panel prof-panel-btn" id="openCorrectionsBtn">
         <span class="panel-number">01</span>
         <h2>Corrigés</h2>
         <p>Accéder aux corrigés des customs.</p>
       </button>
 
-      <a class="prof-panel prof-panel-btn" href="prof-rp-7x92q.html" style="text-decoration:none">
+      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-rp-7x92q.html')">
         <span class="panel-number">02</span>
         <h2>Réponses élèves</h2>
         <p>Consulter les réponses des élèves.</p>
-      </a>
+      </button>
 
-      <a class="prof-panel prof-panel-btn" href="prof-exam-4x91q.html" style="text-decoration:none">
+      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-exam-4x91q.html')">
         <span class="panel-number">03</span>
         <h2>Examens</h2>
         <p>Consulter les réponses d’examen.</p>
-      </a>
+      </button>
     </div>
 
     <section class="inline-corrections" id="inlineCorrections" hidden>
@@ -196,9 +188,7 @@
 
 <script src="../assets/js/navigation.js?v=1002"></script>
 <script src="../assets/js/prof-ui.js?v=1002"></script>
-<script src="../assets/js/prof-dashboard-safety.js?v=1002"></script>
-<script type="module" src="../assets/js/prof-custom-availability.js?v=1005"></script>
-<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1013"></script>
+<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1014"></script>
 
 </body>
 </html>
