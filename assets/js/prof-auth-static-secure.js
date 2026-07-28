@@ -1,4 +1,5 @@
 window.__profAuthStarted = true;
+window.__profAuthReady = false;
 
 const loginSection = document.getElementById("loginSection");
 const profDashboard = document.getElementById("profDashboard");
@@ -14,6 +15,7 @@ let hideTransitionTimer = null;
 let firstRenderDone = false;
 let firstRenderTimer = null;
 let loginAttemptTimer = null;
+let dashboardToolsLoaded = false;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -24,6 +26,20 @@ const firebaseConfig = {
   appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
   measurementId: "G-Z5B51BQCNL"
 };
+
+function withTimeout(promise, ms, label) {
+  let timer = null;
+
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => {
+      reject(new Error(label || "Opération trop longue."));
+    }, ms);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer) window.clearTimeout(timer);
+  });
+}
 
 function markFirstRenderDone() {
   firstRenderDone = true;
@@ -61,10 +77,9 @@ function hidePageLoader() {
 
   loader.classList.add("hide");
   loader.style.pointerEvents = "none";
-
-  window.setTimeout(() => {
-    loader.style.display = "none";
-  }, 450);
+  loader.style.opacity = "0";
+  loader.style.visibility = "hidden";
+  loader.style.display = "none";
 }
 
 function setLoginTransitionContent(title, text) {
@@ -111,11 +126,15 @@ function hideLoader() {
 function setLoginLoading(isLoading) {
   if (!loginBtn) return;
 
-  loginBtn.disabled = isLoading;
+  loginBtn.disabled = isLoading || window.__profAuthReady !== true;
   loginBtn.classList.toggle("loading", isLoading);
 
   if (loginBtnText) {
-    loginBtnText.textContent = isLoading ? "Connexion..." : "Connexion";
+    if (isLoading) {
+      loginBtnText.textContent = "Connexion...";
+    } else {
+      loginBtnText.textContent = window.__profAuthReady === true ? "Connexion" : "Chargement...";
+    }
   }
 }
 
@@ -138,6 +157,26 @@ function showLogin(message = "") {
 
   if (loginError) loginError.textContent = message;
   setLoginLoading(false);
+}
+
+function loadDashboardTools() {
+  if (dashboardToolsLoaded) return;
+  dashboardToolsLoaded = true;
+
+  const tools = [
+    "./prof-admin-drive-tools.js?v=1015",
+    "./prof-admin-patch-notes.js?v=1002",
+    "./prof-admin-exam-settings.js?v=1020",
+    "./prof-admin-exam-scale-wizard.js?v=1005",
+    "./prof-modules-eleves-nav.js?v=1004",
+    "./prof-custom-availability.js?v=1004"
+  ];
+
+  tools.forEach(src => {
+    import(src).catch(error => {
+      console.warn(`Outil prof non chargé : ${src}`, error);
+    });
+  });
 }
 
 function showDashboard() {
@@ -175,6 +214,7 @@ function showDashboard() {
   }, transitionIsVisible ? 650 : 0);
 
   setLoginLoading(false);
+  loadDashboardTools();
   window.scrollTo(0, 0);
 }
 
@@ -192,11 +232,14 @@ function bindLogout(signOut, auth) {
 
 async function startAuth() {
   startFirstRenderFallback();
+  showLogin();
 
   try {
-    const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
-    const firebaseAuth = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
-    const firebaseFirestore = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+    const [firebaseApp, firebaseAuth, firebaseFirestore] = await withTimeout(Promise.all([
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js"),
+      import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
+    ]), 10000, "Firebase met trop de temps à charger.");
 
     const { initializeApp, getApps, getApp } = firebaseApp;
     const { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } = firebaseAuth;
@@ -225,7 +268,12 @@ async function startAuth() {
     async function getUserData(user) {
       if (!user?.email) return null;
 
-      const snap = await getDoc(doc(db, "users", user.email));
+      const snap = await withTimeout(
+        getDoc(doc(db, "users", user.email)),
+        9000,
+        "Lecture du compte prof trop longue."
+      );
+
       return snap.exists() ? snap.data() : null;
     }
 
@@ -243,24 +291,6 @@ async function startAuth() {
       bindLogout(signOut, auth);
       showDashboard();
     }
-
-    onAuthStateChanged(auth, async user => {
-      if (!user) {
-        window.currentProfUser = null;
-        showLogin();
-        return;
-      }
-
-      try {
-        await enterDashboard(user);
-      } catch (error) {
-        console.error("Accès prof impossible :", error);
-        showLogin("Erreur d’accès à l’espace professeur.");
-      }
-    }, error => {
-      console.error("État de connexion prof indisponible :", error);
-      showLogin("Erreur de chargement de la connexion.");
-    });
 
     loginForm?.addEventListener("submit", async event => {
       event.preventDefault();
@@ -280,7 +310,11 @@ async function startAuth() {
       }, 14000);
 
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        await withTimeout(
+          signInWithEmailAndPassword(auth, email, password),
+          12000,
+          "Connexion Firebase trop longue."
+        );
       } catch (error) {
         console.error("Erreur Firebase :", error.code, error.message);
 
@@ -296,15 +330,37 @@ async function startAuth() {
         } else if (error.code === "auth/network-request-failed") {
           if (loginError) loginError.textContent = "Erreur réseau.";
         } else {
-          if (loginError) loginError.textContent = "Erreur de connexion.";
+          if (loginError) loginError.textContent = error.message || "Erreur de connexion.";
         }
 
         setLoginLoading(false);
       }
     });
+
+    window.__profAuthReady = true;
+    setLoginLoading(false);
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        window.currentProfUser = null;
+        showLogin();
+        return;
+      }
+
+      try {
+        await enterDashboard(user);
+      } catch (error) {
+        console.error("Accès prof impossible :", error);
+        showLogin(error.message || "Erreur d’accès à l’espace professeur.");
+      }
+    }, error => {
+      console.error("État de connexion prof indisponible :", error);
+      showLogin("Erreur de chargement de la connexion.");
+    });
   } catch (error) {
     console.error("Firebase indisponible :", error);
-    showLogin("Erreur de chargement Firebase.");
+    window.__profAuthReady = false;
+    showLogin(error.message || "Erreur de chargement Firebase.");
   }
 }
 
