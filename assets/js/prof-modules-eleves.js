@@ -10,5 +10,16 @@ if (modulesStyle) {
   document.head.appendChild(link);
 }
 
-import "./prof-modules-eleves-shared.js?v=1002";
+function keepModulesDashboardVisible() {
+  const protectedContent = document.getElementById("protectedContent");
+  if (!protectedContent || protectedContent.hidden) return;
+
+  protectedContent.style.display = "block";
+  protectedContent.classList.add("dashboard-visible");
+}
+
+window.setInterval(keepModulesDashboardVisible, 250);
+requestAnimationFrame(keepModulesDashboardVisible);
+
+import "./prof-modules-eleves-safe.js?v=1002";
 import "./prof-modules-alerts.js?v=1002";
