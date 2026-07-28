@@ -13,6 +13,7 @@ const firebaseConfig = {
 };
 
 const STUDENT_MODULES_COLLECTION = "studentModules";
+const FIRESTORE_TIMEOUT_MS = 8500;
 
 const WARNING_STATES = [
   { key: "none", label: "OK", rowClass: "" },
@@ -30,6 +31,15 @@ let currentUser = null;
 let currentAccess = { role: null, admin: false };
 let warningByStudentId = new Map();
 let loadingWarnings = false;
+
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error(message)), ms);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timer));
+}
 
 function normalizeWarning(value) {
   const key = String(value || "none");
@@ -52,7 +62,12 @@ async function getUserAccess(user) {
   if (!user?.email) return { role: null, admin: false };
 
   try {
-    const snap = await getDoc(doc(db, "users", user.email));
+    const snap = await withTimeout(
+      getDoc(doc(db, "users", user.email)),
+      FIRESTORE_TIMEOUT_MS,
+      "Vérification accès avertos trop longue."
+    );
+
     if (!snap.exists()) return { role: null, admin: false };
 
     const data = snap.data();
@@ -72,7 +87,12 @@ async function loadWarnings() {
   loadingWarnings = true;
 
   try {
-    const snap = await getDocs(collection(db, STUDENT_MODULES_COLLECTION));
+    const snap = await withTimeout(
+      getDocs(collection(db, STUDENT_MODULES_COLLECTION)),
+      FIRESTORE_TIMEOUT_MS,
+      "Lecture avertos modules trop longue."
+    );
+
     warningByStudentId = new Map();
 
     snap.forEach(docSnap => {
@@ -99,9 +119,12 @@ function setRowWarning(row, warningKey) {
   const button = row.querySelector("[data-warning-toggle]");
   if (!button) return;
 
-  button.textContent = state.label;
-  button.dataset.warningLevel = state.key;
-  button.className = `module-warning-pill ${state.rowClass || "alert-none"}`;
+  const nextClassName = `module-warning-pill ${state.rowClass || "alert-none"}`;
+
+  if (button.textContent !== state.label) button.textContent = state.label;
+  if (button.dataset.warningLevel !== state.key) button.dataset.warningLevel = state.key;
+  if (button.className !== nextClassName) button.className = nextClassName;
+
   button.title = "Changer l'averto de cet élève";
 }
 
@@ -138,11 +161,15 @@ function markEmptyDates() {
 }
 
 async function saveWarning(studentId, warningKey) {
-  await setDoc(doc(db, STUDENT_MODULES_COLLECTION, studentId), {
-    warningLevel: normalizeWarning(warningKey),
-    warningUpdatedAt: serverTimestamp(),
-    warningUpdatedBy: currentUser?.email || null
-  }, { merge: true });
+  await withTimeout(
+    setDoc(doc(db, STUDENT_MODULES_COLLECTION, studentId), {
+      warningLevel: normalizeWarning(warningKey),
+      warningUpdatedAt: serverTimestamp(),
+      warningUpdatedBy: currentUser?.email || null
+    }, { merge: true }),
+    FIRESTORE_TIMEOUT_MS,
+    "Sauvegarde averto trop longue."
+  );
 }
 
 async function handleWarningClick(button) {
