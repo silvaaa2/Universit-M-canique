@@ -24,6 +24,48 @@
   </div>
 </div>
 
+<script>
+  window.__profLoaderFallback = window.setTimeout(function () {
+    var dashboard = document.getElementById("profDashboard");
+    var dashboardVisible = dashboard && !dashboard.hidden && dashboard.style.display !== "none";
+    if (dashboardVisible) return;
+
+    var loader = document.getElementById("loader");
+    var loginSection = document.getElementById("loginSection");
+    var loginTransition = document.getElementById("loginTransition");
+    var loginError = document.getElementById("loginError");
+
+    if (loader) {
+      loader.classList.add("hide");
+      loader.style.display = "none";
+      loader.style.pointerEvents = "none";
+      loader.style.opacity = "0";
+      loader.style.visibility = "hidden";
+    }
+
+    if (loginTransition) {
+      loginTransition.hidden = true;
+      loginTransition.classList.remove("active");
+      loginTransition.style.pointerEvents = "none";
+    }
+
+    if (dashboard) {
+      dashboard.hidden = true;
+      dashboard.style.display = "none";
+    }
+
+    if (loginSection) {
+      loginSection.hidden = false;
+      loginSection.style.display = "grid";
+      loginSection.classList.remove("leaving");
+    }
+
+    if (loginError && !loginError.textContent) {
+      loginError.textContent = "Chargement trop long. Réessaie de te connecter ou recharge la page.";
+    }
+  }, 4500);
+</script>
+
 <div id="loginTransition" class="login-transition" hidden>
   <div class="transition-box">
     <div class="transition-spinner"></div>
@@ -197,7 +239,7 @@
 
 <script src="../assets/js/navigation.js?v=1001"></script>
 <script src="../assets/js/prof-ui.js?v=1001"></script>
-<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1006"></script>
+<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1007"></script>
 <script type="module" src="../assets/js/prof-admin-drive-tools.js?v=1014"></script>
 <script type="module" src="../assets/js/prof-admin-patch-notes.js?v=1001"></script>
 <script type="module" src="../assets/js/prof-admin-exam-settings.js?v=1019"></script>
