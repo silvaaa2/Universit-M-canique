@@ -76,29 +76,37 @@
         </p>
       </div>
 
-      <button id="logoutBtn" class="btn secondary">
+      <a id="profModulesElevesBtn" class="btn secondary prof-modules-nav-btn first-action" href="prof-modules-eleves.html">
+        Modules Élèves
+      </a>
+
+      <button id="profCustomAccessBtn" class="btn secondary prof-custom-access-btn" type="button" onclick="window.openCustomAccessModal ? window.openCustomAccessModal() : window.dispatchEvent(new Event('openProfCustomAccess'))">
+        Customs élèves
+      </button>
+
+      <button id="logoutBtn" class="btn secondary" type="button">
         Déconnexion
       </button>
     </div>
 
     <div class="prof-grid">
-      <button type="button" class="prof-panel prof-panel-btn" id="openCorrectionsBtn">
+      <button type="button" class="prof-panel prof-panel-btn" id="openCorrectionsBtn" onclick="window.openProfCorrectionsPanel && window.openProfCorrectionsPanel()">
         <span class="panel-number">01</span>
         <h2>Corrigés</h2>
         <p>Accéder aux corrigés des customs.</p>
       </button>
 
-      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-rp-7x92q.html')">
+      <a class="prof-panel prof-panel-btn" href="prof-rp-7x92q.html" style="text-decoration:none">
         <span class="panel-number">02</span>
         <h2>Réponses élèves</h2>
         <p>Consulter les réponses des élèves.</p>
-      </button>
+      </a>
 
-      <button type="button" class="prof-panel prof-panel-btn" onclick="goPage('prof-exam-4x91q.html')">
+      <a class="prof-panel prof-panel-btn" href="prof-exam-4x91q.html" style="text-decoration:none">
         <span class="panel-number">03</span>
         <h2>Examens</h2>
         <p>Consulter les réponses d’examen.</p>
-      </button>
+      </a>
     </div>
 
     <section class="inline-corrections" id="inlineCorrections" hidden>
@@ -188,8 +196,9 @@
 
 <script src="../assets/js/navigation.js?v=1002"></script>
 <script src="../assets/js/prof-ui.js?v=1002"></script>
-<script src="../assets/js/prof-dashboard-safety.js?v=1001"></script>
-<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1012"></script>
+<script src="../assets/js/prof-dashboard-safety.js?v=1002"></script>
+<script type="module" src="../assets/js/prof-custom-availability.js?v=1005"></script>
+<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1013"></script>
 
 </body>
 </html>
