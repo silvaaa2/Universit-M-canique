@@ -6,11 +6,6 @@
   cursor: pointer;
   font-weight: 900;
   transition: .25s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  line-height: 1;
 }
 
 .btn:hover {
