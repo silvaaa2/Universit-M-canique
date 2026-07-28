@@ -207,8 +207,7 @@ function loadDashboardTools() {
     "./prof-admin-patch-notes.js?v=1003",
     "./prof-admin-exam-settings.js?v=1020",
     "./prof-admin-exam-scale-wizard.js?v=1005",
-    "./prof-modules-eleves-nav.js?v=1004",
-    "./prof-custom-availability.js?v=1004"
+    "./prof-modules-eleves-nav.js?v=1004"
   ];
 
   tools.forEach(src => {
