@@ -1,4 +1,8 @@
-if (!document.querySelector("link[data-modules-table-colors]")) {
+const modulesStyle = document.querySelector("link[data-modules-table-colors]");
+
+if (modulesStyle) {
+  modulesStyle.href = "../assets/css/prof-modules-eleves.css?v=1003";
+} else {
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = "../assets/css/prof-modules-eleves.css?v=1003";
