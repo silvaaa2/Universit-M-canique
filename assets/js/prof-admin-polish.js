@@ -1,4 +1,4 @@
-import "./prof-admin.js?v=1003";
+import "./prof-admin.js?v=1004";
 
 let toastTimer = null;
 let observerStarted = false;
