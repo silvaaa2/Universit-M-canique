@@ -16,6 +16,7 @@ let firstRenderDone = false;
 let firstRenderTimer = null;
 let loginAttemptTimer = null;
 let dashboardToolsLoaded = false;
+let dashboardFallbackActionsBound = false;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -159,6 +160,44 @@ function showLogin(message = "") {
   setLoginLoading(false);
 }
 
+function forceUnlockDashboardInteractions() {
+  if (loginTransition) {
+    window.clearTimeout(hideTransitionTimer);
+    loginTransition.classList.remove("active", "hide");
+    loginTransition.hidden = true;
+    loginTransition.style.pointerEvents = "none";
+    loginTransition.style.visibility = "hidden";
+    loginTransition.style.opacity = "0";
+  }
+
+  hidePageLoader();
+
+  document.querySelectorAll(".prof-dashboard button").forEach(button => {
+    button.disabled = false;
+    button.style.pointerEvents = "";
+  });
+
+  if (profDashboard) {
+    profDashboard.style.pointerEvents = "auto";
+  }
+}
+
+function bindDashboardFallbackActions() {
+  if (!profDashboard || dashboardFallbackActionsBound) return;
+  dashboardFallbackActionsBound = true;
+
+  const responsesButton = profDashboard.querySelector('button[onclick*="prof-rp-7x92q"]');
+  const examsButton = profDashboard.querySelector('button[onclick*="prof-exam-4x91q"]');
+
+  responsesButton?.addEventListener("click", () => {
+    window.location.href = "prof-rp-7x92q.html";
+  });
+
+  examsButton?.addEventListener("click", () => {
+    window.location.href = "prof-exam-4x91q.html";
+  });
+}
+
 function loadDashboardTools() {
   if (dashboardToolsLoaded) return;
   dashboardToolsLoaded = true;
@@ -183,17 +222,7 @@ function showDashboard() {
   markFirstRenderDone();
   clearLoginAttemptTimer();
 
-  const transitionIsVisible = Boolean(
-    loginTransition && !loginTransition.hidden && loginTransition.classList.contains("active")
-  );
-
   hidePageLoader();
-
-  if (transitionIsVisible) {
-    setLoginTransitionContent("Connexion validée", "Préparation de l’espace professeur...");
-  } else {
-    hideLoginTransition();
-  }
 
   if (loginSection) {
     loginSection.hidden = true;
@@ -209,12 +238,12 @@ function showDashboard() {
     });
   }
 
-  window.setTimeout(() => {
-    hideLoginTransition();
-  }, transitionIsVisible ? 650 : 0);
-
   setLoginLoading(false);
+  bindDashboardFallbackActions();
   loadDashboardTools();
+  forceUnlockDashboardInteractions();
+  window.setTimeout(forceUnlockDashboardInteractions, 250);
+  window.setTimeout(forceUnlockDashboardInteractions, 900);
   window.scrollTo(0, 0);
 }
 
