@@ -161,7 +161,7 @@ function ensurePatchNotePanel() {
       <section id="profPatchNotesPanel" class="prof-admin-panel prof-admin-patch-panel" data-admin-panel="${PATCH_NOTE_TAB}" hidden>
         <div class="prof-admin-toolbar">
           <button type="button" class="prof-admin-small-btn gold" id="sendPatchNoteBtn">Envoyer Discord</button>
-          <button type="button" class="prof-admin-small-btn" id="fillPatchNoteTemplateBtn">Modèle carré</button>
+          <button type="button" class="prof-admin-small-btn" id="fillPatchNoteTemplateBtn">Modèle patch note</button>
           <button type="button" class="prof-admin-small-btn" id="clearPatchNoteKeyBtn">Changer la clé</button>
           <span class="prof-admin-status" id="patchNoteStatus"></span>
         </div>
