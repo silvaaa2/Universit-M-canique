@@ -164,8 +164,8 @@ function loadDashboardTools() {
   dashboardToolsLoaded = true;
 
   const tools = [
-    "./prof-admin-drive-tools.js?v=1015",
-    "./prof-admin-patch-notes.js?v=1002",
+    "./prof-admin-polish.js?v=1007",
+    "./prof-admin-patch-notes.js?v=1003",
     "./prof-admin-exam-settings.js?v=1020",
     "./prof-admin-exam-scale-wizard.js?v=1005",
     "./prof-modules-eleves-nav.js?v=1004",
