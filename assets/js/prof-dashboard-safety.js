@@ -55,10 +55,10 @@
     dashboard.style.pointerEvents = "auto";
     dashboard.classList.add("dashboard-visible");
 
-    dashboard.querySelectorAll("button").forEach(button => {
-      if (button.dataset.keepDisabled === "true") return;
-      button.disabled = false;
-      button.style.pointerEvents = "";
+    dashboard.querySelectorAll("button, a").forEach(control => {
+      if (control.dataset.keepDisabled === "true") return;
+      control.disabled = false;
+      control.style.pointerEvents = "";
     });
   }
 
@@ -80,38 +80,49 @@
     }, 40);
   }
 
-  function handleDashboardClick(event) {
-    if (!isDashboardVisible()) return;
-
-    const button = event.target?.closest?.("button");
-    const dashboard = getDashboard();
-
-    if (!button || !dashboard?.contains(button)) return;
-
-    unlockDashboard();
-
-    if (button.id === "openCorrectionsBtn") {
-      window.setTimeout(() => {
-        if (document.getElementById("inlineCorrections")?.hidden) {
-          openCorrectionsFallback();
-        }
-      }, 80);
+  function openCustomAccessFallback() {
+    if (typeof window.openCustomAccessModal === "function") {
+      window.openCustomAccessModal();
       return;
     }
 
-    if (button.id === "profModulesElevesBtn") {
+    window.dispatchEvent(new Event("openProfCustomAccess"));
+  }
+
+  function handleDashboardClick(event) {
+    if (!isDashboardVisible()) return;
+
+    const control = event.target?.closest?.("button, a");
+    const dashboard = getDashboard();
+
+    if (!control || !dashboard?.contains(control)) return;
+
+    unlockDashboard();
+
+    if (control.id === "openCorrectionsBtn") {
+      openCorrectionsFallback();
+      return;
+    }
+
+    if (control.id === "profCustomAccessBtn") {
+      event.preventDefault();
+      openCustomAccessFallback();
+      return;
+    }
+
+    if (control.id === "profModulesElevesBtn") {
       event.preventDefault();
       window.location.href = "prof-modules-eleves.html";
       return;
     }
 
-    if (button.id === "profAdminBtn" && typeof window.openProfAdminPanel === "function") {
+    if (control.id === "profAdminBtn" && typeof window.openProfAdminPanel === "function") {
       event.preventDefault();
       window.openProfAdminPanel();
       return;
     }
 
-    const inlineTarget = button.getAttribute("onclick") || "";
+    const inlineTarget = control.getAttribute("onclick") || "";
 
     if (inlineTarget.includes("prof-rp-7x92q")) {
       event.preventDefault();
@@ -130,8 +141,11 @@
 
     safetyLoop = window.setInterval(() => {
       if (isDashboardVisible()) unlockDashboard();
-    }, 500);
+    }, 400);
   }
+
+  window.openProfCorrectionsPanel = openCorrectionsFallback;
+  window.unlockProfDashboard = unlockDashboard;
 
   document.addEventListener("click", handleDashboardClick, true);
   document.addEventListener("pointerdown", () => {
