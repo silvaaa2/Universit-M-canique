@@ -10,61 +10,10 @@
   <link rel="stylesheet" href="../assets/css/base.css?v=1001">
   <link rel="stylesheet" href="../assets/css/header.css?v=1001">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
-  <link rel="stylesheet" href="../assets/css/loader.css?v=1001">
-  <link rel="stylesheet" href="../assets/css/prof.css?v=9036">
+  <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
 </head>
 
 <body>
-
-<div id="loader">
-  <div class="loader-box">
-    <h2>Espace Prof</h2>
-    <p id="loaderText">Chargement sécurisé...</p>
-    <div class="loader-bar"><span></span></div>
-  </div>
-</div>
-
-<script>
-  window.__profLoaderFallback = window.setTimeout(function () {
-    var dashboard = document.getElementById("profDashboard");
-    var dashboardVisible = dashboard && !dashboard.hidden && dashboard.style.display !== "none";
-    if (dashboardVisible) return;
-
-    var loader = document.getElementById("loader");
-    var loginSection = document.getElementById("loginSection");
-    var loginTransition = document.getElementById("loginTransition");
-    var loginError = document.getElementById("loginError");
-
-    if (loader) {
-      loader.classList.add("hide");
-      loader.style.display = "none";
-      loader.style.pointerEvents = "none";
-      loader.style.opacity = "0";
-      loader.style.visibility = "hidden";
-    }
-
-    if (loginTransition) {
-      loginTransition.hidden = true;
-      loginTransition.classList.remove("active");
-      loginTransition.style.pointerEvents = "none";
-    }
-
-    if (dashboard) {
-      dashboard.hidden = true;
-      dashboard.style.display = "none";
-    }
-
-    if (loginSection) {
-      loginSection.hidden = false;
-      loginSection.style.display = "grid";
-      loginSection.classList.remove("leaving");
-    }
-
-    if (loginError && !loginError.textContent) {
-      loginError.textContent = "Chargement trop long. Réessaie de te connecter ou recharge la page.";
-    }
-  }, 4500);
-</script>
 
 <div id="loginTransition" class="login-transition" hidden>
   <div class="transition-box">
@@ -107,8 +56,8 @@
         <label for="password">Mot de passe</label>
         <input type="password" id="password" placeholder="••••••••" required>
 
-        <button type="submit" class="btn primary full" id="loginBtn">
-          <span class="btn-text">Connexion</span>
+        <button type="submit" class="btn primary full loading" id="loginBtn" disabled>
+          <span class="btn-text">Chargement...</span>
           <span class="btn-spinner" aria-hidden="true"></span>
         </button>
       </form>
@@ -237,15 +186,9 @@
 
 </main>
 
-<script src="../assets/js/navigation.js?v=1001"></script>
-<script src="../assets/js/prof-ui.js?v=1001"></script>
-<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1008"></script>
-<script type="module" src="../assets/js/prof-admin-drive-tools.js?v=1014"></script>
-<script type="module" src="../assets/js/prof-admin-patch-notes.js?v=1001"></script>
-<script type="module" src="../assets/js/prof-admin-exam-settings.js?v=1019"></script>
-<script type="module" src="../assets/js/prof-admin-exam-scale-wizard.js?v=1004"></script>
-<script type="module" src="../assets/js/prof-modules-eleves-nav.js?v=1003"></script>
-<script type="module" src="../assets/js/prof-custom-availability.js?v=1003"></script>
+<script src="../assets/js/navigation.js?v=1002"></script>
+<script src="../assets/js/prof-ui.js?v=1002"></script>
+<script type="module" src="../assets/js/prof-auth-static-secure.js?v=1009"></script>
 
 </body>
 </html>
