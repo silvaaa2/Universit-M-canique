@@ -14,6 +14,7 @@ const firebaseConfig = {
 
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
+const MODAL_CLOSE_ANIMATION_MS = 190;
 
 const WARNING_STATES = [
   { key: "none", label: "Aucun", rowClass: "" },
@@ -34,6 +35,7 @@ let loadingWarnings = false;
 let decorateScheduled = false;
 let activeModalStudentId = "";
 let activeModalWarningKey = "none";
+let closeModalTimer = 0;
 
 function installWarningIconStyles() {
   if (document.getElementById("moduleWarningIconStyles")) return;
@@ -125,6 +127,59 @@ function installWarningIconStyles() {
       box-shadow: 0 22px 80px rgba(0,0,0,.58), 0 0 34px rgba(214,180,106,.10) !important;
       padding: 22px !important;
       color: var(--text, #fff7ed) !important;
+      will-change: transform, opacity !important;
+    }
+
+    .module-warning-modal.is-open .module-warning-backdrop {
+      animation: moduleWarningBackdropIn .18s ease-out both !important;
+    }
+
+    .module-warning-modal.is-open .module-warning-dialog {
+      animation: moduleWarningDialogIn .22s cubic-bezier(.16, 1, .3, 1) both !important;
+    }
+
+    .module-warning-modal.is-closing .module-warning-backdrop {
+      animation: moduleWarningBackdropOut .16s ease-in both !important;
+    }
+
+    .module-warning-modal.is-closing .module-warning-dialog {
+      animation: moduleWarningDialogOut .16s ease-in both !important;
+    }
+
+    @keyframes moduleWarningBackdropIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes moduleWarningBackdropOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    @keyframes moduleWarningDialogIn {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(.965);
+      }
+      70% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.004);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes moduleWarningDialogOut {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(12px) scale(.975);
+      }
     }
 
     .module-warning-close {
@@ -183,6 +238,7 @@ function installWarningIconStyles() {
       font-size: 12px !important;
       font-weight: 1000 !important;
       cursor: pointer !important;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease, color .16s ease !important;
     }
 
     .module-warning-choice:hover,
@@ -262,6 +318,12 @@ function installWarningIconStyles() {
       font-size: 12px !important;
       font-weight: 1000 !important;
       cursor: pointer !important;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease !important;
+    }
+
+    .module-warning-save:hover,
+    .module-warning-cancel:hover {
+      transform: translateY(-1px) !important;
     }
 
     .module-warning-save {
@@ -274,6 +336,15 @@ function installWarningIconStyles() {
       border: 1px solid rgba(255,255,255,.12) !important;
       background: rgba(255,255,255,.055) !important;
       color: rgba(255,247,237,.72) !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .module-warning-modal.is-open .module-warning-backdrop,
+      .module-warning-modal.is-open .module-warning-dialog,
+      .module-warning-modal.is-closing .module-warning-backdrop,
+      .module-warning-modal.is-closing .module-warning-dialog {
+        animation-duration: .01ms !important;
+      }
     }
 
     @media (max-width: 760px) {
@@ -505,15 +576,29 @@ function openWarningModal(button) {
   if (comment) comment.value = record.comment;
 
   refreshModalChoices();
+  window.clearTimeout(closeModalTimer);
   modal.hidden = false;
+  modal.classList.remove("is-closing");
+  modal.classList.remove("is-open");
+  void modal.offsetWidth;
+  modal.classList.add("is-open");
   requestAnimationFrame(() => comment?.focus());
 }
 
 function closeWarningModal() {
   const modal = ensureWarningModal();
-  modal.hidden = true;
-  activeModalStudentId = "";
-  activeModalWarningKey = "none";
+  if (modal.hidden || modal.classList.contains("is-closing")) return;
+
+  modal.classList.remove("is-open");
+  modal.classList.add("is-closing");
+  window.clearTimeout(closeModalTimer);
+
+  closeModalTimer = window.setTimeout(() => {
+    modal.hidden = true;
+    modal.classList.remove("is-closing");
+    activeModalStudentId = "";
+    activeModalWarningKey = "none";
+  }, MODAL_CLOSE_ANIMATION_MS);
 }
 
 function selectWarningLevel(choiceKey) {
