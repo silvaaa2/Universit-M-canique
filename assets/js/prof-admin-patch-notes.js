@@ -1,5 +1,4 @@
 const PATCH_NOTE_TAB = "patchNotes";
-const PATCH_NOTE_KEY_STORAGE = "prof_patch_note_access_key";
 
 let patchNoteToolStarted = false;
 let patchNoteEventsBound = false;
@@ -65,47 +64,37 @@ function injectPatchNoteStyles() {
   document.head.appendChild(style);
 }
 
-function getSavedAccessKey() {
-  try {
-    return window.localStorage.getItem(PATCH_NOTE_KEY_STORAGE) || "";
-  } catch {
-    return "";
-  }
-}
-
-function saveAccessKey(key) {
-  try {
-    window.localStorage.setItem(PATCH_NOTE_KEY_STORAGE, key);
-  } catch {
-    // La clé sera redemandée si le navigateur bloque le stockage local.
-  }
-}
-
-function clearAccessKey() {
-  try {
-    window.localStorage.removeItem(PATCH_NOTE_KEY_STORAGE);
-  } catch {
-    // Rien à faire.
-  }
-}
-
-function getAccessKey() {
-  const savedKey = getSavedAccessKey();
-  if (savedKey) return savedKey;
-
-  const key = window.prompt("Clé d'envoi Discord");
-  const cleanKey = String(key || "").trim();
-
-  if (cleanKey) saveAccessKey(cleanKey);
-  return cleanKey;
-}
-
 function setPatchNoteStatus(message, tone = "") {
   const status = document.getElementById("patchNoteStatus");
   if (!status) return;
 
   status.textContent = message || "";
   status.dataset.tone = tone;
+}
+
+function waitForProfFirebase() {
+  if (window.profFirebase?.auth) {
+    return Promise.resolve(window.profFirebase);
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      reject(new Error("Firebase prof n'est pas prêt."));
+    }, 7000);
+
+    window.addEventListener("profFirebaseReady", () => {
+      window.clearTimeout(timeout);
+      resolve(window.profFirebase);
+    }, { once: true });
+  });
+}
+
+async function getAdminIdToken() {
+  const firebase = await waitForProfFirebase();
+  const user = firebase.auth?.currentUser || window.currentProfUser;
+
+  if (!user?.getIdToken) return "";
+  return user.getIdToken();
 }
 
 function bindPatchNoteEvents() {
@@ -135,11 +124,6 @@ function bindPatchNoteEvents() {
     }
   });
 
-  document.getElementById("clearPatchNoteKeyBtn")?.addEventListener("click", () => {
-    clearAccessKey();
-    setPatchNoteStatus("Clé retirée. Elle sera redemandée au prochain envoi.", "ok");
-  });
-
   document.getElementById("sendPatchNoteBtn")?.addEventListener("click", sendPatchNote);
 }
 
@@ -162,7 +146,6 @@ function ensurePatchNotePanel() {
         <div class="prof-admin-toolbar">
           <button type="button" class="prof-admin-small-btn gold" id="sendPatchNoteBtn">Envoyer Discord</button>
           <button type="button" class="prof-admin-small-btn" id="fillPatchNoteTemplateBtn">Modèle patch note</button>
-          <button type="button" class="prof-admin-small-btn" id="clearPatchNoteKeyBtn">Changer la clé</button>
           <span class="prof-admin-status" id="patchNoteStatus"></span>
         </div>
 
@@ -180,7 +163,7 @@ function ensurePatchNotePanel() {
 
         <div class="prof-admin-patch-note-card">
           <strong>Envoi sécurisé</strong>
-          <p>Le webhook Discord reste dans les variables Vercel. Le site envoie seulement ce message à l'API interne.</p>
+          <p>Le webhook Discord reste dans les variables Vercel. L'API vérifie votre session admin Firebase avant l'envoi.</p>
         </div>
       </section>
     `);
@@ -199,21 +182,23 @@ async function sendPatchNote() {
     return;
   }
 
-  const accessKey = getAccessKey();
-  if (!accessKey) {
-    setPatchNoteStatus("Envoi annulé : clé manquante.", "error");
-    return;
-  }
-
   try {
     if (sendButton) sendButton.disabled = true;
+    setPatchNoteStatus("Vérification admin...");
+
+    const idToken = await getAdminIdToken();
+    if (!idToken) {
+      setPatchNoteStatus("Reconnecte-toi avec ton compte admin.", "error");
+      return;
+    }
+
     setPatchNoteStatus("Envoi en cours...");
 
     const response = await fetch("/api/discord-patch-note", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-patch-note-key": accessKey
+        Authorization: `Bearer ${idToken}`
       },
       body: JSON.stringify({ title, message })
     });
@@ -221,12 +206,6 @@ async function sendPatchNote() {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      if (response.status === 401) {
-        clearAccessKey();
-        setPatchNoteStatus("Clé refusée. Clique sur envoyer pour la remettre.", "error");
-        return;
-      }
-
       setPatchNoteStatus(result.error || "Envoi impossible.", "error");
       return;
     }
