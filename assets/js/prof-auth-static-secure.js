@@ -32,6 +32,11 @@ function markFirstRenderDone() {
     window.clearTimeout(firstRenderTimer);
     firstRenderTimer = null;
   }
+
+  if (window.__profLoaderFallback) {
+    window.clearTimeout(window.__profLoaderFallback);
+    window.__profLoaderFallback = null;
+  }
 }
 
 function clearLoginAttemptTimer() {
