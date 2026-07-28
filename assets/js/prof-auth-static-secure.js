@@ -11,6 +11,9 @@ const loginTransitionTitle = loginTransition?.querySelector("h2");
 const loginTransitionText = loginTransition?.querySelector("p");
 
 let hideTransitionTimer = null;
+let firstRenderDone = false;
+let firstRenderTimer = null;
+let loginAttemptTimer = null;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -21,6 +24,31 @@ const firebaseConfig = {
   appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
   measurementId: "G-Z5B51BQCNL"
 };
+
+function markFirstRenderDone() {
+  firstRenderDone = true;
+
+  if (firstRenderTimer) {
+    window.clearTimeout(firstRenderTimer);
+    firstRenderTimer = null;
+  }
+}
+
+function clearLoginAttemptTimer() {
+  if (loginAttemptTimer) {
+    window.clearTimeout(loginAttemptTimer);
+    loginAttemptTimer = null;
+  }
+}
+
+function startFirstRenderFallback() {
+  firstRenderTimer = window.setTimeout(() => {
+    if (firstRenderDone) return;
+
+    console.warn("Affichage forcé du login : chargement initial trop long.");
+    showLogin("Chargement trop long. Recharge la page si la connexion ne répond pas.");
+  }, 6500);
+}
 
 function hidePageLoader() {
   const loader = document.getElementById("loader");
@@ -87,21 +115,30 @@ function setLoginLoading(isLoading) {
 }
 
 function showLogin(message = "") {
+  markFirstRenderDone();
+  clearLoginAttemptTimer();
   hideLoader();
 
-  profDashboard.classList.remove("dashboard-visible");
-  profDashboard.hidden = true;
-  profDashboard.style.display = "none";
+  if (profDashboard) {
+    profDashboard.classList.remove("dashboard-visible");
+    profDashboard.hidden = true;
+    profDashboard.style.display = "none";
+  }
 
-  loginSection.hidden = false;
-  loginSection.style.display = "grid";
-  loginSection.classList.remove("leaving");
+  if (loginSection) {
+    loginSection.hidden = false;
+    loginSection.style.display = "grid";
+    loginSection.classList.remove("leaving");
+  }
 
-  loginError.textContent = message;
+  if (loginError) loginError.textContent = message;
   setLoginLoading(false);
 }
 
 function showDashboard() {
+  markFirstRenderDone();
+  clearLoginAttemptTimer();
+
   const transitionIsVisible = Boolean(
     loginTransition && !loginTransition.hidden && loginTransition.classList.contains("active")
   );
@@ -114,15 +151,19 @@ function showDashboard() {
     hideLoginTransition();
   }
 
-  loginSection.hidden = true;
-  loginSection.style.display = "none";
+  if (loginSection) {
+    loginSection.hidden = true;
+    loginSection.style.display = "none";
+  }
 
-  profDashboard.hidden = false;
-  profDashboard.style.display = "block";
+  if (profDashboard) {
+    profDashboard.hidden = false;
+    profDashboard.style.display = "block";
 
-  requestAnimationFrame(() => {
-    profDashboard.classList.add("dashboard-visible");
-  });
+    requestAnimationFrame(() => {
+      profDashboard.classList.add("dashboard-visible");
+    });
+  }
 
   window.setTimeout(() => {
     hideLoginTransition();
@@ -145,6 +186,8 @@ function bindLogout(signOut, auth) {
 }
 
 async function startAuth() {
+  startFirstRenderFallback();
+
   try {
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
     const firebaseAuth = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
@@ -209,35 +252,46 @@ async function startAuth() {
         console.error("Accès prof impossible :", error);
         showLogin("Erreur d’accès à l’espace professeur.");
       }
+    }, error => {
+      console.error("État de connexion prof indisponible :", error);
+      showLogin("Erreur de chargement de la connexion.");
     });
 
-    loginForm.addEventListener("submit", async event => {
+    loginForm?.addEventListener("submit", async event => {
       event.preventDefault();
 
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      const email = document.getElementById("email")?.value.trim() || "";
+      const password = document.getElementById("password")?.value || "";
 
-      loginError.textContent = "";
+      if (loginError) loginError.textContent = "";
       setLoginLoading(true);
       showLoginTransition();
+
+      clearLoginAttemptTimer();
+      loginAttemptTimer = window.setTimeout(() => {
+        hideLoginTransition();
+        setLoginLoading(false);
+        if (loginError) loginError.textContent = "Connexion trop longue. Recharge la page si besoin.";
+      }, 14000);
 
       try {
         await signInWithEmailAndPassword(auth, email, password);
       } catch (error) {
         console.error("Erreur Firebase :", error.code, error.message);
 
+        clearLoginAttemptTimer();
         hideLoginTransition();
 
         if (error.code === "auth/invalid-credential") {
-          loginError.textContent = "Email ou mot de passe incorrect.";
+          if (loginError) loginError.textContent = "Email ou mot de passe incorrect.";
         } else if (error.code === "auth/too-many-requests") {
-          loginError.textContent = "Trop de tentatives. Réessaie plus tard.";
+          if (loginError) loginError.textContent = "Trop de tentatives. Réessaie plus tard.";
         } else if (error.code === "auth/unauthorized-domain") {
-          loginError.textContent = "Domaine non autorisé dans Firebase.";
+          if (loginError) loginError.textContent = "Domaine non autorisé dans Firebase.";
         } else if (error.code === "auth/network-request-failed") {
-          loginError.textContent = "Erreur réseau.";
+          if (loginError) loginError.textContent = "Erreur réseau.";
         } else {
-          loginError.textContent = "Erreur de connexion.";
+          if (loginError) loginError.textContent = "Erreur de connexion.";
         }
 
         setLoginLoading(false);
