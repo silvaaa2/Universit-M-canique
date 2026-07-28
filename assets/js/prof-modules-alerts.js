@@ -16,7 +16,7 @@ const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
 
 const WARNING_STATES = [
-  { key: "none", label: "Averto", rowClass: "" },
+  { key: "none", label: "Aucun", rowClass: "" },
   { key: "warning1", label: "Averto 1", rowClass: "alert-warning-1" },
   { key: "warning2", label: "Averto 2", rowClass: "alert-warning-2" },
   { key: "warning3", label: "Averto 3", rowClass: "alert-warning-3" },
@@ -32,6 +32,8 @@ let currentAccess = { role: null, admin: false };
 let warningByStudentId = new Map();
 let loadingWarnings = false;
 let decorateScheduled = false;
+let activeModalStudentId = "";
+let activeModalWarningKey = "none";
 
 function installWarningIconStyles() {
   if (document.getElementById("moduleWarningIconStyles")) return;
@@ -82,20 +84,202 @@ function installWarningIconStyles() {
       color: rgba(255,255,255,.40) !important;
     }
 
-    .module-warning-pill.alert-warning-1 {
+    .module-warning-pill.has-comment.alert-none {
+      color: #bfdbfe !important;
+      border-color: rgba(125,211,252,.34) !important;
+      background: rgba(125,211,252,.10) !important;
+    }
+
+    .module-warning-pill.alert-warning-1 { color: #fdba74 !important; }
+    .module-warning-pill.alert-warning-2 { color: #fde68a !important; }
+    .module-warning-pill.alert-warning-3 { color: #fca5a5 !important; }
+    .module-warning-pill.alert-refused { color: #fff7ed !important; }
+
+    .module-warning-modal[hidden] { display: none !important; }
+
+    .module-warning-modal {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 9999 !important;
+      display: grid !important;
+      place-items: center !important;
+      padding: 22px !important;
+    }
+
+    .module-warning-backdrop {
+      position: absolute !important;
+      inset: 0 !important;
+      background: rgba(0,0,0,.68) !important;
+      backdrop-filter: blur(8px) !important;
+    }
+
+    .module-warning-dialog {
+      position: relative !important;
+      width: min(620px, 96vw) !important;
+      border: 1px solid rgba(214,180,106,.26) !important;
+      border-radius: 12px !important;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(214,180,106,.16), transparent 38%),
+        linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.025)),
+        rgba(18,18,18,.98) !important;
+      box-shadow: 0 22px 80px rgba(0,0,0,.58), 0 0 34px rgba(214,180,106,.10) !important;
+      padding: 22px !important;
+      color: var(--text, #fff7ed) !important;
+    }
+
+    .module-warning-close {
+      position: absolute !important;
+      top: 12px !important;
+      right: 12px !important;
+      width: 34px !important;
+      height: 34px !important;
+      border: 1px solid rgba(248,113,113,.35) !important;
+      border-radius: 10px !important;
+      background: rgba(248,113,113,.13) !important;
+      color: #fca5a5 !important;
+      font: inherit !important;
+      font-size: 20px !important;
+      font-weight: 1000 !important;
+      line-height: 1 !important;
+      cursor: pointer !important;
+    }
+
+    .module-warning-kicker {
+      margin: 0 44px 8px 0 !important;
+      color: var(--gold2, #f7d98b) !important;
+      font-size: 11px !important;
+      font-weight: 1000 !important;
+      text-transform: uppercase !important;
+    }
+
+    .module-warning-title {
+      margin: 0 44px 4px 0 !important;
+      font-size: 28px !important;
+      line-height: 1.05 !important;
+      font-weight: 1000 !important;
+    }
+
+    .module-warning-subtitle {
+      margin: 0 0 18px !important;
+      color: rgba(255,247,237,.62) !important;
+      font-size: 13px !important;
+      font-weight: 800 !important;
+    }
+
+    .module-warning-choices {
+      display: grid !important;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+      margin-bottom: 16px !important;
+    }
+
+    .module-warning-choice {
+      height: 40px !important;
+      border: 1px solid rgba(255,255,255,.12) !important;
+      border-radius: 10px !important;
+      background: rgba(255,255,255,.045) !important;
+      color: rgba(255,247,237,.70) !important;
+      font: inherit !important;
+      font-size: 12px !important;
+      font-weight: 1000 !important;
+      cursor: pointer !important;
+    }
+
+    .module-warning-choice:hover,
+    .module-warning-choice.active {
+      transform: translateY(-1px) !important;
+      color: #fff7ed !important;
+      border-color: rgba(214,180,106,.45) !important;
+      background: rgba(214,180,106,.15) !important;
+    }
+
+    .module-warning-choice[data-warning-choice="warning1"].active {
+      border-color: rgba(249,115,22,.52) !important;
+      background: rgba(249,115,22,.18) !important;
       color: #fdba74 !important;
     }
 
-    .module-warning-pill.alert-warning-2 {
+    .module-warning-choice[data-warning-choice="warning2"].active {
+      border-color: rgba(234,179,8,.56) !important;
+      background: rgba(234,179,8,.17) !important;
       color: #fde68a !important;
     }
 
-    .module-warning-pill.alert-warning-3 {
+    .module-warning-choice[data-warning-choice="warning3"].active {
+      border-color: rgba(248,113,113,.56) !important;
+      background: rgba(248,113,113,.17) !important;
       color: #fca5a5 !important;
     }
 
-    .module-warning-pill.alert-refused {
+    .module-warning-choice[data-warning-choice="refused"].active {
+      border-color: rgba(255,255,255,.50) !important;
+      background: rgba(255,255,255,.12) !important;
       color: #fff7ed !important;
+    }
+
+    .module-warning-label {
+      display: block !important;
+      margin: 0 0 8px !important;
+      color: var(--gold2, #f7d98b) !important;
+      font-size: 11px !important;
+      font-weight: 1000 !important;
+      text-transform: uppercase !important;
+    }
+
+    .module-warning-comment {
+      width: 100% !important;
+      min-height: 132px !important;
+      resize: vertical !important;
+      border: 1px solid rgba(255,255,255,.12) !important;
+      border-radius: 10px !important;
+      background: rgba(0,0,0,.32) !important;
+      color: var(--text, #fff7ed) !important;
+      padding: 12px !important;
+      font: inherit !important;
+      font-size: 14px !important;
+      font-weight: 800 !important;
+      outline: none !important;
+    }
+
+    .module-warning-comment:focus {
+      border-color: rgba(214,180,106,.48) !important;
+      box-shadow: 0 0 0 3px rgba(214,180,106,.11) !important;
+    }
+
+    .module-warning-actions {
+      display: flex !important;
+      justify-content: flex-end !important;
+      gap: 10px !important;
+      margin-top: 16px !important;
+    }
+
+    .module-warning-save,
+    .module-warning-cancel {
+      height: 42px !important;
+      padding: 0 16px !important;
+      border-radius: 999px !important;
+      font: inherit !important;
+      font-size: 12px !important;
+      font-weight: 1000 !important;
+      cursor: pointer !important;
+    }
+
+    .module-warning-save {
+      border: 1px solid rgba(214,180,106,.42) !important;
+      background: rgba(214,180,106,.18) !important;
+      color: var(--gold2, #f7d98b) !important;
+    }
+
+    .module-warning-cancel {
+      border: 1px solid rgba(255,255,255,.12) !important;
+      background: rgba(255,255,255,.055) !important;
+      color: rgba(255,247,237,.72) !important;
+    }
+
+    @media (max-width: 760px) {
+      .module-warning-choices {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
     }
   `;
   document.head.appendChild(style);
@@ -115,16 +299,24 @@ function normalizeWarning(value) {
   return WARNING_STATES.some(state => state.key === key) ? key : "none";
 }
 
+function normalizeWarningRecord(value = {}) {
+  if (typeof value === "string") {
+    return { level: normalizeWarning(value), comment: "" };
+  }
+
+  return {
+    level: normalizeWarning(value.warningLevel || value.level || "none"),
+    comment: String(value.warningComment || value.comment || "").trim()
+  };
+}
+
+function getWarningRecord(studentId) {
+  return normalizeWarningRecord(warningByStudentId.get(studentId));
+}
+
 function getWarningState(value) {
   const key = normalizeWarning(value);
   return WARNING_STATES.find(state => state.key === key) || WARNING_STATES[0];
-}
-
-function getNextWarning(value) {
-  const currentKey = normalizeWarning(value);
-  const currentIndex = WARNING_STATES.findIndex(state => state.key === currentKey);
-  const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % WARNING_STATES.length : 1;
-  return WARNING_STATES[nextIndex];
 }
 
 async function getUserAccess(user) {
@@ -165,7 +357,7 @@ async function loadWarnings() {
     warningByStudentId = new Map();
 
     snap.forEach(docSnap => {
-      warningByStudentId.set(docSnap.id, normalizeWarning(docSnap.data()?.warningLevel));
+      warningByStudentId.set(docSnap.id, normalizeWarningRecord(docSnap.data()));
     });
   } catch (error) {
     console.warn("Lecture avertos modules impossible :", error);
@@ -179,8 +371,9 @@ function clearRowWarningClasses(row) {
   row.classList.remove("alert-warning-1", "alert-warning-2", "alert-warning-3", "alert-refused");
 }
 
-function setRowWarning(row, warningKey) {
-  const state = getWarningState(warningKey);
+function setRowWarning(row, warningRecord) {
+  const record = normalizeWarningRecord(warningRecord);
+  const state = getWarningState(record.level);
   clearRowWarningClasses(row);
 
   if (state.rowClass) row.classList.add(state.rowClass);
@@ -188,16 +381,18 @@ function setRowWarning(row, warningKey) {
   const button = row.querySelector("[data-warning-toggle]");
   if (!button) return;
 
-  const nextClassName = `module-warning-pill ${state.rowClass || "alert-none"}`;
-  const nextTitle = state.key === "none" ? "Ajouter un averto" : `${state.label} - cliquer pour changer`;
+  const hasComment = record.comment.length > 0;
+  const nextClassName = `module-warning-pill ${state.rowClass || "alert-none"}${hasComment ? " has-comment" : ""}`;
+  const nextTitle = `${state.label}${hasComment ? ` - ${record.comment}` : ""}`;
 
   if (button.textContent) button.textContent = "";
   if (button.dataset.warningLevel !== state.key) button.dataset.warningLevel = state.key;
   if (button.dataset.warningLabel !== state.label) button.dataset.warningLabel = state.label;
+  if (button.dataset.warningComment !== record.comment) button.dataset.warningComment = record.comment;
   if (button.className !== nextClassName) button.className = nextClassName;
   if (button.title !== nextTitle) button.title = nextTitle;
 
-  button.setAttribute("aria-label", nextTitle);
+  button.setAttribute("aria-label", `Ouvrir le suivi averto : ${nextTitle}`);
 }
 
 function ensureWarningButton(row) {
@@ -214,7 +409,7 @@ function ensureWarningButton(row) {
     studentCell.appendChild(button);
   }
 
-  setRowWarning(row, warningByStudentId.get(studentId) || "none");
+  setRowWarning(row, getWarningRecord(studentId));
 }
 
 function decorateModuleRows() {
@@ -241,10 +436,98 @@ function markEmptyDates() {
   });
 }
 
-async function saveWarning(studentId, warningKey) {
+function ensureWarningModal() {
+  let modal = document.getElementById("moduleWarningModal");
+  if (modal) return modal;
+
+  modal = document.createElement("div");
+  modal.id = "moduleWarningModal";
+  modal.className = "module-warning-modal";
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="module-warning-backdrop" data-warning-close></div>
+    <section class="module-warning-dialog" role="dialog" aria-modal="true" aria-labelledby="moduleWarningTitle">
+      <button type="button" class="module-warning-close" data-warning-close aria-label="Fermer">×</button>
+      <p class="module-warning-kicker">Suivi modules</p>
+      <h2 id="moduleWarningTitle" class="module-warning-title">Averto élève</h2>
+      <p id="moduleWarningSubtitle" class="module-warning-subtitle"></p>
+      <div class="module-warning-choices">
+        ${WARNING_STATES.map(state => `<button type="button" class="module-warning-choice" data-warning-choice="${state.key}">${state.label}</button>`).join("")}
+      </div>
+      <label class="module-warning-label" for="moduleWarningComment">Commentaire</label>
+      <textarea id="moduleWarningComment" class="module-warning-comment" placeholder="Ajouter un commentaire visible par les profs..."></textarea>
+      <div class="module-warning-actions">
+        <button type="button" class="module-warning-cancel" data-warning-close>Annuler</button>
+        <button type="button" class="module-warning-save" data-warning-save>Enregistrer</button>
+      </div>
+    </section>
+  `;
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function getStudentNameFromRow(row) {
+  return row?.querySelector(".modules-student strong")?.textContent?.trim() || "Élève";
+}
+
+function getStudentIdTextFromRow(row) {
+  return row?.querySelector(".modules-student span")?.textContent?.trim() || "";
+}
+
+function refreshModalChoices() {
+  const modal = ensureWarningModal();
+  modal.querySelectorAll("[data-warning-choice]").forEach(button => {
+    button.classList.toggle("active", button.dataset.warningChoice === activeModalWarningKey);
+  });
+}
+
+function openWarningModal(button) {
+  if (!currentAccess.admin && currentAccess.role !== "prof") {
+    alert("Accès prof requis.");
+    return;
+  }
+
+  const studentId = button.dataset.studentId || "";
+  const row = button.closest("[data-student-row]");
+  if (!studentId || !row) return;
+
+  const record = getWarningRecord(studentId);
+  const modal = ensureWarningModal();
+  const title = modal.querySelector("#moduleWarningTitle");
+  const subtitle = modal.querySelector("#moduleWarningSubtitle");
+  const comment = modal.querySelector("#moduleWarningComment");
+
+  activeModalStudentId = studentId;
+  activeModalWarningKey = record.level;
+
+  if (title) title.textContent = getStudentNameFromRow(row);
+  if (subtitle) subtitle.textContent = getStudentIdTextFromRow(row);
+  if (comment) comment.value = record.comment;
+
+  refreshModalChoices();
+  modal.hidden = false;
+  requestAnimationFrame(() => comment?.focus());
+}
+
+function closeWarningModal() {
+  const modal = ensureWarningModal();
+  modal.hidden = true;
+  activeModalStudentId = "";
+  activeModalWarningKey = "none";
+}
+
+function selectWarningLevel(choiceKey) {
+  activeModalWarningKey = normalizeWarning(choiceKey);
+  refreshModalChoices();
+}
+
+async function saveWarning(studentId, record) {
+  const normalized = normalizeWarningRecord(record);
+
   await withTimeout(
     setDoc(doc(db, STUDENT_MODULES_COLLECTION, studentId), {
-      warningLevel: normalizeWarning(warningKey),
+      warningLevel: normalized.level,
+      warningComment: normalized.comment,
       warningUpdatedAt: serverTimestamp(),
       warningUpdatedBy: currentUser?.email || null
     }, { merge: true }),
@@ -253,47 +536,73 @@ async function saveWarning(studentId, warningKey) {
   );
 }
 
-async function handleWarningClick(button) {
-  if (button.disabled || button.dataset.saving === "true") return;
+async function saveWarningModal() {
+  if (!activeModalStudentId) return;
 
-  if (!currentAccess.admin && currentAccess.role !== "prof") {
-    alert("Accès prof requis.");
-    return;
-  }
+  const modal = ensureWarningModal();
+  const saveButton = modal.querySelector("[data-warning-save]");
+  const comment = modal.querySelector("#moduleWarningComment")?.value || "";
+  const previousRecord = getWarningRecord(activeModalStudentId);
+  const nextRecord = normalizeWarningRecord({
+    level: activeModalWarningKey,
+    comment
+  });
+  const row = document.querySelector(`[data-student-row="${CSS.escape(activeModalStudentId)}"]`);
 
-  const studentId = button.dataset.studentId || "";
-  if (!studentId) return;
-
-  const previousWarning = warningByStudentId.get(studentId) || "none";
-  const nextWarning = getNextWarning(previousWarning);
-  const row = button.closest("[data-student-row]");
-
-  warningByStudentId.set(studentId, nextWarning.key);
-  if (row) setRowWarning(row, nextWarning.key);
+  warningByStudentId.set(activeModalStudentId, nextRecord);
+  if (row) setRowWarning(row, nextRecord);
 
   try {
-    button.disabled = true;
-    button.dataset.saving = "true";
-    await saveWarning(studentId, nextWarning.key);
+    if (saveButton) saveButton.disabled = true;
+    await saveWarning(activeModalStudentId, nextRecord);
+    closeWarningModal();
   } catch (error) {
     console.error("Sauvegarde averto impossible :", error);
-    warningByStudentId.set(studentId, previousWarning);
-    if (row) setRowWarning(row, previousWarning);
+    warningByStudentId.set(activeModalStudentId, previousRecord);
+    if (row) setRowWarning(row, previousRecord);
     alert(`Averto non sauvegardé : ${error.code || error.message}`);
   } finally {
-    button.disabled = false;
-    button.dataset.saving = "false";
+    if (saveButton) saveButton.disabled = false;
   }
 }
 
 document.addEventListener("click", event => {
-  const button = event.target.closest("[data-warning-toggle]");
-  if (!button) return;
+  const closeButton = event.target.closest("[data-warning-close]");
+  const choiceButton = event.target.closest("[data-warning-choice]");
+  const saveButton = event.target.closest("[data-warning-save]");
+  const warningButton = event.target.closest("[data-warning-toggle]");
+
+  if (!closeButton && !choiceButton && !saveButton && !warningButton) return;
 
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
-  handleWarningClick(button);
+
+  if (closeButton) {
+    closeWarningModal();
+    return;
+  }
+
+  if (choiceButton) {
+    selectWarningLevel(choiceButton.dataset.warningChoice || "none");
+    return;
+  }
+
+  if (saveButton) {
+    saveWarningModal();
+    return;
+  }
+
+  if (warningButton) {
+    openWarningModal(warningButton);
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !ensureWarningModal().hidden) {
+    event.preventDefault();
+    closeWarningModal();
+  }
 });
 
 document.addEventListener("input", event => {
