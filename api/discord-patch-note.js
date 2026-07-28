@@ -1,5 +1,6 @@
 const MAX_MESSAGE_LENGTH = 3800;
 const EMBED_COLOR = 0xd6b46a;
+const FIREBASE_PROJECT_ID = "universit-4b11e";
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -11,6 +12,26 @@ function sendJson(response, statusCode, payload) {
 function getHeader(request, name) {
   const value = request.headers?.[name.toLowerCase()] ?? request.headers?.[name];
   return Array.isArray(value) ? value[0] : value;
+}
+
+function getBearerToken(request) {
+  const authorization = getHeader(request, "authorization") || "";
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : "";
+}
+
+function decodeBase64Url(value) {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  return Buffer.from(padded, "base64").toString("utf8");
+}
+
+function getEmailFromToken(token) {
+  try {
+    const payload = JSON.parse(decodeBase64Url(token.split(".")[1] || ""));
+    return String(payload.email || "").trim();
+  } catch {
+    return "";
+  }
 }
 
 async function readJsonBody(request) {
@@ -44,6 +65,28 @@ async function readJsonBody(request) {
   }
 }
 
+async function loadAdminAccess(idToken, email) {
+  const userDocUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${encodeURIComponent(email)}`;
+
+  const response = await fetch(userDocUrl, {
+    headers: {
+      Authorization: `Bearer ${idToken}`
+    }
+  });
+
+  if (response.status === 401 || response.status === 403 || response.status === 404) {
+    return false;
+  }
+
+  if (!response.ok) {
+    const details = await response.text().catch(() => "");
+    throw new Error(details || "Firestore access failed");
+  }
+
+  const userDocument = await response.json();
+  return userDocument.fields?.admin?.booleanValue === true;
+}
+
 module.exports = async function handler(request, response) {
   if (request.method === "OPTIONS") {
     response.statusCode = 204;
@@ -57,15 +100,26 @@ module.exports = async function handler(request, response) {
     return;
   }
 
-  const accessKey = process.env.PATCH_NOTE_ACCESS_KEY || "";
-  if (!accessKey) {
-    sendJson(response, 500, { error: "PATCH_NOTE_ACCESS_KEY is not configured" });
+  const idToken = getBearerToken(request);
+  const email = getEmailFromToken(idToken);
+
+  if (!idToken || !email) {
+    sendJson(response, 401, { error: "Connexion admin requise" });
     return;
   }
 
-  const sentKey = getHeader(request, "x-patch-note-key") || "";
-  if (sentKey !== accessKey) {
-    sendJson(response, 401, { error: "Unauthorized" });
+  try {
+    const isAdmin = await loadAdminAccess(idToken, email);
+
+    if (!isAdmin) {
+      sendJson(response, 403, { error: "Accès admin requis" });
+      return;
+    }
+  } catch (error) {
+    sendJson(response, 502, {
+      error: "Vérification admin impossible",
+      details: String(error?.message || error).slice(0, 300)
+    });
     return;
   }
 
