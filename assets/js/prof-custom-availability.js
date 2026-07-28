@@ -235,7 +235,16 @@ function setStatus(message, tone = "") {
   status.dataset.tone = tone;
 }
 
-function openCustomAccessModal() {
+async function refreshCurrentAccess() {
+  const firebase = await waitForProfFirebase();
+  const user = firebase.auth?.currentUser || window.currentProfUser || null;
+
+  currentAccessUser = user;
+  currentAccessData = await loadAccess(firebase, user);
+  return currentAccessData;
+}
+
+async function openCustomAccessModal() {
   ensureCustomAccessModal();
 
   const modal = document.getElementById("profCustomAccessModal");
@@ -243,6 +252,18 @@ function openCustomAccessModal() {
 
   modal.hidden = false;
   requestAnimationFrame(() => modal.classList.add("active"));
+
+  if (!canManageCustoms()) {
+    setStatus("Chargement de l'accès prof...");
+    await refreshCurrentAccess();
+  }
+
+  if (!canManageCustoms()) {
+    renderRows({});
+    setStatus("Accès prof requis pour modifier les customs élèves.", "error");
+    return;
+  }
+
   loadCustomAvailability();
 }
 
@@ -396,8 +417,12 @@ function ensureCustomAccessButton() {
     button.id = "profCustomAccessBtn";
     button.className = "btn secondary prof-custom-access-btn";
     button.textContent = "Customs élèves";
-    button.addEventListener("click", openCustomAccessModal);
     logoutBtn.insertAdjacentElement("beforebegin", button);
+  }
+
+  if (button.dataset.customAccessBound !== "true") {
+    button.dataset.customAccessBound = "true";
+    button.addEventListener("click", openCustomAccessModal);
   }
 
   positionCustomAccessButton();
@@ -435,5 +460,8 @@ async function startCustomAccessControls() {
     console.warn("Réglage customs élèves indisponible :", error);
   }
 }
+
+window.openCustomAccessModal = openCustomAccessModal;
+window.addEventListener("openProfCustomAccess", openCustomAccessModal);
 
 startCustomAccessControls();
