@@ -16,10 +16,10 @@ const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
 
 const WARNING_STATES = [
-  { key: "none", label: "OK", rowClass: "" },
-  { key: "warning1", label: "A1", rowClass: "alert-warning-1" },
-  { key: "warning2", label: "A2", rowClass: "alert-warning-2" },
-  { key: "warning3", label: "A3", rowClass: "alert-warning-3" },
+  { key: "none", label: "Averto", rowClass: "" },
+  { key: "warning1", label: "Averto 1", rowClass: "alert-warning-1" },
+  { key: "warning2", label: "Averto 2", rowClass: "alert-warning-2" },
+  { key: "warning3", label: "Averto 3", rowClass: "alert-warning-3" },
   { key: "refused", label: "Refusé", rowClass: "alert-refused" }
 ];
 
@@ -31,6 +31,75 @@ let currentUser = null;
 let currentAccess = { role: null, admin: false };
 let warningByStudentId = new Map();
 let loadingWarnings = false;
+let decorateScheduled = false;
+
+function installWarningIconStyles() {
+  if (document.getElementById("moduleWarningIconStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "moduleWarningIconStyles";
+  style.textContent = `
+    .module-warning-pill {
+      position: relative !important;
+      width: 34px !important;
+      min-width: 34px !important;
+      height: 28px !important;
+      padding: 0 !important;
+      display: grid !important;
+      place-items: center !important;
+      overflow: hidden !important;
+      color: rgba(255,255,255,.46) !important;
+      font-size: 0 !important;
+      line-height: 0 !important;
+    }
+
+    .module-warning-pill::before {
+      content: "" !important;
+      width: 0 !important;
+      height: 0 !important;
+      border-left: 8px solid transparent !important;
+      border-right: 8px solid transparent !important;
+      border-bottom: 15px solid currentColor !important;
+      filter: drop-shadow(0 0 6px rgba(0,0,0,.34)) !important;
+    }
+
+    .module-warning-pill::after {
+      content: "!" !important;
+      position: absolute !important;
+      top: 8px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      color: rgba(8,8,8,.84) !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      font-weight: 1000 !important;
+      pointer-events: none !important;
+    }
+
+    .module-warning-pill.alert-none {
+      border-color: rgba(255,255,255,.13) !important;
+      background: rgba(255,255,255,.045) !important;
+      color: rgba(255,255,255,.40) !important;
+    }
+
+    .module-warning-pill.alert-warning-1 {
+      color: #fdba74 !important;
+    }
+
+    .module-warning-pill.alert-warning-2 {
+      color: #fde68a !important;
+    }
+
+    .module-warning-pill.alert-warning-3 {
+      color: #fca5a5 !important;
+    }
+
+    .module-warning-pill.alert-refused {
+      color: #fff7ed !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 function withTimeout(promise, ms, message) {
   let timer;
@@ -120,12 +189,15 @@ function setRowWarning(row, warningKey) {
   if (!button) return;
 
   const nextClassName = `module-warning-pill ${state.rowClass || "alert-none"}`;
+  const nextTitle = state.key === "none" ? "Ajouter un averto" : `${state.label} - cliquer pour changer`;
 
-  if (button.textContent !== state.label) button.textContent = state.label;
+  if (button.textContent) button.textContent = "";
   if (button.dataset.warningLevel !== state.key) button.dataset.warningLevel = state.key;
+  if (button.dataset.warningLabel !== state.label) button.dataset.warningLabel = state.label;
   if (button.className !== nextClassName) button.className = nextClassName;
+  if (button.title !== nextTitle) button.title = nextTitle;
 
-  button.title = "Changer l'averto de cet élève";
+  button.setAttribute("aria-label", nextTitle);
 }
 
 function ensureWarningButton(row) {
@@ -139,7 +211,6 @@ function ensureWarningButton(row) {
     button.type = "button";
     button.dataset.warningToggle = "true";
     button.dataset.studentId = studentId;
-    button.setAttribute("aria-label", "Changer l'averto de l'élève");
     studentCell.appendChild(button);
   }
 
@@ -152,6 +223,16 @@ function decorateModuleRows() {
   });
 
   markEmptyDates();
+}
+
+function scheduleDecorateModuleRows() {
+  if (decorateScheduled) return;
+
+  decorateScheduled = true;
+  requestAnimationFrame(() => {
+    decorateScheduled = false;
+    decorateModuleRows();
+  });
 }
 
 function markEmptyDates() {
@@ -173,6 +254,8 @@ async function saveWarning(studentId, warningKey) {
 }
 
 async function handleWarningClick(button) {
+  if (button.disabled || button.dataset.saving === "true") return;
+
   if (!currentAccess.admin && currentAccess.role !== "prof") {
     alert("Accès prof requis.");
     return;
@@ -190,6 +273,7 @@ async function handleWarningClick(button) {
 
   try {
     button.disabled = true;
+    button.dataset.saving = "true";
     await saveWarning(studentId, nextWarning.key);
   } catch (error) {
     console.error("Sauvegarde averto impossible :", error);
@@ -198,6 +282,7 @@ async function handleWarningClick(button) {
     alert(`Averto non sauvegardé : ${error.code || error.message}`);
   } finally {
     button.disabled = false;
+    button.dataset.saving = "false";
   }
 }
 
@@ -207,6 +292,7 @@ document.addEventListener("click", event => {
 
   event.preventDefault();
   event.stopPropagation();
+  event.stopImmediatePropagation();
   handleWarningClick(button);
 });
 
@@ -218,8 +304,11 @@ document.addEventListener("change", event => {
   if (event.target.matches(".module-date")) markEmptyDates();
 });
 
-const observer = new MutationObserver(decorateModuleRows);
-observer.observe(document.body, { childList: true, subtree: true });
+installWarningIconStyles();
+
+const observerTarget = document.getElementById("modulesTable") || document.body;
+const observer = new MutationObserver(scheduleDecorateModuleRows);
+observer.observe(observerTarget, { childList: true, subtree: true });
 
 onAuthStateChanged(auth, async user => {
   currentUser = user || null;
