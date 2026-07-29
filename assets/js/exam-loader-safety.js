@@ -1,7 +1,7 @@
 const EXAM_SHEETS_TIMEOUT_MS = 15000;
 const EXAM_FIREBASE_READ_TIMEOUT_MS = 6000;
 const EXAM_FIREBASE_WRITE_SOFT_TIMEOUT_MS = 3000;
-const EXAM_UI_WATCHDOG_MS = 22000;
+const EXAM_UI_WATCHDOG_MS = 12000;
 
 function rejectAfter(label, timeoutMs) {
   return new Promise((_, reject) => {
@@ -110,13 +110,24 @@ function installExamFirebasePatch() {
   }, { once: true });
 }
 
+function getExamDebugInfo() {
+  const settings = window.__examResponsesSettings || {};
+  return [
+    `currentProfUser: ${window.currentProfUser?.email || "absent"}`,
+    `spreadsheetId: ${settings.spreadsheetId ? "present" : "absent"}`,
+    `gid: ${settings.gid || "absent"}`,
+    `firebase: ${window.profFirebase?.db ? "present" : "absent"}`
+  ].join(" | ");
+}
+
 function installExamLoadingWatchdog() {
   setTimeout(() => {
     const sheetStatus = document.getElementById("sheetStatus");
     const sheetContent = document.getElementById("sheetContent");
-    const statusText = sheetStatus?.textContent || "";
+    const hasCards = Boolean(document.querySelector("[data-answer-card]"));
+    const hasContent = Boolean(sheetContent?.innerHTML?.trim());
 
-    if (!sheetStatus || sheetStatus.hidden || !/Chargement des examens/i.test(statusText)) {
+    if (!sheetStatus || hasCards || hasContent) {
       return;
     }
 
@@ -126,8 +137,11 @@ function installExamLoadingWatchdog() {
       <div class="inline-error-box">
         <h4>Chargement trop long</h4>
         <p>
-          La feuille ou Firebase met trop de temps a repondre. Recharge la page,
-          et verifie le lien Google Sheets/GID si le probleme revient.
+          Le chargement examens n'a pas rendu la main. Le blocage vient probablement
+          de Google Sheets ou d'une lecture Firebase pendant l'initialisation.
+        </p>
+        <p style="margin-top:10px; opacity:.75; font-size:12px; word-break:break-word;">
+          ${getExamDebugInfo()}
         </p>
         <button type="button" class="btn secondary" onclick="window.location.reload()">
           Recharger
