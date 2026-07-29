@@ -44,7 +44,7 @@
         display: grid;
         place-items: center;
         background: #050505;
-        transition: opacity .34s ease, visibility .34s ease;
+        transition: opacity .5s ease, visibility .5s ease;
       }
 
       #loader.navigation-page-loader .loader-box {
@@ -55,8 +55,8 @@
         border: 1px solid rgba(255,255,255,.15);
         backdrop-filter: blur(20px);
         box-shadow: 0 0 80px rgba(214,180,106,.14);
-        transform: translateY(8px) scale(.97);
-        animation: navigationBoxIn .32s ease forwards;
+        transform: translateY(12px) scale(.96);
+        animation: navigationBoxIn .48s cubic-bezier(.2,.8,.2,1) forwards;
       }
 
       #loader.navigation-page-loader .loader-box h2 {
@@ -79,7 +79,7 @@
         display: block;
         height: 100%;
         background: linear-gradient(90deg, #d6b46a, #f0d98a);
-        animation: navigationLoad .9s ease forwards;
+        animation: navigationLoad 1.15s ease forwards;
       }
 
       @keyframes navigationLoad {
@@ -156,6 +156,49 @@
 
     window.setTimeout(() => {
       window.location.assign(url);
-    }, 320);
+    }, 650);
   };
+})();
+
+(function applyUpdatedBrandName() {
+  const previousName = "Module 4 - Mécanique";
+  const nextName = "Mécanique - Université";
+
+  if (document.title === previousName) {
+    document.title = nextName;
+  } else if (document.title.includes(previousName)) {
+    document.title = document.title.replaceAll(previousName, nextName);
+  } else if (document.title.includes("Module 4")) {
+    document.title = document.title.replaceAll("Module 4", nextName);
+  }
+
+  document.querySelectorAll("span, p, h1, h2, h3").forEach(element => {
+    if (element.textContent.trim() === previousName) {
+      element.textContent = nextName;
+    }
+  });
+
+  document.querySelectorAll('img[alt="Logo Module 4"]').forEach(image => {
+    image.alt = "Logo Mécanique - Université";
+  });
+})();
+
+(function loadModulesPageExtras() {
+  if (!document.body?.classList.contains("modules-page")) return;
+
+  if (!document.querySelector("link[data-modules-table-colors]")) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "../assets/css/prof-modules-eleves.css?v=1003";
+    link.dataset.modulesTableColors = "true";
+    document.head.appendChild(link);
+  }
+
+  import("./prof-modules-archives.js?v=1001").catch(error => {
+    console.warn("Archives modules indisponibles :", error);
+  });
+
+  import("./prof-modules-alerts.js?v=1001").catch(error => {
+    console.warn("Avertos modules indisponibles :", error);
+  });
 })();
