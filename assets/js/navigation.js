@@ -95,10 +95,10 @@
   }
 
   function ensureLoader() {
+    ensureTransitionStyles();
     let loader = document.getElementById("loader");
 
     if (!loader) {
-      ensureTransitionStyles();
       loader = document.createElement("div");
       loader.id = "loader";
       loader.className = "navigation-page-loader hide";
