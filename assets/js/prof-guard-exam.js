@@ -217,8 +217,7 @@ onAuthStateChanged(auth, async user => {
 
   try {
     await loadExamResponsesSettings();
-    await import("./exam-loader-safety.js?v=1004");
-    await import("./exam-loader-secure.js?v=1004");
+    await import("./exam-loader-fast.js?v=1011");
     await import("./exam-discord-send.js?v=1004");
   } catch (error) {
     console.error("Erreur chargement examens :", error);
