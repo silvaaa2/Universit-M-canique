@@ -1,0 +1,140 @@
+.prof-login-page.auth-preparing .prof-login-card {
+  opacity: 0;
+  transform: translateY(28px) scale(.965);
+  filter: blur(10px);
+}
+
+.prof-login-page.auth-visible .prof-login-card {
+  animation: profLoginEnter .7s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.prof-login-page.leaving .prof-login-card {
+  animation: profLoginLeave .34s ease both;
+}
+
+.prof-login-card,
+.prof-dashboard,
+.prof-dashboard-top,
+.prof-panel {
+  will-change: opacity, transform, filter;
+}
+
+.prof-dashboard {
+  filter: blur(5px);
+  transition:
+    opacity .58s ease,
+    transform .58s cubic-bezier(.2,.8,.2,1),
+    filter .58s ease;
+}
+
+.prof-dashboard.dashboard-visible {
+  filter: none;
+}
+
+.prof-dashboard.dashboard-visible .prof-dashboard-top {
+  animation: profDashboardTopEnter .55s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.prof-dashboard.dashboard-visible .prof-panel {
+  animation: profDashboardCardEnter .62s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.prof-dashboard.dashboard-visible .prof-grid .prof-panel:nth-child(2) {
+  animation-delay: .08s;
+}
+
+.prof-dashboard.dashboard-visible .prof-grid .prof-panel:nth-child(3) {
+  animation-delay: .16s;
+}
+
+.login-transition {
+  transition: opacity .5s ease, visibility .5s ease;
+}
+
+.transition-box {
+  animation: profTransitionPop .56s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes profLoginEnter {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(.965);
+    filter: blur(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes profLoginLeave {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-16px) scale(.985);
+    filter: blur(6px);
+  }
+}
+
+@keyframes profDashboardTopEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes profDashboardCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(.975);
+    filter: blur(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes profTransitionPop {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(.95);
+    filter: blur(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prof-login-page.auth-visible .prof-login-card,
+  .prof-login-page.leaving .prof-login-card,
+  .prof-dashboard.dashboard-visible .prof-dashboard-top,
+  .prof-dashboard.dashboard-visible .prof-panel,
+  .transition-box {
+    animation: none !important;
+  }
+
+  .prof-login-page.auth-preparing .prof-login-card,
+  .prof-dashboard {
+    filter: none;
+    transform: none;
+  }
+}
