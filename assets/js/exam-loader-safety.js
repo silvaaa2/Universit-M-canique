@@ -79,8 +79,17 @@ function patchExamFirebase() {
   const firebase = window.profFirebase;
   if (!firebase || firebase.__examSafetyPatched) return false;
 
+  const originalGetDoc = firebase.getDoc;
   const originalGetDocs = firebase.getDocs;
   const originalSetDoc = firebase.setDoc;
+
+  if (typeof originalGetDoc === "function") {
+    firebase.getDoc = (...args) => withRejectTimeout(
+      originalGetDoc(...args),
+      "Lecture Firebase document examen",
+      EXAM_FIREBASE_READ_TIMEOUT_MS
+    );
+  }
 
   if (typeof originalGetDocs === "function") {
     firebase.getDocs = (...args) => withRejectTimeout(
