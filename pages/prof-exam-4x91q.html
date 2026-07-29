@@ -90,7 +90,7 @@
 
             <div id="sheetStatus" class="inline-loading-box">
               <div class="inline-loader"></div>
-              <p>Chargement des examens...</p>
+              <p>Chargement des examens Réponses formulaire... v1010</p>
             </div>
 
             <div id="sheetContent" class="student-sheet-content" hidden></div>
@@ -104,25 +104,46 @@
 </main>
 
 <script>
-  window.__examOfficialPageVersion = "1009";
-  window.setTimeout(function () {
-    var status = document.getElementById("sheetStatus");
-    var content = document.getElementById("sheetContent");
-    var protectedContent = document.getElementById("protectedContent");
-    var hasCards = Boolean(document.querySelector("[data-answer-card]"));
-    var hasContent = Boolean(content && content.innerHTML && content.innerHTML.trim());
+  window.__examOfficialPageVersion = "1010";
+  (function watchExamInlineFallback() {
+    var firstVisibleAt = 0;
 
-    if (!status || hasCards || hasContent || (protectedContent && protectedContent.hidden)) return;
+    function hasRenderedExamContent() {
+      var content = document.getElementById("sheetContent");
+      return Boolean(document.querySelector("[data-answer-card]") || (content && content.innerHTML && content.innerHTML.trim()));
+    }
 
-    status.hidden = false;
-    status.style.display = "block";
-    status.innerHTML = '<div class="inline-error-box"><h4>Chargement examens bloqué</h4><p>La page officielle chargée est bien la version 1009, mais le loader principal ne répond pas. Le mode secours va essayer de lire Google Sheets.</p></div>';
-  }, 8000);
+    function isProtectedVisible() {
+      var protectedContent = document.getElementById("protectedContent");
+      if (!protectedContent || protectedContent.hidden) return false;
+      var style = window.getComputedStyle(protectedContent);
+      return style.display !== "none" && style.visibility !== "hidden";
+    }
+
+    function tick() {
+      var status = document.getElementById("sheetStatus");
+      if (!status || hasRenderedExamContent()) return;
+
+      if (isProtectedVisible()) {
+        if (!firstVisibleAt) firstVisibleAt = Date.now();
+
+        if (Date.now() - firstVisibleAt >= 5000) {
+          status.hidden = false;
+          status.style.display = "block";
+          status.innerHTML = '<div class="inline-error-box"><h4>Chargement examens bloqué</h4><p>La page officielle chargée est bien la version 1010. Le mode secours va essayer de lire Google Sheets.</p></div>';
+        }
+      }
+
+      window.setTimeout(tick, 1000);
+    }
+
+    tick();
+  })();
 </script>
 <script src="../assets/js/navigation.js?v=9028"></script>
 <script type="module" src="../assets/js/exam-loader-safety.js?v=1004"></script>
 <script type="module" src="../assets/js/prof-guard-exam.js?v=1008"></script>
-<script type="module" src="../assets/js/exam-loader-emergency.js?v=1001"></script>
+<script type="module" src="../assets/js/exam-loader-emergency.js?v=1010"></script>
 
 </body>
 </html>
