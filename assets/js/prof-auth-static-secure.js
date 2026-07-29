@@ -11,10 +11,13 @@ const loginTransition = document.getElementById("loginTransition");
 const loginTransitionTitle = loginTransition?.querySelector("h2");
 const loginTransitionText = loginTransition?.querySelector("p");
 
+const authStartedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
 let hideTransitionTimer = null;
+let loaderHideTimer = null;
 let firstRenderDone = false;
 let firstRenderTimer = null;
 let loginAttemptTimer = null;
+let loginRevealToken = 0;
 let dashboardToolsLoaded = false;
 let dashboardFallbackActionsBound = false;
 
@@ -27,6 +30,14 @@ const firebaseConfig = {
   appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58",
   measurementId: "G-Z5B51BQCNL"
 };
+
+function now() {
+  return typeof performance !== "undefined" ? performance.now() : Date.now();
+}
+
+function sleep(ms) {
+  return new Promise(resolve => window.setTimeout(resolve, ms));
+}
 
 function withTimeout(promise, ms, label) {
   let timer = null;
@@ -68,19 +79,86 @@ function startFirstRenderFallback() {
     if (firstRenderDone) return;
 
     console.warn("Affichage forcé du login : chargement initial trop long.");
-    showLogin("Chargement trop long. Recharge la page si la connexion ne répond pas.");
+    showLogin("Chargement trop long. Recharge la page si la connexion ne répond pas.", {
+      skipInitialDelay: true
+    });
   }, 6500);
 }
 
-function hidePageLoader() {
+function hidePageLoader(options = {}) {
   const loader = document.getElementById("loader");
   if (!loader) return;
+
+  const immediate = options.immediate === true;
+
+  if (loaderHideTimer) {
+    window.clearTimeout(loaderHideTimer);
+    loaderHideTimer = null;
+  }
 
   loader.classList.add("hide");
   loader.style.pointerEvents = "none";
   loader.style.opacity = "0";
   loader.style.visibility = "hidden";
-  loader.style.display = "none";
+
+  if (immediate) {
+    loader.style.display = "none";
+    return;
+  }
+
+  loaderHideTimer = window.setTimeout(() => {
+    if (loader.classList.contains("hide")) {
+      loader.style.display = "none";
+    }
+  }, 560);
+}
+
+function prepareLoginSurface() {
+  if (profDashboard) {
+    profDashboard.classList.remove("dashboard-visible");
+    profDashboard.hidden = true;
+    profDashboard.style.display = "none";
+  }
+
+  if (loginSection) {
+    loginSection.hidden = false;
+    loginSection.style.display = "grid";
+    loginSection.classList.remove("leaving", "auth-visible");
+    loginSection.classList.add("auth-preparing");
+  }
+
+  setLoginLoading(false);
+}
+
+async function waitForInitialLoader(skipInitialDelay = false) {
+  if (skipInitialDelay) return;
+
+  const minLoaderTime = 900;
+  const elapsed = now() - authStartedAt;
+  const remaining = Math.max(0, minLoaderTime - elapsed);
+
+  if (remaining > 0) {
+    await sleep(remaining);
+  }
+}
+
+async function revealLoginAfterLoader(options = {}) {
+  const token = ++loginRevealToken;
+
+  await waitForInitialLoader(options.skipInitialDelay === true);
+  if (token !== loginRevealToken) return;
+
+  hidePageLoader();
+
+  if (!loginSection) return;
+
+  requestAnimationFrame(() => {
+    if (token !== loginRevealToken) return;
+
+    loginSection.classList.remove("auth-preparing");
+    void loginSection.offsetWidth;
+    loginSection.classList.add("auth-visible");
+  });
 }
 
 function setLoginTransitionContent(title, text) {
@@ -99,6 +177,8 @@ function showLoginTransition(
   loginTransition.classList.remove("hide");
   loginTransition.hidden = false;
   loginTransition.style.pointerEvents = "all";
+  loginTransition.style.visibility = "";
+  loginTransition.style.opacity = "";
 
   requestAnimationFrame(() => {
     loginTransition.classList.add("active");
@@ -116,7 +196,7 @@ function hideLoginTransition() {
     if (!loginTransition.classList.contains("active")) {
       loginTransition.hidden = true;
     }
-  }, 350);
+  }, 520);
 }
 
 function hideLoader() {
@@ -139,10 +219,10 @@ function setLoginLoading(isLoading) {
   }
 }
 
-function showLogin(message = "") {
+function showLogin(message = "", options = {}) {
   markFirstRenderDone();
   clearLoginAttemptTimer();
-  hideLoader();
+  hideLoginTransition();
 
   if (profDashboard) {
     profDashboard.classList.remove("dashboard-visible");
@@ -153,11 +233,13 @@ function showLogin(message = "") {
   if (loginSection) {
     loginSection.hidden = false;
     loginSection.style.display = "grid";
-    loginSection.classList.remove("leaving");
+    loginSection.classList.remove("leaving", "auth-visible");
+    loginSection.classList.add("auth-preparing");
   }
 
   if (loginError) loginError.textContent = message;
   setLoginLoading(false);
+  revealLoginAfterLoader(options);
 }
 
 function forceUnlockDashboardInteractions() {
@@ -170,7 +252,7 @@ function forceUnlockDashboardInteractions() {
     loginTransition.style.opacity = "0";
   }
 
-  hidePageLoader();
+  hidePageLoader({ immediate: true });
 
   document.querySelectorAll(".prof-dashboard button").forEach(button => {
     button.disabled = false;
@@ -217,9 +299,25 @@ function loadDashboardTools() {
   });
 }
 
-function showDashboard() {
+async function showDashboard() {
   markFirstRenderDone();
   clearLoginAttemptTimer();
+  loginRevealToken += 1;
+
+  const transitionActive = loginTransition?.classList.contains("active") === true;
+
+  if (transitionActive) {
+    setLoginTransitionContent("Connexion validée", "Préparation de l’espace professeur...");
+  }
+
+  if (loginSection) {
+    loginSection.classList.remove("auth-preparing", "auth-visible");
+    loginSection.classList.add("leaving");
+  }
+
+  if (transitionActive) {
+    await sleep(460);
+  }
 
   hidePageLoader();
 
@@ -229,8 +327,11 @@ function showDashboard() {
   }
 
   if (profDashboard) {
+    profDashboard.classList.remove("dashboard-visible");
     profDashboard.hidden = false;
     profDashboard.style.display = "block";
+
+    await sleep(90);
 
     requestAnimationFrame(() => {
       profDashboard.classList.add("dashboard-visible");
@@ -240,8 +341,17 @@ function showDashboard() {
   setLoginLoading(false);
   bindDashboardFallbackActions();
   loadDashboardTools();
+
+  if (transitionActive) {
+    await sleep(760);
+    hideLoginTransition();
+    await sleep(520);
+  } else {
+    hideLoginTransition();
+    await sleep(120);
+  }
+
   forceUnlockDashboardInteractions();
-  window.setTimeout(forceUnlockDashboardInteractions, 250);
   window.setTimeout(forceUnlockDashboardInteractions, 900);
   window.scrollTo(0, 0);
 }
@@ -260,7 +370,7 @@ function bindLogout(signOut, auth) {
 
 async function startAuth() {
   startFirstRenderFallback();
-  showLogin();
+  prepareLoginSurface();
 
   try {
     const [firebaseApp, firebaseAuth, firebaseFirestore] = await withTimeout(Promise.all([
@@ -317,7 +427,7 @@ async function startAuth() {
 
       window.currentProfUser = user;
       bindLogout(signOut, auth);
-      showDashboard();
+      await showDashboard();
     }
 
     loginForm?.addEventListener("submit", async event => {
