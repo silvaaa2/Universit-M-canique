@@ -121,6 +121,9 @@ function getExamDebugInfo() {
 }
 
 function installExamLoadingWatchdog() {
+  if (window.__examSafetyWatchdogInstalled) return;
+  window.__examSafetyWatchdogInstalled = true;
+
   setTimeout(() => {
     const sheetStatus = document.getElementById("sheetStatus");
     const sheetContent = document.getElementById("sheetContent");
