@@ -1,9 +1,13 @@
-const EMERGENCY_DELAY_MS = 10000;
+const EMERGENCY_AFTER_VISIBLE_DELAY_MS = 5000;
 const EMERGENCY_FETCH_TIMEOUT_MS = 12000;
+const EMERGENCY_CHECK_INTERVAL_MS = 1000;
 const DEFAULT_EXAM_SHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
 const DEFAULT_EXAM_GID = "282279229";
 const DEFAULT_EXAM_LABEL = "Réponses formulaire";
 const STATUS_COLLECTION = "examAnswerStatuses";
+
+let emergencyStarted = false;
+let firstVisibleAt = 0;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -371,6 +375,7 @@ function showEmergencyError(error) {
     <div class="inline-error-box">
       <h4>Impossible de charger les examens</h4>
       <p>${escapeHtml(error?.message || "Le chargement a bloqué et le mode secours n'a pas réussi à lire Google Sheets.")}</p>
+      <p style="margin-top:10px; opacity:.75; font-size:12px;">Secours examens v1010</p>
       <button type="button" class="btn secondary" onclick="window.location.reload()">Recharger</button>
     </div>
   `;
@@ -378,11 +383,19 @@ function showEmergencyError(error) {
   if (sheetContent && !sheetContent.innerHTML.trim()) sheetContent.hidden = true;
 }
 
-async function runEmergencyLoader() {
-  if (document.querySelector("[data-answer-card]")) return;
-
+function isProtectedContentVisible() {
   const protectedContent = document.getElementById("protectedContent");
-  if (protectedContent?.hidden) return;
+  if (!protectedContent || protectedContent.hidden) return false;
+
+  const style = window.getComputedStyle(protectedContent);
+  return style.display !== "none" && style.visibility !== "hidden";
+}
+
+async function runEmergencyLoader() {
+  if (emergencyStarted || document.querySelector("[data-answer-card]")) return;
+  if (!isProtectedContentVisible()) return;
+
+  emergencyStarted = true;
 
   try {
     const csvText = await fetchCsvWithTimeout();
@@ -398,4 +411,21 @@ async function runEmergencyLoader() {
   }
 }
 
-window.setTimeout(runEmergencyLoader, EMERGENCY_DELAY_MS);
+function watchExamLoading() {
+  if (document.querySelector("[data-answer-card]")) return;
+
+  if (isProtectedContentVisible()) {
+    if (!firstVisibleAt) firstVisibleAt = Date.now();
+
+    const waitedAfterVisible = Date.now() - firstVisibleAt;
+    if (waitedAfterVisible >= EMERGENCY_AFTER_VISIBLE_DELAY_MS) {
+      runEmergencyLoader();
+    }
+  }
+
+  if (!emergencyStarted && !document.querySelector("[data-answer-card]")) {
+    window.setTimeout(watchExamLoading, EMERGENCY_CHECK_INTERVAL_MS);
+  }
+}
+
+watchExamLoading();
