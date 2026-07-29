@@ -28,8 +28,10 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
+const DEFAULT_EXAM_SHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
 const DEFAULT_EXAM_GID = "282279229";
 const DEFAULT_EXAM_LABEL = "Réponses formulaire";
+const EXAM_GUARD_FIREBASE_TIMEOUT_MS = 7000;
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -53,6 +55,21 @@ window.profFirebase = {
 };
 
 window.dispatchEvent(new Event("profFirebaseReady"));
+
+function rejectAfter(label, timeoutMs) {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`${label} a pris trop de temps.`));
+    }, timeoutMs);
+  });
+}
+
+function withGuardTimeout(promise, label) {
+  return Promise.race([
+    Promise.resolve(promise),
+    rejectAfter(label, EXAM_GUARD_FIREBASE_TIMEOUT_MS)
+  ]);
+}
 
 function extractSpreadsheetId(value) {
   const text = String(value || "").trim();
@@ -78,17 +95,22 @@ function normalizeQuestionPoints(value) {
 }
 
 async function loadExamResponsesSettings() {
-  const settingsRef = doc(db, "profSettings", "examResponses");
-  const settingsSnap = await getDoc(settingsRef);
-  const data = settingsSnap.exists() ? settingsSnap.data() : {};
-  const spreadsheetId = extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId);
+  let data = {};
 
-  if (!spreadsheetId) {
-    throw new Error("Aucun lien Google Sheet examen n'est configuré.");
+  try {
+    const settingsRef = doc(db, "profSettings", "examResponses");
+    const settingsSnap = await withGuardTimeout(
+      getDoc(settingsRef),
+      "Lecture réglages examens"
+    );
+
+    data = settingsSnap.exists() ? settingsSnap.data() : {};
+  } catch (error) {
+    console.warn("Réglages examens indisponibles, utilisation du lien par défaut :", error);
   }
 
   window.__examResponsesSettings = {
-    spreadsheetId,
+    spreadsheetId: extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId) || DEFAULT_EXAM_SHEET_ID,
     gid: String(data.gid || DEFAULT_EXAM_GID),
     label: String(data.label || DEFAULT_EXAM_LABEL),
     questionPoints: normalizeQuestionPoints(data.questionPoints)
@@ -100,7 +122,11 @@ async function getUserAccess(user) {
 
   try {
     const userRef = doc(db, "users", user.email);
-    const userSnap = await getDoc(userRef);
+    const userSnap = await withGuardTimeout(
+      getDoc(userRef),
+      "Lecture accès utilisateur"
+    );
+
     if (!userSnap.exists()) return { role: null, isAdmin: false };
 
     const data = userSnap.data();
@@ -144,8 +170,8 @@ function showExamConfigError(message) {
   if (sheetStatus) {
     sheetStatus.innerHTML = `
       <div class="inline-error-box">
-        <h4>Réglage examen manquant</h4>
-        <p>${String(message || "Impossible de charger les réglages examens.")}</p>
+        <h4>Erreur examens</h4>
+        <p>${String(message || "Impossible de charger les examens.")}</p>
       </div>
     `;
   }
@@ -191,9 +217,9 @@ onAuthStateChanged(auth, async user => {
 
   try {
     await loadExamResponsesSettings();
-    await import("./exam-loader-safety.js?v=1003");
-    await import("./exam-loader-secure.js?v=1003");
-    await import("./exam-discord-send.js?v=1003");
+    await import("./exam-loader-safety.js?v=1004");
+    await import("./exam-loader-secure.js?v=1004");
+    await import("./exam-discord-send.js?v=1004");
   } catch (error) {
     console.error("Erreur chargement examens :", error);
     showExamConfigError(error.message);
