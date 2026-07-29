@@ -103,9 +103,26 @@
 
 </main>
 
+<script>
+  window.__examOfficialPageVersion = "1009";
+  window.setTimeout(function () {
+    var status = document.getElementById("sheetStatus");
+    var content = document.getElementById("sheetContent");
+    var protectedContent = document.getElementById("protectedContent");
+    var hasCards = Boolean(document.querySelector("[data-answer-card]"));
+    var hasContent = Boolean(content && content.innerHTML && content.innerHTML.trim());
+
+    if (!status || hasCards || hasContent || (protectedContent && protectedContent.hidden)) return;
+
+    status.hidden = false;
+    status.style.display = "block";
+    status.innerHTML = '<div class="inline-error-box"><h4>Chargement examens bloqué</h4><p>La page officielle chargée est bien la version 1009, mais le loader principal ne répond pas. Le mode secours va essayer de lire Google Sheets.</p></div>';
+  }, 8000);
+</script>
 <script src="../assets/js/navigation.js?v=9028"></script>
 <script type="module" src="../assets/js/exam-loader-safety.js?v=1004"></script>
 <script type="module" src="../assets/js/prof-guard-exam.js?v=1008"></script>
+<script type="module" src="../assets/js/exam-loader-emergency.js?v=1001"></script>
 
 </body>
 </html>
