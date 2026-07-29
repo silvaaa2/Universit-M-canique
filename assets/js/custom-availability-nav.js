@@ -112,6 +112,16 @@ function getCurrentCustom() {
   return CUSTOMS.find(custom => custom.page === pageName) || null;
 }
 
+function readForcedState(custom) {
+  const currentCustom = getCurrentCustom();
+  if (currentCustom?.id !== custom.id) return null;
+
+  const forced = new URLSearchParams(window.location.search).get("guardState");
+  if (forced === "closed") return false;
+  if (forced === "open") return true;
+  return null;
+}
+
 function getLinkedElements(custom) {
   const explicit = [...document.querySelectorAll(`[data-custom-link="${custom.id}"]`)];
   const fallback = [...document.querySelectorAll("nav button, .modules .card")].filter(element => {
@@ -191,6 +201,12 @@ function applyAvailability(custom, enabled) {
 }
 
 async function loadAvailability(custom) {
+  const forcedEnabled = readForcedState(custom);
+  if (forcedEnabled !== null) {
+    applyAvailability(custom, forcedEnabled);
+    return;
+  }
+
   const localEnabled = readLocalState(custom.id);
   if (localEnabled !== null) {
     applyAvailability(custom, localEnabled);
