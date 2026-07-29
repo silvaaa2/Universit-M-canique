@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -17,8 +17,19 @@ const CUSTOMS = [
   { id: "cypher", label: "Custom Difficile", page: "custom-difficile.html" }
 ];
 
+const FIRESTORE_TIMEOUT_MS = 6500;
+
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error(message)), ms);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timer));
+}
 
 function injectAvailabilityStyles() {
   if (document.getElementById("customAvailabilityStyles")) return;
@@ -26,62 +37,6 @@ function injectAvailabilityStyles() {
   const style = document.createElement("style");
   style.id = "customAvailabilityStyles";
   style.textContent = `
-    .custom-closed-link {
-      opacity: .42 !important;
-      cursor: not-allowed !important;
-      filter: grayscale(.75);
-    }
-
-    button.custom-closed-link {
-      pointer-events: auto;
-    }
-
-    .custom-closed-card {
-      position: relative;
-      opacity: .52;
-      cursor: not-allowed !important;
-      filter: grayscale(.6);
-    }
-
-    .custom-closed-card::after {
-      content: "Fermé";
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      padding: 7px 10px;
-      border: 1px solid rgba(248,113,113,.34);
-      border-radius: 999px;
-      background: rgba(248,113,113,.12);
-      color: #fca5a5;
-      font-size: 11px;
-      font-weight: 1000;
-      text-transform: uppercase;
-    }
-
-    .custom-availability-banner {
-      width: min(920px, calc(100vw - 32px));
-      margin: 26px auto 0;
-      padding: 18px 20px;
-      border: 1px solid rgba(214,180,106,.20);
-      border-radius: 8px;
-      background: rgba(214,180,106,.08);
-      color: var(--text);
-    }
-
-    .custom-availability-banner strong {
-      display: block;
-      color: var(--gold2);
-      font-size: 13px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .custom-availability-banner p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
     .custom-closed-page {
       min-height: calc(100vh - 120px);
       display: grid;
@@ -122,58 +77,91 @@ function injectAvailabilityStyles() {
   document.head.appendChild(style);
 }
 
-async function loadAvailability(customId) {
+function readLocalState(customId) {
   try {
-    const snap = await getDoc(doc(db, "customAvailability", customId));
-    if (!snap.exists()) return { enabled: true };
+    const raw = window.localStorage.getItem(`customAvailability:${customId}`);
+    if (!raw) return null;
 
-    const data = snap.data();
-    return { enabled: data.enabled !== false };
+    const parsed = JSON.parse(raw);
+    return typeof parsed?.enabled === "boolean" ? parsed.enabled : null;
   } catch (error) {
-    console.warn("Disponibilité custom indisponible :", error);
-    return { enabled: true };
+    console.warn("Lecture locale disponibilité custom impossible :", error);
+    return null;
+  }
+}
+
+function saveLocalState(customId, enabled) {
+  try {
+    window.localStorage.setItem(
+      `customAvailability:${customId}`,
+      JSON.stringify({ enabled, updatedAt: Date.now() })
+    );
+  } catch (error) {
+    console.warn("Sauvegarde locale disponibilité custom impossible :", error);
   }
 }
 
 function getCurrentCustom() {
   const pageName = window.location.pathname.split("/").pop();
+  const bodyCustomId = document.body?.dataset?.customAvailabilityId || "";
+
+  if (bodyCustomId) {
+    return CUSTOMS.find(custom => custom.id === bodyCustomId) || null;
+  }
+
   return CUSTOMS.find(custom => custom.page === pageName) || null;
 }
 
-function disableNavigationFor(custom) {
-  document.querySelectorAll("nav button").forEach(button => {
-    const text = button.textContent.trim();
-    const onclick = button.getAttribute("onclick") || "";
-
-    if (!text.includes(custom.label) && !onclick.includes(custom.page)) return;
-
-    button.classList.add("custom-closed-link");
-    button.title = `${custom.label} fermé pour le moment`;
-    button.onclick = event => {
-      event.preventDefault();
-      event.stopPropagation();
-    };
+function getLinkedElements(custom) {
+  const explicit = [...document.querySelectorAll(`[data-custom-link="${custom.id}"]`)];
+  const fallback = [...document.querySelectorAll("nav button, .modules .card")].filter(element => {
+    const text = element.textContent.trim();
+    const onclick = element.getAttribute("onclick") || "";
+    return text.includes(custom.label) || onclick.includes(custom.page);
   });
 
-  document.querySelectorAll(".modules .card").forEach(card => {
-    const text = card.textContent.trim();
-    const onclick = card.getAttribute("onclick") || "";
+  return [...new Set([...explicit, ...fallback])];
+}
 
-    if (!text.includes(custom.label) && !onclick.includes(custom.page)) return;
+function setClosedState(custom, closed) {
+  getLinkedElements(custom).forEach(element => {
+    element.classList.toggle("custom-link-closed", closed);
+    element.classList.toggle("custom-closed-link", false);
+    element.classList.toggle("custom-closed-card", false);
+    element.setAttribute("aria-disabled", closed ? "true" : "false");
+    element.dataset.customAvailabilityState = closed ? "closed" : "open";
 
-    card.classList.add("custom-closed-card");
-    card.removeAttribute("onclick");
-    card.addEventListener("click", event => {
+    if (closed) {
+      element.setAttribute("title", "Fiche fermée pour les élèves");
+    } else {
+      element.removeAttribute("title");
+    }
+  });
+}
+
+function bindClickGuard() {
+  document.addEventListener(
+    "click",
+    event => {
+      const blockedLink = event.target.closest("[data-custom-link].custom-link-closed, nav button.custom-link-closed, .modules .card.custom-link-closed");
+      if (!blockedLink) return;
+
       event.preventDefault();
       event.stopPropagation();
-    });
-  });
+      event.stopImmediatePropagation();
+      blockedLink.classList.remove("custom-link-blocked-pulse");
+      void blockedLink.offsetWidth;
+      blockedLink.classList.add("custom-link-blocked-pulse");
+    },
+    true
+  );
 }
 
 function showClosedPage(custom) {
   const main = document.querySelector("main");
-  if (!main) return;
+  if (!main || main.dataset.customClosedRendered === "true") return;
 
+  main.dataset.customClosedRendered = "true";
   main.innerHTML = `
     <section class="custom-closed-page">
       <div class="custom-closed-box">
@@ -193,45 +181,54 @@ function showClosedPage(custom) {
   }
 }
 
-function showAllClosedBanner(closedCount) {
-  if (closedCount !== CUSTOMS.length || document.getElementById("customAvailabilityBanner")) return;
-
-  const modules = document.querySelector(".modules");
-  if (!modules) return;
-
-  modules.insertAdjacentHTML("beforebegin", `
-    <div class="custom-availability-banner" id="customAvailabilityBanner">
-      <strong>Customs fermés</strong>
-      <p>Les fiches custom ne sont pas disponibles pour le moment. Elles seront rouvertes par les professeurs quand le module sera actif.</p>
-    </div>
-  `);
-}
-
-async function startCustomAvailability() {
-  injectAvailabilityStyles();
-
-  const states = await Promise.all(CUSTOMS.map(async custom => ({
-    custom,
-    ...(await loadAvailability(custom.id))
-  })));
-
-  let closedCount = 0;
-
-  states.forEach(({ custom, enabled }) => {
-    if (enabled) return;
-    closedCount += 1;
-    disableNavigationFor(custom);
-  });
-
-  showAllClosedBanner(closedCount);
+function applyAvailability(custom, enabled) {
+  setClosedState(custom, !enabled);
 
   const currentCustom = getCurrentCustom();
-  if (!currentCustom) return;
-
-  const currentState = states.find(state => state.custom.id === currentCustom.id);
-  if (currentState && currentState.enabled === false) {
-    showClosedPage(currentCustom);
+  if (currentCustom?.id === custom.id && enabled === false) {
+    showClosedPage(custom);
   }
+}
+
+async function loadAvailability(custom) {
+  const localEnabled = readLocalState(custom.id);
+  if (localEnabled !== null) {
+    applyAvailability(custom, localEnabled);
+  }
+
+  const availabilityRef = doc(db, "customAvailability", custom.id);
+
+  try {
+    const snapshot = await withTimeout(
+      getDoc(availabilityRef),
+      FIRESTORE_TIMEOUT_MS,
+      "Lecture Firestore trop longue."
+    );
+
+    const enabled = snapshot.exists() ? snapshot.data().enabled !== false : true;
+    saveLocalState(custom.id, enabled);
+    applyAvailability(custom, enabled);
+  } catch (error) {
+    console.warn("Disponibilité custom indisponible :", error);
+  }
+
+  onSnapshot(
+    availabilityRef,
+    snapshot => {
+      const enabled = snapshot.exists() ? snapshot.data().enabled !== false : true;
+      saveLocalState(custom.id, enabled);
+      applyAvailability(custom, enabled);
+    },
+    error => {
+      console.warn("Ecoute disponibilité custom indisponible :", error);
+    }
+  );
+}
+
+function startCustomAvailability() {
+  injectAvailabilityStyles();
+  bindClickGuard();
+  CUSTOMS.forEach(custom => loadAvailability(custom));
 }
 
 startCustomAvailability();
