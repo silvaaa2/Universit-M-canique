@@ -13,8 +13,8 @@ window.addEventListener("load", () => {
 
     setTimeout(() => {
       loader.style.display = "none";
-    }, 450);
-  }, 450);
+    }, 550);
+  }, 700);
 });
 
 window.addEventListener("beforeunload", () => {
@@ -22,9 +22,9 @@ window.addEventListener("beforeunload", () => {
 
   if (!loader) return;
 
-  loader.classList.add("hide");
-  loader.style.opacity = "0";
-  loader.style.visibility = "hidden";
-  loader.style.pointerEvents = "none";
-  loader.style.display = "none";
+  loader.classList.remove("hide");
+  loader.style.display = "grid";
+  loader.style.opacity = "1";
+  loader.style.visibility = "visible";
+  loader.style.pointerEvents = "all";
 });
