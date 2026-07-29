@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="../assets/css/vehicle.css">
 </head>
 
-<body>
+<body data-custom-availability-id="sentinelClassic" data-custom-availability-label="Custom Facile">
 
 <div id="loader">
   <div class="loader-box">
@@ -32,9 +32,9 @@
 
   <nav>
     <button onclick="goPage('../index.html')">Accueil</button>
-    <button onclick="goPage('custom-facile.html')">Custom Facile</button>
-    <button onclick="goPage('custom-moyen.html')">Custom Moyen</button>
-    <button onclick="goPage('custom-difficile.html')">Custom Difficile</button>
+    <button data-custom-link="sentinelClassic" onclick="goPage('custom-facile.html')">Custom Facile</button>
+    <button data-custom-link="argento2f" onclick="goPage('custom-moyen.html')">Custom Moyen</button>
+    <button data-custom-link="cypher" onclick="goPage('custom-difficile.html')">Custom Difficile</button>
 
     <button class="prof-button" onclick="goPage('espace-prof.html')">
       <span class="prof-icon">👤</span>
@@ -129,7 +129,7 @@
 <script src="../assets/js/gallery.js"></script>
 <script src="../assets/js/media-tabs.js"></script>
 <script src="../assets/js/image-zoom.js"></script>
-<script type="module" src="../assets/js/custom-availability-nav.js?v=1001"></script>
+<script type="module" src="../assets/js/custom-availability-nav.js?v=1002"></script>
 <script type="module" src="../assets/js/custom-page-settings.js?v=1001"></script>
 
 </body>
