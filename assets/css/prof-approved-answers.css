@@ -1,0 +1,72 @@
+/* Auto-lock visuel des customs déjà approuvés pour le même élève */
+.student-already-approved-badge {
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(12,12,12,.84) !important;
+  color: rgba(255,255,255,.66) !important;
+  font-size: 11px !important;
+  font-weight: 1000 !important;
+  white-space: nowrap !important;
+}
+
+.student-already-approved-badge[hidden],
+.student-already-approved-panel[hidden] {
+  display: none !important;
+}
+
+.student-answer-card.already-approved-elsewhere {
+  border-color: rgba(255,255,255,.055) !important;
+  background:
+    linear-gradient(145deg, rgba(18,18,18,.90), rgba(3,3,3,.92)) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(255,255,255,.025) !important;
+  filter: grayscale(.82) !important;
+  opacity: .80 !important;
+}
+
+.student-answer-card.already-approved-elsewhere.collapsed:hover {
+  transform: none !important;
+  border-color: rgba(255,255,255,.075) !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(255,255,255,.025) !important;
+}
+
+.student-answer-card.already-approved-elsewhere .student-kicker,
+.student-answer-card.already-approved-elsewhere .student-card-top h2,
+.student-answer-card.already-approved-elsewhere .student-id-badge {
+  color: rgba(255,255,255,.34) !important;
+}
+
+.student-answer-card.already-approved-elsewhere .student-status-badge.status-pending {
+  border-color: rgba(255,255,255,.08) !important;
+  background: rgba(255,255,255,.035) !important;
+  color: rgba(255,255,255,.34) !important;
+}
+
+.student-already-approved-panel {
+  border: 1px solid rgba(255,255,255,.09) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255,255,255,.07), transparent 34%),
+    rgba(12,12,12,.78) !important;
+  padding: 14px 16px !important;
+  color: rgba(255,255,255,.66) !important;
+  display: grid !important;
+  gap: 4px !important;
+}
+
+.student-already-approved-panel strong {
+  color: rgba(255,255,255,.82) !important;
+  font-size: 13px !important;
+  font-weight: 1000 !important;
+  text-transform: uppercase !important;
+}
+
+.student-already-approved-panel span {
+  color: rgba(255,255,255,.48) !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
