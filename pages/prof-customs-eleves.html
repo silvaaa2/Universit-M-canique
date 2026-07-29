@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Customs élèves - Module 4</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="icon" type="image/png" href="../Images/logo.png?v=22">
+  <link rel="shortcut icon" type="image/png" href="../Images/logo.png?v=22">
+  <link rel="stylesheet" href="../assets/css/base.css?v=1001">
+  <link rel="stylesheet" href="../assets/css/header.css?v=9031">
+  <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
+  <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
+
+  <style>
+    .customs-access-page {
+      min-height: calc(100vh - 86px);
+      padding: 55px 0 90px;
+    }
+
+    .customs-access-card {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 28px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.11);
+      background:
+        radial-gradient(circle at 14% 0%, rgba(214,180,106,.12), transparent 34%),
+        linear-gradient(145deg, rgba(18,18,18,.82), rgba(8,8,8,.72));
+      box-shadow: 0 35px 120px rgba(0,0,0,.45);
+      backdrop-filter: blur(18px);
+      animation: customsPanelIn .32s ease both;
+    }
+
+    .customs-access-card.is-leaving {
+      animation: customsPanelOut .2s ease forwards;
+    }
+
+    .customs-access-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    .customs-access-head h1 {
+      margin: 0;
+      font-size: clamp(46px, 6vw, 76px);
+      line-height: .9;
+      letter-spacing: 0;
+    }
+
+    .customs-access-head p {
+      max-width: 660px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.55;
+    }
+
+    .customs-access-list {
+      display: grid;
+      gap: 12px;
+      animation: customsListIn .26s ease both;
+    }
+
+    .customs-access-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 8px;
+      background: rgba(255,255,255,.035);
+      transition: border-color .22s ease, background .22s ease, box-shadow .22s ease, transform .22s ease;
+    }
+
+    .customs-access-row.is-updated {
+      animation: customsRowUpdated .55s ease;
+    }
+
+    .customs-access-row h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .customs-access-row p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .customs-toggle-btn {
+      min-width: 178px;
+      border: 1px solid rgba(134,239,172,.32);
+      border-radius: 999px;
+      background: rgba(34,197,94,.14);
+      color: #86efac;
+      padding: 12px 16px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 1000;
+      cursor: pointer;
+      transition:
+        transform .18s ease,
+        border-color .22s ease,
+        background .22s ease,
+        color .22s ease,
+        box-shadow .22s ease;
+    }
+
+    .customs-toggle-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 32px rgba(34,197,94,.08);
+    }
+
+    .customs-toggle-btn[data-enabled="false"] {
+      border-color: rgba(248,113,113,.32);
+      background: rgba(248,113,113,.12);
+      color: #fca5a5;
+    }
+
+    .customs-toggle-btn[data-enabled="false"]:hover {
+      box-shadow: 0 12px 32px rgba(248,113,113,.08);
+    }
+
+    .customs-toggle-btn:disabled {
+      cursor: wait;
+      opacity: .65;
+    }
+
+    .customs-row-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .customs-test-link {
+      min-width: 136px;
+      border: 1px solid rgba(214,180,106,.28);
+      border-radius: 999px;
+      background: rgba(214,180,106,.1);
+      color: var(--gold2);
+      padding: 12px 16px;
+      text-align: center;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 1000;
+      transition: transform .18s ease, border-color .22s ease, background .22s ease;
+    }
+
+    .customs-test-link:hover {
+      transform: translateY(-1px);
+      border-color: rgba(214,180,106,.44);
+      background: rgba(214,180,106,.16);
+    }
+
+    .customs-access-status {
+      min-height: 22px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .customs-access-status[data-tone="ok"] {
+      color: #86efac;
+    }
+
+    .customs-access-status[data-tone="error"] {
+      color: #fca5a5;
+    }
+
+    .customs-loader {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 3px solid rgba(214,180,106,.18);
+      border-top-color: var(--gold2);
+      animation: customsSpin .75s linear infinite;
+    }
+
+    @keyframes customsSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes customsPanelIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(.985);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes customsPanelOut {
+      from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(10px) scale(.985);
+      }
+    }
+
+    @keyframes customsListIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes customsRowUpdated {
+      0% {
+        transform: scale(.992);
+        border-color: rgba(214,180,106,.14);
+      }
+
+      42% {
+        transform: scale(1.006);
+        border-color: rgba(214,180,106,.44);
+        box-shadow: 0 0 38px rgba(214,180,106,.11);
+      }
+
+      100% {
+        transform: scale(1);
+        border-color: rgba(255,255,255,.09);
+      }
+    }
+
+    @media (max-width: 780px) {
+      .customs-access-row,
+      .customs-access-head {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .customs-toggle-btn {
+        width: 100%;
+      }
+
+      .customs-row-actions {
+        justify-content: stretch;
+      }
+
+      .customs-test-link {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo" onclick="goPage('../index.html')">
+    <img src="../Images/logo.png" alt="Logo Module 4">
+    <span>Module 4 - Mécanique</span>
+  </div>
+
+  <nav>
+    <button onclick="goPage('../index.html')">Accueil</button>
+    <button onclick="goPage('espace-prof.html')">Espace Prof</button>
+  </nav>
+</header>
+
+<main>
+  <section class="customs-access-page">
+    <div class="customs-access-card">
+      <div class="customs-access-head">
+        <div>
+          <p class="kicker">Réglage prof</p>
+          <h1>Customs élèves</h1>
+          <p>
+            Ouvrez ou fermez les fiches custom visibles par les élèves. Si une fiche est fermée, le lien direct affiche une page indisponible.
+          </p>
+        </div>
+
+        <button type="button" class="btn secondary" data-customs-close="espace-prof.html">
+          Retour
+        </button>
+      </div>
+
+      <div id="customsAccessContent">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="customs-loader"></div>
+          <p class="customs-access-status">Vérification du compte...</p>
+        </div>
+      </div>
+
+      <p id="customsAccessStatus" class="customs-access-status"></p>
+    </div>
+  </section>
+</main>
+
+<script src="../assets/js/navigation.js?v=1002"></script>
+<script type="module" src="../assets/js/prof-customs-eleves-page.js?v=1"></script>
+
+</body>
+</html>
