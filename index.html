@@ -9,8 +9,8 @@
   <link rel="shortcut icon" type="image/png" href="Images/logo.png?v=22">
 
 <link rel="stylesheet" href="assets/css/base.css?v=9030">
-<link rel="stylesheet" href="assets/css/header.css?v=9030">
-<link rel="stylesheet" href="assets/css/home.css?v=9030">
+<link rel="stylesheet" href="assets/css/header.css?v=9031">
+<link rel="stylesheet" href="assets/css/home.css?v=9031">
 <link rel="stylesheet" href="assets/css/buttons.css?v=9030">
 <link rel="stylesheet" href="assets/css/loader.css?v=9030">
 </head>
@@ -32,9 +32,9 @@
   </div>
 
   <nav>
-    <button onclick="goPage('pages/custom-facile.html')">Custom Facile</button>
-    <button onclick="goPage('pages/custom-moyen.html')">Custom Moyen</button>
-    <button onclick="goPage('pages/custom-difficile.html')">Custom Difficile</button>
+    <button data-custom-link="sentinelClassic" onclick="goPage('pages/custom-facile.html')">Custom Facile</button>
+    <button data-custom-link="argento2f" onclick="goPage('pages/custom-moyen.html')">Custom Moyen</button>
+    <button data-custom-link="cypher" onclick="goPage('pages/custom-difficile.html')">Custom Difficile</button>
 
     <button class="prof-button" onclick="goPage('pages/espace-prof.html')">
       <span class="prof-icon">👤</span>
@@ -53,19 +53,19 @@
 
 <section class="modules">
 
-  <div class="card" onclick="goPage('pages/custom-facile.html')">
+  <div class="card" data-custom-link="sentinelClassic" onclick="goPage('pages/custom-facile.html')">
     <span>01</span>
     <h3>Custom Facile</h3>
     <p>Custom Sentinel Classic</p>
   </div>
 
-  <div class="card" onclick="goPage('pages/custom-moyen.html')">
+  <div class="card" data-custom-link="argento2f" onclick="goPage('pages/custom-moyen.html')">
     <span>02</span>
     <h3>Custom Moyen</h3>
     <p>Custom Argento 2F</p>
   </div>
 
-  <div class="card" onclick="goPage('pages/custom-difficile.html')">
+  <div class="card" data-custom-link="cypher" onclick="goPage('pages/custom-difficile.html')">
     <span>03</span>
     <h3>Custom Difficile</h3>
     <p>Custom Cypher</p>
@@ -77,7 +77,7 @@
 
 <script src="assets/js/loader.js?v=9030"></script>
 <script src="assets/js/navigation.js?v=9030"></script>
-<script type="module" src="assets/js/custom-availability-nav.js?v=1001"></script>
+<script type="module" src="assets/js/custom-availability-nav.js?v=1002"></script>
 
 </body>
 </html>
