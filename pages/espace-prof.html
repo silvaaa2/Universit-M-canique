@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -11,6 +11,17 @@
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
   <link rel="stylesheet" href="../assets/css/prof-v2.css?v=8">
+  <style>
+    #profAdminBtn[hidden],
+    .admin-only[hidden],
+    .v2-nav-item[hidden] {
+      display: none !important;
+    }
+
+    .v2-nav p:has(+ #profAdminBtn[hidden]) {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body class="prof-v2-page" data-theme="dark">
@@ -326,4 +337,3 @@
 
 </body>
 </html>
-
