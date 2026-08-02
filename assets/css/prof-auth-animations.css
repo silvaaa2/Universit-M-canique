@@ -1,4 +1,4 @@
-.prof-login-page.auth-preparing .prof-login-card {
+﻿.prof-login-page.auth-preparing .prof-login-card {
   opacity: 0;
   transform: translateY(28px) scale(.965);
   filter: blur(10px);
@@ -138,3 +138,4 @@
     transform: none;
   }
 }
+

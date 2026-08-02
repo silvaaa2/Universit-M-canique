@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
   const vehicleImage = document.getElementById("vehicleImage");
   const photoCard = document.querySelector(".photo-card");
 
@@ -68,3 +68,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+

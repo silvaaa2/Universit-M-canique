@@ -1,4 +1,4 @@
-const SHEETS = [
+﻿const SHEETS = [
   {
     id: "sentinelClassic",
     label: "Sentinel Classic",
@@ -957,3 +957,4 @@ function bindMinimize() {
 renderTabs();
 bindMinimize();
 loadSheet(SHEETS[0]);
+

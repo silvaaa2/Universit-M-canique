@@ -1,4 +1,4 @@
-.hero {
+﻿.hero {
   min-height: calc(100vh - 86px);
   display: flex;
   justify-content: center;
@@ -139,3 +139,4 @@ h1 span {
     font-size: 58px;
   }
 }
+

@@ -1,4 +1,4 @@
-const images = [
+﻿const images = [
   "../Images/FINAL RS2 (2).png",
   "../Images/DEVANT RS2 (2).png",
   "../Images/COTÉ RS2 (2).png",
@@ -41,3 +41,4 @@ function changeImage(direction) {
     vehicleImage.classList.remove("fade-out");
   }, 180);
 }
+

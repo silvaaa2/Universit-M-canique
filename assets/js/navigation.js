@@ -1,4 +1,4 @@
-(function setupNavigationTransition() {
+﻿(function setupNavigationTransition() {
   let navigationLocked = false;
 
   function getTransitionCopy(url) {
@@ -43,7 +43,7 @@
         z-index: 9999;
         display: grid;
         place-items: center;
-        background: #050505;
+        background: #000000;
         transition: opacity .5s ease, visibility .5s ease;
       }
 
@@ -80,6 +80,85 @@
         height: 100%;
         background: linear-gradient(90deg, #d6b46a, #f0d98a);
         animation: navigationLoad 1.15s ease forwards;
+      }
+
+      .v2-workspace {
+        position: relative;
+      }
+
+      .v2-workspace.is-navigating > :not(.v2-workspace-transition) {
+        pointer-events: none;
+      }
+
+      .v2-workspace-transition {
+        position: absolute;
+        inset: 84px 14px 14px;
+        z-index: 120;
+        display: grid;
+        place-items: center;
+        border-radius: var(--v2-radius, 18px);
+        background:
+          linear-gradient(145deg, rgba(214, 180, 106, .12), rgba(0, 0, 0, .08) 38%),
+          rgba(6, 6, 5, .72);
+        border: 1px solid rgba(255, 255, 255, .12);
+        box-shadow: 0 24px 90px rgba(0, 0, 0, .34);
+        backdrop-filter: blur(16px);
+        opacity: 0;
+        transition: opacity .24s ease;
+      }
+
+      body[data-theme="light"] .v2-workspace-transition {
+        background:
+          linear-gradient(145deg, rgba(196, 151, 66, .16), rgba(255, 255, 255, .38) 42%),
+          rgba(247, 244, 237, .78);
+        border-color: rgba(30, 24, 14, .12);
+      }
+
+      .v2-workspace-transition.is-visible {
+        opacity: 1;
+      }
+
+      .v2-workspace-loader-card {
+        width: min(430px, calc(100% - 28px));
+        padding: 24px;
+        border-radius: var(--v2-radius, 18px);
+        color: var(--v2-text, #fff8ea);
+        background: color-mix(in srgb, var(--v2-panel-strong, #171614) 82%, transparent);
+        border: 1px solid var(--v2-line, rgba(255, 255, 255, .14));
+        box-shadow: 0 22px 70px color-mix(in srgb, var(--v2-shadow, rgba(0, 0, 0, .5)) 72%, transparent);
+        transform: translateY(8px) scale(.98);
+        animation: navigationBoxIn .34s cubic-bezier(.2,.8,.2,1) forwards;
+      }
+
+      .v2-workspace-loader-card h2 {
+        margin: 0 0 8px;
+        font-size: 24px;
+        letter-spacing: 0;
+      }
+
+      .v2-workspace-loader-card p {
+        margin: 0 0 16px;
+        color: var(--v2-muted, rgba(255, 255, 255, .66));
+        font-weight: 900;
+      }
+
+      .v2-workspace-loader-bar {
+        height: 7px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--v2-line, rgba(255, 255, 255, .16)) 70%, transparent);
+        overflow: hidden;
+      }
+
+      .v2-workspace-loader-bar span {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, var(--v2-gold, #d6b46a), #f0d98a);
+        animation: navigationLoad .75s ease forwards;
+      }
+
+      .v2-nav-item.is-loading {
+        background: color-mix(in srgb, var(--v2-gold, #d6b46a) 18%, transparent);
+        border-color: color-mix(in srgb, var(--v2-gold, #d6b46a) 44%, transparent);
       }
 
       @keyframes navigationLoad {
@@ -148,15 +227,96 @@
     });
   }
 
+  function targetFileName(url) {
+    try {
+      const target = new URL(url, window.location.href);
+      return target.pathname.split("/").pop().toLowerCase();
+    } catch (error) {
+      const cleanUrl = String(url || "").split("?")[0].split("#")[0];
+      return cleanUrl.split("/").pop().toLowerCase();
+    }
+  }
+
+  function canUseWorkspaceTransition(url) {
+    if (!document.body?.classList.contains("prof-v2-page")) return false;
+    if (!document.querySelector(".v2-sidebar") || !document.querySelector(".v2-workspace")) return false;
+
+    const fileName = targetFileName(url);
+    return [
+      "espace-prof.html",
+      "prof-rp-7x92q.html",
+      "prof-exam-4x91q.html",
+      "prof-modules-eleves.html",
+      "prof-customs-eleves.html"
+    ].includes(fileName);
+  }
+
+  function markSidebarTarget(url) {
+    const fileName = targetFileName(url);
+    document.querySelectorAll(".v2-nav-item").forEach(button => {
+      button.classList.remove("active", "is-loading");
+    });
+
+    const targetButton = Array.from(document.querySelectorAll(".v2-nav-item")).find(button => {
+      const action = button.getAttribute("onclick") || "";
+      return fileName && action.toLowerCase().includes(fileName);
+    });
+
+    if (targetButton) {
+      targetButton.classList.add("active", "is-loading");
+    }
+  }
+
+  function showWorkspaceTransition(url) {
+    if (!canUseWorkspaceTransition(url)) return false;
+
+    ensureTransitionStyles();
+
+    const workspace = document.querySelector(".v2-workspace");
+    const copy = getTransitionCopy(url);
+    if (!workspace) return false;
+
+    let transition = workspace.querySelector(".v2-workspace-transition");
+
+    if (!transition) {
+      transition = document.createElement("div");
+      transition.className = "v2-workspace-transition";
+      transition.setAttribute("role", "status");
+      transition.setAttribute("aria-live", "polite");
+      workspace.appendChild(transition);
+    }
+
+    transition.innerHTML = `
+      <div class="v2-workspace-loader-card">
+        <h2>${copy.title}</h2>
+        <p>${copy.text}</p>
+        <div class="v2-workspace-loader-bar"><span></span></div>
+      </div>
+    `;
+
+    workspace.classList.add("is-navigating");
+    markSidebarTarget(url);
+
+    requestAnimationFrame(() => {
+      transition.classList.add("is-visible");
+    });
+
+    return true;
+  }
+
   window.goPage = function (url) {
     if (!url || navigationLocked) return;
 
     navigationLocked = true;
-    showTransition(url);
+    const isWorkspaceNavigation = showWorkspaceTransition(url);
+
+    if (!isWorkspaceNavigation) {
+      showTransition(url);
+    }
 
     window.setTimeout(() => {
       window.location.assign(url);
-    }, 650);
+    }, isWorkspaceNavigation ? 320 : 650);
   };
 })();
 
@@ -202,3 +362,4 @@
     console.warn("Avertos modules indisponibles :", error);
   });
 })();
+

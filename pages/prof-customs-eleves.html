@@ -1,188 +1,385 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Customs élèves - Module 4</title>
+  <title>Customs élèves - Mécanique - Université</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="shortcut icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="stylesheet" href="../assets/css/base.css?v=1001">
-  <link rel="stylesheet" href="../assets/css/header.css?v=9031">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=8">
 
   <style>
-    .customs-access-page {
-      min-height: calc(100vh - 86px);
-      padding: 55px 0 90px;
+    body.customs-v2-page {
+      overflow: hidden;
     }
 
-    .customs-access-card {
-      width: min(980px, 100%);
-      margin: 0 auto;
-      padding: 28px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.11);
+    .customs-v2-app {
+      grid-template-columns: 286px minmax(0, 1fr);
+      padding-left: 10px;
+      opacity: 1;
+      animation: customsPageIn 420ms cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .customs-v2-sidebar .v2-nav-item.active {
+      pointer-events: none;
+    }
+
+    .customs-v2-sidebar {
+      opacity: 1;
+      animation: customsSidebarIn 420ms cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .customs-v2-workspace {
+      opacity: 1;
+      animation: customsWorkspaceIn 420ms cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    .customs-v2-workspace.is-leaving {
+      animation: customsWorkspaceOut .2s ease forwards;
+    }
+
+    .customs-v2-content {
+      min-height: 0;
+      overflow: auto;
+      padding: 16px;
+    }
+
+    .customs-v2-overview {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 520px);
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .customs-v2-intro,
+    .customs-v2-summary,
+    .customs-v2-command,
+    .customs-v2-card,
+    .customs-v2-message {
+      border: 1px solid var(--v2-line-soft);
+      border-radius: var(--v2-radius);
       background:
-        radial-gradient(circle at 14% 0%, rgba(214,180,106,.12), transparent 34%),
-        linear-gradient(145deg, rgba(18,18,18,.82), rgba(8,8,8,.72));
-      box-shadow: 0 35px 120px rgba(0,0,0,.45);
-      backdrop-filter: blur(18px);
-      animation: customsPanelIn .32s ease both;
+        linear-gradient(145deg, color-mix(in srgb, var(--v2-gold) 10%, transparent), transparent 44%),
+        color-mix(in srgb, var(--v2-panel-strong) 52%, transparent);
+      box-shadow: 0 18px 54px color-mix(in srgb, var(--v2-shadow) 72%, transparent);
+      backdrop-filter: blur(14px);
     }
 
-    .customs-access-card.is-leaving {
-      animation: customsPanelOut .2s ease forwards;
+    .customs-v2-intro {
+      min-height: 188px;
+      display: grid;
+      align-content: end;
+      padding: clamp(22px, 3vw, 34px);
+      overflow: hidden;
     }
 
-    .customs-access-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      align-items: flex-start;
-      margin-bottom: 22px;
-    }
-
-    .customs-access-head h1 {
+    .customs-v2-intro h2 {
       margin: 0;
-      font-size: clamp(46px, 6vw, 76px);
+      max-width: 760px;
+      font-size: clamp(48px, 5.4vw, 86px);
       line-height: .9;
       letter-spacing: 0;
     }
 
-    .customs-access-head p {
-      max-width: 660px;
-      margin: 12px 0 0;
-      color: var(--muted);
-      font-weight: 800;
-      line-height: 1.55;
+    .customs-v2-intro p:not(.v2-eyebrow) {
+      max-width: 700px;
+      margin: 14px 0 0;
+      color: var(--v2-muted);
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.45;
     }
 
-    .customs-access-list {
+    .customs-v2-summary {
       display: grid;
-      gap: 12px;
-      animation: customsListIn .26s ease both;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 12px;
+      align-content: stretch;
     }
 
-    .customs-access-row {
+    .customs-v2-summary-item {
+      display: grid;
+      align-content: center;
+      min-height: 122px;
+      padding: 14px;
+      border: 1px solid var(--v2-line-soft);
+      border-radius: var(--v2-radius);
+      background: var(--v2-panel-soft);
+    }
+
+    .customs-v2-summary-item span {
+      color: var(--v2-faint);
+      font-size: 11px;
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+
+    .customs-v2-summary-item strong {
+      margin-top: 8px;
+      color: var(--v2-text);
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1;
+    }
+
+    .customs-v2-summary-item.is-open strong {
+      color: var(--v2-green);
+    }
+
+    .customs-v2-summary-item.is-closed strong {
+      color: var(--v2-red);
+    }
+
+    .customs-v2-command {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 16px;
+      gap: 12px;
       align-items: center;
-      padding: 16px;
-      border: 1px solid rgba(255,255,255,.09);
-      border-radius: 8px;
-      background: rgba(255,255,255,.035);
-      transition: border-color .22s ease, background .22s ease, box-shadow .22s ease, transform .22s ease;
+      margin-bottom: 14px;
+      padding: 12px;
     }
 
-    .customs-access-row.is-updated {
-      animation: customsRowUpdated .55s ease;
-    }
-
-    .customs-access-row h2 {
-      margin: 0;
-      font-size: 24px;
-      letter-spacing: 0;
-    }
-
-    .customs-access-row p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .customs-toggle-btn {
-      min-width: 178px;
-      border: 1px solid rgba(134,239,172,.32);
-      border-radius: 999px;
-      background: rgba(34,197,94,.14);
-      color: #86efac;
-      padding: 12px 16px;
-      font: inherit;
-      font-size: 13px;
-      font-weight: 1000;
-      cursor: pointer;
-      transition:
-        transform .18s ease,
-        border-color .22s ease,
-        background .22s ease,
-        color .22s ease,
-        box-shadow .22s ease;
-    }
-
-    .customs-toggle-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 12px 32px rgba(34,197,94,.08);
-    }
-
-    .customs-toggle-btn[data-enabled="false"] {
-      border-color: rgba(248,113,113,.32);
-      background: rgba(248,113,113,.12);
-      color: #fca5a5;
-    }
-
-    .customs-toggle-btn[data-enabled="false"]:hover {
-      box-shadow: 0 12px 32px rgba(248,113,113,.08);
-    }
-
-    .customs-toggle-btn:disabled {
-      cursor: wait;
-      opacity: .65;
-    }
-
-    .customs-row-actions {
+    .customs-v2-status {
+      min-height: 46px;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .customs-test-link {
-      min-width: 136px;
-      border: 1px solid rgba(214,180,106,.28);
-      border-radius: 999px;
-      background: rgba(214,180,106,.1);
-      color: var(--gold2);
-      padding: 12px 16px;
-      text-align: center;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 1000;
-      transition: transform .18s ease, border-color .22s ease, background .22s ease;
-    }
-
-    .customs-test-link:hover {
-      transform: translateY(-1px);
-      border-color: rgba(214,180,106,.44);
-      background: rgba(214,180,106,.16);
-    }
-
-    .customs-access-status {
-      min-height: 22px;
-      margin: 18px 0 0;
-      color: var(--muted);
+      border: 1px solid var(--v2-line-soft);
+      border-radius: var(--v2-radius);
+      background: color-mix(in srgb, var(--v2-panel-strong) 54%, transparent);
+      color: var(--v2-muted);
+      padding: 0 14px;
       font-size: 13px;
       font-weight: 900;
     }
 
-    .customs-access-status[data-tone="ok"] {
-      color: #86efac;
+    .customs-v2-status[data-tone="ok"] {
+      color: var(--v2-green);
     }
 
-    .customs-access-status[data-tone="error"] {
-      color: #fca5a5;
+    .customs-v2-status[data-tone="error"] {
+      color: var(--v2-red);
+    }
+
+    .customs-v2-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .customs-v2-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .customs-v2-card {
+      min-height: 340px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 20px;
+      padding: 20px;
+      overflow: hidden;
+      transition:
+        transform var(--v2-fast),
+        border-color var(--v2-fast),
+        background var(--v2-fast),
+        box-shadow var(--v2-fast),
+        opacity var(--v2-fast);
+    }
+
+    .customs-v2-card:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in srgb, var(--v2-gold) 34%, transparent);
+      box-shadow: 0 24px 70px color-mix(in srgb, var(--v2-shadow) 82%, transparent);
+    }
+
+    .customs-v2-card.is-closed {
+      opacity: .72;
+      background:
+        linear-gradient(145deg, rgba(248, 113, 113, .08), transparent 44%),
+        color-mix(in srgb, var(--v2-panel-strong) 52%, transparent);
+    }
+
+    .customs-v2-card.is-updated {
+      animation: customsRowUpdated .55s ease;
+    }
+
+    .customs-v2-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .customs-v2-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--v2-gold) 30%, transparent);
+      border-radius: var(--v2-radius);
+      background: var(--v2-gold-soft);
+      color: var(--v2-gold);
+      font-size: 13px;
+      font-weight: 1000;
+    }
+
+    .customs-v2-state {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(134, 239, 172, .28);
+      border-radius: var(--v2-radius);
+      background: rgba(34, 197, 94, .12);
+      color: var(--v2-green);
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+
+    .customs-v2-state[data-enabled="false"] {
+      border-color: rgba(248, 113, 113, .30);
+      background: rgba(248, 113, 113, .11);
+      color: var(--v2-red);
+    }
+
+    .customs-v2-card-body {
+      display: grid;
+      align-content: center;
+    }
+
+    .customs-v2-card h2 {
+      margin: 0;
+      font-size: clamp(26px, 2.8vw, 40px);
+      line-height: .98;
+      letter-spacing: 0;
+    }
+
+    .customs-v2-card p {
+      margin: 12px 0 0;
+      color: var(--v2-muted);
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.45;
+    }
+
+    .customs-v2-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .customs-v2-meta span {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--v2-line-soft);
+      border-radius: var(--v2-radius);
+      background: var(--v2-panel-soft);
+      color: var(--v2-faint);
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 1000;
+    }
+
+    .customs-row-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .customs-toggle-btn,
+    .customs-test-link,
+    .customs-v2-refresh {
+      min-height: 44px;
+      border-radius: var(--v2-radius);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 1000;
+      text-decoration: none;
+      cursor: pointer;
+      transition:
+        transform var(--v2-fast),
+        border-color var(--v2-fast),
+        background var(--v2-fast),
+        color var(--v2-fast),
+        box-shadow var(--v2-fast);
+    }
+
+    .customs-toggle-btn {
+      border: 1px solid rgba(248, 113, 113, .28);
+      background: rgba(248, 113, 113, .10);
+      color: var(--v2-red);
+      padding: 0 12px;
+    }
+
+    .customs-toggle-btn[data-enabled="false"] {
+      border-color: rgba(134, 239, 172, .30);
+      background: rgba(34, 197, 94, .12);
+      color: var(--v2-green);
+    }
+
+    .customs-test-link,
+    .customs-v2-refresh {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid color-mix(in srgb, var(--v2-gold) 30%, transparent);
+      background: var(--v2-gold-soft);
+      color: var(--v2-gold);
+      padding: 0 12px;
+    }
+
+    .customs-toggle-btn:hover,
+    .customs-test-link:hover,
+    .customs-v2-refresh:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 34px color-mix(in srgb, var(--v2-shadow) 72%, transparent);
+    }
+
+    .customs-toggle-btn:disabled,
+    .customs-v2-refresh:disabled {
+      cursor: wait;
+      opacity: .6;
+      transform: none;
+    }
+
+    .customs-v2-message,
+    .customs-v2-loading {
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .customs-v2-message h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .customs-v2-message p {
+      max-width: 560px;
+      margin: 10px auto 0;
+      color: var(--v2-muted);
+      font-weight: 900;
+      line-height: 1.5;
     }
 
     .customs-loader {
-      width: 28px;
-      height: 28px;
+      width: 34px;
+      height: 34px;
+      margin: 0 auto 14px;
       border-radius: 999px;
-      border: 3px solid rgba(214,180,106,.18);
-      border-top-color: var(--gold2);
+      border: 3px solid color-mix(in srgb, var(--v2-gold) 22%, transparent);
+      border-top-color: var(--v2-gold);
       animation: customsSpin .75s linear infinite;
     }
 
@@ -190,127 +387,275 @@
       to { transform: rotate(360deg); }
     }
 
-    @keyframes customsPanelIn {
-      from {
-        opacity: 0;
-        transform: translateY(16px) scale(.985);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    @keyframes customsPageIn {
+      from { transform: translateY(8px); }
+      to { transform: translateY(0); }
     }
 
-    @keyframes customsPanelOut {
-      from {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-
-      to {
-        opacity: 0;
-        transform: translateY(10px) scale(.985);
-      }
+    @keyframes customsSidebarIn {
+      from { transform: translateX(-10px); }
+      to { transform: translateX(0); }
     }
 
-    @keyframes customsListIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
+    @keyframes customsWorkspaceIn {
+      from { transform: translateX(12px) scale(.992); }
+      to { transform: translateX(0) scale(1); }
+    }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes customsWorkspaceOut {
+      to { opacity: 0; transform: translateX(-10px) scale(.99); }
     }
 
     @keyframes customsRowUpdated {
       0% {
         transform: scale(.992);
-        border-color: rgba(214,180,106,.14);
+        border-color: var(--v2-line-soft);
       }
 
       42% {
         transform: scale(1.006);
-        border-color: rgba(214,180,106,.44);
-        box-shadow: 0 0 38px rgba(214,180,106,.11);
+        border-color: color-mix(in srgb, var(--v2-gold) 54%, transparent);
+        box-shadow: 0 0 42px color-mix(in srgb, var(--v2-gold) 16%, transparent);
       }
 
       100% {
         transform: scale(1);
-        border-color: rgba(255,255,255,.09);
       }
     }
 
-    @media (max-width: 780px) {
-      .customs-access-row,
-      .customs-access-head {
+    @media (max-width: 1180px) {
+      .customs-v2-app {
+        grid-template-columns: 86px minmax(0, 1fr);
+      }
+
+      .customs-v2-sidebar .v2-brand span,
+      .customs-v2-sidebar .v2-nav-item > span + span,
+      .customs-v2-sidebar .v2-nav p,
+      .customs-v2-sidebar .v2-theme-box > span {
+        display: none;
+      }
+
+      .customs-v2-sidebar .v2-nav-item {
+        justify-content: center;
+      }
+
+      .customs-v2-overview {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 980px) {
+      body.customs-v2-page {
+        overflow: auto;
+      }
+
+      .customs-v2-app {
+        height: auto;
+        min-height: 100vh;
+        grid-template-columns: 1fr;
+        padding: 10px;
+        overflow: visible;
+      }
+
+      .customs-v2-sidebar {
+        grid-template-rows: auto auto auto;
+      }
+
+      .customs-v2-sidebar .v2-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        overflow: visible;
+      }
+
+      .customs-v2-sidebar .v2-nav p {
+        display: none;
+      }
+
+      .customs-v2-sidebar .v2-nav-item {
+        margin: 0;
+      }
+
+      .customs-v2-workspace {
+        height: auto;
+        min-height: 70vh;
+      }
+
+      .customs-v2-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .v2-topbar,
+      .customs-v2-command {
         grid-template-columns: 1fr;
         display: grid;
       }
 
-      .customs-toggle-btn {
-        width: 100%;
-      }
-
-      .customs-row-actions {
+      .v2-topbar-actions,
+      .customs-v2-actions {
         justify-content: stretch;
       }
 
-      .customs-test-link {
-        width: 100%;
+      .customs-v2-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .customs-row-actions {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 
-<body>
+<body class="prof-v2-page customs-v2-page" data-theme="dark">
 
-<header>
-  <div class="logo" onclick="goPage('../index.html')">
-    <img src="../Images/logo.png" alt="Logo Module 4">
-    <span>Module 4 - Mécanique</span>
-  </div>
+<main class="v2-shell">
+  <section class="v2-app customs-v2-app">
+    <aside class="v2-sidebar customs-v2-sidebar">
+      <button type="button" class="v2-brand" onclick="goPage('../index.html')" aria-label="Accueil du site">
+        <img src="../Images/logo.png" alt="Logo Mécanique - Université">
+        <span>
+          <strong>Mécanique</strong>
+          <small>Université</small>
+        </span>
+      </button>
 
-  <nav>
-    <button onclick="goPage('../index.html')">Accueil</button>
-    <button onclick="goPage('espace-prof.html')">Espace Prof</button>
-  </nav>
-</header>
-
-<main>
-  <section class="customs-access-page">
-    <div class="customs-access-card">
-      <div class="customs-access-head">
-        <div>
-          <p class="kicker">Réglage prof</p>
-          <h1>Customs élèves</h1>
-          <p>
-            Ouvrez ou fermez les fiches custom visibles par les élèves. Si une fiche est fermée, le lien direct affiche une page indisponible.
-          </p>
-        </div>
-
-        <button type="button" class="btn secondary" data-customs-close="espace-prof.html">
-          Retour
+      <nav class="v2-nav" aria-label="Navigation professeur">
+        <p>Principal</p>
+        <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
+          <span class="v2-nav-mark">TB</span>
+          <span>Tableau de bord</span>
         </button>
-      </div>
+        <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
+          <span class="v2-nav-mark">CO</span>
+          <span>Corrigés</span>
+        </button>
+        <button type="button" class="v2-nav-item" onclick="goPage('prof-rp-7x92q.html')">
+          <span class="v2-nav-mark">RE</span>
+          <span>Réponses élèves</span>
+        </button>
+        <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-4x91q.html')">
+          <span class="v2-nav-mark">EX</span>
+          <span>Examens</span>
+        </button>
 
-      <div id="customsAccessContent">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="customs-loader"></div>
-          <p class="customs-access-status">Vérification du compte...</p>
+        <p>Suivi</p>
+        <button type="button" class="v2-nav-item" onclick="goPage('prof-modules-eleves.html')">
+          <span class="v2-nav-mark">ME</span>
+          <span>Modules élèves</span>
+        </button>
+        <button type="button" class="v2-nav-item active">
+          <span class="v2-nav-mark">CE</span>
+          <span>Customs élèves</span>
+        </button>
+      </nav>
+
+      <div class="v2-theme-box">
+        <span>Mode</span>
+        <div class="v2-theme-toggle" role="group" aria-label="Thème">
+          <button type="button" data-theme-choice="dark" class="active">Sombre</button>
+          <button type="button" data-theme-choice="light">Clair</button>
         </div>
       </div>
+    </aside>
 
-      <p id="customsAccessStatus" class="customs-access-status"></p>
+    <div class="v2-workspace customs-v2-workspace">
+      <header class="v2-topbar">
+        <div>
+          <p class="v2-eyebrow">Réglage prof</p>
+          <h1>Customs élèves</h1>
+        </div>
+
+        <div class="v2-topbar-actions">
+          <div class="v2-user-pill">
+            <span id="customsUserInitials">PR</span>
+            <strong id="customsUserEmail">Professeur</strong>
+            <small id="customsUserRole">Compte prof</small>
+          </div>
+          <button type="button" class="v2-secondary-btn" data-customs-close="espace-prof.html">
+            Retour
+          </button>
+        </div>
+      </header>
+
+      <section class="customs-v2-content">
+        <div class="customs-v2-overview">
+          <div class="customs-v2-intro">
+            <p class="v2-eyebrow">Visibilité élèves</p>
+            <h2>Accès customs</h2>
+            <p>Active ou coupe les fiches visibles côté élèves sans toucher aux corrections professeur.</p>
+          </div>
+
+          <div class="customs-v2-summary" id="customsSummary" aria-label="Résumé des customs">
+            <div class="customs-v2-summary-item">
+              <span>Total</span>
+              <strong>3</strong>
+            </div>
+            <div class="customs-v2-summary-item is-open">
+              <span>Ouverts</span>
+              <strong>0</strong>
+            </div>
+            <div class="customs-v2-summary-item is-closed">
+              <span>Fermés</span>
+              <strong>0</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="customs-v2-command">
+          <p id="customsAccessStatus" class="customs-v2-status">Vérification du compte...</p>
+          <div class="customs-v2-actions">
+            <button type="button" class="customs-v2-refresh" id="reloadCustomsAccess">Recharger</button>
+          </div>
+        </div>
+
+        <div id="customsAccessContent">
+          <div class="customs-v2-loading">
+            <div>
+              <div class="customs-loader"></div>
+              <p class="customs-v2-status">Chargement des accès...</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </section>
 </main>
 
-<script src="../assets/js/navigation.js?v=1002"></script>
-<script type="module" src="../assets/js/prof-customs-eleves-page.js?v=1"></script>
+<script src="../assets/js/navigation.js?v=1007"></script>
+<script>
+  (() => {
+    const storageKey = "profV2Theme";
+
+    function applyTheme(theme) {
+      const safeTheme = theme === "light" ? "light" : "dark";
+      document.body.dataset.theme = safeTheme;
+      try {
+        localStorage.setItem(storageKey, safeTheme);
+      } catch (error) {
+        console.warn("Theme local indisponible :", error);
+      }
+
+      document.querySelectorAll("[data-theme-choice]").forEach(button => {
+        button.classList.toggle("active", button.dataset.themeChoice === safeTheme);
+      });
+    }
+
+    try {
+      applyTheme(localStorage.getItem(storageKey) || document.body.dataset.theme || "dark");
+    } catch (error) {
+      applyTheme("dark");
+    }
+
+    document.querySelectorAll("[data-theme-choice]").forEach(button => {
+      button.addEventListener("click", () => applyTheme(button.dataset.themeChoice));
+    });
+  })();
+</script>
+<script type="module" src="../assets/js/prof-customs-eleves-page.js?v=9"></script>
 
 </body>
 </html>
+

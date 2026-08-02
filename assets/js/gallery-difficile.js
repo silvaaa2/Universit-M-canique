@@ -1,4 +1,4 @@
-const images = [
+﻿const images = [
   "../Images/FINAL CYPHER.png",
   "../Images/DEVANT CYPHER.png",
   "../Images/COTÉ CYPHER.png",
@@ -35,3 +35,4 @@ function changeImage(direction) {
     vehicleImage.classList.remove("fade-out");
   }, 180);
 }
+

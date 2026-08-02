@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
   const openCorrectionsBtn = document.getElementById("openCorrectionsBtn");
 
   const inlineCorrections = document.getElementById("inlineCorrections");
@@ -594,3 +594,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+

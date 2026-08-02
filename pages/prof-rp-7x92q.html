@@ -1,109 +1,235 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Réponses Élèves - Module 4</title>
+  <title>Réponses customs - Mécanique - Université</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="shortcut icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="stylesheet" href="../assets/css/base.css?v=5003">
-  <link rel="stylesheet" href="../assets/css/header.css?v=5003">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=5003">
   <link rel="stylesheet" href="../assets/css/loader.css?v=5003">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9024">
-  <link rel="stylesheet" href="../assets/css/prof-approved-answers.css?v=1001">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=8">
+  <link rel="stylesheet" href="../assets/css/prof-rp-v2.css?v=2">
 </head>
 
-<body>
+<body class="prof-v2-page rp-v2-page" data-theme="dark">
 
-<header>
-  <div class="logo" onclick="goPage('../index.html')">
-    <img src="../Images/logo.png" alt="Logo Module 4">
-    <span>Module 4 - Mécanique</span>
-  </div>
+<main class="v2-shell">
+  <section id="protectedContent" class="rp-v2-dashboard">
+    <div class="v2-app rp-v2-app">
+      <aside class="v2-sidebar rp-v2-sidebar">
+        <button type="button" class="v2-brand" onclick="goPage('../index.html')" aria-label="Accueil du site">
+          <img src="../Images/logo.png" alt="Logo Mécanique - Université">
+          <span>
+            <strong>Mécanique</strong>
+            <small>Université</small>
+          </span>
+        </button>
 
-  <nav>
-    <button onclick="goPage('../index.html')">Accueil</button>
-    <button onclick="goPage('espace-prof.html')">Espace Prof</button>
-  </nav>
-</header>
+        <nav class="v2-nav" aria-label="Navigation professeur">
+          <p>Principal</p>
+          <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
+            <span class="v2-nav-mark">TB</span>
+            <span>Tableau de bord</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
+            <span class="v2-nav-mark">CO</span>
+            <span>Corrigés</span>
+          </button>
+          <button type="button" class="v2-nav-item active">
+            <span class="v2-nav-mark">RE</span>
+            <span>Réponses élèves</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-4x91q.html')">
+            <span class="v2-nav-mark">EX</span>
+            <span>Examens</span>
+          </button>
 
-<main>
+          <p>Suivi</p>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-modules-eleves.html')">
+            <span class="v2-nav-mark">ME</span>
+            <span>Modules élèves</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-customs-eleves.html')">
+            <span class="v2-nav-mark">CE</span>
+            <span>Customs élèves</span>
+          </button>
+        </nav>
 
-  <section id="guardLoader" class="prof-login-page">
-    <div class="prof-login-card">
-      <p class="kicker">Accès sécurisé</p>
-      <h1>Vérification</h1>
-      <p class="intro">
-        Vérification de votre session professeur...
-      </p>
+        <div class="v2-theme-box">
+          <span>Mode</span>
+          <div class="v2-theme-toggle" role="group" aria-label="Thème">
+            <button type="button" data-theme-choice="dark" class="active">Sombre</button>
+            <button type="button" data-theme-choice="light">Clair</button>
+          </div>
+        </div>
+      </aside>
 
-      <div style="margin-top: 28px; display: flex; align-items: center; gap: 14px;">
-        <div class="inline-loader"></div>
-        <p class="intro" style="margin: 0;">Chargement sécurisé...</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="protectedContent" class="prof-dashboard" hidden>
-    <div class="prof-dashboard-top">
-      <div>
-        <p class="kicker">Module 4 - Mécanique</p>
-        <h1>Réponses élèves</h1>
-        <p class="intro">
-          Tableau réservé aux professeurs. Les réponses sont chargées depuis les 3 feuilles Google Sheets.
-        </p>
-      </div>
-
-      <button class="btn secondary" onclick="goPage('espace-prof.html')">
-        Retour
-      </button>
-    </div>
-
-    <div class="inline-corrections active">
-      <div class="inline-corrections-card">
-
-        <div class="inline-corrections-head">
+      <div class="v2-workspace rp-v2-workspace">
+        <header class="v2-topbar">
           <div>
-            <p class="kicker">Réponses</p>
-            <h2>Tableau des élèves</h2>
-            <p>
-              Sélectionnez un custom pour consulter les réponses. Chaque réponse peut être minimisée.
-            </p>
+            <p class="v2-eyebrow">Corrections customs</p>
+            <h1>Réponses élèves</h1>
           </div>
 
-          <button type="button" class="inline-corrections-minimize" id="minimizeAnswersBtn">
-            −
-          </button>
-        </div>
+          <div class="v2-topbar-actions">
+            <div class="v2-user-pill">
+              <span id="rpUserInitials">PR</span>
+              <strong id="rpUserEmail">Professeur</strong>
+              <small>Compte prof</small>
+            </div>
+            <button type="button" class="v2-secondary-btn" onclick="goPage('espace-prof.html')">
+              Retour
+            </button>
+          </div>
+        </header>
 
-        <div id="answersMiniBar" class="answers-mini-bar" hidden>
-          <span>Réponses élèves minimisées</span>
-          <button type="button" id="restoreAnswersBtn">Réouvrir</button>
-        </div>
+        <section id="guardLoader" class="rp-v2-guard">
+          <div class="rp-v2-guard-card">
+            <p class="v2-eyebrow">Accès sécurisé</p>
+            <h1>Vérification</h1>
+            <p>Contrôle de la session professeur...</p>
 
-        <div id="answersBody" class="answers-body">
-          <div class="inline-correction-detail student-panel">
-            <div id="sheetTabs" class="student-sheet-tabs"></div>
-
-            <div id="sheetStatus" class="inline-loading-box">
+            <div class="rp-v2-guard-line">
               <div class="inline-loader"></div>
-              <p>Chargement des réponses élèves...</p>
+              <span>Chargement sécurisé...</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="rp-v2-content">
+          <div class="rp-v2-hero">
+            <div>
+              <p class="v2-eyebrow">Google Sheets</p>
+              <h2>Réponses customs</h2>
+              <p>Consulte les fiches envoyées, puis valide ou refuse chaque réponse.</p>
             </div>
 
-            <div id="sheetContent" class="student-sheet-content" hidden></div>
+            <div class="rp-v2-kpis" aria-label="Résumé réponses customs">
+              <div>
+                <span>Customs</span>
+                <strong>3</strong>
+              </div>
+              <div>
+                <span>Correction</span>
+                <strong>Valider</strong>
+              </div>
+              <div>
+                <span>Suivi</span>
+                <strong>Partagé</strong>
+              </div>
+            </div>
           </div>
-        </div>
 
+          <div class="inline-corrections active rp-v2-board">
+            <div class="inline-corrections-card">
+              <div class="inline-corrections-head">
+                <div>
+                  <p class="v2-eyebrow">Sélection</p>
+                  <h2>Feuilles customs</h2>
+                  <p>Choisis une custom pour afficher les réponses élèves.</p>
+                </div>
+
+                <button type="button" class="inline-corrections-minimize" id="minimizeAnswersBtn" aria-label="Minimiser les réponses">
+                  −
+                </button>
+              </div>
+
+              <div id="answersMiniBar" class="answers-mini-bar" hidden>
+                <span>Réponses élèves minimisées</span>
+                <button type="button" id="restoreAnswersBtn">Réouvrir</button>
+              </div>
+
+              <div id="answersBody" class="answers-body">
+                <div class="inline-correction-detail student-panel">
+                  <div id="sheetTabs" class="student-sheet-tabs"></div>
+
+                  <div id="sheetStatus" class="inline-loading-box">
+                    <div class="inline-loader"></div>
+                    <p>Chargement des réponses élèves...</p>
+                  </div>
+
+                  <div id="sheetContent" class="student-sheet-content" hidden></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </section>
-
 </main>
 
-<script src="../assets/js/navigation.js?v=5002"></script>
+<script src="../assets/js/navigation.js?v=1007"></script>
+<script>
+  (() => {
+    const storageKey = "profV2Theme";
+    const profileKey = "profV2Profile";
+
+    function applyTheme(theme) {
+      const safeTheme = theme === "light" ? "light" : "dark";
+      document.body.dataset.theme = safeTheme;
+
+      try {
+        localStorage.setItem(storageKey, safeTheme);
+      } catch (error) {
+        console.warn("Theme local indisponible :", error);
+      }
+
+      document.querySelectorAll("[data-theme-choice]").forEach(button => {
+        button.classList.toggle("active", button.dataset.themeChoice === safeTheme);
+      });
+    }
+
+    function readDisplayName() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(profileKey) || "{}");
+        return String(saved.displayName || "").trim();
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function getInitials(value) {
+      return String(value || "prof")
+        .split("@")[0]
+        .split(/[\s._-]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0]?.toUpperCase() || "")
+        .join("") || "PR";
+    }
+
+    function syncUserPill() {
+      const user = window.currentProfUser;
+      const label = readDisplayName() || user?.email || "Professeur";
+      const email = document.getElementById("rpUserEmail");
+      const initials = document.getElementById("rpUserInitials");
+
+      if (email) email.textContent = label;
+      if (initials) initials.textContent = getInitials(label);
+    }
+
+    try {
+      applyTheme(localStorage.getItem(storageKey) || document.body.dataset.theme || "dark");
+    } catch (error) {
+      applyTheme("dark");
+    }
+
+    document.querySelectorAll("[data-theme-choice]").forEach(button => {
+      button.addEventListener("click", () => applyTheme(button.dataset.themeChoice));
+    });
+
+    syncUserPill();
+    window.setTimeout(syncUserPill, 500);
+    window.setTimeout(syncUserPill, 1200);
+  })();
+</script>
 <script type="module" src="../assets/js/prof-guard.js?v=6002"></script>
 
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-function openMediaPanel(panelName) {
+﻿function openMediaPanel(panelName) {
   const photosPanel = document.getElementById("photosPanel");
   const meteoPanel = document.getElementById("meteoPanel");
   const tabs = document.querySelectorAll(".media-tab");
@@ -29,3 +29,4 @@ function closeMediaPanels() {
 
   tabs.forEach(tab => tab.classList.remove("active"));
 }
+

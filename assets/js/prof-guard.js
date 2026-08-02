@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+﻿import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
 import {
   getAuth,
@@ -70,10 +70,19 @@ async function getUserRole(user) {
   }
 }
 
+function isInlineGuard() {
+  return Boolean(guardLoader && protectedContent && guardLoader.closest("#protectedContent") === protectedContent);
+}
+
 function showAccessDenied() {
-  if (protectedContent) {
+  const inlineGuard = isInlineGuard();
+
+  if (protectedContent && !inlineGuard) {
     protectedContent.hidden = true;
     protectedContent.style.display = "none";
+  } else if (protectedContent) {
+    protectedContent.hidden = false;
+    protectedContent.style.display = "block";
   }
 
   if (guardLoader) {
@@ -136,7 +145,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   try {
-    await import("./rp-loader-9kq4z.js?v=9021");
+    await import("./rp-loader-9kq4z.js?v=9015");
   } catch (error) {
     console.error("Erreur chargement loader réponses :", error);
 
@@ -152,3 +161,4 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+

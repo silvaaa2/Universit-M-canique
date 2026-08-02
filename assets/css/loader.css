@@ -1,10 +1,10 @@
-#loader {
+﻿#loader {
   position: fixed;
   inset: 0;
   z-index: 9999;
   display: grid;
   place-items: center;
-  background: #050505;
+  background: #000000;
   transition: opacity .55s ease, visibility .55s ease;
 }
 
@@ -56,3 +56,4 @@
   visibility: hidden !important;
   pointer-events: none !important;
 }
+

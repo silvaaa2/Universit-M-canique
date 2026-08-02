@@ -1,4 +1,4 @@
-.btn {
+﻿.btn {
   border: none;
   min-height: 52px;
   padding: 0 24px;
@@ -102,3 +102,4 @@ header nav button.prof-button:hover .prof-text {
   width: 105px !important;
   max-width: 105px !important;
 }
+

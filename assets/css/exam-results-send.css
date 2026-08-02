@@ -1,4 +1,4 @@
-.exam-list-modal {
+﻿.exam-list-modal {
   position: fixed !important;
   inset: 0 !important;
   z-index: 10020 !important;
@@ -220,3 +220,4 @@
     flex-direction: column !important;
   }
 }
+

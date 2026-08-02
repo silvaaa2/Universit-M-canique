@@ -1,17 +1,18 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Modules Élèves - Module 4</title>
+  <title>Modules Élèves - Mécanique - Université</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="shortcut icon" type="image/png" href="../Images/logo.png?v=22">
   <link rel="stylesheet" href="../assets/css/base.css?v=1001">
-  <link rel="stylesheet" href="../assets/css/header.css?v=1001">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/loader.css?v=1001">
-  <link rel="stylesheet" href="../assets/css/prof.css?v=9036">
+  <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=9">
+  <link rel="stylesheet" href="../assets/css/prof-modules-eleves.css?v=1004">
 
   <style>
     body.modules-page {
@@ -29,31 +30,23 @@
       padding: 8px;
     }
 
-    body.modules-page .prof-dashboard {
+    body.modules-page .prof-dashboard,
+    body.modules-page .inline-corrections,
+    body.modules-page .inline-corrections-card {
       height: 100%;
+      width: 100%;
+      max-width: none;
+      margin: 0;
       padding: 0;
     }
 
-    body.modules-page .inline-corrections {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-    }
-
-    body.modules-page .inline-corrections-card {
-      width: 100%;
-      max-width: none;
-      height: 100%;
+    .modules-shell {
       display: grid;
       grid-template-rows: auto auto minmax(0, 1fr);
       gap: 10px;
-      overflow: hidden;
-      padding: 10px;
+      padding: 10px !important;
       border-radius: 8px;
-    }
-
-    .modules-shell {
-      min-height: 0;
+      overflow: hidden;
     }
 
     .modules-summary {
@@ -95,13 +88,13 @@
 
     .modules-toolbar {
       display: grid;
-      grid-template-columns: auto minmax(260px, 1fr) auto auto auto auto;
+      grid-template-columns: auto minmax(260px, 1fr) auto auto;
       gap: 10px;
       align-items: center;
       padding: 9px;
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 8px;
-      background: rgba(255,255,255,.030);
+      background: rgba(255,255,255,.03);
     }
 
     .modules-back-btn {
@@ -120,12 +113,6 @@
       cursor: pointer;
     }
 
-    .modules-back-btn:hover {
-      border-color: rgba(214,180,106,.40);
-      background: rgba(214,180,106,.12);
-      color: var(--gold2);
-    }
-
     .modules-search {
       width: 100%;
       height: 42px;
@@ -138,11 +125,6 @@
       font-size: 14px;
       font-weight: 900;
       outline: none;
-    }
-
-    .modules-search:focus {
-      border-color: rgba(214,180,106,.42);
-      box-shadow: 0 0 0 3px rgba(214,180,106,.10);
     }
 
     .modules-reload-btn {
@@ -159,11 +141,6 @@
       white-space: nowrap;
     }
 
-    .modules-reload-btn:hover {
-      border-color: rgba(214,180,106,.48);
-      background: rgba(214,180,106,.18);
-    }
-
     .modules-sheets-btn {
       border-color: rgba(74,222,128,.32);
       background: rgba(74,222,128,.11);
@@ -175,10 +152,8 @@
       background: rgba(74,222,128,.17);
     }
 
-    .modules-sheets-btn:disabled,
-    .modules-reload-btn:disabled {
-      opacity: .55;
-      cursor: wait;
+    .modules-status:empty {
+      display: none;
     }
 
     .modules-status {
@@ -188,10 +163,6 @@
       font-weight: 900;
       text-align: right;
       white-space: nowrap;
-    }
-
-    .modules-status:empty {
-      display: none;
     }
 
     .modules-status[data-tone="ok"] {
@@ -390,116 +361,316 @@
       to { transform: rotate(360deg); }
     }
 
-    .modules-loader-box p {
-      margin: 0;
-      color: var(--gold2);
-      font-size: 13px;
-      font-weight: 1000;
+    body.modules-page.prof-v2-page main.v2-shell {
+      height: 100vh;
+      padding: 0;
     }
 
-    @media (max-width: 1100px) {
-      body.modules-page {
-        height: auto;
-        min-height: 100vh;
-        overflow: auto;
+    body.modules-page .modules-v2-dashboard {
+      min-height: 100vh;
+    }
+
+    body.modules-page .modules-v2-app {
+      grid-template-columns: 286px minmax(0, 1fr);
+      padding-left: 10px;
+      animation: modulesV2AppIn .42s var(--v2-smooth) both;
+    }
+
+    body.modules-page .modules-v2-sidebar .v2-nav-item.active {
+      pointer-events: none;
+    }
+
+    body.modules-page .modules-v2-workspace {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    body.modules-page .modules-v2-content {
+      min-height: 0;
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    body.modules-page .modules-v2-guard {
+      position: absolute;
+      inset: 92px 16px 16px;
+      z-index: 80;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      border: 1px solid var(--v2-line-soft);
+      border-radius: var(--v2-radius);
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--v2-gold) 10%, transparent), transparent 42%),
+        color-mix(in srgb, var(--v2-bg) 82%, transparent);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 24px 80px color-mix(in srgb, var(--v2-shadow) 70%, transparent);
+    }
+
+    body.modules-page .modules-v2-guard[hidden],
+    body.modules-page .modules-v2-dashboard[hidden] {
+      display: none !important;
+    }
+
+    body.modules-page .modules-v2-guard .prof-login-card {
+      width: min(520px, 100%);
+      padding: 34px;
+      border: 1px solid var(--v2-line);
+      border-radius: var(--v2-radius);
+      background:
+        linear-gradient(145deg, var(--v2-gold-soft), transparent 38%),
+        var(--v2-panel);
+      color: var(--v2-text);
+      box-shadow: 0 28px 90px var(--v2-shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    body.modules-page .modules-v2-guard .prof-login-card h1 {
+      margin: 0;
+      color: var(--v2-text);
+      font-size: clamp(42px, 5vw, 72px);
+      line-height: .92;
+      letter-spacing: 0;
+    }
+
+    body.modules-page .modules-v2-guard .prof-login-card .kicker {
+      color: var(--v2-gold);
+      font-weight: 1000;
+      text-transform: uppercase;
+    }
+
+    body.modules-page .modules-v2-guard .prof-login-card .intro {
+      color: var(--v2-muted);
+      font-weight: 900;
+      line-height: 1.45;
+    }
+
+    body.modules-page .modules-v2-guard-line {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 24px;
+      padding: 0 14px;
+      border: 1px solid var(--v2-line-soft);
+      border-radius: var(--v2-radius);
+      background: var(--v2-panel-soft);
+      color: var(--v2-muted);
+      font-weight: 900;
+    }
+
+    body.modules-page .modules-shell {
+      height: 100%;
+      border-radius: var(--v2-radius);
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--v2-gold) 8%, transparent), transparent 38%),
+        color-mix(in srgb, var(--v2-panel-strong) 72%, transparent);
+      border: 1px solid var(--v2-line-soft);
+      box-shadow: 0 18px 54px color-mix(in srgb, var(--v2-shadow) 72%, transparent);
+      backdrop-filter: blur(14px);
+    }
+
+    @keyframes modulesV2AppIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
 
-      body.modules-page main {
-        height: auto;
-        min-height: 100vh;
-        overflow: visible;
-        padding: 8px;
-      }
-
-      body.modules-page .inline-corrections-card {
-        min-height: calc(100vh - 16px);
-      }
-
-      .modules-summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .modules-toolbar {
-        grid-template-columns: auto 1fr;
-      }
-
-      .modules-reload-btn,
-      .modules-status {
-        grid-column: span 1;
-      }
-
-      .modules-status {
-        text-align: left;
-      }
-
-      .modules-table-wrap {
-        min-height: 480px;
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   </style>
 </head>
 
-<body class="modules-page">
+<body class="prof-v2-page modules-page" data-theme="dark">
 
-<header>
-  <div class="logo" onclick="goPage('../index.html')">
-    <img src="../Images/logo.png" alt="Logo Module 4">
-    <span>Module 4 - Mécanique</span>
-  </div>
+<main class="v2-shell">
+  <section id="protectedContent" class="prof-dashboard modules-v2-dashboard">
+    <div class="v2-app modules-v2-app">
+      <aside class="v2-sidebar modules-v2-sidebar">
+        <button type="button" class="v2-brand" onclick="goPage('../index.html')" aria-label="Accueil du site">
+          <img src="../Images/logo.png" alt="Logo Mécanique - Université">
+          <span>
+            <strong>Mécanique</strong>
+            <small>Université</small>
+          </span>
+        </button>
 
-  <nav>
-    <button onclick="goPage('../index.html')">Accueil</button>
-    <button onclick="goPage('espace-prof.html')">Espace Prof</button>
-  </nav>
-</header>
+        <nav class="v2-nav" aria-label="Navigation professeur">
+          <p>Principal</p>
+          <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
+            <span class="v2-nav-mark">TB</span>
+            <span>Tableau de bord</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
+            <span class="v2-nav-mark">CO</span>
+            <span>Corrigés</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-rp-7x92q.html')">
+            <span class="v2-nav-mark">RE</span>
+            <span>Réponses élèves</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-4x91q.html')">
+            <span class="v2-nav-mark">EX</span>
+            <span>Examens</span>
+          </button>
 
-<main>
+          <p>Suivi</p>
+          <button type="button" class="v2-nav-item active">
+            <span class="v2-nav-mark">ME</span>
+            <span>Modules élèves</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-customs-eleves.html')">
+            <span class="v2-nav-mark">CE</span>
+            <span>Customs élèves</span>
+          </button>
+        </nav>
 
-  <section id="guardLoader" class="prof-login-page">
-    <div class="prof-login-card">
-      <p class="kicker">Accès sécurisé</p>
-      <h1>Vérification</h1>
-      <p class="intro">Vérification de votre session professeur...</p>
+        <div class="v2-theme-box">
+          <span>Mode</span>
+          <div class="v2-theme-toggle" role="group" aria-label="Thème">
+            <button type="button" data-theme-choice="dark" class="active">Sombre</button>
+            <button type="button" data-theme-choice="light">Clair</button>
+          </div>
+        </div>
+      </aside>
 
-      <div style="margin-top: 28px; display: flex; align-items: center; gap: 14px;">
-        <div class="inline-loader"></div>
-        <p class="intro" style="margin: 0;">Chargement sécurisé...</p>
+      <div class="v2-workspace modules-v2-workspace">
+        <header class="v2-topbar">
+          <div>
+            <p class="v2-eyebrow">Suivi cursus</p>
+            <h1>Modules élèves</h1>
+          </div>
+
+          <div class="v2-topbar-actions">
+            <div class="v2-user-pill">
+              <span id="modulesUserInitials">PR</span>
+              <strong id="modulesUserEmail">Professeur</strong>
+              <small>Compte prof</small>
+            </div>
+            <button type="button" class="v2-secondary-btn" onclick="goPage('espace-prof.html')">
+              Retour
+            </button>
+          </div>
+        </header>
+
+        <section id="guardLoader" class="modules-v2-guard">
+          <div class="prof-login-card">
+            <p class="kicker">Accès sécurisé</p>
+            <h1>Vérification</h1>
+            <p class="intro">Vérification de votre session professeur...</p>
+
+            <div class="modules-v2-guard-line">
+              <div class="inline-loader"></div>
+              <p class="intro" style="margin: 0;">Chargement sécurisé...</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="modules-v2-content">
+          <section class="inline-corrections active">
+            <div class="inline-corrections-card modules-shell">
+              <div id="modulesSummary" class="modules-summary"></div>
+
+              <div class="modules-toolbar">
+                <button type="button" class="modules-back-btn" title="Retour espace prof" aria-label="Retour espace prof" onclick="goPage('espace-prof.html')">&larr;</button>
+                <input id="modulesSearch" class="modules-search" type="text" autocomplete="off" placeholder="Rechercher nom ou ID Unique...">
+                <button type="button" class="modules-reload-btn" id="reloadModulesBtn">Recharger</button>
+                <span id="modulesStatus" class="modules-status"></span>
+              </div>
+
+              <div class="modules-table-wrap">
+                <div id="modulesLoader" class="modules-page-loader">
+                  <div class="modules-loader-box">
+                    <div class="modules-spinner"></div>
+                    <p id="modulesLoaderText">Chargement de l’effectif...</p>
+                  </div>
+                </div>
+
+                <div id="modulesTable" class="modules-table"></div>
+              </div>
+            </div>
+          </section>
+        </section>
       </div>
     </div>
   </section>
-
-  <section id="protectedContent" class="prof-dashboard" hidden>
-    <section class="inline-corrections active">
-      <div class="inline-corrections-card modules-shell">
-        <div id="modulesSummary" class="modules-summary"></div>
-
-        <div class="modules-toolbar">
-          <button type="button" class="modules-back-btn" title="Retour espace prof" aria-label="Retour espace prof" onclick="goPage('espace-prof.html')">&larr;</button>
-          <input id="modulesSearch" class="modules-search" type="text" autocomplete="off" placeholder="Rechercher nom ou ID Unique...">
-          <button type="button" class="modules-reload-btn" id="reloadModulesBtn">Recharger</button>
-          <span id="modulesStatus" class="modules-status"></span>
-        </div>
-
-        <div class="modules-table-wrap">
-          <div id="modulesLoader" class="modules-page-loader">
-            <div class="modules-loader-box">
-              <div class="modules-spinner"></div>
-              <p id="modulesLoaderText">Chargement de l’effectif...</p>
-            </div>
-          </div>
-
-          <div id="modulesTable" class="modules-table"></div>
-        </div>
-      </div>
-    </section>
-  </section>
-
 </main>
 
-<script src="../assets/js/navigation.js?v=1002"></script>
+<script src="../assets/js/navigation.js?v=1007"></script>
+<script>
+  (() => {
+    const storageKey = "profV2Theme";
+    const profileKey = "profV2Profile";
+
+    function applyTheme(theme) {
+      const safeTheme = theme === "light" ? "light" : "dark";
+      document.body.dataset.theme = safeTheme;
+
+      try {
+        localStorage.setItem(storageKey, safeTheme);
+      } catch (error) {
+        console.warn("Theme local indisponible :", error);
+      }
+
+      document.querySelectorAll("[data-theme-choice]").forEach(button => {
+        button.classList.toggle("active", button.dataset.themeChoice === safeTheme);
+      });
+    }
+
+    function readDisplayName() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(profileKey) || "{}");
+        return String(saved.displayName || "").trim();
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function getInitials(value) {
+      return String(value || "prof")
+        .split("@")[0]
+        .split(/[\s._-]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0]?.toUpperCase() || "")
+        .join("") || "PR";
+    }
+
+    function syncUserPill() {
+      const user = window.currentProfUser;
+      const label = readDisplayName() || user?.email || "Professeur";
+      const email = document.getElementById("modulesUserEmail");
+      const initials = document.getElementById("modulesUserInitials");
+
+      if (email) email.textContent = label;
+      if (initials) initials.textContent = getInitials(label);
+    }
+
+    try {
+      applyTheme(localStorage.getItem(storageKey) || document.body.dataset.theme || "dark");
+    } catch (error) {
+      applyTheme("dark");
+    }
+
+    document.querySelectorAll("[data-theme-choice]").forEach(button => {
+      button.addEventListener("click", () => applyTheme(button.dataset.themeChoice));
+    });
+
+    syncUserPill();
+    window.setTimeout(syncUserPill, 500);
+    window.setTimeout(syncUserPill, 1200);
+  })();
+</script>
 <script type="module" src="../assets/js/prof-modules-eleves.js?v=1003"></script>
 <script type="module" src="../assets/js/prof-modules-sheets-sync.js?v=1001"></script>
 <script type="module" src="../assets/js/prof-modules-sheets-sync-exact.js?v=1001"></script>
+<script type="module" src="../assets/js/prof-modules-archives.js?v=1001"></script>
+<script type="module" src="../assets/js/prof-modules-clipboard.js?v=1"></script>
 
 </body>
 </html>
+

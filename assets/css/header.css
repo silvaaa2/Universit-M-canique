@@ -1,4 +1,4 @@
-header {
+﻿header {
   height: 86px;
   padding: 0 7vw;
   display: flex;
@@ -180,3 +180,4 @@ nav button.custom-link-closed:hover {
     max-width: 120px;
   }
 }
+

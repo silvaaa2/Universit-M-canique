@@ -1,8 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
+﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
 
 :root {
-  --bg: #050505;
-  --bg2: #0d0d0c;
+  --bg: #000000;
+  --bg2: #000000;
   --card: rgba(255, 255, 255, 0.075);
   --card2: rgba(214, 180, 106, 0.08);
   --border: rgba(255, 255, 255, 0.13);
@@ -23,7 +23,7 @@ body {
   background:
     radial-gradient(circle at 18% 12%, rgba(214,180,106,.18), transparent 28%),
     radial-gradient(circle at 82% 22%, rgba(255,255,255,.07), transparent 26%),
-    linear-gradient(135deg, #050505, #10100f 50%, #050505);
+    linear-gradient(135deg, #000000, #000000 50%, #000000);
   min-height: 100vh;
 }
 
@@ -56,7 +56,7 @@ body {
     radial-gradient(circle at 12% 10%, rgba(214,180,106,.16), transparent 28%),
     radial-gradient(circle at 86% 20%, rgba(255,255,255,.06), transparent 24%),
     url("../../Images/images.png"),
-    #050505 !important;
+    #000000 !important;
 
 background-size:
   auto,
@@ -108,3 +108,4 @@ section article {
     radial-gradient(circle at 18% 0%, rgba(214,180,106,.10), transparent 30%),
     linear-gradient(145deg, rgba(18,18,18,.80), rgba(8,8,8,.70)) !important;
 }
+

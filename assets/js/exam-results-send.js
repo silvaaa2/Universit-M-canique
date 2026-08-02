@@ -1,4 +1,4 @@
-const EXAM_RESULTS_WEBHOOK_URL = "https://discord.com/api/webhooks/1532074252252086382/uzHdIqZdga-Qexgbql68Ieba_oPdYkDfuakv2aTHWVPEfO_TjAdEpzAbjHjUXJTsqm8B";
+﻿const EXAM_RESULTS_WEBHOOK_URL = "https://discord.com/api/webhooks/1532074252252086382/uzHdIqZdga-Qexgbql68Ieba_oPdYkDfuakv2aTHWVPEfO_TjAdEpzAbjHjUXJTsqm8B";
 const EXAM_RESULTS_ROLE_ID = "1199780299786158160";
 const EXAM_APPROVED_ROLE_ID = "1169634939797524480";
 
@@ -347,3 +347,4 @@ new MutationObserver(refreshSendButton)
     childList: true,
     subtree: true
   });
+

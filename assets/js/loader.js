@@ -1,4 +1,4 @@
-window.addEventListener("load", () => {
+﻿window.addEventListener("load", () => {
   const loader = document.getElementById("loader");
 
   if (!loader) return;
@@ -28,3 +28,4 @@ window.addEventListener("beforeunload", () => {
   loader.style.visibility = "visible";
   loader.style.pointerEvents = "all";
 });
+

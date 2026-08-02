@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+﻿import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
 import {
   getAuth,
@@ -28,14 +28,13 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
-const DEFAULT_EXAM_SHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
-const DEFAULT_EXAM_GID = "282279229";
-const DEFAULT_EXAM_LABEL = "Réponses formulaire";
-const EXAM_GUARD_FIREBASE_TIMEOUT_MS = 7000;
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+const DEFAULT_EXAM_SHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
+const DEFAULT_EXAM_GID = "282279229";
+const DEFAULT_EXAM_LABEL = "Réponses formulaire";
 
 const guardLoader = document.getElementById("guardLoader");
 const protectedContent = document.getElementById("protectedContent");
@@ -44,32 +43,20 @@ window.profFirebase = {
   app,
   auth,
   db,
+
   doc,
   getDoc,
   setDoc,
+
   collection,
   getDocs,
   query,
   where,
+
   serverTimestamp
 };
 
 window.dispatchEvent(new Event("profFirebaseReady"));
-
-function rejectAfter(label, timeoutMs) {
-  return new Promise((_, reject) => {
-    setTimeout(() => {
-      reject(new Error(`${label} a pris trop de temps.`));
-    }, timeoutMs);
-  });
-}
-
-function withGuardTimeout(promise, label) {
-  return Promise.race([
-    Promise.resolve(promise),
-    rejectAfter(label, EXAM_GUARD_FIREBASE_TIMEOUT_MS)
-  ]);
-}
 
 function extractSpreadsheetId(value) {
   const text = String(value || "").trim();
@@ -77,6 +64,34 @@ function extractSpreadsheetId(value) {
   if (match?.[1]) return match[1];
   if (/^[a-zA-Z0-9-_]{20,}$/.test(text)) return text;
   return "";
+}
+
+function installExamSheetFetchProxy() {
+  if (window.__examSheetFetchProxyInstalled) return;
+  window.__examSheetFetchProxyInstalled = true;
+
+  const originalFetch = window.fetch.bind(window);
+
+  window.fetch = (input, init) => {
+    const settings = window.__examResponsesSettings;
+    const sourceUrl = typeof input === "string" ? input : input?.url || "";
+
+    if (settings?.spreadsheetId && sourceUrl.includes(`/spreadsheets/d/${DEFAULT_EXAM_SHEET_ID}/export`)) {
+      const nextUrl = new URL(sourceUrl);
+      nextUrl.pathname = `/spreadsheets/d/${settings.spreadsheetId}/export`;
+      nextUrl.searchParams.set("gid", settings.gid || DEFAULT_EXAM_GID);
+
+      if (typeof input === "string") {
+        return originalFetch(nextUrl.toString(), init);
+      }
+
+      if (input instanceof Request) {
+        return originalFetch(new Request(nextUrl.toString(), input), init);
+      }
+    }
+
+    return originalFetch(input, init);
+  };
 }
 
 function normalizeQuestionPoints(value) {
@@ -95,67 +110,83 @@ function normalizeQuestionPoints(value) {
 }
 
 async function loadExamResponsesSettings() {
-  let data = {};
-
   try {
     const settingsRef = doc(db, "profSettings", "examResponses");
-    const settingsSnap = await withGuardTimeout(
-      getDoc(settingsRef),
-      "Lecture réglages examens"
-    );
+    const settingsSnap = await getDoc(settingsRef);
+    const data = settingsSnap.exists() ? settingsSnap.data() : {};
 
-    data = settingsSnap.exists() ? settingsSnap.data() : {};
+    window.__examResponsesSettings = {
+      spreadsheetId: extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId) || DEFAULT_EXAM_SHEET_ID,
+      gid: String(data.gid || DEFAULT_EXAM_GID),
+      label: String(data.label || DEFAULT_EXAM_LABEL),
+      questionPoints: normalizeQuestionPoints(data.questionPoints)
+    };
   } catch (error) {
-    console.warn("Réglages examens indisponibles, utilisation du lien par défaut :", error);
+    console.warn("Réglages examens indisponibles :", error);
+    window.__examResponsesSettings = {
+      spreadsheetId: DEFAULT_EXAM_SHEET_ID,
+      gid: DEFAULT_EXAM_GID,
+      label: DEFAULT_EXAM_LABEL,
+      questionPoints: {}
+    };
   }
 
-  window.__examResponsesSettings = {
-    spreadsheetId: extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId) || DEFAULT_EXAM_SHEET_ID,
-    gid: String(data.gid || DEFAULT_EXAM_GID),
-    label: String(data.label || DEFAULT_EXAM_LABEL),
-    questionPoints: normalizeQuestionPoints(data.questionPoints)
-  };
+  installExamSheetFetchProxy();
 }
 
-async function getUserAccess(user) {
-  if (!user?.email) return { role: null, isAdmin: false };
+function applyExamLabel() {
+  const label = window.__examResponsesSettings?.label;
+  if (!label) return;
+
+  requestAnimationFrame(() => {
+    const tab = document.querySelector(".student-sheet-tab[data-sheet='exam-form-1']");
+    if (tab) tab.textContent = label;
+  });
+}
+
+async function getUserRole(user) {
+  if (!user?.email) return null;
 
   try {
     const userRef = doc(db, "users", user.email);
-    const userSnap = await withGuardTimeout(
-      getDoc(userRef),
-      "Lecture accès utilisateur"
-    );
+    const userSnap = await getDoc(userRef);
 
-    if (!userSnap.exists()) return { role: null, isAdmin: false };
+    if (!userSnap.exists()) return null;
 
-    const data = userSnap.data();
-    return {
-      role: data.role || null,
-      isAdmin: data.admin === true
-    };
+    return userSnap.data().role || null;
   } catch (error) {
-    console.error("Erreur lecture accès utilisateur :", error);
-    return { role: null, isAdmin: false };
+    console.error("Erreur lecture rôle utilisateur :", error);
+    return null;
   }
 }
 
+function isInlineGuard() {
+  return Boolean(guardLoader && protectedContent && guardLoader.closest("#protectedContent") === protectedContent);
+}
+
 function showAccessDenied() {
-  if (protectedContent) {
+  const inlineGuard = isInlineGuard();
+
+  if (protectedContent && !inlineGuard) {
     protectedContent.hidden = true;
     protectedContent.style.display = "none";
+  } else if (protectedContent) {
+    protectedContent.hidden = false;
+    protectedContent.style.display = "block";
   }
 
   if (guardLoader) {
     guardLoader.hidden = false;
     guardLoader.style.display = "grid";
+
     guardLoader.innerHTML = `
       <div class="prof-login-card">
         <p class="kicker">Accès refusé</p>
         <h1>Refusé</h1>
         <p class="intro">
-          Ce compte n'est pas autorisé à accéder à la correction des examens.
+          Ce compte n’est pas autorisé à accéder à la correction des examens.
         </p>
+
         <button class="btn secondary" onclick="window.location.href='espace-prof.html'">
           Retour connexion
         </button>
@@ -164,30 +195,17 @@ function showAccessDenied() {
   }
 }
 
-function showExamConfigError(message) {
-  const sheetStatus = document.getElementById("sheetStatus");
-
-  if (sheetStatus) {
-    sheetStatus.innerHTML = `
-      <div class="inline-error-box">
-        <h4>Erreur examens</h4>
-        <p>${String(message || "Impossible de charger les examens.")}</p>
-      </div>
-    `;
-  }
-}
-
-onAuthStateChanged(auth, async user => {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "espace-prof.html";
     return;
   }
 
-  const access = await getUserAccess(user);
-  const allowed = access.role === "prof" || access.isAdmin;
+  const role = await getUserRole(user);
 
-  if (!allowed) {
-    console.warn("Accès refusé page examens :", user.email, "role =", access.role);
+  if (role !== "prof") {
+    console.warn("Accès refusé page examens :", user.email, "role =", role);
+
     window.currentProfUser = null;
 
     try {
@@ -210,6 +228,7 @@ onAuthStateChanged(auth, async user => {
   if (protectedContent) {
     protectedContent.hidden = false;
     protectedContent.style.display = "block";
+
     requestAnimationFrame(() => {
       protectedContent.classList.add("dashboard-visible");
     });
@@ -217,9 +236,21 @@ onAuthStateChanged(auth, async user => {
 
   try {
     await loadExamResponsesSettings();
-    await import("./exam-loader-x8p2.js?v=9044");
+    await import("./exam-loader-x8p2.js?v=9039");
+    applyExamLabel();
   } catch (error) {
-    console.error("Erreur chargement examens :", error);
-    showExamConfigError(error.message);
+    console.error("Erreur chargement loader examens :", error);
+
+    const sheetStatus = document.getElementById("sheetStatus");
+
+    if (sheetStatus) {
+      sheetStatus.innerHTML = `
+        <div class="inline-error-box">
+          <h4>Erreur de chargement</h4>
+          <p>Impossible de charger le module des examens.</p>
+        </div>
+      `;
+    }
   }
 });
+

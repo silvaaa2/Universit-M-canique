@@ -1,4 +1,4 @@
-.vehicle-page {
+﻿.vehicle-page {
   padding: 55px 0 90px;
 }
 
@@ -163,7 +163,7 @@
   object-fit: contain;
   object-position: center;
   display: block;
-  background: #050505;
+  background: #000000;
   padding: 8px;
   filter: contrast(1.04) saturate(.95);
 }
@@ -259,7 +259,7 @@
   object-fit: contain;
   object-position: center;
   display: block;
-  background: #050505;
+  background: #000000;
   padding: 18px;
 }
 
@@ -555,7 +555,7 @@
 
   background:
     linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025)),
-    #050505;
+    #000000;
 
   box-shadow:
     0 35px 120px rgba(0,0,0,.65),
@@ -581,7 +581,7 @@
   display: block;
 
   padding: 14px;
-  background: #050505;
+  background: #000000;
 }
 
 .image-zoom-close {
@@ -653,3 +653,4 @@ body.zoom-open {
     font-size: 26px;
   }
 }
+
