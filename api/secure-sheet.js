@@ -59,6 +59,15 @@ function safeGid(value) {
   return /^\d+$/.test(text) ? text : "";
 }
 
+function extractGid(value) {
+  const text = String(value || "").trim();
+  const direct = safeGid(text);
+  if (direct) return direct;
+
+  const match = text.match(/[?#&]gid=(\d+)/);
+  return match?.[1] || "";
+}
+
 function decodeFirestoreValue(value) {
   if (!value || typeof value !== "object") return null;
   if ("stringValue" in value) return value.stringValue;
@@ -151,8 +160,10 @@ async function resolveSheet(source, sheetKey, idToken) {
   }
 
   const serverFallback = {
-    spreadsheetId: process.env[allowedSheet.spreadsheetIdEnv] || "",
-    gid: process.env[allowedSheet.gidEnv] || ""
+    spreadsheetId: extractSpreadsheetId(process.env[allowedSheet.spreadsheetIdEnv]),
+    gid:
+      extractGid(process.env[allowedSheet.gidEnv]) ||
+      extractGid(process.env[allowedSheet.spreadsheetIdEnv])
   };
 
   let settings = {};
@@ -178,7 +189,14 @@ async function resolveSheet(source, sheetKey, idToken) {
 
     return {
       spreadsheetId,
-      gid: safeGid(settings.gid) || safeGid(sheetSettings.gid) || serverFallback.gid
+      gid:
+        extractGid(settings.gid) ||
+        extractGid(settings.spreadsheetUrl) ||
+        extractGid(settings.spreadsheetId) ||
+        extractGid(sheetSettings.gid) ||
+        extractGid(sheetSettings.spreadsheetUrl) ||
+        extractGid(sheetSettings.spreadsheetId) ||
+        serverFallback.gid
     };
   }
 
@@ -192,8 +210,12 @@ async function resolveSheet(source, sheetKey, idToken) {
   return {
     spreadsheetId,
     gid:
-      safeGid(sheetSettings.gid) ||
-      safeGid(settings[`${safeSheetKey}Gid`]) ||
+      extractGid(sheetSettings.gid) ||
+      extractGid(sheetSettings.spreadsheetUrl) ||
+      extractGid(sheetSettings.spreadsheetId) ||
+      extractGid(settings[`${safeSheetKey}Gid`]) ||
+      extractGid(settings[`${safeSheetKey}SpreadsheetUrl`]) ||
+      extractGid(settings[`${safeSheetKey}SpreadsheetId`]) ||
       serverFallback.gid
   };
 }
