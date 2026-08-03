@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/secure-exam-loader.js": {
+      "includeFiles": "assets/js/exam-loader-x8p2.js"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/assets/js/secure-exam-loader.js",
+      "destination": "/api/secure-exam-loader"
+    }
+  ]
+}
