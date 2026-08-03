@@ -6,9 +6,6 @@
     },
     "api/secure-rp-loader.js": {
       "includeFiles": "assets/js/rp-loader-9kq4z.js"
-    },
-    "api/secure-prof-auth-v2.js": {
-      "includeFiles": "assets/js/prof-auth-v2.js"
     }
   },
   "redirects": [
@@ -21,11 +18,6 @@
       "source": "/assets/js/rp-loader-9kq4z.js",
       "destination": "/assets/js/secure-rp-loader.js",
       "permanent": false
-    },
-    {
-      "source": "/assets/js/prof-auth-v2.js",
-      "destination": "/assets/js/secure-prof-auth-v2.js",
-      "permanent": false
     }
   ],
   "rewrites": [
@@ -36,10 +28,6 @@
     {
       "source": "/assets/js/secure-rp-loader.js",
       "destination": "/api/secure-rp-loader"
-    },
-    {
-      "source": "/assets/js/secure-prof-auth-v2.js",
-      "destination": "/api/secure-prof-auth-v2"
     }
   ]
 }
