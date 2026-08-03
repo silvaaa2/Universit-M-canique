@@ -4,22 +4,67 @@ const FIREBASE_PROJECT_ID = "universit-4b11e";
 const ALLOWED_SHEETS = {
   examResponses: {
     "exam-form-1": {
-      spreadsheetIdEnv: "EXAM_RESPONSES_SPREADSHEET_ID",
-      gidEnv: "EXAM_RESPONSES_GID"
+      spreadsheetIdEnv: [
+        "EXAM_RESPONSES_SPREADSHEET_ID",
+        "EXAM_RESPONSES_SHEET_ID",
+        "EXAM_RESPONSES_URL",
+        "EXAM_SPREADSHEET_ID",
+        "EXAM_SHEET_ID"
+      ],
+      gidEnv: [
+        "EXAM_RESPONSES_GID",
+        "EXAM_RESPONSES_SHEET_GID",
+        "EXAM_GID"
+      ]
     }
   },
   customResponses: {
     sentinelClassic: {
-      spreadsheetIdEnv: "CUSTOM_SENTINEL_CLASSIC_SPREADSHEET_ID",
-      gidEnv: "CUSTOM_SENTINEL_CLASSIC_GID"
+      spreadsheetIdEnv: [
+        "CUSTOM_SENTINEL_CLASSIC_SPREADSHEET_ID",
+        "CUSTOM_SENTINEL_CLASSIC_SHEET_ID",
+        "CUSTOM_SENTINEL_CLASSIC_URL",
+        "CUSTOM_SENTINEL_SPREADSHEET_ID",
+        "CUSTOM_FACILE_SPREADSHEET_ID",
+        "CUSTOM_FACILE_SHEET_ID",
+        "CUSTOM_FACILE_URL"
+      ],
+      gidEnv: [
+        "CUSTOM_SENTINEL_CLASSIC_GID",
+        "CUSTOM_SENTINEL_GID",
+        "CUSTOM_FACILE_GID"
+      ]
     },
     argento2f: {
-      spreadsheetIdEnv: "CUSTOM_ARGENTO_2F_SPREADSHEET_ID",
-      gidEnv: "CUSTOM_ARGENTO_2F_GID"
+      spreadsheetIdEnv: [
+        "CUSTOM_ARGENTO_2F_SPREADSHEET_ID",
+        "CUSTOM_ARGENTO_2F_SHEET_ID",
+        "CUSTOM_ARGENTO_2F_URL",
+        "CUSTOM_ARGENTO2F_SPREADSHEET_ID",
+        "CUSTOM_ARGENTO2F_SHEET_ID",
+        "CUSTOM_MOYEN_SPREADSHEET_ID",
+        "CUSTOM_MOYEN_SHEET_ID",
+        "CUSTOM_MOYEN_URL"
+      ],
+      gidEnv: [
+        "CUSTOM_ARGENTO_2F_GID",
+        "CUSTOM_ARGENTO2F_GID",
+        "CUSTOM_MOYEN_GID"
+      ]
     },
     cypher: {
-      spreadsheetIdEnv: "CUSTOM_CYPHER_SPREADSHEET_ID",
-      gidEnv: "CUSTOM_CYPHER_GID"
+      spreadsheetIdEnv: [
+        "CUSTOM_CYPHER_SPREADSHEET_ID",
+        "CUSTOM_CYPHER_SHEET_ID",
+        "CUSTOM_CYPHER_URL",
+        "CUSTOM_DIFFICILE_SPREADSHEET_ID",
+        "CUSTOM_DIFFICILE_SHEET_ID",
+        "CUSTOM_DIFFICILE_URL"
+      ],
+      gidEnv: [
+        "CUSTOM_CYPHER_GID",
+        "CUSTOM_DIFFICILE_GID"
+      ]
     }
   }
 };
@@ -66,6 +111,15 @@ function extractGid(value) {
 
   const match = text.match(/[?#&]gid=(\d+)/);
   return match?.[1] || "";
+}
+
+function readFirstEnv(names) {
+  const envNames = Array.isArray(names) ? names : [names];
+  for (const name of envNames) {
+    const value = process.env[name];
+    if (String(value || "").trim()) return value;
+  }
+  return "";
 }
 
 function decodeFirestoreValue(value) {
@@ -160,10 +214,10 @@ async function resolveSheet(source, sheetKey, idToken) {
   }
 
   const serverFallback = {
-    spreadsheetId: extractSpreadsheetId(process.env[allowedSheet.spreadsheetIdEnv]),
+    spreadsheetId: extractSpreadsheetId(readFirstEnv(allowedSheet.spreadsheetIdEnv)),
     gid:
-      extractGid(process.env[allowedSheet.gidEnv]) ||
-      extractGid(process.env[allowedSheet.spreadsheetIdEnv])
+      extractGid(readFirstEnv(allowedSheet.gidEnv)) ||
+      extractGid(readFirstEnv(allowedSheet.spreadsheetIdEnv))
   };
 
   let settings = {};
