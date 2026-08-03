@@ -1,4 +1,4 @@
-﻿const EXAM_RESULTS_WEBHOOK_URL = "https://discord.com/api/webhooks/1532074252252086382/uzHdIqZdga-Qexgbql68Ieba_oPdYkDfuakv2aTHWVPEfO_TjAdEpzAbjHjUXJTsqm8B";
+const EXAM_RESULTS_SEND_ENDPOINT = "/api/discord-exam-results";
 const EXAM_RESULTS_ROLE_ID = "1199780299786158160";
 const EXAM_APPROVED_ROLE_ID = "1169634939797524480";
 
@@ -91,10 +91,18 @@ function buildApprovedExamMessage(results) {
 }
 
 async function sendExamListDiscordMessage(message, roleIds = []) {
-  const response = await fetch(EXAM_RESULTS_WEBHOOK_URL, {
+  const user = window.currentProfUser;
+
+  if (!user?.getIdToken) {
+    throw new Error("Connexion professeur requise pour envoyer sur Discord.");
+  }
+
+  const idToken = await user.getIdToken();
+  const response = await fetch(EXAM_RESULTS_SEND_ENDPOINT, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${idToken}`
     },
     body: JSON.stringify({
       content: message,
@@ -347,4 +355,6 @@ new MutationObserver(refreshSendButton)
     childList: true,
     subtree: true
   });
+
+
 
