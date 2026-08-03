@@ -228,7 +228,7 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     await loadExamResponsesSettings();
-    await import("./secure-exam-loader.js?v=1");
+    await import("./secure-exam-loader.js?v=2");
     applyExamLabel();
   } catch (error) {
     console.error("Erreur chargement loader examens :", error);
