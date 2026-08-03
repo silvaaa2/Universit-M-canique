@@ -130,6 +130,20 @@ function readFirstEnv(names) {
   return "";
 }
 
+function decodeJwtPayload(idToken) {
+  try {
+    const payload = String(idToken || "").split(".")[1];
+    if (!payload) return {};
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
+  } catch (error) {
+    console.warn("Décodage token Firebase impossible :", error);
+    return {};
+  }
+}
+
 function decodeFirestoreValue(value) {
   if (!value || typeof value !== "object") return null;
   if ("stringValue" in value) return value.stringValue;
@@ -154,27 +168,36 @@ function decodeFirestoreFields(fields) {
 }
 
 async function getFirebaseUser(idToken) {
-  const response = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken })
+  try {
+    const response = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken })
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const user = data.users?.[0];
+
+      if (user?.email) return user;
     }
-  );
 
-  if (!response.ok) {
-    throw new Error("Token Firebase invalide.");
+    console.warn("Lookup Firebase refusé, fallback Firestore :", response.status);
+  } catch (error) {
+    console.warn("Lookup Firebase indisponible, fallback Firestore :", error);
   }
 
-  const data = await response.json();
-  const user = data.users?.[0];
+  const payload = decodeJwtPayload(idToken);
+  const email = payload.email || payload.firebase?.identities?.email?.[0] || "";
 
-  if (!user?.email) {
-    throw new Error("Utilisateur Firebase introuvable.");
+  if (!email) {
+    throw new Error("Token Firebase illisible.");
   }
 
-  return user;
+  return { email };
 }
 
 async function getFirestoreDocument(pathParts, idToken) {
