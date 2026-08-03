@@ -52,7 +52,7 @@ async function buildSecureSheetHeaders() {
       });`
     )
     .replace(
-      /if \(!response\.ok\) \{\s*throw new Error\(`Erreur (?:Google Sheets examens|chargement examens sécurisés|lecture sécurisée) : \$\{response\.status\}`\);\s*\}/g,
+      /if \(!response\.ok\) \{\s*throw new Error\(`Erreur (?:Google Sheets|Google Sheets examens|chargement examens sécurisés|lecture sécurisée) : \$\{response\.status\}`\);\s*\}/g,
       `if (!response.ok) {
         let details = "";
         try {
