@@ -15,7 +15,9 @@ const ALLOWED_SHEETS = {
         "EXAM_RESPONSES_GID",
         "EXAM_RESPONSES_SHEET_GID",
         "EXAM_GID"
-      ]
+      ],
+      defaultSpreadsheetId: "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY",
+      defaultGid: "282279229"
     }
   },
   customResponses: {
@@ -33,7 +35,9 @@ const ALLOWED_SHEETS = {
         "CUSTOM_SENTINEL_CLASSIC_GID",
         "CUSTOM_SENTINEL_GID",
         "CUSTOM_FACILE_GID"
-      ]
+      ],
+      defaultSpreadsheetId: "1rroFCRTih9jdnIJmp5n2WvXagITjaARiv4i0b-JejvU",
+      defaultGid: "574123607"
     },
     argento2f: {
       spreadsheetIdEnv: [
@@ -50,7 +54,9 @@ const ALLOWED_SHEETS = {
         "CUSTOM_ARGENTO_2F_GID",
         "CUSTOM_ARGENTO2F_GID",
         "CUSTOM_MOYEN_GID"
-      ]
+      ],
+      defaultSpreadsheetId: "1Vv6XRfEKpCJGVFtGKoauE0rFyOTlEhuLHR_qUyfwqZw",
+      defaultGid: "848029927"
     },
     cypher: {
       spreadsheetIdEnv: [
@@ -64,7 +70,9 @@ const ALLOWED_SHEETS = {
       gidEnv: [
         "CUSTOM_CYPHER_GID",
         "CUSTOM_DIFFICILE_GID"
-      ]
+      ],
+      defaultSpreadsheetId: "1mkKA6K9f6n6sScfG93hShySKkOgxCDZQXwDL0LafvEQ",
+      defaultGid: "154372807"
     }
   }
 };
@@ -214,10 +222,15 @@ async function resolveSheet(source, sheetKey, idToken) {
   }
 
   const serverFallback = {
-    spreadsheetId: extractSpreadsheetId(readFirstEnv(allowedSheet.spreadsheetIdEnv)),
+    spreadsheetId:
+      extractSpreadsheetId(readFirstEnv(allowedSheet.spreadsheetIdEnv)) ||
+      allowedSheet.defaultSpreadsheetId ||
+      "",
     gid:
       extractGid(readFirstEnv(allowedSheet.gidEnv)) ||
-      extractGid(readFirstEnv(allowedSheet.spreadsheetIdEnv))
+      extractGid(readFirstEnv(allowedSheet.spreadsheetIdEnv)) ||
+      allowedSheet.defaultGid ||
+      ""
   };
 
   let settings = {};
