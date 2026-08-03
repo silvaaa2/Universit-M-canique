@@ -51,10 +51,25 @@ async function buildSecureSheetHeaders() {
         headers: await buildSecureSheetHeaders()
       });`
     )
+    .replace(
+      /if \(!response\.ok\) \{\s*throw new Error\(`Erreur (?:Google Sheets examens|chargement examens sécurisés|lecture sécurisée) : \$\{response\.status\}`\);\s*\}/g,
+      `if (!response.ok) {
+        let details = "";
+        try {
+          const payload = await response.clone().json();
+          details = payload?.error ? \` \${payload.error}\` : "";
+        } catch (_) {}
+        throw new Error(\`Erreur lecture sécurisée : \${response.status}.\${details}\`);
+      }`
+    )
     .replace(/Erreur Google Sheets examens/g, "Erreur chargement examens sécurisés")
     .replace(
       /setError\("Vérifie que le Google Sheet est public avec lien, et que le GID est correct\."\);/g,
       `setError("Impossible de charger les réponses d'examen. Vérifie la connexion prof et le réglage Google Sheets.");`
+    )
+    .replace(
+      /setError\("Impossible de charger les réponses d'examen\. Vérifie la connexion prof et le réglage Google Sheets\."\);/g,
+      `setError(\`Impossible de charger les réponses d'examen. Détail : \${error?.message || "erreur inconnue"}\`);`
     );
 }
 
