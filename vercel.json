@@ -5,6 +5,13 @@
       "includeFiles": "assets/js/exam-loader-x8p2.js"
     }
   },
+  "redirects": [
+    {
+      "source": "/assets/js/exam-loader-x8p2.js",
+      "destination": "/assets/js/secure-exam-loader.js",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/assets/js/secure-exam-loader.js",
