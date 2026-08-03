@@ -1,4 +1,4 @@
-﻿import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
 import {
   getAuth,
@@ -91,6 +91,41 @@ function installExamSheetFetchProxy() {
     }
 
     return originalFetch(input, init);
+  };
+}
+
+function installExamDiscordSendProxy(user) {
+  if (window.__examDiscordSendProxyInstalled) return;
+  window.__examDiscordSendProxyInstalled = true;
+
+  const originalFetch = window.fetch.bind(window);
+
+  window.fetch = async (input, init = {}) => {
+    const sourceUrl = typeof input === "string" ? input : input?.url || "";
+
+    if (!sourceUrl.startsWith("https://discord.com/api/webhooks/")) {
+      return originalFetch(input, init);
+    }
+
+    if (!user?.getIdToken) {
+      throw new Error("Connexion professeur requise pour envoyer sur Discord.");
+    }
+
+    const idToken = await user.getIdToken();
+    let body = init?.body;
+
+    if (!body && input instanceof Request) {
+      body = await input.clone().text();
+    }
+
+    return originalFetch("/api/discord-exam-results", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`
+      },
+      body: typeof body === "string" ? body : JSON.stringify(body || {})
+    });
   };
 }
 
@@ -219,6 +254,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   window.currentProfUser = user;
+  installExamDiscordSendProxy(user);
 
   if (guardLoader) {
     guardLoader.hidden = true;
