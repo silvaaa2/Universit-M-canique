@@ -1,142 +1,603 @@
-﻿.hero {
-  min-height: calc(100vh - 86px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 80px 0 40px;
-}
-
-h1 {
-  max-width: 1100px;
-  margin: 0;
-  font-size: clamp(70px, 8vw, 120px);
-  line-height: .9;
-  letter-spacing: -5px;
-}
-
-h1 span {
-  background: linear-gradient(90deg, var(--gold), #fff2c4);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.modules {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  margin: -60px 0 90px;
-}
-
-.card {
-  min-height: 250px;
-  padding: 30px;
-  border-radius: 34px;
-  background:
-    radial-gradient(circle at 18% 0%, rgba(214,180,106,.11), transparent 34%),
-    linear-gradient(145deg, rgba(32,31,28,.78), rgba(10,10,10,.72));
-  border: 1px solid rgba(255,255,255,.105);
-  cursor: pointer;
-  transition: .25s;
-  box-shadow: 0 24px 80px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.04);
-  backdrop-filter: blur(18px);
+.showroom-page {
   position: relative;
+  min-height: calc(100vh - 86px);
+  padding-top: 38px;
+  padding-bottom: 64px;
   overflow: hidden;
+  animation: showroomPageIn .55s ease both;
 }
 
-.card::before {
+.showroom-page::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(214,180,106,.08), transparent 38%);
-  opacity: .75;
+  inset: 86px 7vw 0;
   pointer-events: none;
-  transition: .25s;
+  background:
+    linear-gradient(90deg, rgba(214,180,106,.08), transparent 34%, rgba(255,255,255,.05) 66%, transparent),
+    repeating-linear-gradient(90deg, rgba(214,180,106,.08) 0 1px, transparent 1px 130px);
+  opacity: .45;
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 80%, transparent);
 }
 
-.card:hover {
-  transform: translateY(-10px);
-  border-color: var(--gold);
-  box-shadow: 0 35px 110px rgba(0,0,0,.48), 0 0 45px rgba(214,180,106,.14);
-}
-
-.card:hover::before {
-  opacity: 1;
-}
-
-.card > * {
+.showroom-page > * {
   position: relative;
   z-index: 1;
 }
 
-.card span {
-  color: var(--gold);
+.showroom-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.showroom-copy {
+  max-width: 740px;
+  animation: showroomRise .55s ease .08s both;
+}
+
+.showroom-kicker {
+  margin: 0 0 10px;
+  color: var(--gold2);
+  font-size: 13px;
   font-weight: 900;
-  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
-.card h3 {
-  margin: 65px 0 12px;
-  font-size: 30px;
-  letter-spacing: -.04em;
+.showroom-copy h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 78px;
+  line-height: .95;
+  letter-spacing: 0;
 }
 
-.card p {
-  color: var(--muted);
+.showroom-copy p {
+  max-width: 620px;
+  margin: 16px 0 0;
+  color: rgba(247,241,228,.72);
+  font-size: 17px;
   line-height: 1.6;
 }
 
-.card.custom-link-closed {
-  border-color: rgba(255,255,255,.045);
+.showroom-status {
+  min-width: 180px;
+  padding: 18px;
+  border: 1px solid rgba(214,180,106,.32);
+  border-radius: 8px;
   background:
-    linear-gradient(145deg, rgba(18,18,18,.88), rgba(3,3,3,.9));
-  box-shadow: 0 18px 48px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.025);
-  cursor: not-allowed;
-  filter: grayscale(.9);
-  opacity: .76;
+    linear-gradient(145deg, rgba(214,180,106,.13), rgba(255,255,255,.035)),
+    rgba(10,10,10,.72);
+  box-shadow: 0 18px 56px rgba(0,0,0,.34);
+  animation: showroomRise .55s ease .16s both;
 }
 
-.card.custom-link-closed:hover {
-  transform: none;
-  border-color: rgba(255,255,255,.07);
-  box-shadow: 0 18px 48px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.025);
+.showroom-status span,
+.showroom-status strong {
+  display: block;
 }
 
-.card.custom-link-closed::before {
-  background: rgba(0,0,0,.18);
-  opacity: 1;
+.showroom-status span {
+  color: var(--gold2);
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 900;
 }
 
-.card.custom-link-closed span,
-.card.custom-link-closed h3,
-.card.custom-link-closed p {
-  color: rgba(255,255,255,.28);
+.showroom-status strong {
+  margin-top: 5px;
+  color: rgba(247,241,228,.68);
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
-.card.custom-link-closed::after {
-  content: "Fiche fermée";
+.workshop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.workshop-bay {
+  position: relative;
+  min-height: 555px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 8px;
+  color: var(--text);
+  text-align: left;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015)),
+    linear-gradient(145deg, rgba(31,30,27,.86), rgba(5,5,5,.9));
+  box-shadow: 0 28px 90px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
+  cursor: pointer;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(255px, 1fr) auto auto;
+  gap: 16px;
+  isolation: isolate;
+  animation: bayEnter .62s cubic-bezier(.2,.9,.18,1) both;
+  transition: transform .28s ease, border-color .28s ease, box-shadow .28s ease, background .28s ease, filter .28s ease, opacity .28s ease;
+}
+
+.workshop-bay:nth-child(2) {
+  animation-delay: .08s;
+}
+
+.workshop-bay:nth-child(3) {
+  animation-delay: .16s;
+}
+
+.workshop-bay::before,
+.workshop-bay::after {
+  content: "";
   position: absolute;
-  right: 22px;
-  top: 22px;
-  padding: 8px 11px;
-  border: 1px solid rgba(255,255,255,.09);
-  border-radius: 999px;
-  background: rgba(12,12,12,.84);
-  color: rgba(255,255,255,.32);
-  font-size: 11px;
-  font-weight: 1000;
-  z-index: 2;
+  pointer-events: none;
+  z-index: -1;
 }
 
-@media (max-width: 950px) {
-  .modules {
+.workshop-bay::before {
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 34px);
+  opacity: .24;
+  transform: translateX(-65%);
+  transition: opacity .28s ease;
+  animation: bayScan 6s linear infinite;
+}
+
+.workshop-bay::after {
+  inset: auto 18px 18px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gold), rgba(244,217,143,.24), transparent);
+  box-shadow: 0 0 28px rgba(214,180,106,.3);
+  opacity: .55;
+}
+
+.workshop-bay:hover {
+  transform: translateY(-8px);
+  border-color: rgba(244,217,143,.72);
+  background:
+    linear-gradient(180deg, rgba(214,180,106,.095), rgba(255,255,255,.025)),
+    linear-gradient(145deg, rgba(38,35,29,.9), rgba(5,5,5,.92));
+  box-shadow: 0 34px 110px rgba(0,0,0,.58), 0 0 50px rgba(214,180,106,.14), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.workshop-bay:hover::before {
+  opacity: .38;
+}
+
+.bay-number,
+.bay-state,
+.bay-visual,
+.bay-content,
+.bay-action {
+  position: relative;
+  z-index: 1;
+}
+
+.bay-number {
+  width: 45px;
+  height: 36px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold2);
+  font-size: 13px;
+  font-weight: 900;
+  border: 1px solid rgba(214,180,106,.28);
+  background: rgba(214,180,106,.09);
+}
+
+.bay-state {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  min-width: 98px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: #aaffcc;
+  background: rgba(44,178,105,.12);
+  border: 1px solid rgba(88,231,145,.32);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.bay-state::before {
+  content: "Disponible";
+}
+
+.bay-visual {
+  position: relative;
+  align-self: center;
+  width: 100%;
+  aspect-ratio: 1.18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    radial-gradient(ellipse at center, rgba(255,255,255,.09), transparent 66%);
+  border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
+}
+
+.bay-visual::before,
+.bay-visual::after {
+  position: absolute;
+  inset: 18px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+.bay-visual::before {
+  content: "Vérification de la fiche...";
+  border-radius: 8px;
+  color: rgba(247,241,228,.58);
+  background:
+    linear-gradient(135deg, rgba(214,180,106,.11), rgba(255,255,255,.035)),
+    rgba(5,5,5,.88);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bay-visual::after {
+  content: "";
+  inset: 32px;
+  border-radius: 8px;
+  border: 1px dashed rgba(214,180,106,.22);
+  opacity: .5;
+}
+
+.bay-visual img {
+  width: 112%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 28px 36px rgba(0,0,0,.72));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(1.02);
+  transition: transform .38s ease, filter .28s ease, opacity .25s ease, visibility .25s ease;
+}
+
+.workshop-bay[data-custom-availability-state="open"] .bay-visual::before,
+.workshop-bay[data-custom-availability-state="open"] .bay-visual::after {
+  opacity: 0;
+  transform: scale(.98);
+}
+
+.workshop-bay[data-custom-availability-state="open"] .bay-visual img {
+  opacity: 1;
+  visibility: visible;
+}
+
+.workshop-bay:hover .bay-visual img {
+  transform: translateY(-4px) scale(1.08);
+  filter: drop-shadow(0 34px 42px rgba(0,0,0,.75));
+}
+
+.bay-content {
+  display: grid;
+  gap: 8px;
+}
+
+.bay-content small {
+  color: var(--gold2);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bay-content strong {
+  color: var(--text);
+  font-size: 32px;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.bay-action {
+  width: fit-content;
+  min-height: 42px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  color: #090807;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 16px 36px rgba(214,180,106,.18);
+}
+
+.bay-sentinel .bay-visual img {
+  width: 118%;
+}
+
+.bay-argento .bay-visual img {
+  width: 122%;
+}
+
+.bay-cypher .bay-visual img {
+  width: 116%;
+}
+
+nav [data-custom-link].custom-link-closed,
+.workshop-bay.custom-link-closed {
+  cursor: not-allowed;
+}
+
+.workshop-bay.custom-link-closed {
+  border-color: rgba(255,255,255,.08);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.008)),
+    linear-gradient(145deg, rgba(14,14,14,.92), rgba(2,2,2,.95));
+  box-shadow: 0 20px 54px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.035);
+  filter: grayscale(.88);
+  opacity: .7;
+}
+
+.workshop-bay.custom-link-closed:hover {
+  transform: none;
+  border-color: rgba(255,255,255,.1);
+  box-shadow: 0 20px 54px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.workshop-bay.custom-link-closed::before {
+  opacity: .08;
+  animation-play-state: paused;
+}
+
+.workshop-bay.custom-link-closed::after {
+  background: rgba(255,255,255,.16);
+  box-shadow: none;
+}
+
+.workshop-bay.custom-link-closed .bay-state {
+  color: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+}
+
+.workshop-bay.custom-link-closed .bay-state::before {
+  content: "Fermé";
+}
+
+.workshop-bay.custom-link-closed .bay-visual {
+  background: rgba(255,255,255,.025);
+  border-color: rgba(255,255,255,.055);
+}
+
+.workshop-bay.custom-link-closed .bay-visual::before {
+  content: "Fiche verrouillée";
+  color: rgba(255,255,255,.55);
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.045) 0 1px, transparent 1px 13px),
+    rgba(4,4,4,.94);
+  border-color: rgba(255,255,255,.1);
+}
+
+.workshop-bay.custom-link-closed .bay-visual::after {
+  opacity: .45;
+  border-color: rgba(255,255,255,.14);
+}
+
+.workshop-bay.custom-link-closed .bay-visual img {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(.98);
+}
+
+.workshop-bay.custom-link-closed .bay-content small,
+.workshop-bay.custom-link-closed .bay-content strong {
+  color: rgba(255,255,255,.34);
+}
+
+.workshop-bay.custom-link-closed .bay-action {
+  color: rgba(255,255,255,.38);
+  background: rgba(255,255,255,.07);
+  box-shadow: none;
+}
+
+.workshop-bay.custom-link-blocked-pulse {
+  animation: blockedBayPulse .45s ease;
+}
+
+.custom-closed-toast {
+  position: fixed;
+  top: 104px;
+  right: 24px;
+  z-index: 140;
+  width: min(390px, calc(100vw - 32px));
+  padding: 18px 18px 18px 20px;
+  border: 1px solid rgba(255,126,126,.42);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(70,20,20,.92), rgba(12,12,12,.95)),
+    rgba(8,8,8,.95);
+  color: var(--text);
+  box-shadow: 0 28px 80px rgba(0,0,0,.55), 0 0 34px rgba(255,95,95,.16);
+  opacity: 0;
+  transform: translateX(24px) scale(.98);
+  pointer-events: none;
+  transition: opacity .28s ease, transform .28s ease;
+  overflow: hidden;
+}
+
+.custom-closed-toast::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #ff9d9d, #d6b46a);
+  box-shadow: 0 0 22px rgba(255,126,126,.52);
+}
+
+.custom-closed-toast.is-visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.custom-closed-toast strong,
+.custom-closed-toast span {
+  display: block;
+}
+
+.custom-closed-toast strong {
+  margin-bottom: 6px;
+  color: #fff1f1;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.custom-closed-toast span {
+  color: rgba(247,241,228,.72);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+@keyframes showroomPageIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes showroomRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bayEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bayScan {
+  0% { transform: translateX(-75%); }
+  46%, 100% { transform: translateX(75%); }
+}
+
+@keyframes blockedBayPulse {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  55% { transform: translateX(5px); }
+}
+
+@media (max-width: 1180px) {
+  .workshop-grid {
     grid-template-columns: 1fr;
+  }
+
+  .workshop-bay {
+    min-height: 360px;
+    grid-template-columns: minmax(260px, .86fr) 1fr;
+    grid-template-rows: auto 1fr auto;
+    align-items: center;
+  }
+
+  .bay-number {
+    grid-column: 1 / -1;
+  }
+
+  .bay-state {
+    top: 18px;
+  }
+
+  .bay-visual {
+    grid-row: 2 / 4;
     margin-top: 0;
   }
 
-  h1 {
-    font-size: 58px;
+  .bay-content,
+  .bay-action {
+    grid-column: 2;
   }
 }
 
+@media (max-width: 800px) {
+  .custom-closed-toast {
+    top: 18px;
+    right: 16px;
+  }
+
+  .showroom-page {
+    min-height: auto;
+    padding-top: 28px;
+    padding-bottom: 46px;
+  }
+
+  .showroom-hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .showroom-copy h1 {
+    font-size: 54px;
+    line-height: 1;
+  }
+
+  .showroom-status {
+    width: 100%;
+  }
+
+  .workshop-bay {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+  }
+
+  .bay-visual,
+  .bay-content,
+  .bay-action {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .bay-content strong {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 520px) {
+  .showroom-copy h1 {
+    font-size: 44px;
+  }
+
+  .showroom-copy p {
+    font-size: 15px;
+  }
+
+  .workshop-bay {
+    padding: 14px;
+  }
+
+  .bay-state {
+    min-width: 82px;
+    padding: 8px 10px;
+  }
+}
