@@ -1,4 +1,4 @@
-﻿const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
   authDomain: "universit-4b11e.firebaseapp.com",
   projectId: "universit-4b11e",
@@ -12,6 +12,9 @@ const CUSTOM_IDS = ["sentinelClassic", "argento2f", "cypher"];
 const FIRESTORE_TIMEOUT_MS = 6500;
 
 const elements = [...document.querySelectorAll("[data-custom-link]")];
+const availabilityState = new Map(CUSTOM_IDS.map(customId => [customId, null]));
+let allClosedNoticeShown = false;
+let allClosedNoticeTimer = null;
 
 if (elements.length) {
   startLinksAvailability();
@@ -57,11 +60,50 @@ function setClosedState(customId, closed) {
   });
 }
 
+function setAvailabilityState(customId, enabled) {
+  availabilityState.set(customId, enabled);
+  setClosedState(customId, !enabled);
+  maybeShowAllClosedNotice();
+}
+
+function maybeShowAllClosedNotice() {
+  const allStatesKnown = CUSTOM_IDS.every(customId => availabilityState.get(customId) !== null);
+  const allClosed = allStatesKnown && CUSTOM_IDS.every(customId => availabilityState.get(customId) === false);
+
+  if (!allClosed || allClosedNoticeShown) return;
+
+  allClosedNoticeShown = true;
+  showAllClosedNotice();
+}
+
+function showAllClosedNotice() {
+  const notice = document.createElement("div");
+  notice.className = "custom-closed-toast";
+  notice.setAttribute("role", "status");
+  notice.setAttribute("aria-live", "polite");
+  notice.innerHTML = `
+    <strong>Customs fermées</strong>
+    <span>Les fiches customs sont actuellement fermées. Demandez à un professeur de les ouvrir avant de commencer.</span>
+  `;
+
+  document.body.appendChild(notice);
+
+  window.requestAnimationFrame(() => {
+    notice.classList.add("is-visible");
+  });
+
+  window.clearTimeout(allClosedNoticeTimer);
+  allClosedNoticeTimer = window.setTimeout(() => {
+    notice.classList.remove("is-visible");
+    notice.addEventListener("transitionend", () => notice.remove(), { once: true });
+  }, 10000);
+}
+
 function applyInitialLocalStates() {
   CUSTOM_IDS.forEach(customId => {
     const enabled = readLocalState(customId);
     if (enabled !== null) {
-      setClosedState(customId, !enabled);
+      setAvailabilityState(customId, enabled);
     }
   });
 }
@@ -109,7 +151,7 @@ async function startLinksAvailability() {
       )
         .then(snapshot => {
           const enabled = snapshot.exists() ? snapshot.data().enabled !== false : true;
-          setClosedState(customId, !enabled);
+          setAvailabilityState(customId, enabled);
         })
         .catch(error => {
           console.warn("Lecture lien custom indisponible :", error);
@@ -119,7 +161,7 @@ async function startLinksAvailability() {
         availabilityRef,
         snapshot => {
           const enabled = snapshot.exists() ? snapshot.data().enabled !== false : true;
-          setClosedState(customId, !enabled);
+          setAvailabilityState(customId, enabled);
         },
         error => {
           console.warn("Ecoute lien custom indisponible :", error);
@@ -130,4 +172,3 @@ async function startLinksAvailability() {
     console.warn("Chargement Firebase liens custom impossible :", error);
   }
 }
-
