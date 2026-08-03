@@ -40,12 +40,14 @@ const CURRENT_CUSTOM_SHEETS = [
 }
 
 async function buildSecureSheetHeaders() {
-  if (!currentProfUser?.getIdToken) {
+  const user = window.currentProfUser;
+
+  if (!user?.getIdToken) {
     throw new Error("Connexion professeur requise.");
   }
 
   return {
-    Authorization: \`Bearer \${await currentProfUser.getIdToken()}\`
+    Authorization: \`Bearer \${await user.getIdToken()}\`
   };
 }`
     )
