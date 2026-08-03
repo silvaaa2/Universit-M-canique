@@ -43,7 +43,7 @@ async function buildSecureSheetHeaders() {
   }
 
   return {
-    Authorization: \`Bearer \${await user.getIdToken()}\`
+    Authorization: \`Bearer \${await user.getIdToken(true)}\`
   };
 }`
     )
