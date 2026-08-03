@@ -287,19 +287,64 @@ async function resolveSheet(source, sheetKey, idToken) {
   };
 }
 
+function buildGoogleCsvUrls({ spreadsheetId, gid }) {
+  const encodedId = encodeURIComponent(spreadsheetId);
+  const encodedGid = encodeURIComponent(gid);
+
+  return [
+    `https://docs.google.com/spreadsheets/d/${encodedId}/export?format=csv&gid=${encodedGid}`,
+    `https://docs.google.com/spreadsheets/d/${encodedId}/gviz/tq?tqx=out:csv&gid=${encodedGid}`
+  ];
+}
+
+async function fetchGoogleCsv(url) {
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      Accept: "text/csv,text/plain,*/*",
+      "User-Agent": "Mozilla/5.0 Universite-Mecanique-Secure-Sheets/1.0"
+    }
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      statusText: response.statusText,
+      text
+    };
+  }
+
+  return {
+    ok: true,
+    text
+  };
+}
+
 async function fetchCsv({ spreadsheetId, gid }) {
   if (!spreadsheetId || !gid) {
     throw new Error("Réglage Google Sheets incomplet côté serveur.");
   }
 
-  const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
-  const response = await fetch(url, { cache: "no-store" });
+  const attempts = [];
 
-  if (!response.ok) {
-    throw new Error(`Google Sheets a refusé la lecture (${response.status}).`);
+  for (const url of buildGoogleCsvUrls({ spreadsheetId, gid })) {
+    try {
+      const result = await fetchGoogleCsv(url);
+
+      if (result.ok) {
+        return result.text;
+      }
+
+      attempts.push(`${result.status}${result.statusText ? ` ${result.statusText}` : ""}`);
+    } catch (error) {
+      attempts.push(error.message || "erreur réseau");
+    }
   }
 
-  return response.text();
+  throw new Error(`Google Sheets a refusé la lecture (${attempts.join(" puis ")}).`);
 }
 
 module.exports = async function handler(req, res) {
