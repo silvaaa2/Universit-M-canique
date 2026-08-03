@@ -32,8 +32,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const DEFAULT_EXAM_SHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
-const DEFAULT_EXAM_GID = "282279229";
 const DEFAULT_EXAM_LABEL = "Réponses formulaire";
 
 const guardLoader = document.getElementById("guardLoader");
@@ -58,42 +56,6 @@ window.profFirebase = {
 
 window.dispatchEvent(new Event("profFirebaseReady"));
 
-function extractSpreadsheetId(value) {
-  const text = String(value || "").trim();
-  const match = text.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  if (match?.[1]) return match[1];
-  if (/^[a-zA-Z0-9-_]{20,}$/.test(text)) return text;
-  return "";
-}
-
-function installExamSheetFetchProxy() {
-  if (window.__examSheetFetchProxyInstalled) return;
-  window.__examSheetFetchProxyInstalled = true;
-
-  const originalFetch = window.fetch.bind(window);
-
-  window.fetch = (input, init) => {
-    const settings = window.__examResponsesSettings;
-    const sourceUrl = typeof input === "string" ? input : input?.url || "";
-
-    if (settings?.spreadsheetId && sourceUrl.includes(`/spreadsheets/d/${DEFAULT_EXAM_SHEET_ID}/export`)) {
-      const nextUrl = new URL(sourceUrl);
-      nextUrl.pathname = `/spreadsheets/d/${settings.spreadsheetId}/export`;
-      nextUrl.searchParams.set("gid", settings.gid || DEFAULT_EXAM_GID);
-
-      if (typeof input === "string") {
-        return originalFetch(nextUrl.toString(), init);
-      }
-
-      if (input instanceof Request) {
-        return originalFetch(new Request(nextUrl.toString(), input), init);
-      }
-    }
-
-    return originalFetch(input, init);
-  };
-}
-
 function installExamDiscordSendProxy(user) {
   if (window.__examDiscordSendProxyInstalled) return;
   window.__examDiscordSendProxyInstalled = true;
@@ -111,7 +73,7 @@ function installExamDiscordSendProxy(user) {
       throw new Error("Connexion professeur requise pour envoyer sur Discord.");
     }
 
-    const idToken = await user.getIdToken();
+    const idToken = await user.getIdToken(true);
     let body = init?.body;
 
     if (!body && input instanceof Request) {
@@ -151,22 +113,16 @@ async function loadExamResponsesSettings() {
     const data = settingsSnap.exists() ? settingsSnap.data() : {};
 
     window.__examResponsesSettings = {
-      spreadsheetId: extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId) || DEFAULT_EXAM_SHEET_ID,
-      gid: String(data.gid || DEFAULT_EXAM_GID),
       label: String(data.label || DEFAULT_EXAM_LABEL),
       questionPoints: normalizeQuestionPoints(data.questionPoints)
     };
   } catch (error) {
     console.warn("Réglages examens indisponibles :", error);
     window.__examResponsesSettings = {
-      spreadsheetId: DEFAULT_EXAM_SHEET_ID,
-      gid: DEFAULT_EXAM_GID,
       label: DEFAULT_EXAM_LABEL,
       questionPoints: {}
     };
   }
-
-  installExamSheetFetchProxy();
 }
 
 function applyExamLabel() {
@@ -289,4 +245,3 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
-
