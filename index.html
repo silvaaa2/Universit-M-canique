@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 
 <link rel="stylesheet" href="assets/css/base.css?v=9030">
 <link rel="stylesheet" href="assets/css/header.css?v=9030">
-<link rel="stylesheet" href="assets/css/home.css?v=9031">
+<link rel="stylesheet" href="assets/css/home.css?v=9034">
 <link rel="stylesheet" href="assets/css/buttons.css?v=9030">
 <link rel="stylesheet" href="assets/css/loader.css?v=9031">
 </head>
@@ -43,33 +43,72 @@
   </nav>
 </header>
 
-<main>
+<main class="showroom-page">
 
-<section class="hero">
-  <h1>
-    Custom - <span>Concessionnaire Auto</span>
-  </h1>
+<section class="showroom-hero" aria-labelledby="showroomTitle">
+  <div class="showroom-copy">
+    <p class="showroom-kicker">Mécanique - Université</p>
+    <h1 id="showroomTitle">Atelier Customs</h1>
+    <p>
+      Sélectionnez une baie d’atelier pour consulter la fiche technique du véhicule demandé.
+    </p>
+  </div>
+
+  <div class="showroom-status" aria-label="État des fiches">
+    <span>3</span>
+    <strong>fiches atelier</strong>
+  </div>
 </section>
 
-<section class="modules">
+<section class="workshop-grid" aria-label="Choix des fiches custom">
 
-  <div class="card" data-custom-link="sentinelClassic" onclick="goPage('pages/custom-facile.html')">
-    <span>01</span>
-    <h3>Custom Facile</h3>
-    <p>Custom Sentinel Classic</p>
-  </div>
+  <button type="button" class="workshop-bay bay-sentinel" data-custom-link="sentinelClassic" onclick="goPage('pages/custom-facile.html')">
+    <span class="bay-number">01</span>
+    <span class="bay-state"></span>
 
-  <div class="card" data-custom-link="argento2f" onclick="goPage('pages/custom-moyen.html')">
-    <span>02</span>
-    <h3>Custom Moyen</h3>
-    <p>Custom Argento 2F</p>
-  </div>
+    <span class="bay-visual">
+      <img src="Images/FINAL SENTINEL.png" alt="Sentinel Classic">
+    </span>
 
-  <div class="card" data-custom-link="cypher" onclick="goPage('pages/custom-difficile.html')">
-    <span>03</span>
-    <h3>Custom Difficile</h3>
-    <p>Custom Cypher</p>
-  </div>
+    <span class="bay-content">
+      <small>Sentinel Classic</small>
+      <strong>Custom Facile</strong>
+    </span>
+
+    <span class="bay-action">Ouvrir la fiche</span>
+  </button>
+
+  <button type="button" class="workshop-bay bay-argento" data-custom-link="argento2f" onclick="goPage('pages/custom-moyen.html')">
+    <span class="bay-number">02</span>
+    <span class="bay-state"></span>
+
+    <span class="bay-visual">
+      <img src="Images/FINAL RS2 (2).png" alt="Argento 2F">
+    </span>
+
+    <span class="bay-content">
+      <small>Argento 2F</small>
+      <strong>Custom Moyen</strong>
+    </span>
+
+    <span class="bay-action">Ouvrir la fiche</span>
+  </button>
+
+  <button type="button" class="workshop-bay bay-cypher" data-custom-link="cypher" onclick="goPage('pages/custom-difficile.html')">
+    <span class="bay-number">03</span>
+    <span class="bay-state"></span>
+
+    <span class="bay-visual">
+      <img src="Images/FINAL CYPHER.png" alt="Cypher">
+    </span>
+
+    <span class="bay-content">
+      <small>Cypher</small>
+      <strong>Custom Difficile</strong>
+    </span>
+
+    <span class="bay-action">Ouvrir la fiche</span>
+  </button>
 
 </section>
 
@@ -77,8 +116,7 @@
 
 <script src="assets/js/loader.js?v=9031"></script>
 <script src="assets/js/navigation.js?v=9033"></script>
-<script type="module" src="assets/js/custom-availability-links.js?v=2"></script>
+<script type="module" src="assets/js/custom-availability-links.js?v=3"></script>
 
 </body>
 </html>
-
