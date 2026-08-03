@@ -97,7 +97,7 @@ async function sendExamListDiscordMessage(message, roleIds = []) {
     throw new Error("Connexion professeur requise pour envoyer sur Discord.");
   }
 
-  const idToken = await user.getIdToken();
+  const idToken = await user.getIdToken(true);
   const response = await fetch(EXAM_RESULTS_SEND_ENDPOINT, {
     method: "POST",
     headers: {
@@ -355,6 +355,5 @@ new MutationObserver(refreshSendButton)
     childList: true,
     subtree: true
   });
-
 
 
