@@ -10,7 +10,8 @@
   <link rel="stylesheet" href="../assets/css/base.css?v=1001">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=8">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=9">
+  <link rel="stylesheet" href="../assets/css/prof-notifications-v2.css?v=1">
   <style>
     #profAdminBtn[hidden],
     .admin-only[hidden],
@@ -132,6 +133,11 @@
         </div>
 
         <div class="v2-topbar-actions">
+          <button type="button" class="v2-notify-btn" id="v2NotificationsBtn">
+            <span aria-hidden="true">NT</span>
+            <strong id="v2NotificationsLabel">Activer notifs</strong>
+          </button>
+
           <div class="v2-user-pill">
             <span id="v2UserInitials">PR</span>
             <strong id="v2UserEmail">Professeur</strong>
@@ -333,8 +339,9 @@
 
 <script src="../assets/js/navigation.js?v=1007"></script>
 <script src="../assets/js/prof-ui.js?v=1002"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=9"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=10"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=1"></script>
+<script type="module" src="../assets/js/prof-notifications-v2.js?v=1"></script>
 
 </body>
 </html>
