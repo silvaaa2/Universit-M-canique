@@ -1,0 +1,351 @@
+@media (max-width: 760px), (hover: none) and (pointer: coarse) and (max-width: 920px) {
+  body.prof-v2-page.exam-v2-page,
+  body.prof-v2-page.rp-v2-page {
+    min-width: 0 !important;
+    min-height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.exam-v2-page .v2-shell,
+  body.rp-v2-page .v2-shell {
+    min-height: 100dvh !important;
+    height: auto !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.exam-v2-page .v2-app,
+  body.rp-v2-page .v2-app {
+    display: block !important;
+    width: 100% !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)) !important;
+    overflow: visible !important;
+  }
+
+  body.exam-v2-page .v2-sidebar,
+  body.rp-v2-page .v2-sidebar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 90 !important;
+    width: 100% !important;
+    margin: 0 0 8px !important;
+    padding: 8px !important;
+    border-radius: 0 0 14px 14px !important;
+    background: rgba(10, 10, 10, 0.94) !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+
+  body.exam-v2-page .v2-brand,
+  body.rp-v2-page .v2-brand,
+  body.exam-v2-page .v2-nav p,
+  body.rp-v2-page .v2-nav p,
+  body.exam-v2-page .v2-theme-box,
+  body.rp-v2-page .v2-theme-box,
+  body.exam-v2-page .v2-user-pill,
+  body.rp-v2-page .v2-user-pill,
+  body.exam-v2-page .exam-v2-hero,
+  body.rp-v2-page .rp-v2-hero {
+    display: none !important;
+  }
+
+  body.exam-v2-page .v2-nav,
+  body.rp-v2-page .v2-nav {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    padding: 0 0 2px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  body.exam-v2-page .v2-nav::-webkit-scrollbar,
+  body.rp-v2-page .v2-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.exam-v2-page .v2-nav-item,
+  body.rp-v2-page .v2-nav-item {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-height: 42px !important;
+    padding: 9px 12px !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  body.exam-v2-page .v2-nav-mark,
+  body.rp-v2-page .v2-nav-mark {
+    display: none !important;
+  }
+
+  body.exam-v2-page .v2-workspace,
+  body.rp-v2-page .v2-workspace {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    border-radius: 14px !important;
+  }
+
+  body.exam-v2-page .v2-topbar,
+  body.rp-v2-page .v2-topbar {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  body.exam-v2-page .v2-topbar h1,
+  body.rp-v2-page .v2-topbar h1 {
+    font-size: clamp(30px, 11vw, 44px) !important;
+    line-height: 0.95 !important;
+  }
+
+  body.exam-v2-page .v2-topbar-actions,
+  body.rp-v2-page .v2-topbar-actions {
+    justify-content: stretch !important;
+  }
+
+  body.exam-v2-page .v2-secondary-btn,
+  body.rp-v2-page .v2-secondary-btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+  }
+
+  body.exam-v2-page .exam-v2-content,
+  body.rp-v2-page .rp-v2-content {
+    padding: 0 8px 10px !important;
+    overflow: visible !important;
+  }
+
+  body.exam-v2-page .inline-corrections,
+  body.rp-v2-page .inline-corrections,
+  body.exam-v2-page .inline-corrections-card,
+  body.rp-v2-page .inline-corrections-card {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    border-radius: 14px !important;
+  }
+
+  body.exam-v2-page .inline-corrections-card,
+  body.rp-v2-page .inline-corrections-card {
+    padding: 10px !important;
+  }
+
+  body.exam-v2-page .inline-corrections-head,
+  body.rp-v2-page .inline-corrections-head {
+    position: sticky !important;
+    top: 58px !important;
+    z-index: 70 !important;
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 10px !important;
+    align-items: center !important;
+    margin: -10px -10px 10px !important;
+    padding: 10px !important;
+    background: rgba(8, 8, 8, 0.94) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+
+  body.exam-v2-page .inline-corrections-head h2,
+  body.rp-v2-page .inline-corrections-head h2 {
+    font-size: 24px !important;
+    line-height: 1 !important;
+  }
+
+  body.exam-v2-page .inline-corrections-head p:not(.v2-eyebrow),
+  body.rp-v2-page .inline-corrections-head p:not(.v2-eyebrow) {
+    display: none !important;
+  }
+
+  body.exam-v2-page .inline-corrections-minimize,
+  body.rp-v2-page .inline-corrections-minimize {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  body.exam-v2-page .answers-body,
+  body.rp-v2-page .answers-body,
+  body.exam-v2-page .inline-correction-detail,
+  body.rp-v2-page .inline-correction-detail {
+    overflow: visible !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  body.exam-v2-page .student-sheet-tabs,
+  body.rp-v2-page .student-sheet-tabs {
+    position: sticky !important;
+    top: 120px !important;
+    z-index: 65 !important;
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    margin: 0 -2px 10px !important;
+    padding: 6px 2px 8px !important;
+    background: rgba(5, 5, 5, 0.92) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  body.exam-v2-page .student-sheet-tabs::-webkit-scrollbar,
+  body.rp-v2-page .student-sheet-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.exam-v2-page .student-sheet-tab,
+  body.rp-v2-page .student-sheet-tab {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+    padding: 0 13px !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  body.exam-v2-page #sheetContent,
+  body.rp-v2-page #sheetContent,
+  body.exam-v2-page #sheetContent.student-sheet-content,
+  body.rp-v2-page #sheetContent.student-sheet-content {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body.exam-v2-page #sheetContent .student-answer-grid,
+  body.rp-v2-page #sheetContent .student-answer-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  body.exam-v2-page .student-answer-card,
+  body.rp-v2-page .student-answer-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border-radius: 13px !important;
+    overflow: hidden !important;
+  }
+
+  body.exam-v2-page .student-answer-card.collapsed,
+  body.rp-v2-page .student-answer-card.collapsed {
+    min-height: 0 !important;
+  }
+
+  body.exam-v2-page .student-card-top,
+  body.rp-v2-page .student-card-top,
+  body.exam-v2-page .student-answer-card.is-open .student-card-top,
+  body.rp-v2-page .student-answer-card.is-open .student-card-top {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  body.exam-v2-page .student-card-top h2,
+  body.rp-v2-page .student-card-top h2 {
+    font-size: 20px !important;
+    line-height: 1.08 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  body.exam-v2-page .student-tags,
+  body.rp-v2-page .student-tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  body.exam-v2-page .student-section-grid,
+  body.rp-v2-page .student-section-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  body.exam-v2-page .student-section,
+  body.rp-v2-page .student-section,
+  body.exam-v2-page .student-answer-field,
+  body.rp-v2-page .student-answer-field {
+    padding: 10px !important;
+    border-radius: 10px !important;
+  }
+
+  body.exam-v2-page textarea,
+  body.rp-v2-page textarea {
+    width: 100% !important;
+    min-height: 120px !important;
+    font-size: 16px !important;
+  }
+
+  body.exam-v2-page .exam-score-control {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  body.exam-v2-page .exam-score-control input {
+    width: 100% !important;
+    min-height: 42px !important;
+    font-size: 16px !important;
+  }
+
+  body.exam-v2-page .student-status-actions,
+  body.rp-v2-page .student-status-actions {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 75 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin: 10px -10px -10px !important;
+    padding: 10px !important;
+    background: rgba(6, 6, 6, 0.96) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+
+  body.exam-v2-page .student-status-actions button,
+  body.rp-v2-page .student-status-actions button {
+    width: 100% !important;
+    min-height: 46px !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+  }
+
+  body[data-theme="light"].exam-v2-page .v2-sidebar,
+  body[data-theme="light"].rp-v2-page .v2-sidebar,
+  body[data-theme="light"].exam-v2-page .inline-corrections-head,
+  body[data-theme="light"].rp-v2-page .inline-corrections-head,
+  body[data-theme="light"].exam-v2-page .student-sheet-tabs,
+  body[data-theme="light"].rp-v2-page .student-sheet-tabs {
+    background: rgba(248, 245, 236, 0.94) !important;
+  }
+
+  body[data-theme="light"].exam-v2-page .student-status-actions,
+  body[data-theme="light"].rp-v2-page .student-status-actions {
+    background: rgba(248, 245, 236, 0.96) !important;
+  }
+}
