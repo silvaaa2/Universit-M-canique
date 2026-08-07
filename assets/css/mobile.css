@@ -1,0 +1,785 @@
+@media (max-width: 860px) {
+  html {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden !important;
+    background-attachment: scroll !important;
+    background-size:
+      auto,
+      48px 48px,
+      48px 48px,
+      auto,
+      auto,
+      300px auto,
+      auto !important;
+    background-position:
+      center,
+      center,
+      center,
+      center,
+      center,
+      center 118px,
+      center !important;
+  }
+
+  body::before {
+    background-size: 48px 48px !important;
+  }
+
+  main {
+    width: 100%;
+    padding: 0 14px !important;
+  }
+
+  img,
+  video,
+  canvas,
+  iframe {
+    max-width: 100%;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  header {
+    min-height: 70px !important;
+    padding: 12px 14px !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+
+  header .logo {
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+    font-size: 17px !important;
+  }
+
+  header .logo img {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+  }
+
+  header .logo span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  header nav {
+    width: 100%;
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto;
+    padding: 0 0 4px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  header nav button {
+    min-height: 42px;
+    flex: 0 0 auto;
+    padding: 10px 13px !important;
+    border-radius: 999px !important;
+    white-space: nowrap;
+  }
+
+  header .prof-button {
+    width: auto !important;
+    min-width: 48px !important;
+    height: 42px !important;
+    padding: 0 13px !important;
+  }
+
+  header .prof-text {
+    opacity: 1 !important;
+    max-width: 120px !important;
+  }
+
+  .loader-box {
+    width: min(92vw, 420px) !important;
+    padding: 22px !important;
+    border-radius: 10px !important;
+  }
+
+  .showroom-page {
+    padding-top: 24px !important;
+    padding-bottom: 40px !important;
+  }
+
+  .showroom-hero {
+    gap: 18px !important;
+  }
+
+  .showroom-copy h1 {
+    font-size: clamp(42px, 15vw, 64px) !important;
+    line-height: .96 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .showroom-copy p {
+    max-width: 100% !important;
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+  }
+
+  .showroom-status {
+    width: 100% !important;
+    min-height: 92px !important;
+    border-radius: 10px !important;
+  }
+
+  .workshop-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .workshop-bay {
+    min-height: 310px !important;
+    padding: 16px !important;
+    grid-template-columns: 1fr !important;
+    border-radius: 10px !important;
+  }
+
+  .bay-visual {
+    width: 100% !important;
+    min-height: 150px !important;
+    margin: 6px 0 !important;
+  }
+
+  .bay-visual img {
+    max-height: 190px !important;
+    object-fit: contain !important;
+  }
+
+  .bay-content strong {
+    font-size: clamp(24px, 8vw, 34px) !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .bay-action {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .custom-closed-toast {
+    top: 12px !important;
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    border-radius: 10px !important;
+  }
+
+  .vehicle-page {
+    width: 100% !important;
+    padding-top: 24px !important;
+    padding-bottom: 44px !important;
+  }
+
+  .page-top {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .page-top h1 {
+    font-size: clamp(42px, 14vw, 68px) !important;
+    line-height: .96 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .page-top .intro {
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+  }
+
+  .back-btn {
+    width: max-content;
+    min-height: 42px;
+  }
+
+  .vehicle-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .media-column,
+  .info-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .media-tabs {
+    width: 100%;
+    display: flex !important;
+    gap: 10px !important;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .media-tab {
+    min-height: 44px !important;
+    flex: 1 0 auto;
+  }
+
+  .gallery-card,
+  .meteo-card {
+    border-radius: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .gallery-card img,
+  .meteo-card img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 58vh !important;
+    object-fit: contain !important;
+  }
+
+  .gallery-arrow {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .gallery-arrow.left {
+    left: 10px !important;
+  }
+
+  .gallery-arrow.right {
+    right: 10px !important;
+  }
+
+  .info-card {
+    position: static !important;
+    border-radius: 10px !important;
+    padding: 18px !important;
+  }
+
+  .info-head h2 {
+    font-size: clamp(28px, 9vw, 42px) !important;
+    letter-spacing: 0 !important;
+  }
+
+  .info-line {
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .info-line span {
+    min-width: 0;
+  }
+
+  .btn.full,
+  .btn.primary.full {
+    min-height: 48px !important;
+  }
+
+  body.prof-v2-page {
+    min-height: 100dvh;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .v2-shell {
+    min-height: 100dvh !important;
+    padding: 0 !important;
+  }
+
+  .v2-login-view {
+    min-height: 100dvh !important;
+    padding: 76px 14px 18px !important;
+  }
+
+  .v2-login-brand {
+    left: 14px !important;
+    right: 14px !important;
+    top: 14px !important;
+  }
+
+  .v2-login-card {
+    width: 100% !important;
+    padding: 22px !important;
+    border-radius: 10px !important;
+  }
+
+  .v2-login-card h1 {
+    font-size: clamp(42px, 16vw, 72px) !important;
+    line-height: .95 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .v2-login-form input,
+  .v2-primary-btn,
+  .v2-secondary-btn,
+  .v2-notify-btn {
+    min-height: 48px !important;
+  }
+
+  .v2-app,
+  .exam-v2-app,
+  .rp-v2-app,
+  .customs-v2-app,
+  body.modules-page .modules-v2-app {
+    width: 100% !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding: 10px !important;
+    overflow: visible !important;
+  }
+
+  .v2-sidebar,
+  .exam-v2-sidebar,
+  .rp-v2-sidebar,
+  .customs-v2-sidebar,
+  body.modules-page .modules-v2-sidebar {
+    position: sticky !important;
+    top: 8px !important;
+    z-index: 70 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 10px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .v2-brand {
+    min-width: 52px !important;
+    width: 52px !important;
+    height: 52px !important;
+    padding: 6px !important;
+  }
+
+  .v2-brand span {
+    display: none !important;
+  }
+
+  .v2-brand img {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .v2-nav {
+    width: 100%;
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    padding: 0 0 4px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .v2-nav p,
+  .v2-theme-box {
+    display: none !important;
+  }
+
+  .v2-nav-item {
+    min-width: max-content !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: 8px 11px !important;
+    border-radius: 10px !important;
+    gap: 8px !important;
+    white-space: nowrap !important;
+  }
+
+  .v2-nav-mark {
+    width: 30px !important;
+    height: 30px !important;
+    flex: 0 0 30px !important;
+  }
+
+  .v2-workspace,
+  .exam-v2-workspace,
+  .rp-v2-workspace,
+  .customs-v2-workspace,
+  body.modules-page .modules-v2-workspace {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    border-radius: 10px !important;
+  }
+
+  .v2-topbar {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+
+  .v2-topbar h1 {
+    font-size: clamp(32px, 11vw, 52px) !important;
+    line-height: .98 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .v2-topbar-actions {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .v2-user-pill,
+  .v2-notify-btn,
+  .v2-topbar-actions > button {
+    width: 100% !important;
+  }
+
+  .v2-home,
+  .v2-settings,
+  .exam-v2-content,
+  .rp-v2-content,
+  .customs-v2-content,
+  body.modules-page .modules-v2-content {
+    padding: 10px !important;
+    overflow: visible !important;
+  }
+
+  .v2-hero,
+  .v2-cockpit,
+  .v2-settings-card,
+  .inline-corrections-card,
+  .exam-v2-hero,
+  .rp-v2-hero,
+  .customs-v2-overview,
+  .customs-v2-command,
+  .modules-shell {
+    border-radius: 10px !important;
+  }
+
+  .v2-cockpit {
+    padding: 16px !important;
+  }
+
+  .v2-cockpit-head,
+  .v2-insight-grid,
+  .v2-settings-grid,
+  .customs-v2-overview,
+  .customs-v2-command,
+  .exam-v2-hero,
+  .rp-v2-hero {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .v2-cockpit h2,
+  .exam-v2-hero h2,
+  .rp-v2-hero h2,
+  .customs-v2-intro h1 {
+    font-size: clamp(36px, 12vw, 58px) !important;
+    line-height: .96 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .v2-stat-grid,
+  .v2-kpi-grid,
+  .v2-action-grid,
+  .exam-v2-kpis,
+  .exam-stats-grid,
+  .rp-v2-kpis,
+  .customs-v2-summary,
+  .modules-summary {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .v2-stat-card,
+  .exam-stat-card,
+  .modules-stat,
+  .customs-v2-summary-item {
+    min-height: 82px !important;
+    padding: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .v2-command-zone,
+  .v2-command-box,
+  .exam-toolbar,
+  .student-results-head,
+  .inline-corrections-head,
+  .customs-v2-actions,
+  .modules-toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .v2-command-box input,
+  .exam-search-box,
+  .exam-search-box input,
+  .modules-search,
+  .student-sheet-tab,
+  .copy-all-results-btn,
+  .modules-reload-btn,
+  .modules-sheets-btn,
+  .customs-v2-refresh,
+  .customs-v2-bulk,
+  .inline-back-btn {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+
+  .student-sheet-tabs,
+  .exam-filter-buttons,
+  .student-tags,
+  .student-status-actions {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .student-sheet-tab,
+  .exam-filter-buttons button,
+  .student-status-btn {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .student-answer-grid,
+  #sheetContent .student-answer-grid,
+  .customs-v2-list {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .student-answer-card,
+  .student-results-head,
+  .student-section,
+  .student-answer-field,
+  .student-link-card,
+  .customs-v2-card {
+    border-radius: 10px !important;
+  }
+
+  .student-answer-card.collapsed .student-card-top,
+  .student-answer-card.is-open .student-card-top {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 10px !important;
+  }
+
+  .student-answer-card h2,
+  .student-card-top h2 {
+    max-width: 100% !important;
+    font-size: clamp(20px, 7vw, 30px) !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .student-section-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .exam-line,
+  .student-answer-field,
+  .student-section,
+  .exam-score-control {
+    min-width: 0 !important;
+  }
+
+  .exam-score-control {
+    width: 100% !important;
+  }
+
+  .exam-score-control input {
+    min-width: 0 !important;
+  }
+
+  body.modules-page {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow-y: auto !important;
+  }
+
+  body.modules-page main,
+  body.modules-page main.v2-shell {
+    height: auto !important;
+    min-height: 100dvh !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.modules-page .prof-dashboard,
+  body.modules-page .inline-corrections,
+  body.modules-page .inline-corrections-card,
+  body.modules-page .modules-shell {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.modules-page .modules-shell {
+    padding: 10px !important;
+  }
+
+  body.modules-page .modules-toolbar {
+    align-items: stretch !important;
+  }
+
+  body.modules-page .modules-back-btn {
+    width: 100% !important;
+  }
+
+  body.modules-page .modules-status {
+    text-align: left !important;
+    white-space: normal !important;
+  }
+
+  body.modules-page .modules-table-wrap {
+    width: 100% !important;
+    max-height: calc(100dvh - 220px) !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.modules-page .modules-table {
+    min-width: 1420px !important;
+  }
+
+  body.modules-page .modules-row {
+    grid-template-columns: minmax(210px, 1fr) repeat(6, minmax(92px, .7fr) minmax(118px, .8fr)) !important;
+  }
+
+  body.modules-page .modules-cell {
+    padding: 8px !important;
+  }
+
+  body.modules-page .module-check {
+    min-height: 38px !important;
+  }
+
+  body.modules-page .module-date {
+    min-height: 38px !important;
+    font-size: 14px !important;
+  }
+
+  .exam-list-card,
+  .customs-v2-card,
+  .v2-admin-modal,
+  .admin-modal,
+  .exam-list-modal section {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 10px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  main {
+    padding: 0 10px !important;
+  }
+
+  header {
+    padding: 10px !important;
+  }
+
+  header nav button {
+    padding: 9px 11px !important;
+  }
+
+  .showroom-copy h1,
+  .page-top h1,
+  .v2-login-card h1,
+  .v2-cockpit h2,
+  .exam-v2-hero h2,
+  .rp-v2-hero h2,
+  .customs-v2-intro h1 {
+    font-size: clamp(36px, 15vw, 52px) !important;
+  }
+
+  .workshop-bay {
+    min-height: 270px !important;
+  }
+
+  .bay-visual img {
+    max-height: 160px !important;
+  }
+
+  .v2-app,
+  .exam-v2-app,
+  .rp-v2-app,
+  .customs-v2-app,
+  body.modules-page .modules-v2-app {
+    padding: 8px !important;
+  }
+
+  .v2-sidebar,
+  .exam-v2-sidebar,
+  .rp-v2-sidebar,
+  .customs-v2-sidebar,
+  body.modules-page .modules-v2-sidebar {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    padding: 8px !important;
+  }
+
+  .v2-brand {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .v2-brand img {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .v2-nav-item {
+    min-height: 38px !important;
+    padding: 7px 9px !important;
+    font-size: 12px !important;
+  }
+
+  .v2-nav-mark {
+    width: 26px !important;
+    height: 26px !important;
+    flex-basis: 26px !important;
+  }
+
+  .v2-stat-grid,
+  .v2-kpi-grid,
+  .v2-action-grid,
+  .exam-v2-kpis,
+  .exam-stats-grid,
+  .rp-v2-kpis,
+  .customs-v2-summary,
+  .modules-summary {
+    grid-template-columns: 1fr !important;
+  }
+
+  .info-line {
+    grid-template-columns: 1fr auto !important;
+  }
+}
