@@ -1,4 +1,6 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
+
+@import url("./mobile.css?v=1");
 
 :root {
   --bg: #000000;
@@ -108,4 +110,3 @@ section article {
     radial-gradient(circle at 18% 0%, rgba(214,180,106,.10), transparent 30%),
     linear-gradient(145deg, rgba(18,18,18,.80), rgba(8,8,8,.70)) !important;
 }
-
