@@ -4,7 +4,7 @@ const path = require("path");
 const PUBLIC_DISCORD_PLACEHOLDER = "https://discord.com/api/webhooks/secure-server-endpoint";
 
 function hardenExamLoader(source) {
-  return source
+  let hardened = source
     .replace(
       /const SPREADSHEET_ID = "[^"]+";\s*\n\s*\n/,
       ""
@@ -71,6 +71,58 @@ async function buildSecureSheetHeaders() {
       /setError\("Impossible de charger les réponses d'examen\. Vérifie la connexion prof et le réglage Google Sheets\."\);/g,
       `setError(\`Impossible de charger les réponses d'examen. Détail : \${error?.message || "erreur inconnue"}\`);`
     );
+
+  hardened = hardened
+    .replace(
+      /\bconst EXAM_DISPLAY_MAX_POINTS = 50;/,
+      "const DEFAULT_EXAM_DISPLAY_MAX_POINTS = 50;"
+    )
+    .replace(
+      /function getQuestionPointsMap\(\) \{\s*const firebasePoints = window\.__examResponsesSettings\?\.questionPoints \|\| \{\};\s*return \{\s*\.\.\.QUESTION_POINTS,\s*\.\.\.firebasePoints\s*\};\s*\}/,
+      `function getQuestionPointsMap() {
+  const firebasePoints = window.__examResponsesSettings?.questionPoints || {};
+  return Object.keys(firebasePoints).length ? firebasePoints : QUESTION_POINTS;
+}`
+    );
+
+  if (!hardened.includes("function getExamMaxPoints()")) {
+    hardened = hardened.replace(
+      /function getSafeQuestionPointValue\(value\) \{\s*const number = Number\(value\);\s*return Number\.isFinite\(number\) \? Math\.max\(0, number\) : null;\s*\}/,
+      `function getSafeQuestionPointValue(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.max(0, number) : null;
+}
+
+function getExamMaxPoints() {
+  const configuredMax = Number(window.__examResponsesSettings?.maxPoints);
+
+  if (Number.isFinite(configuredMax) && configuredMax > 0) {
+    return configuredMax;
+  }
+
+  const total = Object.values(getQuestionPointsMap()).reduce((sum, value) => {
+    const points = getSafeQuestionPointValue(value);
+    return points === null ? sum : sum + points;
+  }, 0);
+
+  return total > 0 ? total : DEFAULT_EXAM_DISPLAY_MAX_POINTS;
+}
+
+function getExamPassPoints() {
+  const configuredPass = Number(window.__examResponsesSettings?.passPoints);
+
+  if (Number.isFinite(configuredPass) && configuredPass > 0) {
+    return configuredPass;
+  }
+
+  return Math.min(EXAM_PASS_POINTS, getExamMaxPoints());
+}`
+    );
+  }
+
+  return hardened
+    .replace(/\bEXAM_DISPLAY_MAX_POINTS\b/g, "getExamMaxPoints()")
+    .replace(/\btotalScore >= EXAM_PASS_POINTS\b/g, "totalScore >= getExamPassPoints()");
 }
 
 module.exports = function handler(req, res) {
