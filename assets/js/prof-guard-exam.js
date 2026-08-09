@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+﻿import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
 import {
   getAuth,
@@ -228,7 +228,7 @@ onAuthStateChanged(auth, async (user) => {
 
   try {
     await loadExamResponsesSettings();
-    await import("./secure-exam-loader.js?v=3");
+    await import("./secure-exam-loader.js?v=4");
     applyExamLabel();
   } catch (error) {
     console.error("Erreur chargement loader examens :", error);
@@ -245,3 +245,4 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+

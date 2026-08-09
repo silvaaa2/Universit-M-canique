@@ -97,15 +97,10 @@ function getExamMaxPoints() {
   const configuredMax = Number(window.__examResponsesSettings?.maxPoints);
 
   if (Number.isFinite(configuredMax) && configuredMax > 0) {
-    return configuredMax;
+    return Math.min(configuredMax, DEFAULT_EXAM_DISPLAY_MAX_POINTS);
   }
 
-  const total = Object.values(getQuestionPointsMap()).reduce((sum, value) => {
-    const points = getSafeQuestionPointValue(value);
-    return points === null ? sum : sum + points;
-  }, 0);
-
-  return total > 0 ? total : DEFAULT_EXAM_DISPLAY_MAX_POINTS;
+  return DEFAULT_EXAM_DISPLAY_MAX_POINTS;
 }
 
 function getExamPassPoints() {

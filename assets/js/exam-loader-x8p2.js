@@ -1,20 +1,23 @@
-﻿const SPREADSHEET_ID = "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY";
-
-const SHEETS = [
+﻿const SHEETS = [
   {
     id: "exam-form-1",
-    label: "Réponses formulaire",
-    gid: "282279229"
+    label: "Réponses formulaire"
   }
 ];
 
 const STATUS_COLLECTION = "examAnswerStatuses";
 const CUSTOM_STATUS_COLLECTION = "studentAnswerStatuses";
 const STAGE_COLLECTION = "stageValidations";
-const EXAM_RESULTS_WEBHOOK_URL = "https://discord.com/api/webhooks/1532074252252086382/uzHdIqZdga-Qexgbql68Ieba_oPdYkDfuakv2aTHWVPEfO_TjAdEpzAbjHjUXJTsqm8B";
+const EXAM_RESULTS_SEND_ENDPOINT = "/api/discord-exam-results";
 
-const EXAM_DISPLAY_MAX_POINTS = 50;
+const DEFAULT_EXAM_DISPLAY_MAX_POINTS = 50;
 const EXAM_PASS_POINTS = 40;
+
+const CUSTOM_BONUS_SHEETS = [
+  { id: "sentinelClassic", label: "Sentinel Classic" },
+  { id: "argento2f", label: "Argento 2F" },
+  { id: "cypher", label: "Cypher" }
+];
 
 const QUESTION_POINTS = {
   "Prénom / Nom (RP)": 0,
@@ -70,6 +73,7 @@ const cache = new Map();
 let answerRecords = {};
 let approvedCustomIds = new Set();
 let approvedStageIds = new Set();
+let customBonusDataReady = false;
 
 let currentExamSearch = "";
 let currentExamFilter = "all";
@@ -83,8 +87,36 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function buildCsvUrl(gid) {
-  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
+function buildCsvUrl(sheet) {
+  const params = new URLSearchParams({
+    source: "examResponses",
+    sheet: sheet.id
+  });
+
+  return `/api/secure-sheet?${params.toString()}`;
+}
+
+function buildCustomBonusCsvUrl(sheet) {
+  const params = new URLSearchParams({
+    source: "customResponses",
+    sheet: sheet.id
+  });
+
+  return `/api/secure-sheet?${params.toString()}`;
+}
+
+async function buildSecureSheetHeaders() {
+  const user = window.currentProfUser;
+
+  if (!user?.getIdToken) {
+    throw new Error("Connexion professeur requise.");
+  }
+
+  const idToken = await user.getIdToken(true);
+
+  return {
+    Authorization: `Bearer ${idToken}`
+  };
 }
 
 function parseCsv(text) {
@@ -279,6 +311,14 @@ function buildAnswerKey(answer, sheetId, index) {
   return `${sheetId}__${index}__${horodateur}__${nom}__${email}`;
 }
 
+function buildCustomBonusAnswerKey(answer, sheetId, index) {
+  const horodateur = getField(answer, ["Horodateur"]);
+  const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
+  const idUnique = getField(answer, ["ID Unique", "ID"]);
+
+  return `${sheetId}__${index}__${horodateur}__${nom}__${idUnique}`;
+}
+
 function buildStatusDocId(answerKey) {
   return encodeURIComponent(answerKey);
 }
@@ -318,6 +358,7 @@ async function loadRecordsForSheet(sheetId) {
 async function loadApprovedCustomIds() {
   try {
     const firebase = await waitForFirebaseReady();
+    const currentCustomAnswerIds = await loadCurrentCustomBonusAnswerIds();
 
     const statusesRef = firebase.collection(firebase.db, CUSTOM_STATUS_COLLECTION);
     const q = firebase.query(statusesRef, firebase.where("status", "==", "approved"));
@@ -327,19 +368,60 @@ async function loadApprovedCustomIds() {
 
     snap.forEach(docSnap => {
       const data = docSnap.data();
-
-      const normalizedId =
-        data.normalizedIdUnique ||
-        normalizeIdUnique(data.idUnique || "");
+      const normalizedId = currentCustomAnswerIds.get(data.answerKey);
 
       if (normalizedId) {
         approvedCustomIds.add(normalizedId);
       }
     });
+
+    customBonusDataReady = true;
   } catch (error) {
-    console.error("Erreur chargement customs approuvées :", error);
+    console.error("Erreur chargement customs approuvées du cursus :", error);
     approvedCustomIds = new Set();
+    customBonusDataReady = false;
   }
+}
+
+async function loadCurrentCustomBonusAnswerIds() {
+  const currentAnswerIds = new Map();
+
+  const results = await Promise.allSettled(CUSTOM_BONUS_SHEETS.map(async sheet => {
+    const response = await fetch(buildCustomBonusCsvUrl(sheet), {
+      cache: "no-store",
+      headers: await buildSecureSheetHeaders()
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur lecture customs ${sheet.label} : ${response.status}`);
+    }
+
+    const rows = parseCsv(await response.text());
+    const answers = rowsToAnswers(rows);
+
+    answers.forEach((answer, index) => {
+      const answerKey = buildCustomBonusAnswerKey(answer, sheet.id, index);
+      const normalizedId = normalizeIdUnique(getField(answer, ["ID Unique", "ID"]));
+
+      if (answerKey && normalizedId) {
+        currentAnswerIds.set(answerKey, normalizedId);
+      }
+    });
+  }));
+
+  const loadedCount = results.filter(result => result.status === "fulfilled").length;
+
+  results.forEach(result => {
+    if (result.status === "rejected") {
+      console.warn("Réponses custom partielles impossibles à charger pour le bonus examen :", result.reason);
+    }
+  });
+
+  if (loadedCount < CUSTOM_BONUS_SHEETS.length) {
+    throw new Error("Toutes les feuilles customs actuelles doivent être chargées pour recalculer le bonus examen.");
+  }
+
+  return currentAnswerIds;
 }
 
 async function loadApprovedStageIds() {
@@ -385,7 +467,7 @@ async function saveExamRecordToFirebase(answerKey, sheetId, record, identity = {
     status: record.status || "pending",
     fieldScores: record.fieldScores || {},
     totalScore: Number(record.totalScore || 0),
-    maxScore: EXAM_DISPLAY_MAX_POINTS,
+    maxScore: getExamMaxPoints(),
     hasScoring: Boolean(record.hasScoring),
     updatedBy: window.currentProfUser?.email || "professeur inconnu",
     updatedAt: firebase.serverTimestamp()
@@ -482,15 +564,32 @@ function getQuestionPointsFromFieldKey(fieldKey) {
 
 function getQuestionPointsMap() {
   const firebasePoints = window.__examResponsesSettings?.questionPoints || {};
-  return {
-    ...QUESTION_POINTS,
-    ...firebasePoints
-  };
+  return Object.keys(firebasePoints).length ? firebasePoints : QUESTION_POINTS;
 }
 
 function getSafeQuestionPointValue(value) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(0, number) : null;
+}
+
+function getExamMaxPoints() {
+  const configuredMax = Number(window.__examResponsesSettings?.maxPoints);
+
+  if (Number.isFinite(configuredMax) && configuredMax > 0) {
+    return Math.min(configuredMax, DEFAULT_EXAM_DISPLAY_MAX_POINTS);
+  }
+
+  return DEFAULT_EXAM_DISPLAY_MAX_POINTS;
+}
+
+function getExamPassPoints() {
+  const configuredPass = Number(window.__examResponsesSettings?.passPoints);
+
+  if (Number.isFinite(configuredPass) && configuredPass > 0) {
+    return configuredPass;
+  }
+
+  return Math.min(EXAM_PASS_POINTS, getExamMaxPoints());
 }
 
 function buildFieldScoreKey(field) {
@@ -532,12 +631,12 @@ function calculateRealScore(fieldScores) {
 
 function calculateTotalScore(fieldScores) {
   const realTotal = calculateRealScore(fieldScores);
-  return Math.min(realTotal, EXAM_DISPLAY_MAX_POINTS);
+  return Math.min(realTotal, getExamMaxPoints());
 }
 
 function getAutoStatusFromManualScore(totalScore, hasScoring) {
   if (!hasScoring) return "pending";
-  return totalScore >= EXAM_PASS_POINTS ? "approved" : "rejected";
+  return totalScore >= getExamPassPoints() ? "approved" : "rejected";
 }
 
 function syncRecordScoreAndStatus(record) {
@@ -556,16 +655,16 @@ function renderScoreBadge(totalScore, hasScoring) {
   if (!hasScoring) {
     return `
       <span class="student-score-badge score-pending" data-total-score-badge>
-        0 / ${EXAM_DISPLAY_MAX_POINTS}
+        0 / ${getExamMaxPoints()}
       </span>
     `;
   }
 
-  const scoreClass = totalScore >= EXAM_PASS_POINTS ? "score-approved" : "score-rejected";
+  const scoreClass = totalScore >= getExamPassPoints() ? "score-approved" : "score-rejected";
 
   return `
     <span class="student-score-badge ${scoreClass}" data-total-score-badge>
-      ${escapeHtml(totalScore)} / ${EXAM_DISPLAY_MAX_POINTS}
+      ${escapeHtml(totalScore)} / ${getExamMaxPoints()}
     </span>
   `;
 }
@@ -651,7 +750,7 @@ function updateExamStats() {
   if (approvedEl) approvedEl.textContent = String(approved);
   if (rejectedEl) rejectedEl.textContent = String(rejected);
   if (pendingEl) pendingEl.textContent = String(pending);
-  if (averageEl) averageEl.textContent = `${average} / ${EXAM_DISPLAY_MAX_POINTS}`;
+  if (averageEl) averageEl.textContent = `${average} / ${getExamMaxPoints()}`;
 
   if (emptyEl) {
     emptyEl.hidden = total > 0;
@@ -727,12 +826,14 @@ function getAutoBonusInfo(answer) {
 }
 
 async function applyAutomaticIdUniqueBonuses(answers, sheet) {
+  if (!customBonusDataReady) {
+    return;
+  }
+
   const savePromises = [];
 
   answers.forEach((answer, index) => {
     const bonusInfo = getAutoBonusInfo(answer);
-
-    if (bonusInfo.total <= 0) return;
 
     const idField = findIdUniqueField(answer);
     if (!idField) return;
@@ -747,7 +848,7 @@ async function applyAutomaticIdUniqueBonuses(answers, sheet) {
     const currentScore = Number(record.fieldScores?.[fieldKey] || 0);
     const autoScore = Math.min(bonusInfo.total, maxPoints);
 
-    if (currentScore >= autoScore) return;
+    if (currentScore === autoScore) return;
 
     record.fieldScores = {
       ...(record.fieldScores || {}),
@@ -1069,7 +1170,7 @@ async function renderAnswers(answers, sheet) {
 
         <div class="exam-stat-card average">
           <span>Moyenne</span>
-          <strong data-stat-average>0 / ${EXAM_DISPLAY_MAX_POINTS}</strong>
+          <strong data-stat-average>0 / ${getExamMaxPoints()}</strong>
         </div>
       </div>
 
@@ -1143,10 +1244,13 @@ async function loadSheet(sheet) {
     if (cache.has(sheet.id)) {
       answers = cache.get(sheet.id);
     } else {
-      const response = await fetch(buildCsvUrl(sheet.gid));
+      const response = await fetch(buildCsvUrl(sheet), {
+        cache: "no-store",
+        headers: await buildSecureSheetHeaders()
+      });
 
       if (!response.ok) {
-        throw new Error(`Erreur Google Sheets : ${response.status}`);
+        throw new Error(`Erreur lecture sécurisée : ${response.status}`);
       }
 
       const csvText = await response.text();
@@ -1158,8 +1262,8 @@ async function loadSheet(sheet) {
 
     await renderAnswers(answers, sheet);
   } catch (error) {
-    console.error("Erreur chargement Google Sheets examens :", error);
-    setError("Vérifie que le Google Sheet est public avec lien, et que le GID est correct.");
+    console.error("Erreur chargement examens sécurisés :", error);
+    setError("Impossible de charger les réponses d'examen. Vérifie la connexion prof et le réglage Google Sheets.");
   }
 }
 
@@ -1274,13 +1378,13 @@ function updateScoreUi(card, record) {
 
     if (!hasScoring) {
       scoreBadge.classList.add("score-pending");
-      scoreBadge.textContent = `0 / ${EXAM_DISPLAY_MAX_POINTS}`;
-    } else if (totalScore >= EXAM_PASS_POINTS) {
+      scoreBadge.textContent = `0 / ${getExamMaxPoints()}`;
+    } else if (totalScore >= getExamPassPoints()) {
       scoreBadge.classList.add("score-approved");
-      scoreBadge.textContent = `${totalScore} / ${EXAM_DISPLAY_MAX_POINTS}`;
+      scoreBadge.textContent = `${totalScore} / ${getExamMaxPoints()}`;
     } else {
       scoreBadge.classList.add("score-rejected");
-      scoreBadge.textContent = `${totalScore} / ${EXAM_DISPLAY_MAX_POINTS}`;
+      scoreBadge.textContent = `${totalScore} / ${getExamMaxPoints()}`;
     }
   }
 
@@ -1384,7 +1488,7 @@ function bindCopyResultButtons() {
       const name = button.dataset.copyName || "Élève";
       const score = button.dataset.copyScore || "0";
 
-      const textToCopy = `${name} ${score}/${EXAM_DISPLAY_MAX_POINTS}`;
+      const textToCopy = `${name} ${score}/${getExamMaxPoints()}`;
 
       try {
         await navigator.clipboard.writeText(textToCopy);
@@ -1443,7 +1547,7 @@ function getExamResultsFromCards() {
         ?.replace(/\s+/g, " ")
         .replace(/\s*\/\s*/g, "/")
         .trim() ||
-      `0/${EXAM_DISPLAY_MAX_POINTS}`;
+      `0/${getExamMaxPoints()}`;
 
     return {
       name,
@@ -1493,14 +1597,18 @@ function buildApprovedExamMessage(results) {
 }
 
 async function sendExamListDiscordMessage(message, roleIds = []) {
-  if (!EXAM_RESULTS_WEBHOOK_URL) {
-    throw new Error("Webhook Discord non configuré.");
+  const user = window.currentProfUser;
+
+  if (!user?.getIdToken) {
+    throw new Error("Connexion professeur requise pour envoyer sur Discord.");
   }
 
-  const response = await fetch(EXAM_RESULTS_WEBHOOK_URL, {
+  const idToken = await user.getIdToken(true);
+  const response = await fetch(EXAM_RESULTS_SEND_ENDPOINT, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${idToken}`
     },
     body: JSON.stringify({
       content: message,
@@ -1819,5 +1927,6 @@ function bindMinimize() {
 renderTabs();
 bindMinimize();
 loadSheet(SHEETS[0]);
+
 
 
