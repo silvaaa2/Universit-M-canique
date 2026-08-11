@@ -47,6 +47,8 @@ let effectifRows = [];
 let progressById = new Map();
 let currentFilter = "";
 let writesAvailable = true;
+let currentCursusKey = "";
+let currentCursusSettings = null;
 
 function withTimeout(promise, ms, message) {
   let timer;
@@ -121,6 +123,37 @@ function extractGid(value) {
   }
 
   return "";
+}
+
+function buildCursusKey(settings = {}) {
+  const spreadsheetId = extractSpreadsheetId(settings.spreadsheetId || settings.link || settings.url);
+  const gid = String(settings.gid || extractGid(settings.link) || extractGid(settings.url) || "").trim();
+  const rawKey = `${spreadsheetId}_${gid}`.toLowerCase();
+  const safeKey = rawKey.replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "");
+  return safeKey ? `cursus_${safeKey}` : "";
+}
+
+function getStudentModuleDocId(studentId) {
+  const normalizedStudentId = normalizeIdUnique(studentId);
+  return `${currentCursusKey || "cursus_unknown"}__${normalizedStudentId}`;
+}
+
+function getStudentIdFromModuleDoc(docId, data = {}) {
+  const fromData = normalizeIdUnique(data.studentId || data.normalizedIdUnique || data.idUnique || "");
+  if (fromData) return fromData;
+
+  const prefix = `${currentCursusKey}__`;
+  if (currentCursusKey && String(docId || "").startsWith(prefix)) {
+    return normalizeIdUnique(String(docId).slice(prefix.length));
+  }
+
+  return "";
+}
+
+function isCurrentCursusModuleDoc(docId, data = {}) {
+  if (!currentCursusKey) return false;
+  if (data.cursusKey) return data.cursusKey === currentCursusKey;
+  return String(docId || "").startsWith(`${currentCursusKey}__`);
 }
 
 function normalizeDateValue(value) {
@@ -257,7 +290,7 @@ async function loadEffectifSettings() {
     throw new Error("Le lien effectif ou le GID est incomplet dans le panneau admin.");
   }
 
-  return { spreadsheetId, gid };
+  return { spreadsheetId, gid, cursusKey: buildCursusKey({ spreadsheetId, gid }) };
 }
 
 function parseCsv(text) {
@@ -335,6 +368,10 @@ function normalizeEffectifRows(rows) {
 
 async function loadEffectifRows() {
   const settings = await loadEffectifSettings();
+  currentCursusSettings = settings;
+  currentCursusKey = settings.cursusKey;
+  window.profModulesCurrentCursusKey = currentCursusKey;
+
   const csvUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(settings.spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(settings.gid)}&cacheBust=${Date.now()}`;
   const response = await fetchWithTimeout(csvUrl, EFFECTIF_TIMEOUT_MS, { cache: "no-store" });
 
@@ -368,7 +405,13 @@ async function loadStudentProgress() {
     );
 
     snap.forEach(docSnap => {
-      progressById.set(docSnap.id, normalizeProgress(docSnap.data()));
+      const data = docSnap.data() || {};
+      if (!isCurrentCursusModuleDoc(docSnap.id, data)) return;
+
+      const studentId = getStudentIdFromModuleDoc(docSnap.id, data);
+      if (!studentId) return;
+
+      progressById.set(studentId, normalizeProgress(data));
     });
   } catch (error) {
     console.warn("Lecture des modules élèves impossible :", error);
@@ -511,8 +554,13 @@ async function saveStudentModulePatch(student, moduleKey, patch) {
 
   const data = {
     idUnique: student.idUnique,
+    studentId: student.normalizedIdUnique,
+    normalizedIdUnique: student.normalizedIdUnique,
     studentName: student.studentName,
     searchText: student.searchText,
+    cursusKey: currentCursusKey,
+    cursusSpreadsheetId: currentCursusSettings?.spreadsheetId || null,
+    cursusGid: currentCursusSettings?.gid || null,
     updatedAt: serverTimestamp(),
     updatedBy: currentUser?.email || null
   };
@@ -526,7 +574,7 @@ async function saveStudentModulePatch(student, moduleKey, patch) {
   }
 
   await withTimeout(
-    setDoc(doc(db, STUDENT_MODULES_COLLECTION, student.normalizedIdUnique), data, { merge: true }),
+    setDoc(doc(db, STUDENT_MODULES_COLLECTION, getStudentModuleDocId(student.normalizedIdUnique)), data, { merge: true }),
     FIRESTORE_TIMEOUT_MS,
     "Sauvegarde Firebase trop longue."
   );
