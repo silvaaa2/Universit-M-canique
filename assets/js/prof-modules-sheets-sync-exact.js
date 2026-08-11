@@ -33,6 +33,7 @@ const db = getFirestore(app);
 
 let currentAccess = { role: null, admin: false };
 let exactSyncButton = null;
+let currentCursusKey = "";
 
 function normalizeIdUnique(value) {
   return String(value || "")
@@ -79,6 +80,32 @@ function extractGid(value) {
   }
 
   return "";
+}
+
+function buildCursusKey(settings = {}) {
+  const spreadsheetId = extractSpreadsheetId(settings.spreadsheetId || settings.link || settings.url);
+  const gid = String(settings.gid || extractGid(settings.link) || extractGid(settings.url) || "").trim();
+  const rawKey = `${spreadsheetId}_${gid}`.toLowerCase();
+  const safeKey = rawKey.replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "");
+  return safeKey ? `cursus_${safeKey}` : "";
+}
+
+function getStudentIdFromModuleDoc(docId, data = {}) {
+  const fromData = normalizeIdUnique(data.studentId || data.normalizedIdUnique || data.idUnique || "");
+  if (fromData) return fromData;
+
+  const prefix = `${currentCursusKey}__`;
+  if (currentCursusKey && String(docId || "").startsWith(prefix)) {
+    return normalizeIdUnique(String(docId).slice(prefix.length));
+  }
+
+  return "";
+}
+
+function isCurrentCursusModuleDoc(docId, data = {}) {
+  if (!currentCursusKey) return false;
+  if (data.cursusKey) return data.cursusKey === currentCursusKey;
+  return String(docId || "").startsWith(`${currentCursusKey}__`);
 }
 
 function normalizeDateValue(value) {
@@ -200,7 +227,8 @@ async function loadEffectifSettings() {
     throw new Error("Le lien effectif ou le GID est incomplet dans le panneau admin.");
   }
 
-  return { spreadsheetId, gid };
+  currentCursusKey = buildCursusKey({ spreadsheetId, gid });
+  return { spreadsheetId, gid, cursusKey: currentCursusKey };
 }
 
 async function loadStudentProgress() {
@@ -208,7 +236,13 @@ async function loadStudentProgress() {
   const snap = await getDocs(collection(db, STUDENT_MODULES_COLLECTION));
 
   snap.forEach(docSnap => {
-    progressById.set(docSnap.id, normalizeProgress(docSnap.data()));
+    const data = docSnap.data() || {};
+    if (!isCurrentCursusModuleDoc(docSnap.id, data)) return;
+
+    const studentId = getStudentIdFromModuleDoc(docSnap.id, data);
+    if (!studentId) return;
+
+    progressById.set(studentId, normalizeProgress(data));
   });
 
   return progressById;
