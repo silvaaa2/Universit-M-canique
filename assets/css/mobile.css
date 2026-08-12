@@ -707,79 +707,173 @@
     padding: 10px !important;
   }
 
-  header nav button {
-    padding: 9px 11px !important;
-  }
+  heade}��^-�G����ƭy�         <span>Tableau de bord</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
+            <span class="v2-nav-mark">CO</span>
+            <span>Corrigés</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-rp-7x92q.html')">
+            <span class="v2-nav-mark">RE</span>
+            <span>Réponses élèves</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-4x91q.html')">
+            <span class="v2-nav-mark">EX</span>
+            <span>Examens</span>
+          </button>
 
-  .showroom-copy h1,
-  .page-top h1,
-  .v2-login-card h1,
-  .v2-cockpit h2,
-  .exam-v2-hero h2,
-  .rp-v2-hero h2,
-  .customs-v2-intro h1 {
-    font-size: clamp(36px, 15vw, 52px) !important;
-  }
+          <p>Suivi</p>
+          <button type="button" class="v2-nav-item active">
+            <span class="v2-nav-mark">ME</span>
+            <span>Modules élèves</span>
+          </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-customs-eleves.html')">
+            <span class="v2-nav-mark">CE</span>
+            <span>Customs élèves</span>
+          </button>
+        </nav>
 
-  .workshop-bay {
-    min-height: 270px !important;
-  }
+        <div class="v2-theme-box">
+          <span>Mode</span>
+          <div class="v2-theme-toggle" role="group" aria-label="Thème">
+            <button type="button" data-theme-choice="dark" class="active">Sombre</button>
+            <button type="button" data-theme-choice="light">Clair</button>
+          </div>
+        </div>
+      </aside>
 
-  .bay-visual img {
-    max-height: 160px !important;
-  }
+      <div class="v2-workspace modules-v2-workspace">
+        <header class="v2-topbar">
+          <div>
+            <p class="v2-eyebrow">Suivi cursus</p>
+            <h1>Modules élèves</h1>
+          </div>
 
-  .v2-app,
-  .exam-v2-app,
-  .rp-v2-app,
-  .customs-v2-app,
-  body.modules-page .modules-v2-app {
-    padding: 8px !important;
-  }
+          <div class="v2-topbar-actions">
+            <div class="v2-user-pill">
+              <span id="modulesUserInitials">PR</span>
+              <strong id="modulesUserEmail">Professeur</strong>
+              <small>Compte prof</small>
+            </div>
+            <button type="button" class="v2-secondary-btn" onclick="goPage('espace-prof.html')">
+              Retour
+            </button>
+          </div>
+        </header>
 
-  .v2-sidebar,
-  .exam-v2-sidebar,
-  .rp-v2-sidebar,
-  .customs-v2-sidebar,
-  body.modules-page .modules-v2-sidebar {
-    grid-template-columns: 44px minmax(0, 1fr) !important;
-    padding: 8px !important;
-  }
+        <section id="guardLoader" class="modules-v2-guard">
+          <div class="prof-login-card">
+            <p class="kicker">Accès sécurisé</p>
+            <h1>Vérification</h1>
+            <p class="intro">Vérification de votre session professeur...</p>
 
-  .v2-brand {
-    width: 44px !important;
-    height: 44px !important;
-  }
+            <div class="modules-v2-guard-line">
+              <div class="inline-loader"></div>
+              <p class="intro" style="margin: 0;">Chargement sécurisé...</p>
+            </div>
+          </div>
+        </section>
 
-  .v2-brand img {
-    width: 34px !important;
-    height: 34px !important;
-  }
+        <section class="modules-v2-content">
+          <section class="inline-corrections active">
+            <div class="inline-corrections-card modules-shell">
+              <div id="modulesSummary" class="modules-summary"></div>
 
-  .v2-nav-item {
-    min-height: 38px !important;
-    padding: 7px 9px !important;
-    font-size: 12px !important;
-  }
+              <div class="modules-toolbar">
+                <button type="button" class="modules-back-btn" title="Retour espace prof" aria-label="Retour espace prof" onclick="goPage('espace-prof.html')">&larr;</button>
+                <input id="modulesSearch" class="modules-search" type="text" autocomplete="off" placeholder="Rechercher nom ou ID Unique...">
+                <button type="button" class="modules-reload-btn" id="reloadModulesBtn">Recharger</button>
+                <span id="modulesStatus" class="modules-status"></span>
+              </div>
 
-  .v2-nav-mark {
-    width: 26px !important;
-    height: 26px !important;
-    flex-basis: 26px !important;
-  }
+              <div class="modules-table-wrap">
+                <div id="modulesLoader" class="modules-page-loader">
+                  <div class="modules-loader-box">
+                    <div class="modules-spinner"></div>
+                    <p id="modulesLoaderText">Chargement de l’effectif...</p>
+                  </div>
+                </div>
 
-  .v2-stat-grid,
-  .v2-kpi-grid,
-  .v2-action-grid,
-  .exam-v2-kpis,
-  .exam-stats-grid,
-  .rp-v2-kpis,
-  .customs-v2-summary,
-  .modules-summary {
-    grid-template-columns: 1fr !important;
-  }
+                <div id="modulesTable" class="modules-table"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
 
-  .info-line {
-    grid-template-columns: 1fr auto !important;
-  }
-}
+<script src="../assets/js/navigation.js?v=1007"></script>
+<script>
+  (() => {
+    const storageKey = "profV2Theme";
+    const profileKey = "profV2Profile";
+
+    function applyTheme(theme) {
+      const safeTheme = theme === "light" ? "light" : "dark";
+      document.body.dataset.theme = safeTheme;
+
+      try {
+        localStorage.setItem(storageKey, safeTheme);
+      } catch (error) {
+        console.warn("Theme local indisponible :", error);
+      }
+
+      document.querySelectorAll("[data-theme-choice]").forEach(button => {
+        button.classList.toggle("active", button.dataset.themeChoice === safeTheme);
+      });
+    }
+
+    function readDisplayName() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(profileKey) || "{}");
+        return String(saved.displayName || "").trim();
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function getInitials(value) {
+      return String(value || "prof")
+        .split("@")[0]
+        .split(/[\s._-]+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0]?.toUpperCase() || "")
+        .join("") || "PR";
+    }
+
+    function syncUserPill() {
+      const user = window.currentProfUser;
+      const label = readDisplayName() || user?.email || "Professeur";
+      const email = document.getElementById("modulesUserEmail");
+      const initials = document.getElementById("modulesUserInitials");
+
+      if (email) email.textContent = label;
+      if (initials) initials.textContent = getInitials(label);
+    }
+
+    try {
+      applyTheme(localStorage.getItem(storageKey) || document.body.dataset.theme || "dark");
+    } catch (error) {
+      applyTheme("dark");
+    }
+
+    document.querySelectorAll("[data-theme-choice]").forEach(button => {
+      button.addEventListener("click", () => applyTheme(button.dataset.themeChoice));
+    });
+
+    syncUserPill();
+    window.setTimeout(syncUserPill, 500);
+    window.setTimeout(syncUserPill, 1200);
+  })();
+</script>
+<script type="module" src="../assets/js/prof-modules-eleves.js?v=1004"></script>
+<script type="module" src="../assets/js/prof-modules-sheets-sync.js?v=1002"></script>
+<script type="module" src="../assets/js/prof-modules-sheets-sync-exact.js?v=1002"></script>
+<script type="module" src="../assets/js/prof-modules-archives.js?v=1001"></script>
+<script type="module" src="../assets/js/prof-modules-clipboard.js?v=1"></script>
+
+</body>
+</html>
