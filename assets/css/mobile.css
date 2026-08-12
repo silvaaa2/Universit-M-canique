@@ -707,173 +707,762 @@
     padding: 10px !important;
   }
 
-  heade}��^-�G����ƭy�         <span>Tableau de bord</span>
-          </button>
-          <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')">
-            <span class="v2-nav-mark">CO</span>
-            <span>Corrigés</span>
-          </button>
-          <button type="button" class="v2-nav-item" onclick="goPage('prof-rp-7x92q.html')">
-            <span class="v2-nav-mark">RE</span>
-            <span>Réponses élèves</span>
-          </button>
-          <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-4x91q.html')">
-            <span class="v2-nav-mark">EX</span>
-            <span>Examens</span>
-          </button>
+  header nav button {
+    padding: 9px 11px !important;
+  }
 
-          <p>Suivi</p>
-          <button type="button" class="v2-nav-item active">
-            <span class="v2-nav-mark">ME</span>
-            <span>Modules élèves</span>
-          </button>
-          <button type="button" class="v2-nav-item" onclick="goPage('prof-customs-eleves.html')">
-            <span class="v2-nav-mark">CE</span>
-            <span>Customs élèves</span>
-          </button>
-        </nav>
+  .showroom-copy h1,
+  .page-top h1,
+  .v2-login-card h1,
+  .v2-cockpit h2,
+  .exam-v2-hero h2,
+  .rp-v2-hero h2,
+  .customs-v2-intro h1 {
+    font-size: clamp(36px, 15vw, 52px) !important;
+  }
 
-        <div class="v2-theme-box">
-          <span>Mode</span>
-          <div class="v2-theme-toggle" role="group" aria-label="Thème">
-            <button type="button" data-theme-choice="dark" class="active">Sombre</button>
-            <button type="button" data-theme-choice="light">Clair</button>
-          </div>
-        </div>
-      </aside>
+  .workshop-bay {
+    min-height: 270px !important;
+  }
 
-      <div class="v2-workspace modules-v2-workspace">
-        <header class="v2-topbar">
-          <div>
-            <p class="v2-eyebrow">Suivi cursus</p>
-            <h1>Modules élèves</h1>
-          </div>
+  .bay-visual img {
+    max-height: 160px !important;
+  }
 
-          <div class="v2-topbar-actions">
-            <div class="v2-user-pill">
-              <span id="modulesUserInitials">PR</span>
-              <strong id="modulesUserEmail">Professeur</strong>
-              <small>Compte prof</small>
-            </div>
-            <button type="button" class="v2-secondary-btn" onclick="goPage('espace-prof.html')">
-              Retour
-            </button>
-          </div>
-        </header>
+  .v2-app,
+  .exam-v2-app,
+  .rp-v2-app,
+  .customs-v2-app,
+  body.modules-page .modules-v2-app {
+    padding: 8px !important;
+  }
 
-        <section id="guardLoader" class="modules-v2-guard">
-          <div class="prof-login-card">
-            <p class="kicker">Accès sécurisé</p>
-            <h1>Vérification</h1>
-            <p class="intro">Vérification de votre session professeur...</p>
+  .v2-sidebar,
+  .exam-v2-sidebar,
+  .rp-v2-sidebar,
+  .customs-v2-sidebar,
+  body.modules-page .modules-v2-sidebar {
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    padding: 8px !important;
+  }
 
-            <div class="modules-v2-guard-line">
-              <div class="inline-loader"></div>
-              <p class="intro" style="margin: 0;">Chargement sécurisé...</p>
-            </div>
-          </div>
-        </section>
+  .v2-brand {
+    width: 44px !important;
+    height: 44px !important;
+  }
 
-        <section class="modules-v2-content">
-          <section class="inline-corrections active">
-            <div class="inline-corrections-card modules-shell">
-              <div id="modulesSummary" class="modules-summary"></div>
+  .v2-brand img {
+    width: 34px !important;
+    height: 34px !important;
+  }
 
-              <div class="modules-toolbar">
-                <button type="button" class="modules-back-btn" title="Retour espace prof" aria-label="Retour espace prof" onclick="goPage('espace-prof.html')">&larr;</button>
-                <input id="modulesSearch" class="modules-search" type="text" autocomplete="off" placeholder="Rechercher nom ou ID Unique...">
-                <button type="button" class="modules-reload-btn" id="reloadModulesBtn">Recharger</button>
-                <span id="modulesStatus" class="modules-status"></span>
-              </div>
+  .v2-nav-item {
+    min-height: 38px !important;
+    padding: 7px 9px !important;
+    font-size: 12px !important;
+  }
 
-              <div class="modules-table-wrap">
-                <div id="modulesLoader" class="modules-page-loader">
-                  <div class="modules-loader-box">
-                    <div class="modules-spinner"></div>
-                    <p id="modulesLoaderText">Chargement de l’effectif...</p>
-                  </div>
-                </div>
+  .v2-nav-mark {
+    width: 26px !important;
+    height: 26px !important;
+    flex-basis: 26px !important;
+  }
 
-                <div id="modulesTable" class="modules-table"></div>
-              </div>
-            </div>
-          </section>
-        </section>
-      </div>
-    </div>
-  </section>
-</main>
+  .v2-stat-grid,
+  .v2-kpi-grid,
+  .v2-action-grid,
+  .exam-v2-kpis,
+  .exam-stats-grid,
+  .rp-v2-kpis,
+  .customs-v2-summary,
+  .modules-summary {
+    grid-template-columns: 1fr !important;
+  }
 
-<script src="../assets/js/navigation.js?v=1007"></script>
-<script>
-  (() => {
-    const storageKey = "profV2Theme";
-    const profileKey = "profV2Profile";
+  .info-line {
+    grid-template-columns: 1fr auto !important;
+  }
+}
 
-    function applyTheme(theme) {
-      const safeTheme = theme === "light" ? "light" : "dark";
-      document.body.dataset.theme = safeTheme;
+/* =========================================================
+   POLISH MOBILE GLOBAL — AOÛT 2026
+   Cette couche est chargée après les styles de chaque page.
+========================================================= */
 
-      try {
-        localStorage.setItem(storageKey, safeTheme);
-      } catch (error) {
-        console.warn("Theme local indisponible :", error);
-      }
+@media (max-width: 860px) {
+  :root {
+    --mobile-gutter: 12px;
+    --mobile-radius: 12px;
+    --mobile-touch: 44px;
+  }
 
-      document.querySelectorAll("[data-theme-choice]").forEach(button => {
-        button.classList.toggle("active", button.dataset.themeChoice === safeTheme);
-      });
-    }
+  html {
+    min-width: 0;
+    overflow-x: clip;
+    scroll-padding-top: 118px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 
-    function readDisplayName() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(profileKey) || "{}");
-        return String(saved.displayName || "").trim();
-      } catch (error) {
-        return "";
-      }
-    }
+  body {
+    min-width: 0 !important;
+    min-height: 100svh;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    overflow-wrap: anywhere;
+    overscroll-behavior-y: none;
+  }
 
-    function getInitials(value) {
-      return String(value || "prof")
-        .split("@")[0]
-        .split(/[\s._-]+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map(part => part[0]?.toUpperCase() || "")
-        .join("") || "PR";
-    }
+  body::before {
+    position: absolute !important;
+  }
 
-    function syncUserPill() {
-      const user = window.currentProfUser;
-      const label = readDisplayName() || user?.email || "Professeur";
-      const email = document.getElementById("modulesUserEmail");
-      const initials = document.getElementById("modulesUserInitials");
+  main {
+    max-width: 100%;
+    padding-inline: var(--mobile-gutter) !important;
+  }
 
-      if (email) email.textContent = label;
-      if (initials) initials.textContent = getInitials(label);
-    }
+  :where(button, a, input, select, textarea) {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-    try {
-      applyTheme(localStorage.getItem(storageKey) || document.body.dataset.theme || "dark");
-    } catch (error) {
-      applyTheme("dark");
-    }
+  :where(button, a, label, input[type="checkbox"], input[type="radio"]) {
+    touch-action: manipulation;
+  }
 
-    document.querySelectorAll("[data-theme-choice]").forEach(button => {
-      button.addEventListener("click", () => applyTheme(button.dataset.themeChoice));
-    });
+  :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    min-height: var(--mobile-touch);
+    max-width: 100%;
+  }
 
-    syncUserPill();
-    window.setTimeout(syncUserPill, 500);
-    window.setTimeout(syncUserPill, 1200);
-  })();
-</script>
-<script type="module" src="../assets/js/prof-modules-eleves.js?v=1004"></script>
-<script type="module" src="../assets/js/prof-modules-sheets-sync.js?v=1002"></script>
-<script type="module" src="../assets/js/prof-modules-sheets-sync-exact.js?v=1002"></script>
-<script type="module" src="../assets/js/prof-modules-archives.js?v=1001"></script>
-<script type="module" src="../assets/js/prof-modules-clipboard.js?v=1"></script>
+  :where(button, a, input, select, textarea):focus-visible {
+    outline: 3px solid rgba(244, 217, 143, .72) !important;
+    outline-offset: 2px !important;
+  }
 
-</body>
-</html>
+  header {
+    min-height: 0 !important;
+    height: auto !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding:
+      max(9px, env(safe-area-inset-top))
+      var(--mobile-gutter)
+      9px !important;
+  }
+
+  header .logo {
+    width: 100%;
+    min-height: 44px;
+    font-size: clamp(15px, 4.4vw, 18px) !important;
+  }
+
+  header .logo img {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 10px !important;
+  }
+
+  header nav {
+    width: 100%;
+    min-width: 0;
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    gap: 8px !important;
+    padding: 0 0 2px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  header nav::-webkit-scrollbar,
+  .v2-nav::-webkit-scrollbar,
+  .student-sheet-tabs::-webkit-scrollbar,
+  .exam-filter-buttons::-webkit-scrollbar,
+  .media-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  header nav button {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+    padding: 9px 12px !important;
+    font-size: 13px !important;
+    scroll-snap-align: start;
+  }
+
+  header nav button.prof-button {
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    grid-template-columns: 44px 0 !important;
+  }
+
+  header nav button.prof-button:hover {
+    width: 44px !important;
+    max-width: 44px !important;
+    padding: 0 !important;
+    grid-template-columns: 44px 0 !important;
+  }
+
+  header nav button.prof-button .prof-icon {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+  }
+
+  header nav button.prof-button .prof-text {
+    display: none !important;
+  }
+
+  .loader-box {
+    width: min(420px, calc(100vw - 28px)) !important;
+    padding: 22px !important;
+  }
+
+  .showroom-page,
+  .vehicle-page {
+    padding-top: 18px !important;
+    padding-bottom: max(34px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .showroom-copy h1,
+  .page-top h1 {
+    max-width: 100%;
+    font-size: clamp(40px, 14vw, 58px) !important;
+    line-height: .94 !important;
+  }
+
+  .showroom-copy p,
+  .page-top .intro {
+    text-wrap: pretty;
+  }
+
+  .showroom-status {
+    min-height: 82px !important;
+    padding: 14px 16px !important;
+  }
+
+  .workshop-grid {
+    gap: 12px !important;
+  }
+
+  .workshop-bay {
+    min-height: 0 !important;
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  .bay-visual {
+    min-height: 138px !important;
+    aspect-ratio: 16 / 9;
+  }
+
+  .bay-visual img {
+    max-height: 170px !important;
+  }
+
+  .bay-action {
+    min-height: var(--mobile-touch);
+  }
+
+  .page-top {
+    gap: 12px !important;
+  }
+
+  .back-btn {
+    min-height: var(--mobile-touch) !important;
+  }
+
+  .vehicle-layout {
+    gap: 12px !important;
+  }
+
+  .media-tabs {
+    flex-flow: row nowrap !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+  }
+
+  .media-tab {
+    min-width: 112px;
+    min-height: var(--mobile-touch) !important;
+  }
+
+  .gallery-card,
+  .meteo-card,
+  .info-card {
+    border-radius: var(--mobile-radius) !important;
+  }
+
+  .gallery-arrow,
+  .zoom-close {
+    min-width: var(--mobile-touch) !important;
+    min-height: var(--mobile-touch) !important;
+  }
+
+  .info-card {
+    padding: 16px !important;
+  }
+
+  .info-line {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    padding: 11px !important;
+  }
+
+  .info-line strong,
+  .info-line span {
+    overflow-wrap: anywhere;
+  }
+
+  .btn,
+  .btn.full,
+  .btn.primary.full {
+    min-height: 48px !important;
+  }
+
+  .custom-closed-overlay {
+    padding:
+      max(14px, env(safe-area-inset-top))
+      14px
+      max(14px, env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+  }
+
+  .custom-closed-card {
+    width: min(100%, 480px) !important;
+    padding: 22px !important;
+  }
+
+  .custom-closed-card h1 {
+    font-size: clamp(32px, 10vw, 46px) !important;
+    line-height: .96 !important;
+  }
+
+  .custom-closed-card p {
+    line-height: 1.45 !important;
+  }
+
+  .custom-closed-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .custom-closed-actions .btn {
+    width: 100% !important;
+  }
+
+  .custom-availability-badge {
+    right: 10px !important;
+    left: 10px !important;
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    max-width: none !important;
+    text-align: center !important;
+  }
+
+  .custom-closed-toast {
+    top: max(10px, env(safe-area-inset-top)) !important;
+    right: 10px !important;
+    bottom: auto !important;
+    left: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+    text-align: center !important;
+  }
+
+  body.prof-v2-page {
+    min-height: 100svh !important;
+  }
+
+  .v2-login-view {
+    min-height: 100svh !important;
+    padding:
+      max(74px, calc(env(safe-area-inset-top) + 64px))
+      var(--mobile-gutter)
+      max(18px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .v2-login-brand {
+    top: max(12px, env(safe-area-inset-top)) !important;
+    left: var(--mobile-gutter) !important;
+    right: var(--mobile-gutter) !important;
+  }
+
+  .v2-login-card {
+    padding: 22px !important;
+  }
+
+  .v2-login-card h1 {
+    font-size: clamp(42px, 14vw, 62px) !important;
+  }
+
+  .v2-sidebar,
+  .exam-v2-sidebar,
+  .rp-v2-sidebar,
+  .customs-v2-sidebar,
+  body.modules-page .modules-v2-sidebar {
+    top: max(6px, env(safe-area-inset-top)) !important;
+    border-radius: var(--mobile-radius) !important;
+  }
+
+  .v2-nav {
+    flex-flow: row nowrap !important;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .v2-nav-item {
+    min-height: var(--mobile-touch) !important;
+    scroll-snap-align: start;
+  }
+
+  .v2-workspace,
+  .exam-v2-workspace,
+  .rp-v2-workspace,
+  .customs-v2-workspace,
+  body.modules-page .modules-v2-workspace {
+    border-radius: var(--mobile-radius) !important;
+  }
+
+  .v2-topbar {
+    padding: 14px !important;
+  }
+
+  .v2-topbar h1 {
+    font-size: clamp(31px, 10vw, 46px) !important;
+  }
+
+  .v2-topbar-actions {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: stretch !important;
+  }
+
+  .v2-user-pill {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .v2-user-pill strong,
+  .v2-user-pill small {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .v2-topbar-actions > button,
+  .v2-notify-btn {
+    width: auto !important;
+    min-width: var(--mobile-touch) !important;
+  }
+
+  .v2-home,
+  .v2-settings,
+  .exam-v2-content,
+  .rp-v2-content,
+  .customs-v2-content,
+  body.modules-page .modules-v2-content {
+    padding: 10px !important;
+  }
+
+  .v2-cockpit,
+  .v2-settings-card,
+  .inline-corrections-card,
+  .exam-v2-hero,
+  .rp-v2-hero,
+  .customs-v2-overview,
+  .customs-v2-command,
+  .modules-shell {
+    padding: 14px !important;
+    border-radius: var(--mobile-radius) !important;
+  }
+
+  .v2-stat-grid,
+  .v2-kpi-grid,
+  .v2-action-grid,
+  .exam-v2-kpis,
+  .exam-stats-grid,
+  .rp-v2-kpis,
+  .customs-v2-summary,
+  .modules-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .v2-stat-card,
+  .exam-stat-card,
+  .modules-stat,
+  .customs-v2-summary-item {
+    min-width: 0;
+    min-height: 78px !important;
+  }
+
+  .v2-command-box input,
+  .exam-search-box,
+  .exam-search-box input,
+  .modules-search,
+  .student-sheet-tab,
+  .copy-all-results-btn,
+  .modules-reload-btn,
+  .modules-sheets-btn,
+  .customs-v2-refresh,
+  .customs-v2-bulk,
+  .inline-back-btn,
+  .student-status-btn {
+    min-height: var(--mobile-touch) !important;
+  }
+
+  .student-answer-card,
+  .student-results-head,
+  .student-section,
+  .student-answer-field,
+  .student-link-card,
+  .customs-v2-card {
+    border-radius: var(--mobile-radius) !important;
+  }
+
+  .student-answer-field textarea {
+    min-height: 112px !important;
+    resize: vertical;
+  }
+
+  .student-status-actions,
+  .exam-filter-buttons,
+  .student-sheet-tabs,
+  .student-tags {
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  .exam-list-card,
+  .customs-v2-card,
+  .v2-admin-modal,
+  .admin-modal,
+  .exam-list-modal section {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100svh - 20px) !important;
+    overflow: auto !important;
+  }
+
+  /* Le suivi des modules devient une liste de cartes lisibles,
+     sans tableau de 1420px à déplacer horizontalement. */
+  body.modules-page .modules-toolbar {
+    display: grid !important;
+    grid-template-columns: var(--mobile-touch) minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  body.modules-page .modules-back-btn {
+    width: var(--mobile-touch) !important;
+    min-width: var(--mobile-touch) !important;
+    min-height: var(--mobile-touch) !important;
+  }
+
+  body.modules-page .modules-reload-btn,
+  body.modules-page .modules-status {
+    grid-column: 1 / -1;
+  }
+
+  body.modules-page .modules-table-wrap {
+    max-height: none !important;
+    padding: 2px !important;
+    overflow: visible !important;
+  }
+
+  body.modules-page .modules-table {
+    min-width: 0 !important;
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  body.modules-page .modules-row.head {
+    display: none !important;
+  }
+
+  body.modules-page .modules-row:not(.head) {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(104px, .78fr) minmax(0, 1.22fr) !important;
+    gap: 8px !important;
+    padding: 10px !important;
+    border: 1px solid rgba(255, 255, 255, .11) !important;
+    border-radius: var(--mobile-radius) !important;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(214, 180, 106, .09), transparent 34%),
+      rgba(255, 255, 255, .025) !important;
+  }
+
+  body.modules-page .modules-row:not(.head) > .modules-cell {
+    min-width: 0 !important;
+    min-height: 62px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 8px !important;
+    border: 1px solid rgba(255, 255, 255, .08) !important;
+    border-radius: 10px !important;
+    background: rgba(0, 0, 0, .18) !important;
+  }
+
+  body.modules-page .modules-row:not(.head) > .modules-student {
+    grid-column: 1 / -1 !important;
+    min-height: 72px !important;
+    padding: 12px !important;
+    background: rgba(214, 180, 106, .07) !important;
+  }
+
+  body.modules-page .modules-row:not(.head) > .modules-cell::before {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 1000;
+    letter-spacing: .08em;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(2)::before { content: "Module 1"; }
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(4)::before { content: "Module 2"; }
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(6)::before { content: "Module 3"; }
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(8)::before { content: "Module 4"; }
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(10)::before { content: "Examen"; }
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(12)::before { content: "Rattrapage"; }
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(3)::before,
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(5)::before,
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(7)::before,
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(9)::before,
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(11)::before,
+  body.modules-page .modules-row:not(.head) > .modules-cell:nth-child(13)::before {
+    content: "Date";
+  }
+
+  body.modules-page .module-check,
+  body.modules-page .module-date {
+    width: 100% !important;
+    min-height: var(--mobile-touch) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  :root {
+    --mobile-gutter: 10px;
+  }
+
+  .v2-app,
+  .exam-v2-app,
+  .rp-v2-app,
+  .customs-v2-app,
+  body.modules-page .modules-v2-app {
+    padding: 7px !important;
+  }
+
+  .v2-sidebar,
+  .exam-v2-sidebar,
+  .rp-v2-sidebar,
+  .customs-v2-sidebar,
+  body.modules-page .modules-v2-sidebar {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    padding: 7px !important;
+  }
+
+  .v2-brand {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+  }
+
+  .v2-brand img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .v2-nav-item {
+    min-height: 40px !important;
+    padding: 6px 9px !important;
+  }
+
+  .v2-stat-grid,
+  .v2-kpi-grid,
+  .v2-action-grid,
+  .exam-v2-kpis,
+  .exam-stats-grid,
+  .rp-v2-kpis,
+  .customs-v2-summary,
+  .modules-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.modules-page .modules-row:not(.head) {
+    grid-template-columns: minmax(92px, .72fr) minmax(0, 1.28fr) !important;
+    padding: 8px !important;
+  }
+}
+
+@media (max-width: 350px) {
+  .v2-stat-grid,
+  .v2-kpi-grid,
+  .v2-action-grid,
+  .exam-v2-kpis,
+  .exam-stats-grid,
+  .rp-v2-kpis,
+  .customs-v2-summary,
+  .modules-summary {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.modules-page .modules-row:not(.head) {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.modules-page .modules-row:not(.head) > .modules-student {
+    grid-column: 1 !important;
+  }
+}
+
+@media (max-width: 860px) and (orientation: landscape) {
+  header {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+  }
+
+  header .logo {
+    width: auto;
+  }
+
+  .v2-login-view {
+    padding-top: max(58px, calc(env(safe-area-inset-top) + 48px)) !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover,
+  nav button:hover,
+  .v2-nav-item:hover,
+  .gallery-arrow:hover {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
