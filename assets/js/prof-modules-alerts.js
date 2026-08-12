@@ -286,6 +286,9 @@ function installWarningIconStyles() {
       width: 100% !important;
       min-height: 132px !important;
       resize: vertical !important;
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      touch-action: auto !important;
       border: 1px solid rgba(255,255,255,.12) !important;
       border-radius: 10px !important;
       background: rgba(0,0,0,.32) !important;
@@ -526,7 +529,7 @@ function ensureWarningModal() {
         ${WARNING_STATES.map(state => `<button type="button" class="module-warning-choice" data-warning-choice="${state.key}">${state.label}</button>`).join("")}
       </div>
       <label class="module-warning-label" for="moduleWarningComment">Commentaire</label>
-      <textarea id="moduleWarningComment" class="module-warning-comment" placeholder="Ajouter un commentaire visible par les profs..."></textarea>
+      <textarea id="moduleWarningComment" class="module-warning-comment" data-clipboard-scan-ignore placeholder="Ajouter un commentaire visible par les profs..."></textarea>
       <div class="module-warning-actions">
         <button type="button" class="module-warning-cancel" data-warning-close>Annuler</button>
         <button type="button" class="module-warning-save" data-warning-save>Enregistrer</button>

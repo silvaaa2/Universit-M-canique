@@ -358,8 +358,7 @@
     console.warn("Archives modules indisponibles :", error);
   });
 
-  import("./prof-modules-alerts.js?v=1001").catch(error => {
+  import("./prof-modules-alerts.js?v=1007").catch(error => {
     console.warn("Avertos modules indisponibles :", error);
   });
 })();
-

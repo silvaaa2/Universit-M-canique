@@ -16,6 +16,23 @@ let clipboardScanTimer = null;
 let clipboardScanBusy = false;
 let lastClipboardCandidate = "";
 
+function isEditableClipboardTarget(target) {
+  if (!target || typeof target.closest !== "function") return false;
+
+  return Boolean(target.closest(
+    "textarea, input, [contenteditable], [data-clipboard-scan-ignore]"
+  ));
+}
+
+function shouldPauseClipboardScan() {
+  const warningModal = document.getElementById("moduleWarningModal");
+
+  return Boolean(
+    (warningModal && !warningModal.hidden) ||
+    isEditableClipboardTarget(document.activeElement)
+  );
+}
+
 function normalizeScanId(value) {
   return String(value || "")
     .trim()
@@ -180,6 +197,7 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
 async function readClipboardOnce() {
   if (!clipboardScanEnabled || clipboardScanBusy) return;
   if (document.hidden || !document.body.classList.contains("modules-page")) return;
+  if (shouldPauseClipboardScan()) return;
 
   if (!navigator.clipboard?.readText) {
     setScanStatus("Auto actif. Ctrl+V si besoin.", "info");
@@ -271,6 +289,11 @@ function bindPasteScan() {
     if (!document.body.classList.contains("modules-page")) return;
 
     const text = event.clipboardData?.getData("text") || "";
+    if (isEditableClipboardTarget(event.target)) {
+      lastClipboardCandidate = extractIdCandidates(text)[0] || lastClipboardCandidate;
+      return;
+    }
+
     if (!extractIdCandidates(text).length) return;
 
     event.preventDefault();
