@@ -166,6 +166,28 @@
               </div>
             </div>
 
+            <section class="v2-cursus-scope" aria-labelledby="v2CursusLabel">
+              <div class="v2-cursus-identity">
+                <span class="v2-cursus-live" aria-hidden="true"></span>
+                <div>
+                  <p>Cursus actif</p>
+                  <h3 id="v2CursusLabel">Détection du cursus...</h3>
+                  <small id="v2CursusMeta">Les compteurs vont charger uniquement l’effectif en cours.</small>
+                </div>
+              </div>
+
+              <div class="v2-cursus-counters" aria-label="Progression du cursus actif">
+                <div><span>Effectif</span><strong id="v2CursusEffectif">--</strong></div>
+                <div><span>Démarrés</span><strong id="v2CursusStarted">--</strong></div>
+                <div><span>Complets</span><strong id="v2CursusCompleted">--</strong></div>
+                <div><span>Examens</span><strong id="v2CursusExam">--</strong></div>
+              </div>
+
+              <button type="button" class="v2-cursus-open" onclick="goPage('prof-modules-eleves.html')">
+                Ouvrir les modules
+              </button>
+            </section>
+
             <div class="v2-stat-grid" aria-label="Statistiques professeur">
               <article class="v2-stat-card">
                 <span>Examens envoyés</span>
@@ -180,15 +202,15 @@
               </article>
 
               <article class="v2-stat-card success">
-                <span>Élèves actifs</span>
+                <span>Élèves démarrés</span>
                 <strong id="v2StatModuleActive">--</strong>
-                <small>Au moins 1 module</small>
+                <small id="v2StatModuleActiveState">Sur l’effectif actif</small>
               </article>
 
               <article class="v2-stat-card">
-                <span>Modules complets</span>
+                <span>Parcours complets</span>
                 <strong id="v2StatModuleComplete">--</strong>
-                <small>Modules 1 à 4</small>
+                <small id="v2StatModuleCompleteState">Modules 1 à 4</small>
               </article>
 
               <article class="v2-stat-card warning">
@@ -340,7 +362,7 @@
 
 <script src="../assets/js/navigation.js?v=1007"></script>
 <script src="../assets/js/prof-ui.js?v=1002"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=10"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=11"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=1"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=1"></script>
 

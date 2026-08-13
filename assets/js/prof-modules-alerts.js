@@ -373,6 +373,24 @@ function normalizeWarning(value) {
   return WARNING_STATES.some(state => state.key === key) ? key : "none";
 }
 
+function normalizeStudentId(value) {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+}
+
+function getCurrentCursusKey() {
+  return String(window.profModulesCurrentCursusKey || "").trim();
+}
+
+function getWarningStudentId(docId, data, cursusKey) {
+  const fromData = normalizeStudentId(data.studentId || data.normalizedIdUnique || data.idUnique || "");
+  if (fromData) return fromData;
+
+  const prefix = `${cursusKey}__`;
+  return String(docId || "").startsWith(prefix)
+    ? normalizeStudentId(String(docId).slice(prefix.length))
+    : "";
+}
+
 function normalizeWarningRecord(value = {}) {
   if (typeof value === "string") {
     return { level: normalizeWarning(value), comment: "" };
@@ -422,16 +440,26 @@ async function loadWarnings() {
   loadingWarnings = true;
 
   try {
+    const cursusKey = getCurrentCursusKey();
+    warningByStudentId = new Map();
+
+    if (!cursusKey) return;
+
     const snap = await withTimeout(
       getDocs(collection(db, STUDENT_MODULES_COLLECTION)),
       FIRESTORE_TIMEOUT_MS,
       "Lecture avertos modules trop longue."
     );
 
-    warningByStudentId = new Map();
-
     snap.forEach(docSnap => {
-      warningByStudentId.set(docSnap.id, normalizeWarningRecord(docSnap.data()));
+      const data = docSnap.data() || {};
+      const belongsToCursus = data.cursusKey
+        ? data.cursusKey === cursusKey
+        : String(docSnap.id || "").startsWith(`${cursusKey}__`);
+      if (!belongsToCursus) return;
+
+      const studentId = getWarningStudentId(docSnap.id, data, cursusKey);
+      if (studentId) warningByStudentId.set(studentId, normalizeWarningRecord(data));
     });
   } catch (error) {
     console.warn("Lecture avertos modules impossible :", error);
@@ -611,9 +639,18 @@ function selectWarningLevel(choiceKey) {
 
 async function saveWarning(studentId, record) {
   const normalized = normalizeWarningRecord(record);
+  const cursusKey = getCurrentCursusKey();
+  const normalizedStudentId = normalizeStudentId(studentId);
+
+  if (!cursusKey || !normalizedStudentId) {
+    throw new Error("Le cursus actif n'est pas encore chargé.");
+  }
 
   await withTimeout(
-    setDoc(doc(db, STUDENT_MODULES_COLLECTION, studentId), {
+    setDoc(doc(db, STUDENT_MODULES_COLLECTION, `${cursusKey}__${normalizedStudentId}`), {
+      studentId: normalizedStudentId,
+      normalizedIdUnique: normalizedStudentId,
+      cursusKey,
       warningLevel: normalized.level,
       warningComment: normalized.comment,
       warningUpdatedAt: serverTimestamp(),
@@ -718,3 +755,9 @@ onAuthStateChanged(auth, async user => {
 });
 
 requestAnimationFrame(decorateModuleRows);
+
+window.addEventListener("profModulesCursusReady", async () => {
+  if (!currentUser || (currentAccess.role !== "prof" && !currentAccess.admin)) return;
+  await loadWarnings();
+  decorateModuleRows();
+});

@@ -371,6 +371,9 @@ async function loadEffectifRows() {
   currentCursusSettings = settings;
   currentCursusKey = settings.cursusKey;
   window.profModulesCurrentCursusKey = currentCursusKey;
+  window.dispatchEvent(new CustomEvent("profModulesCursusReady", {
+    detail: { cursusKey: currentCursusKey }
+  }));
 
   const csvUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(settings.spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(settings.gid)}&cacheBust=${Date.now()}`;
   const response = await fetchWithTimeout(csvUrl, EFFECTIF_TIMEOUT_MS, { cache: "no-store" });

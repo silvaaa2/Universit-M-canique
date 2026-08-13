@@ -31,6 +31,9 @@ const AUTH_TIMEOUT_MS = 8500;
 const THEME_STORAGE_KEY = "profV2Theme";
 const PROFILE_STORAGE_KEY = "profV2Profile";
 const DASHBOARD_TIMEOUT_MS = 7000;
+const EFFECTIF_TIMEOUT_MS = 12000;
+const STAGE_SETTINGS_COLLECTION = "stageSettings";
+const EFFECTIF_SETTINGS_DOC_ID = "effectif";
 const MODULE_KEYS = ["module1", "module2", "module3", "module4"];
 const MODULE_EXAM_KEY = "exam";
 const MODULE_RETAKE_KEY = "retakeExam";
@@ -88,6 +91,8 @@ const v2DashboardUpdated = document.getElementById("v2DashboardUpdated");
 const v2DashboardHealth = document.getElementById("v2DashboardHealth");
 const v2WatchCount = document.getElementById("v2WatchCount");
 const v2WatchList = document.getElementById("v2WatchList");
+const v2CursusLabel = document.getElementById("v2CursusLabel");
+const v2CursusMeta = document.getElementById("v2CursusMeta");
 const adminBtn = document.getElementById("profAdminBtn");
 const settingsBtn = document.getElementById("profSettingsBtn");
 const settingsPanel = document.getElementById("v2SettingsPanel");
@@ -338,6 +343,189 @@ function extractSpreadsheetId(value) {
   return "";
 }
 
+function extractGid(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+
+  try {
+    const url = new URL(text);
+    const searchGid = url.searchParams.get("gid");
+    if (searchGid) return searchGid;
+
+    const hashGid = url.hash.match(/gid=([0-9]+)/);
+    if (hashGid?.[1]) return hashGid[1];
+  } catch (error) {
+    const rawGid = text.match(/gid=([0-9]+)/);
+    if (rawGid?.[1]) return rawGid[1];
+  }
+
+  return "";
+}
+
+function buildCursusKey(settings = {}) {
+  const spreadsheetId = extractSpreadsheetId(settings.spreadsheetId || settings.link || settings.url);
+  const gid = String(settings.gid || extractGid(settings.link) || extractGid(settings.url) || "").trim();
+  const rawKey = `${spreadsheetId}_${gid}`.toLowerCase();
+  const safeKey = rawKey.replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "");
+  return safeKey ? `cursus_${safeKey}` : "";
+}
+
+function getDateFromValue(value) {
+  if (!value) return null;
+  if (typeof value.toDate === "function") return value.toDate();
+  if (typeof value.seconds === "number") return new Date(value.seconds * 1000);
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatCursusDate(value) {
+  const date = getDateFromValue(value);
+  if (!date) return "";
+
+  return date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  });
+}
+
+function getCursusLabel(settings = {}) {
+  const explicitLabel = String(
+    settings.cursusLabel || settings.label || settings.name || settings.title || ""
+  ).trim();
+  if (explicitLabel) return explicitLabel;
+
+  const start = settings.cursusStartDisplay || settings.startDisplay || formatCursusDate(settings.cursusStartDate || settings.startDate);
+  const end = settings.cursusEndDisplay || settings.endDisplay || formatCursusDate(settings.cursusEndDate || settings.endDate);
+  if (start && end) return `Du ${start} au ${end}`;
+
+  return "Cursus en cours";
+}
+
+function findEffectifLayout(rows) {
+  const limit = Math.min(rows.length, 10);
+
+  for (let rowIndex = 0; rowIndex < limit; rowIndex++) {
+    const labels = (rows[rowIndex] || []).map(value => normalizeHeader(value).replace(/[^a-z0-9]+/g, ""));
+    const idIndex = labels.findIndex(label => label.includes("idunique") || (label.includes("id") && label.includes("unique")));
+    const nameIndex = labels.findIndex(label => label.includes("nom") || label.includes("eleve"));
+
+    if (idIndex >= 0 && nameIndex >= 0) {
+      return { rowIndex, idIndex, nameIndex };
+    }
+  }
+
+  return { rowIndex: 0, idIndex: 0, nameIndex: 1 };
+}
+
+function normalizeEffectifRows(rows) {
+  const layout = findEffectifLayout(rows);
+  const seen = new Set();
+
+  return rows.slice(layout.rowIndex + 1).reduce((students, row) => {
+    const idUnique = String(row?.[layout.idIndex] || "").trim();
+    const studentName = String(row?.[layout.nameIndex] || "").trim();
+    const normalizedIdUnique = normalizeIdUnique(idUnique);
+
+    if (!normalizedIdUnique || !studentName || seen.has(normalizedIdUnique)) return students;
+
+    seen.add(normalizedIdUnique);
+    students.push({
+      idUnique,
+      normalizedIdUnique,
+      studentName,
+      normalizedStudentName: normalizeStudentName(studentName)
+    });
+    return students;
+  }, []);
+}
+
+async function loadCurrentCursus() {
+  const settingsSnap = await withTimeout(
+    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
+    DASHBOARD_TIMEOUT_MS,
+    "Lecture du cursus actif trop longue."
+  );
+
+  if (!settingsSnap.exists()) {
+    throw new Error("Aucun cursus actif n'est configuré.");
+  }
+
+  const settings = settingsSnap.data() || {};
+  const spreadsheetId = extractSpreadsheetId(settings.spreadsheetId)
+    || extractSpreadsheetId(settings.link)
+    || extractSpreadsheetId(settings.url);
+  const gid = String(settings.gid || extractGid(settings.link) || extractGid(settings.url) || "").trim();
+  const cursusKey = buildCursusKey({ spreadsheetId, gid });
+
+  if (!spreadsheetId || !gid || !cursusKey) {
+    throw new Error("Le cursus actif est incomplet dans les réglages.");
+  }
+
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(gid)}&cacheBust=${Date.now()}`;
+  const response = await withTimeout(
+    fetch(csvUrl, { cache: "no-store" }),
+    EFFECTIF_TIMEOUT_MS,
+    "Chargement de l'effectif actif trop long."
+  );
+
+  if (!response.ok) {
+    throw new Error(`Effectif actif impossible à lire (${response.status}).`);
+  }
+
+  const csv = await withTimeout(
+    response.text(),
+    EFFECTIF_TIMEOUT_MS,
+    "Lecture de l'effectif actif trop longue."
+  );
+  const students = normalizeEffectifRows(parseCsv(csv));
+
+  return {
+    key: cursusKey,
+    label: getCursusLabel(settings),
+    spreadsheetId,
+    gid,
+    students,
+    total: students.length,
+    studentIds: new Set(students.map(student => student.normalizedIdUnique)),
+    studentNames: new Set(students.map(student => student.normalizedStudentName).filter(Boolean))
+  };
+}
+
+function matchesCurrentCursusStudent(cursus, idUnique, studentName) {
+  const normalizedId = normalizeIdUnique(idUnique);
+  if (normalizedId) return cursus.studentIds.has(normalizedId);
+
+  const normalizedName = normalizeStudentName(studentName);
+  return Boolean(normalizedName && cursus.studentNames.has(normalizedName));
+}
+
+function getCurrentCursusModuleRows(rows, cursus) {
+  const prefix = `${cursus.key}__`;
+  const byStudent = new Map();
+
+  rows.forEach(row => {
+    const data = row.data || {};
+    const belongsToCursus = data.cursusKey
+      ? data.cursusKey === cursus.key
+      : String(row.id || "").startsWith(prefix);
+    if (!belongsToCursus) return;
+
+    const studentId = normalizeIdUnique(
+      data.studentId
+      || data.normalizedIdUnique
+      || data.idUnique
+      || String(row.id || "").slice(prefix.length)
+    );
+    if (!studentId || !cursus.studentIds.has(studentId)) return;
+
+    byStudent.set(studentId, row);
+  });
+
+  return Array.from(byStudent.values());
+}
+
 function normalizeHeader(value) {
   return String(value || "")
     .trim()
@@ -522,14 +710,6 @@ function getCustomStudentKey(answer) {
   return buildStudentKeyFromParts(idUnique, studentName);
 }
 
-function getModuleStudentKey(row) {
-  const data = row?.data || {};
-  return buildStudentKeyFromParts(
-    data.normalizedIdUnique || data.idUnique || data.studentId || data.id || row?.id,
-    data.studentName || data.name || data.nom || data.fullName || data.label
-  );
-}
-
 function indexStatusesByAnswerKey(rows) {
   const statuses = new Map();
 
@@ -570,7 +750,7 @@ async function loadCurrentExamSheets() {
   }
 }
 
-function summarizeModules(rows) {
+function summarizeModules(rows, cursusTotal = rows.length) {
   let active = 0;
   let complete = 0;
   let retake = 0;
@@ -591,18 +771,18 @@ function summarizeModules(rows) {
   });
 
   return {
-    total: rows.length,
+    total: cursusTotal,
     active,
     complete,
     exam,
     retake,
     warnings,
     refused,
-    inactive: Math.max(rows.length - active, 0)
+    inactive: Math.max(cursusTotal - active, 0)
   };
 }
 
-async function summarizeCurrentExams() {
+async function summarizeCurrentExams(cursus) {
   const sheets = await loadCurrentExamSheets();
   const statusRows = await getStatusRowsForSheets("examAnswerStatuses", sheets);
   const statuses = indexStatusesByAnswerKey(statusRows);
@@ -621,6 +801,10 @@ async function summarizeCurrentExams() {
 
     loadedSheets++;
     result.value.forEach((answer, answerIndex) => {
+      const idUnique = getField(answer, ["ID Unique", "ID"]);
+      const studentName = getExamStudentName(answer, answerIndex);
+      if (!matchesCurrentCursusStudent(cursus, idUnique, studentName)) return;
+
       const answerKey = buildExamAnswerKey(answer, sheets[sheetIndex].id, answerIndex);
       const status = statuses.get(answerKey)?.status || "pending";
 
@@ -642,14 +826,9 @@ async function summarizeCurrentExams() {
   };
 }
 
-async function summarizeCurrentCustomAnswers(moduleRows, moduleTotal) {
+async function summarizeCurrentCustomAnswers(cursus) {
   const statusRows = await getStatusRowsForSheets("studentAnswerStatuses", CURRENT_CUSTOM_SHEETS);
   const statuses = indexStatusesByAnswerKey(statusRows);
-  const currentStudentKeys = new Set(
-    moduleRows
-      .map(getModuleStudentKey)
-      .filter(Boolean)
-  );
   const sheetResults = await Promise.allSettled(CURRENT_CUSTOM_SHEETS.map(fetchSheetAnswers));
   const submittedStudents = new Set();
   const approvedStudents = new Set();
@@ -667,10 +846,10 @@ async function summarizeCurrentCustomAnswers(moduleRows, moduleTotal) {
 
     loadedSheets++;
     result.value.forEach((answer, answerIndex) => {
+      const idUnique = getField(answer, ["ID Unique", "ID"]);
+      const studentName = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
       const studentKey = getCustomStudentKey(answer);
-      const isCurrentStudent = !currentStudentKeys.size || currentStudentKeys.has(studentKey);
-
-      if (!studentKey || !isCurrentStudent) return;
+      if (!studentKey || !matchesCurrentCursusStudent(cursus, idUnique, studentName)) return;
 
       const answerKey = buildCustomAnswerKey(answer, CURRENT_CUSTOM_SHEETS[sheetIndex].id, answerIndex);
       const status = statuses.get(answerKey)?.status || "pending";
@@ -689,7 +868,7 @@ async function summarizeCurrentCustomAnswers(moduleRows, moduleTotal) {
 
   return {
     totalAnswers,
-    totalStudents: moduleTotal || currentStudentKeys.size || submittedStudents.size,
+    totalStudents: cursus.total,
     submittedStudents: submittedStudents.size,
     approved: approvedStudents.size,
     approvedAnswers,
@@ -760,6 +939,20 @@ function renderWatchList({ modules, exams, customAccess, customAnswers }) {
   `).join("");
 }
 
+function renderCursusScope(cursus, modules) {
+  if (v2CursusLabel) v2CursusLabel.textContent = cursus.label;
+  if (v2CursusMeta) {
+    v2CursusMeta.textContent = `${cursus.total} élève(s) dans l'effectif actif · les anciens cursus ne sont pas comptés.`;
+  }
+
+  setText("v2CursusEffectif", formatCount(cursus.total));
+  setText("v2CursusStarted", `${formatCount(modules.active)} / ${formatCount(cursus.total)}`);
+  setText("v2CursusCompleted", `${formatCount(modules.complete)} / ${formatCount(cursus.total)}`);
+  setText("v2CursusExam", `${formatCount(modules.exam)} / ${formatCount(cursus.total)}`);
+  setText("v2StatModuleActiveState", `${formatCount(modules.active)} / ${formatCount(cursus.total)} de l'effectif`);
+  setText("v2StatModuleCompleteState", `${formatCount(modules.complete)} / ${formatCount(cursus.total)} du cursus`);
+}
+
 function setDashboardFallback(message) {
   [
     "v2StatExamSent",
@@ -776,6 +969,14 @@ function setDashboardFallback(message) {
   setText("v2StatExamPending", "Données indisponibles");
   setText("v2StatExamRejected", "Refusés : --");
   setText("v2StatCustomsState", "Réponses indisponibles");
+  setText("v2CursusEffectif", "--");
+  setText("v2CursusStarted", "--");
+  setText("v2CursusCompleted", "--");
+  setText("v2CursusExam", "--");
+  setText("v2StatModuleActiveState", "Cursus indisponible");
+  setText("v2StatModuleCompleteState", "Cursus indisponible");
+  if (v2CursusLabel) v2CursusLabel.textContent = "Cursus indisponible";
+  if (v2CursusMeta) v2CursusMeta.textContent = message;
   if (v2DashboardHealth) v2DashboardHealth.textContent = "Hors ligne";
   if (v2DashboardSubtitle) v2DashboardSubtitle.textContent = message;
   if (v2WatchCount) v2WatchCount.textContent = "--";
@@ -790,19 +991,24 @@ async function loadDashboardStats() {
   if (v2DashboardSubtitle) v2DashboardSubtitle.textContent = "Chargement des données du cursus...";
 
   try {
-    const [modulesResult, customAccessResult] = await Promise.allSettled([
+    const [cursusResult, modulesResult, customAccessResult] = await Promise.allSettled([
+      loadCurrentCursus(),
       getCollectionSnapshot("studentModules"),
       summarizeCustomAvailability()
     ]);
 
-    const moduleRows = modulesResult.status === "fulfilled" ? modulesResult.value : [];
-    const modules = summarizeModules(moduleRows);
+    if (cursusResult.status !== "fulfilled") throw cursusResult.reason;
+
+    const cursus = cursusResult.value;
+    const allModuleRows = modulesResult.status === "fulfilled" ? modulesResult.value : [];
+    const moduleRows = getCurrentCursusModuleRows(allModuleRows, cursus);
+    const modules = summarizeModules(moduleRows, cursus.total);
     const customAccess = customAccessResult.status === "fulfilled"
       ? customAccessResult.value
       : { total: CUSTOM_AVAILABILITY.length, open: 0, closed: 0, unknown: true, closedLabels: [] };
     const [examsResult, customAnswersResult] = await Promise.allSettled([
-      summarizeCurrentExams(),
-      summarizeCurrentCustomAnswers(moduleRows, modules.total)
+      summarizeCurrentExams(cursus),
+      summarizeCurrentCustomAnswers(cursus)
     ]);
     const exams = examsResult.status === "fulfilled"
       ? examsResult.value
@@ -838,11 +1044,12 @@ async function loadDashboardStats() {
       : `${customAnswers.totalAnswers} réponse(s) reçue(s)`
     );
     setText("v2StatCustomApproved", formatCount(customAnswers.approved));
+    renderCursusScope(cursus, modules);
 
     const health = exams.pending || modules.inactive || modules.warnings || customAccess.closed ? "À suivre" : "Stable";
     if (v2DashboardHealth) v2DashboardHealth.textContent = health;
     if (v2DashboardSubtitle) {
-      v2DashboardSubtitle.textContent = `${modules.total || 0} élève(s) suivis, ${exams.total || 0} examen(s) actuel(s), ${customAnswers.submittedStudents || 0} élève(s) avec custom.`;
+      v2DashboardSubtitle.textContent = `${cursus.label} · ${modules.active || 0}/${cursus.total || 0} élève(s) démarrés, ${exams.total || 0} examen(s), ${customAnswers.submittedStudents || 0} custom(s).`;
     }
     if (v2DashboardUpdated) {
       v2DashboardUpdated.textContent = new Date().toLocaleTimeString("fr-FR", {
@@ -1207,4 +1414,3 @@ initTheme();
 initV2Actions();
 initCommandSearch();
 initAuth();
-
