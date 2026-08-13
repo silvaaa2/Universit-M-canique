@@ -16,6 +16,8 @@ const STAGE_SETTINGS_COLLECTION = "stageSettings";
 const EFFECTIF_SETTINGS_DOC_ID = "effectif";
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const GOOGLE_CLIENT_ID_STORAGE_KEY = "prof_modules_google_client_id";
+const DEFAULT_GOOGLE_CLIENT_ID = "156801758179-0v4oqbhm3pa6fcpd18kqqqu6k8dst3i3.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID_PATTERN = /^[0-9]+-[a-z0-9_-]+\.apps\.googleusercontent\.com$/i;
 const GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
 
 const MODULE_COLUMNS = [
@@ -230,17 +232,13 @@ async function loadStudentProgress() {
 
 function getGoogleClientId() {
   const stored = localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE_KEY) || "";
-  if (stored.trim()) return stored.trim();
+  const cleanStored = stored.trim();
 
-  const clientId = prompt("Colle ici le Client ID OAuth Google pour activer la synchronisation Sheets.");
-  const cleanClientId = String(clientId || "").trim();
+  if (GOOGLE_CLIENT_ID_PATTERN.test(cleanStored)) return cleanStored;
 
-  if (!cleanClientId) {
-    throw new Error("Client ID Google non renseigné.");
-  }
-
-  localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE_KEY, cleanClientId);
-  return cleanClientId;
+  if (cleanStored) localStorage.removeItem(GOOGLE_CLIENT_ID_STORAGE_KEY);
+  localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE_KEY, DEFAULT_GOOGLE_CLIENT_ID);
+  return DEFAULT_GOOGLE_CLIENT_ID;
 }
 
 function waitForGoogleIdentity() {
