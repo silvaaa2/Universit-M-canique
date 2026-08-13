@@ -235,7 +235,7 @@ async function startFirebaseAuth() {
         } else if (error.code === "auth/too-many-requests") {
           loginError.textContent = "Trop de tentatives. Réessaie plus tard.";
         } else if (error.code === "auth/unauthorized-domain") {
-          loginError.textContent = "Domaine non autorisé dans Firebase.";
+          loginError.textContent = "Ce site n’est pas autorisé à ouvrir l’espace Prof.";
         } else if (error.code === "auth/network-request-failed") {
           loginError.textContent = "Erreur réseau.";
         } else if (error.code === "permission-denied") {
@@ -259,7 +259,7 @@ async function startFirebaseAuth() {
 
   } catch (error) {
     console.error("Erreur chargement Firebase :", error);
-    loginError.textContent = "Erreur de chargement Firebase.";
+    loginError.textContent = "Le service de connexion est momentanément indisponible.";
     setLoginLoading(false);
   }
 }

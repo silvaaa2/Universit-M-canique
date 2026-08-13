@@ -685,7 +685,7 @@ async function saveWarningModal() {
     console.error("Sauvegarde averto impossible :", error);
     warningByStudentId.set(activeModalStudentId, previousRecord);
     if (row) setRowWarning(row, previousRecord);
-    alert(`Averto non sauvegardé : ${error.code || error.message}`);
+    alert("Avertissement non sauvegardé. Réessaie dans quelques instants.");
   } finally {
     if (saveButton) saveButton.disabled = false;
   }

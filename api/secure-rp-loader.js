@@ -57,7 +57,7 @@ async function buildSecureSheetHeaders() {
     .replace(/Erreur Google Sheets/g, "Erreur lecture sécurisée")
     .replace(
       /setError\("Vérifie que le Google Sheet est bien public avec lien, et que le GID est correct\."\);/g,
-      `setError("Impossible de charger les réponses customs. Vérifie la connexion prof et les réglages Google Sheets.");`
+      `setError("Impossible de charger les réponses customs. Réessaie dans quelques instants.");`
     );
 }
 

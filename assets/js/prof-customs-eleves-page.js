@@ -83,11 +83,6 @@ function setUserPill(user, access = currentAccess) {
   if (userRole) userRole.textContent = access.admin ? "Admin privé" : "Compte professeur";
 }
 
-function formatFirebaseError(error) {
-  const code = error?.code ? `${error.code} - ` : "";
-  return `${code}${error?.message || "Erreur inconnue"}`;
-}
-
 function saveLocalState(customId, enabled) {
   try {
     window.localStorage.setItem(
@@ -244,7 +239,7 @@ async function toggleCustom(button) {
     );
   } catch (error) {
     console.warn("Sauvegarde custom impossible :", error);
-    setStatus(`Sauvegarde impossible : ${formatFirebaseError(error)}`, "error");
+    setStatus("Sauvegarde impossible. Réessaie dans quelques instants.", "error");
   } finally {
     button.disabled = false;
   }
@@ -262,7 +257,7 @@ async function refreshCustomAccess() {
     setStatus("Réglages à jour.", "ok");
   } catch (error) {
     console.warn("Actualisation customs impossible :", error);
-    setStatus(`Actualisation impossible : ${formatFirebaseError(error)}`, "error");
+    setStatus("Actualisation impossible. Réessaie dans quelques instants.", "error");
   } finally {
     if (reloadBtn) reloadBtn.disabled = false;
   }
@@ -290,8 +285,8 @@ onAuthStateChanged(auth, async user => {
     setUserPill(user, currentAccess);
   } catch (error) {
     console.warn("Verification compte impossible :", error);
-    renderMessage("Vérification impossible", "Firebase ne répond pas pour vérifier ton compte.");
-    setStatus(`Vérification impossible : ${formatFirebaseError(error)}`, "error");
+    renderMessage("Vérification impossible", "Impossible de vérifier ton compte pour le moment.");
+    setStatus("Réessaie dans quelques instants.", "error");
     return;
   }
 
@@ -310,7 +305,7 @@ onAuthStateChanged(auth, async user => {
     console.warn("Lecture reglages impossible :", error);
     states = {};
     renderRows();
-    setStatus(`Lecture impossible : ${formatFirebaseError(error)}`, "error");
+    setStatus("Chargement impossible. Réessaie dans quelques instants.", "error");
   }
 });
 

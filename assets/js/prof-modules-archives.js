@@ -546,7 +546,7 @@ async function loadAndRenderArchives() {
     if (list) {
       list.innerHTML = `
         <div class="modules-archive-empty">
-          Impossible de charger les archives. Vérifie les règles Firebase.
+          Impossible de charger les archives pour le moment.
         </div>
       `;
     }

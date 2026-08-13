@@ -347,7 +347,7 @@ async function saveExamSettings() {
     setExamStatus("Lien examen enregistré. Recharge la page Examens si elle est déjà ouverte.", "ok");
   } catch (error) {
     console.error("Lien examen non sauvegardé :", error);
-    setExamStatus(error.message || "Impossible d'enregistrer le lien examen.", "error");
+    setExamStatus("Impossible d'enregistrer le lien examen. Réessaie dans quelques instants.", "error");
   } finally {
     setExamBusy(false);
   }

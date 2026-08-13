@@ -1,13 +1,13 @@
 const ADMIN_MODULES = [
-  "./prof-admin.js?v=1004",
+  "./prof-admin.js?v=1005",
   "./prof-admin-polish.js?v=1006",
   "./prof-admin-preview.js?v=1008",
   "./prof-admin-free-tools.js?v=1011",
-  "./prof-admin-media.js?v=1009",
-  "./prof-admin-drive-tools.js?v=1004",
-  "./prof-admin-exam-settings.js?v=1010",
+  "./prof-admin-media.js?v=1010",
+  "./prof-admin-drive-tools.js?v=1005",
+  "./prof-admin-exam-settings.js?v=1011",
   "./prof-admin-exam-scale-wizard.js?v=1006",
-  "./prof-admin-patch-notes.js?v=1002"
+  "./prof-admin-patch-notes.js?v=1003"
 ];
 
 let adminBundlePromise = null;
@@ -18,7 +18,7 @@ function wait(ms) {
 
 function getFreshModuleUrl(path) {
   const url = new URL(path, import.meta.url);
-  url.searchParams.set("_adminV2", "20260803-full");
+  url.searchParams.set("_admin", "20260813-clean-copy");
   return url;
 }
 
@@ -72,8 +72,8 @@ async function waitForAdminModal() {
 }
 
 function showAdminLoadError(error) {
-  console.error("Chargement admin V2 impossible :", error);
-  alert(`Chargement admin impossible : ${error.message || error}`);
+  console.error("Chargement du panneau admin impossible :", error);
+  alert("Le panneau d’administration ne peut pas s’ouvrir pour le moment.");
 }
 
 async function openAdminPanel(event) {

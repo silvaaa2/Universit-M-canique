@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Espace Prof V2 - Mécanique - Université</title>
+  <title>Espace Prof - Mécanique - Université</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
   <link rel="icon" type="image/png" href="../Images/logo.png?v=22">
@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../assets/css/base.css?v=20260808-mobile2">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=9">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=10">
   <link rel="stylesheet" href="../assets/css/prof-notifications-v2.css?v=1">
   <style>
     #profAdminBtn[hidden],
@@ -136,7 +136,7 @@
         <div class="v2-topbar-actions">
           <button type="button" class="v2-notify-btn" id="v2NotificationsBtn">
             <span aria-hidden="true">NT</span>
-            <strong id="v2NotificationsLabel">Activer notifs</strong>
+            <strong id="v2NotificationsLabel">Activer les notifications</strong>
           </button>
 
           <div class="v2-user-pill">
@@ -154,8 +154,7 @@
             <div class="v2-cockpit-head">
               <div>
                 <p class="v2-eyebrow">Mécanique - Université</p>
-                <h2>Centre prof</h2>
-                <p class="v2-cockpit-subtitle" id="v2DashboardSubtitle">Vue d'ensemble du cursus en cours.</p>
+                <h2>Suivi du cursus</h2>
               </div>
 
               <div class="v2-command-zone">
@@ -165,28 +164,6 @@
                 </div>
               </div>
             </div>
-
-            <section class="v2-cursus-scope" aria-labelledby="v2CursusLabel">
-              <div class="v2-cursus-identity">
-                <span class="v2-cursus-live" aria-hidden="true"></span>
-                <div>
-                  <p>Cursus actif</p>
-                  <h3 id="v2CursusLabel">Détection du cursus...</h3>
-                  <small id="v2CursusMeta">Les compteurs vont charger uniquement l’effectif en cours.</small>
-                </div>
-              </div>
-
-              <div class="v2-cursus-counters" aria-label="Progression du cursus actif">
-                <div><span>Effectif</span><strong id="v2CursusEffectif">--</strong></div>
-                <div><span>Démarrés</span><strong id="v2CursusStarted">--</strong></div>
-                <div><span>Complets</span><strong id="v2CursusCompleted">--</strong></div>
-                <div><span>Examens</span><strong id="v2CursusExam">--</strong></div>
-              </div>
-
-              <button type="button" class="v2-cursus-open" onclick="goPage('prof-modules-eleves.html')">
-                Ouvrir les modules
-              </button>
-            </section>
 
             <div class="v2-stat-grid" aria-label="Statistiques professeur">
               <article class="v2-stat-card">
@@ -337,7 +314,7 @@
           <section class="inline-correction-detail" id="inlineCorrectionDetail" hidden>
             <div class="inline-detail-toolbar">
               <button type="button" class="inline-back-btn" id="backToCustomsBtn">← Retour aux customs</button>
-              <p class="inline-detail-path" id="correctionPath">Firestore / customAnswerKeys</p>
+              <p class="inline-detail-path" id="correctionPath"></p>
             </div>
 
             <div class="inline-detail-hero">
@@ -361,10 +338,10 @@
 </main>
 
 <script src="../assets/js/navigation.js?v=1007"></script>
-<script src="../assets/js/prof-ui.js?v=1002"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=11"></script>
-<script type="module" src="../assets/js/prof-admin-v2.js?v=1"></script>
-<script type="module" src="../assets/js/prof-notifications-v2.js?v=1"></script>
+<script src="../assets/js/prof-ui.js?v=1003"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=12"></script>
+<script type="module" src="../assets/js/prof-admin-v2.js?v=2"></script>
+<script type="module" src="../assets/js/prof-notifications-v2.js?v=2"></script>
 
 </body>
 </html>

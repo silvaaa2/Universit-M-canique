@@ -275,12 +275,12 @@ async function connectGoogleDrive() {
     setDriveStatusTone("Connexion Google...", "info");
 
     await getDriveAccessToken(settings.clientId);
-    setDriveStatusTone("Google Drive connecté. Tu peux uploader.", "ok");
+    setDriveStatusTone("Google Drive connecté. Tu peux importer une image.", "ok");
     return true;
   } catch (error) {
     console.error("Connexion Drive impossible :", error);
     setDriveStatusTone("Connexion Google Drive impossible.", "error");
-    alert(`Connexion Google Drive impossible : ${error.message || error}`);
+    alert("Connexion à Google Drive impossible. Vérifie le réglage puis réessaie.");
     return false;
   } finally {
     setDriveBusy(false);
@@ -307,7 +307,7 @@ async function uploadImageToDrive(file, settings) {
 
   if (folderId) metadata.parents = [folderId];
 
-  const boundary = `codex_drive_${Date.now()}`;
+  const boundary = `garage_drive_${Date.now()}`;
   const body = new Blob([
     `--${boundary}\r\n`,
     "Content-Type: application/json; charset=UTF-8\r\n\r\n",
@@ -401,15 +401,15 @@ async function handleDriveFileSelected(event) {
 
   try {
     setDriveBusy(true);
-    setDriveStatusTone("Upload vers Google Drive...", "info");
+    setDriveStatusTone("Envoi de l'image vers Google Drive...", "info");
 
     const uploadedFile = await uploadImageToDrive(file, settings);
     appendDriveImageToEditor(uploadedFile.imageUrl);
     setDriveStatusTone("Image ajoutée. Enregistre la page pour publier.", "ok");
   } catch (error) {
     console.error("Upload Drive impossible :", error);
-    setDriveStatusTone("Upload Google Drive impossible.", "error");
-    alert(`Upload Google Drive impossible : ${error.message || error}`);
+    setDriveStatusTone("Envoi de l'image impossible.", "error");
+    alert("Envoi de l'image impossible. Réessaie dans quelques instants.");
   } finally {
     setDriveBusy(false);
   }
@@ -443,7 +443,7 @@ function ensureDriveUploadPanel() {
         </label>
         <button type="button" class="prof-admin-small-btn" id="saveDriveSettingsBtn">Enregistrer Drive</button>
         <button type="button" class="prof-admin-small-btn" id="driveConnectButton">Connecter Google</button>
-        <button type="button" class="prof-admin-small-btn gold" id="driveUploadButton">Uploader depuis le PC</button>
+        <button type="button" class="prof-admin-small-btn gold" id="driveUploadButton">Importer depuis le PC</button>
         <input id="driveUploadFileInput" type="file" accept="image/*" hidden>
         <span class="prof-admin-drive-status" id="driveUploadStatus"></span>
       </div>

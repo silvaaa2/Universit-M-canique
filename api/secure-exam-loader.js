@@ -69,7 +69,7 @@ async function buildSecureSheetHeaders() {
     )
     .replace(
       /setError\("Impossible de charger les réponses d'examen\. Vérifie la connexion prof et le réglage Google Sheets\."\);/g,
-      `setError(\`Impossible de charger les réponses d'examen. Détail : \${error?.message || "erreur inconnue"}\`);`
+      `setError("Impossible de charger les réponses d'examen. Réessaie dans quelques instants.");`
     );
 
   hardened = hardened

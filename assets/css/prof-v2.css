@@ -705,7 +705,7 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 .v2-cockpit {
   min-height: 0;
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -714,14 +714,6 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
   grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
   gap: 16px;
   align-items: start;
-}
-
-.v2-cockpit-subtitle {
-  max-width: 640px;
-  margin: 12px 0 0;
-  color: var(--v2-muted);
-  font-size: 16px;
-  font-weight: 900;
 }
 
 .v2-command-zone {
@@ -802,125 +794,6 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
   padding: 0 12px;
   font-size: 12px;
   font-weight: 1000;
-}
-
-.v2-cursus-scope {
-  min-height: 88px;
-  display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto auto;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--v2-gold) 34%, var(--v2-line-soft));
-  border-radius: var(--v2-radius);
-  background:
-    radial-gradient(circle at 0 50%, color-mix(in srgb, var(--v2-gold) 15%, transparent), transparent 38%),
-    color-mix(in srgb, var(--v2-panel-strong) 72%, transparent);
-  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--v2-gold) 76%, transparent);
-}
-
-.v2-cursus-identity {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: 12px minmax(0, 1fr);
-  align-items: center;
-  gap: 11px;
-}
-
-.v2-cursus-live {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--v2-green);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--v2-green) 13%, transparent), 0 0 16px color-mix(in srgb, var(--v2-green) 55%, transparent);
-}
-
-.v2-cursus-identity p,
-.v2-cursus-identity h3,
-.v2-cursus-identity small {
-  margin: 0;
-}
-
-.v2-cursus-identity p {
-  color: var(--v2-green);
-  font-size: 10px;
-  font-weight: 1000;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.v2-cursus-identity h3 {
-  margin-top: 2px;
-  overflow: hidden;
-  color: var(--v2-text);
-  font-size: 18px;
-  line-height: 1.15;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.v2-cursus-identity small {
-  display: block;
-  margin-top: 4px;
-  overflow: hidden;
-  color: var(--v2-muted);
-  font-size: 11px;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.v2-cursus-counters {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(72px, 1fr));
-  gap: 6px;
-}
-
-.v2-cursus-counters > div {
-  min-height: 58px;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 4px;
-  padding: 7px 10px;
-  border: 1px solid var(--v2-line-soft);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--v2-panel-soft) 64%, transparent);
-}
-
-.v2-cursus-counters span {
-  color: var(--v2-muted);
-  font-size: 9px;
-  font-weight: 1000;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-}
-
-.v2-cursus-counters strong {
-  color: var(--v2-gold);
-  font-size: 18px;
-  line-height: 1;
-}
-
-.v2-cursus-open {
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid color-mix(in srgb, var(--v2-gold) 42%, transparent);
-  border-radius: 10px;
-  background: var(--v2-gold-soft);
-  color: var(--v2-gold);
-  font: inherit;
-  font-size: 11px;
-  font-weight: 1000;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: transform var(--v2-fast), border-color var(--v2-fast), background var(--v2-fast);
-}
-
-.v2-cursus-open:hover {
-  transform: translateY(-1px);
-  border-color: var(--v2-gold);
-  background: color-mix(in srgb, var(--v2-gold) 18%, transparent);
 }
 
 .v2-stat-grid {
@@ -1532,13 +1405,6 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .v2-cursus-scope {
-    grid-template-columns: minmax(220px, 1fr) auto;
-  }
-
-  .v2-cursus-open {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 740px) {
@@ -1589,18 +1455,6 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 
   .v2-stat-card {
     min-height: 104px;
-  }
-
-  .v2-cursus-scope {
-    grid-template-columns: 1fr;
-  }
-
-  .v2-cursus-counters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .v2-cursus-open {
-    grid-column: auto;
   }
 
   .v2-command-box {

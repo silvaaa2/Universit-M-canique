@@ -64,8 +64,8 @@
 
     if (label) {
       label.textContent = enabled
-        ? (permission === "denied" ? "Notifs site" : "Notifs actives")
-        : "Activer notifs";
+        ? (permission === "denied" ? "Notifications du site" : "Notifications actives")
+        : "Activer les notifications";
     }
   }
 
@@ -471,7 +471,7 @@
     if (!shouldEnable) {
       setNotificationsEnabled(false);
       stopNotifications();
-      showToast("Notifications désactivées", "La surveillance automatique est arrêtée.", "info");
+      showToast("Notifications désactivées", "La vérification des nouvelles réponses est arrêtée.", "info");
       return;
     }
 

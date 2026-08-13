@@ -365,7 +365,7 @@ async function uploadImages(files) {
 
   try {
     const user = await requireAdminAccess();
-    setMediaStatus(`Upload de ${validFiles.length} image(s)...`);
+    setMediaStatus(`Import de ${validFiles.length} image(s)...`);
 
     const urls = [];
 
@@ -395,8 +395,8 @@ async function uploadImages(files) {
     schedulePreviewUpdate();
   } catch (error) {
     console.error("Erreur upload image :", error);
-    setMediaStatus("Upload impossible.", "error");
-    alert(`Upload impossible : ${error.code || error.message}`);
+    setMediaStatus("Import impossible.", "error");
+    alert("Import impossible. Vérifie les images puis réessaie.");
   }
 }
 
@@ -416,7 +416,7 @@ function enhancePagesPanel() {
   const addImageBtn = document.getElementById("addPageImageBtn");
   if (addImageBtn && !document.getElementById("uploadPageImageBtn")) {
     addImageBtn.insertAdjacentHTML("afterend", `
-      <button type="button" class="prof-admin-small-btn gold" id="uploadPageImageBtn">Uploader une photo</button>
+      <button type="button" class="prof-admin-small-btn gold" id="uploadPageImageBtn">Importer une photo</button>
       <input id="adminImageUploadInput" type="file" accept="image/*" multiple hidden>
     `);
   }

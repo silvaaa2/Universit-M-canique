@@ -136,7 +136,7 @@ function ensurePatchNotePanel() {
 
   if (!tabs.querySelector(`[data-admin-tab="${PATCH_NOTE_TAB}"]`)) {
     tabs.insertAdjacentHTML("beforeend", `
-      <button type="button" class="prof-admin-tab" data-admin-tab="${PATCH_NOTE_TAB}">Patch notes</button>
+      <button type="button" class="prof-admin-tab" data-admin-tab="${PATCH_NOTE_TAB}">Annonce Discord</button>
     `);
   }
 
@@ -144,15 +144,15 @@ function ensurePatchNotePanel() {
     workspace.insertAdjacentHTML("beforeend", `
       <section id="profPatchNotesPanel" class="prof-admin-panel prof-admin-patch-panel" data-admin-panel="${PATCH_NOTE_TAB}" hidden>
         <div class="prof-admin-toolbar">
-          <button type="button" class="prof-admin-small-btn gold" id="sendPatchNoteBtn">Envoyer Discord</button>
-          <button type="button" class="prof-admin-small-btn" id="fillPatchNoteTemplateBtn">Modèle patch note</button>
+          <button type="button" class="prof-admin-small-btn gold" id="sendPatchNoteBtn">Envoyer sur Discord</button>
+          <button type="button" class="prof-admin-small-btn" id="fillPatchNoteTemplateBtn">Préparer un message</button>
           <span class="prof-admin-status" id="patchNoteStatus"></span>
         </div>
 
         <div class="prof-admin-field-grid">
           <div class="prof-admin-field full">
             <label for="patchNoteTitleInput">Titre Discord</label>
-            <input id="patchNoteTitleInput" class="prof-admin-input" type="text" value="PATCH NOTE - Site Prof">
+            <input id="patchNoteTitleInput" class="prof-admin-input" type="text" value="MISE À JOUR - Espace Prof">
           </div>
 
           <div class="prof-admin-field full">
@@ -162,8 +162,8 @@ function ensurePatchNotePanel() {
         </div>
 
         <div class="prof-admin-patch-note-card">
-          <strong>Envoi sécurisé</strong>
-          <p>Le webhook Discord reste dans les variables Vercel. L'API vérifie votre session admin Firebase avant l'envoi.</p>
+          <strong>Envoi réservé aux administrateurs</strong>
+          <p>Le message sera publié sur le salon Discord configuré pour l’espace Prof.</p>
         </div>
       </section>
     `);
@@ -174,7 +174,7 @@ function ensurePatchNotePanel() {
 
 async function sendPatchNote() {
   const sendButton = document.getElementById("sendPatchNoteBtn");
-  const title = document.getElementById("patchNoteTitleInput")?.value?.trim() || "PATCH NOTE - Site Prof";
+  const title = document.getElementById("patchNoteTitleInput")?.value?.trim() || "MISE À JOUR - Espace Prof";
   const message = document.getElementById("patchNoteBodyInput")?.value?.trim() || "";
 
   if (!message) {
@@ -184,7 +184,7 @@ async function sendPatchNote() {
 
   try {
     if (sendButton) sendButton.disabled = true;
-    setPatchNoteStatus("Vérification admin...");
+    setPatchNoteStatus("Vérification du compte...");
 
     const idToken = await getAdminIdToken();
     if (!idToken) {
@@ -206,13 +206,15 @@ async function sendPatchNote() {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      setPatchNoteStatus(result.error || "Envoi impossible.", "error");
+      console.error("Réponse Discord refusée :", result);
+      setPatchNoteStatus("Envoi impossible. Réessaie dans quelques instants.", "error");
       return;
     }
 
-    setPatchNoteStatus("Patch note envoyé sur Discord.", "ok");
+    setPatchNoteStatus("Annonce envoyée sur Discord.", "ok");
   } catch (error) {
-    setPatchNoteStatus(`Envoi impossible : ${error.message || error}`, "error");
+    console.error("Envoi Discord impossible :", error);
+    setPatchNoteStatus("Envoi impossible. Réessaie dans quelques instants.", "error");
   } finally {
     if (sendButton) sendButton.disabled = false;
   }

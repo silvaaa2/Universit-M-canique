@@ -1469,7 +1469,7 @@ function bindScoreControls() {
         await saveExamRecordToFirebase(answerKey, sheetId, record, identity);
       } catch (error) {
         console.error("Erreur sauvegarde score Firebase :", error);
-        alert("Impossible de sauvegarder les points dans Firebase.");
+        alert("Impossible de sauvegarder les points. Réessaie dans quelques instants.");
       }
     });
   });
@@ -1791,7 +1791,7 @@ function ensureExamListModal() {
         status.dataset.tone = "error";
       }
 
-      alert(error.message || "Envoi Discord impossible.");
+      alert("Envoi Discord impossible. Le message reste disponible à copier.");
     } finally {
       button.disabled = false;
       button.textContent = previousText;
@@ -1877,7 +1877,7 @@ function bindStatusButtons() {
         await saveExamRecordToFirebase(answerKey, sheetId, record, identity);
       } catch (error) {
         console.error("Erreur sauvegarde statut Firebase examens :", error);
-        alert("Impossible de sauvegarder le statut dans Firebase.");
+        alert("Impossible de sauvegarder le statut. Réessaie dans quelques instants.");
       }
     });
   });

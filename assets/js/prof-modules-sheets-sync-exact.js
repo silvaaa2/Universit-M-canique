@@ -216,7 +216,7 @@ async function loadEffectifSettings() {
   const snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID));
 
   if (!snap.exists()) {
-    throw new Error("Aucun réglage d'effectif n'est configuré dans Firebase.");
+    throw new Error("Aucun effectif n'est configuré.");
   }
 
   const data = snap.data();
@@ -512,17 +512,17 @@ async function syncModulesToGoogleSheetsExact() {
     hideLoader();
 
     const shouldWrite = confirm(
-      `Test API Google Sheets OK.\n\n` +
+      `Feuille prête.\n\n` +
       `Feuille : ${sheetTitle}\n` +
       `Élèves trouvés : ${studentRows.length}\n` +
-      `Élèves avec suivi Firebase : ${rowsWithProgress}\n` +
+      `Élèves avec progression : ${rowsWithProgress}\n` +
       `Colonnes utilisées : ${columnsText}\n\n` +
       `Les colonnes C "Obtenu" et D "Validation" ne seront pas touchées.\n\n` +
       `Lancer l'écriture des coches et dates dans Google Sheets ?`
     );
 
     if (!shouldWrite) {
-      setStatus("Test Sheets OK, écriture annulée.", "info");
+      setStatus("Synchronisation annulée.", "info");
       return;
     }
 
@@ -542,8 +542,8 @@ async function syncModulesToGoogleSheetsExact() {
     alert("Synchronisation Google Sheets terminée.");
   } catch (error) {
     console.error("Synchronisation Google Sheets exacte impossible :", error);
-    setStatus("Sync Sheets impossible.", "error");
-    alert(`Synchronisation Google Sheets impossible : ${error.message || error}`);
+    setStatus("Synchronisation impossible.", "error");
+    alert("Synchronisation impossible. Vérifie les réglages de la feuille puis réessaie.");
   } finally {
     if (exactSyncButton) exactSyncButton.disabled = false;
     hideLoader();

@@ -905,7 +905,7 @@ function bindStatusButtons() {
         buildStudentApprovalProfiles();
         applyAlreadyApprovedStates();
 
-        alert("Impossible de sauvegarder le statut dans Firebase. Vérifie les règles Firestore.");
+        alert("Impossible de sauvegarder le statut. Réessaie dans quelques instants.");
       }
     });
   });

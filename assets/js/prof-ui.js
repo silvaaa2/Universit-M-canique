@@ -563,7 +563,7 @@
 
     } catch (error) {
       console.error("Erreur chargement correction :", error);
-      renderError(error.message || "Erreur inconnue pendant le chargement.");
+      renderError("Cette correction ne peut pas être chargée pour le moment. Réessaie dans quelques instants.");
     }
   }
 

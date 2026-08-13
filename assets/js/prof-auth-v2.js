@@ -86,13 +86,10 @@ const v2UserRole = document.getElementById("v2UserRole");
 const v2UserInitials = document.getElementById("v2UserInitials");
 const v2SessionChip = document.getElementById("v2SessionChip");
 const v2CommandInput = document.getElementById("v2CommandInput");
-const v2DashboardSubtitle = document.getElementById("v2DashboardSubtitle");
 const v2DashboardUpdated = document.getElementById("v2DashboardUpdated");
 const v2DashboardHealth = document.getElementById("v2DashboardHealth");
 const v2WatchCount = document.getElementById("v2WatchCount");
 const v2WatchList = document.getElementById("v2WatchList");
-const v2CursusLabel = document.getElementById("v2CursusLabel");
-const v2CursusMeta = document.getElementById("v2CursusMeta");
 const adminBtn = document.getElementById("profAdminBtn");
 const settingsBtn = document.getElementById("profSettingsBtn");
 const settingsPanel = document.getElementById("v2SettingsPanel");
@@ -745,7 +742,7 @@ async function loadCurrentExamSheets() {
       label: String(data.label || DEFAULT_EXAM_SHEET.label)
     }];
   } catch (error) {
-    console.warn("Réglage examen V2 indisponible :", error);
+    console.warn("Réglage examen indisponible :", error);
     return [DEFAULT_EXAM_SHEET];
   }
 }
@@ -795,7 +792,7 @@ async function summarizeCurrentExams(cursus) {
 
   sheetResults.forEach((result, sheetIndex) => {
     if (result.status !== "fulfilled") {
-      console.warn("Feuille examen V2 indisponible :", sheets[sheetIndex], result.reason);
+      console.warn("Feuille examen indisponible :", sheets[sheetIndex], result.reason);
       return;
     }
 
@@ -840,7 +837,7 @@ async function summarizeCurrentCustomAnswers(cursus) {
 
   sheetResults.forEach((result, sheetIndex) => {
     if (result.status !== "fulfilled") {
-      console.warn("Feuille custom V2 indisponible :", CURRENT_CUSTOM_SHEETS[sheetIndex], result.reason);
+      console.warn("Feuille custom indisponible :", CURRENT_CUSTOM_SHEETS[sheetIndex], result.reason);
       return;
     }
 
@@ -939,16 +936,7 @@ function renderWatchList({ modules, exams, customAccess, customAnswers }) {
   `).join("");
 }
 
-function renderCursusScope(cursus, modules) {
-  if (v2CursusLabel) v2CursusLabel.textContent = cursus.label;
-  if (v2CursusMeta) {
-    v2CursusMeta.textContent = `${cursus.total} élève(s) dans l'effectif actif · les anciens cursus ne sont pas comptés.`;
-  }
-
-  setText("v2CursusEffectif", formatCount(cursus.total));
-  setText("v2CursusStarted", `${formatCount(modules.active)} / ${formatCount(cursus.total)}`);
-  setText("v2CursusCompleted", `${formatCount(modules.complete)} / ${formatCount(cursus.total)}`);
-  setText("v2CursusExam", `${formatCount(modules.exam)} / ${formatCount(cursus.total)}`);
+function renderCursusStats(cursus, modules) {
   setText("v2StatModuleActiveState", `${formatCount(modules.active)} / ${formatCount(cursus.total)} de l'effectif`);
   setText("v2StatModuleCompleteState", `${formatCount(modules.complete)} / ${formatCount(cursus.total)} du cursus`);
 }
@@ -969,16 +957,9 @@ function setDashboardFallback(message) {
   setText("v2StatExamPending", "Données indisponibles");
   setText("v2StatExamRejected", "Refusés : --");
   setText("v2StatCustomsState", "Réponses indisponibles");
-  setText("v2CursusEffectif", "--");
-  setText("v2CursusStarted", "--");
-  setText("v2CursusCompleted", "--");
-  setText("v2CursusExam", "--");
   setText("v2StatModuleActiveState", "Cursus indisponible");
   setText("v2StatModuleCompleteState", "Cursus indisponible");
-  if (v2CursusLabel) v2CursusLabel.textContent = "Cursus indisponible";
-  if (v2CursusMeta) v2CursusMeta.textContent = message;
-  if (v2DashboardHealth) v2DashboardHealth.textContent = "Hors ligne";
-  if (v2DashboardSubtitle) v2DashboardSubtitle.textContent = message;
+  if (v2DashboardHealth) v2DashboardHealth.textContent = "Indisponible";
   if (v2WatchCount) v2WatchCount.textContent = "--";
   if (v2WatchList) v2WatchList.innerHTML = `<p class="v2-watch-empty">${message}</p>`;
   if (v2DashboardUpdated) v2DashboardUpdated.textContent = "--";
@@ -988,8 +969,6 @@ async function loadDashboardStats() {
   if (dashboardStatsLoading || !window.currentProfUser) return;
 
   dashboardStatsLoading = true;
-  if (v2DashboardSubtitle) v2DashboardSubtitle.textContent = "Chargement des données du cursus...";
-
   try {
     const [cursusResult, modulesResult, customAccessResult] = await Promise.allSettled([
       loadCurrentCursus(),
@@ -1044,13 +1023,10 @@ async function loadDashboardStats() {
       : `${customAnswers.totalAnswers} réponse(s) reçue(s)`
     );
     setText("v2StatCustomApproved", formatCount(customAnswers.approved));
-    renderCursusScope(cursus, modules);
+    renderCursusStats(cursus, modules);
 
-    const health = exams.pending || modules.inactive || modules.warnings || customAccess.closed ? "À suivre" : "Stable";
+    const health = exams.pending || modules.inactive || modules.warnings || customAccess.closed ? "À vérifier" : "À jour";
     if (v2DashboardHealth) v2DashboardHealth.textContent = health;
-    if (v2DashboardSubtitle) {
-      v2DashboardSubtitle.textContent = `${cursus.label} · ${modules.active || 0}/${cursus.total || 0} élève(s) démarrés, ${exams.total || 0} examen(s), ${customAnswers.submittedStudents || 0} custom(s).`;
-    }
     if (v2DashboardUpdated) {
       v2DashboardUpdated.textContent = new Date().toLocaleTimeString("fr-FR", {
         hour: "2-digit",
@@ -1060,7 +1036,7 @@ async function loadDashboardStats() {
 
     renderWatchList({ modules, exams, customAccess, customAnswers });
   } catch (error) {
-    console.warn("Dashboard V2 impossible à charger :", error);
+    console.warn("Tableau de bord impossible à charger :", error);
     setDashboardFallback("Impossible de charger les statistiques pour le moment.");
   } finally {
     dashboardStatsLoading = false;
@@ -1257,9 +1233,6 @@ function initV2Actions() {
     if (profileStatus) profileStatus.textContent = "";
   });
 
-  adminBtn?.addEventListener("click", () => {
-    alert("Panneau admin V2 pas encore migré. On le fera dans une prochaine étape.");
-  });
 }
 
 function normalizeSearch(value) {

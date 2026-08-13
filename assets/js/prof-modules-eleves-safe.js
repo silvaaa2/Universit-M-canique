@@ -279,7 +279,7 @@ async function loadEffectifSettings() {
   );
 
   if (!snap.exists()) {
-    throw new Error("Aucun réglage d'effectif n'est configuré dans Firebase.");
+    throw new Error("Aucun effectif n'est configuré.");
   }
 
   const data = snap.data();
@@ -404,7 +404,7 @@ async function loadStudentProgress() {
     const snap = await withTimeout(
       getDocs(collection(db, STUDENT_MODULES_COLLECTION)),
       FIRESTORE_TIMEOUT_MS,
-      "Firebase met trop de temps à répondre pour les coches modules."
+      "Le chargement de la progression prend trop de temps."
     );
 
     snap.forEach(docSnap => {
@@ -419,7 +419,7 @@ async function loadStudentProgress() {
   } catch (error) {
     console.warn("Lecture des modules élèves impossible :", error);
     writesAvailable = !isPermissionError(error);
-    setStatus("Coches non chargées, tableau affiché sans attendre Firebase.", "error");
+    setStatus("La progression n’a pas pu être chargée.", "error");
   }
 }
 
@@ -553,7 +553,7 @@ function getStudentById(studentId) {
 
 async function saveStudentModulePatch(student, moduleKey, patch) {
   if (!student) throw new Error("Élève introuvable dans l'effectif.");
-  if (!writesAvailable) throw new Error("Les règles Firebase bloquent l'écriture des modules.");
+  if (!writesAvailable) throw new Error("La sauvegarde des modules est momentanément indisponible.");
 
   const data = {
     idUnique: student.idUnique,
@@ -579,7 +579,7 @@ async function saveStudentModulePatch(student, moduleKey, patch) {
   await withTimeout(
     setDoc(doc(db, STUDENT_MODULES_COLLECTION, getStudentModuleDocId(student.normalizedIdUnique)), data, { merge: true }),
     FIRESTORE_TIMEOUT_MS,
-    "Sauvegarde Firebase trop longue."
+    "La sauvegarde prend trop de temps."
   );
 }
 
@@ -620,7 +620,7 @@ async function handleModuleCheckChange(input) {
     renderTable();
     console.error("Sauvegarde coche impossible :", error);
     setStatus("Sauvegarde impossible.", "error");
-    alert(`Sauvegarde impossible : ${error.code || error.message || error}`);
+    alert("Sauvegarde impossible. Réessaie dans quelques instants.");
   } finally {
     checkLabel?.classList.remove("saving");
     dateInput?.classList.remove("saving");
@@ -648,7 +648,7 @@ async function handleModuleDateChange(input) {
     renderTable();
     console.error("Sauvegarde date impossible :", error);
     setStatus("Sauvegarde impossible.", "error");
-    alert(`Sauvegarde impossible : ${error.code || error.message || error}`);
+    alert("Sauvegarde impossible. Réessaie dans quelques instants.");
   } finally {
     input.classList.remove("saving");
   }
@@ -688,7 +688,7 @@ onAuthStateChanged(auth, async user => {
     currentAccess = await getUserAccess(user);
   } catch (error) {
     console.error("Vérification accès modules impossible :", error);
-    showGuardMessage("Vérification impossible", "Firebase ne répond pas pour vérifier ton compte. Réessaie dans quelques secondes.");
+    showGuardMessage("Vérification impossible", "Impossible de vérifier ton compte. Réessaie dans quelques instants.");
     return;
   }
 

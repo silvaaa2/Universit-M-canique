@@ -1,4 +1,4 @@
-import "./prof-auth.js?v=1001";
+import "./prof-auth.js?v=1002";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
@@ -963,7 +963,7 @@ async function saveCorrectionEditor() {
   } catch (error) {
     console.error("Erreur sauvegarde corrigé :", error);
     setStatus("Sauvegarde impossible.");
-    alert(`Sauvegarde impossible : ${error.code || error.message}`);
+    alert("Sauvegarde impossible. Réessaie dans quelques instants.");
   } finally {
     hideAdminLoader();
   }
@@ -1068,7 +1068,7 @@ async function savePageEditor() {
     alert("Page Custom enregistrée.");
   } catch (error) {
     console.error("Erreur sauvegarde page custom :", error);
-    alert(`Sauvegarde impossible : ${error.code || error.message}`);
+    alert("Sauvegarde impossible. Réessaie dans quelques instants.");
   } finally {
     hideAdminLoader();
   }
@@ -1156,7 +1156,7 @@ async function saveMessageEditor() {
     alert("Message enregistré.");
   } catch (error) {
     console.error("Erreur sauvegarde message :", error);
-    alert(`Sauvegarde impossible : ${error.code || error.message}`);
+    alert("Sauvegarde impossible. Réessaie dans quelques instants.");
   } finally {
     hideAdminLoader();
   }
