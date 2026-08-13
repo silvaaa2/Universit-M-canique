@@ -16,6 +16,11 @@ let clipboardScanTimer = null;
 let clipboardScanBusy = false;
 let lastClipboardCandidate = "";
 
+function isWarningModalActive() {
+  const warningModal = document.getElementById("moduleWarningModal");
+  return Boolean(warningModal && !warningModal.hidden);
+}
+
 function isEditableClipboardTarget(target) {
   if (!target || typeof target.closest !== "function") return false;
 
@@ -25,10 +30,8 @@ function isEditableClipboardTarget(target) {
 }
 
 function shouldPauseClipboardScan() {
-  const warningModal = document.getElementById("moduleWarningModal");
-
   return Boolean(
-    (warningModal && !warningModal.hidden) ||
+    isWarningModalActive() ||
     isEditableClipboardTarget(document.activeElement)
   );
 }
@@ -102,6 +105,8 @@ function waitForTableRender() {
 }
 
 async function showStudentInTable(studentId) {
+  if (isWarningModalActive()) return null;
+
   let row = findStudentRowById(studentId);
   if (row) return row;
 
@@ -135,6 +140,8 @@ function dispatchNativeChange(input) {
 }
 
 async function validateStudentModuleFromId(rawText, source = "paste") {
+  if (isWarningModalActive()) return false;
+
   const candidates = extractIdCandidates(rawText);
 
   if (!candidates.length) {
@@ -153,6 +160,7 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
 
   for (const candidate of candidates) {
     const row = await showStudentInTable(candidate);
+    if (isWarningModalActive()) return false;
     if (!row) continue;
 
     const checkInput = row.querySelector(`[data-module-check][data-module-key="${moduleKey}"]`);
@@ -208,6 +216,8 @@ async function readClipboardOnce() {
 
   try {
     const text = await navigator.clipboard.readText();
+    if (shouldPauseClipboardScan()) return;
+
     const firstCandidate = extractIdCandidates(text)[0] || "";
 
     if (!firstCandidate) return;
@@ -287,6 +297,7 @@ function createScanControls() {
 function bindPasteScan() {
   document.addEventListener("paste", event => {
     if (!document.body.classList.contains("modules-page")) return;
+    if (isWarningModalActive()) return;
 
     const text = event.clipboardData?.getData("text") || "";
     if (isEditableClipboardTarget(event.target)) {

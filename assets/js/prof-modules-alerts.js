@@ -583,6 +583,83 @@ function refreshModalChoices() {
   });
 }
 
+function isWarningModalOpen() {
+  const modal = document.getElementById("moduleWarningModal");
+  return Boolean(modal && !modal.hidden && !modal.classList.contains("is-closing"));
+}
+
+function focusWarningComment(comment, moveCursorToEnd = false) {
+  if (!comment) return;
+
+  try {
+    comment.focus({ preventScroll: true });
+  } catch (error) {
+    comment.focus();
+  }
+
+  if (!moveCursorToEnd || typeof comment.setSelectionRange !== "function") return;
+
+  const cursorPosition = comment.value.length;
+  comment.setSelectionRange(cursorPosition, cursorPosition);
+}
+
+function insertPastedWarningText(comment, text) {
+  const pastedText = String(text || "");
+  if (!comment || !pastedText) return;
+
+  const selectionStart = Number.isInteger(comment.selectionStart)
+    ? comment.selectionStart
+    : comment.value.length;
+  const selectionEnd = Number.isInteger(comment.selectionEnd)
+    ? comment.selectionEnd
+    : selectionStart;
+
+  if (typeof comment.setRangeText === "function") {
+    comment.setRangeText(pastedText, selectionStart, selectionEnd, "end");
+  } else {
+    comment.value = `${comment.value.slice(0, selectionStart)}${pastedText}${comment.value.slice(selectionEnd)}`;
+  }
+
+  try {
+    comment.dispatchEvent(new InputEvent("input", {
+      bubbles: true,
+      inputType: "insertFromPaste",
+      data: pastedText
+    }));
+  } catch (error) {
+    comment.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+}
+
+async function captureWarningModalPaste(event) {
+  if (!isWarningModalOpen()) return;
+
+  const modal = document.getElementById("moduleWarningModal");
+  const comment = modal?.querySelector("#moduleWarningComment");
+  if (!comment) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  focusWarningComment(comment);
+
+  let pastedText = event.clipboardData?.getData("text/plain")
+    || event.clipboardData?.getData("text")
+    || window.clipboardData?.getData("Text")
+    || "";
+
+  if (!pastedText && navigator.clipboard?.readText) {
+    try {
+      pastedText = await navigator.clipboard.readText();
+    } catch (error) {
+      console.warn("Collage du commentaire indisponible :", error);
+    }
+  }
+
+  if (!isWarningModalOpen()) return;
+  insertPastedWarningText(comment, pastedText);
+}
+
 function openWarningModal(button) {
   if (!currentAccess.admin && currentAccess.role !== "prof") {
     alert("Accès prof requis.");
@@ -613,7 +690,8 @@ function openWarningModal(button) {
   modal.classList.remove("is-open");
   void modal.offsetWidth;
   modal.classList.add("is-open");
-  requestAnimationFrame(() => comment?.focus());
+  focusWarningComment(comment, true);
+  requestAnimationFrame(() => focusWarningComment(comment));
 }
 
 function closeWarningModal() {
@@ -729,6 +807,18 @@ document.addEventListener("keydown", event => {
     closeWarningModal();
   }
 });
+
+document.addEventListener("paste", captureWarningModalPaste, true);
+
+document.addEventListener("focusin", event => {
+  if (!isWarningModalOpen()) return;
+
+  const modal = document.getElementById("moduleWarningModal");
+  if (modal?.contains(event.target)) return;
+
+  event.stopPropagation();
+  focusWarningComment(modal?.querySelector("#moduleWarningComment"));
+}, true);
 
 document.addEventListener("input", event => {
   if (event.target.matches(".module-date")) markEmptyDates();
