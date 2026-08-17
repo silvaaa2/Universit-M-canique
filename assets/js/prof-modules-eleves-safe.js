@@ -464,8 +464,8 @@ function renderModuleCheck(row, column, progress) {
   const moduleKey = escapeHtml(column.key);
 
   return `
-    <label class="module-check${checked ? " checked" : ""}" title="${checked ? "Validé" : "Non validé"}">
-      <input type="checkbox" data-module-check="true" data-student-id="${studentId}" data-module-key="${moduleKey}" ${checked ? "checked" : ""}>
+    <label class="module-check${checked ? " checked" : ""}" title="${checked ? "Validé" : "Non validé"}" aria-label="${escapeHtml(column.label)} · ${escapeHtml(row.studentName)}">
+      <input type="checkbox" aria-label="Valider ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}" data-module-check="true" data-student-id="${studentId}" data-module-key="${moduleKey}" ${checked ? "checked" : ""}>
       <span class="module-check-icon" aria-hidden="true"></span>
     </label>
   `;
@@ -477,7 +477,7 @@ function renderModuleDate(row, column, progress) {
   const moduleKey = escapeHtml(column.key);
 
   return `
-    <input class="module-date" type="date" data-module-date="true" data-empty="${dateValue ? "false" : "true"}" data-student-id="${studentId}" data-module-key="${moduleKey}" value="${escapeHtml(dateValue)}">
+    <input class="module-date" type="date" aria-label="Date ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}" data-module-date="true" data-empty="${dateValue ? "false" : "true"}" data-student-id="${studentId}" data-module-key="${moduleKey}" value="${escapeHtml(dateValue)}">
   `;
 }
 
@@ -503,8 +503,8 @@ function renderTable() {
   const body = rows.map(row => {
     const progress = getProgress(row.normalizedIdUnique);
     const moduleCells = MODULE_COLUMNS.map(column => `
-      <div class="modules-cell">${renderModuleCheck(row, column, progress)}</div>
-      <div class="modules-cell">${renderModuleDate(row, column, progress)}</div>
+      <div class="modules-cell module-progress-cell" data-module-label="${escapeHtml(column.label)}">${renderModuleCheck(row, column, progress)}</div>
+      <div class="modules-cell module-date-cell">${renderModuleDate(row, column, progress)}</div>
     `).join("");
 
     return `
