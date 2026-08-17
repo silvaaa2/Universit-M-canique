@@ -32,7 +32,6 @@ const answersBody = document.getElementById("answersBody");
 
 const cache = new Map();
 let answerStatuses = {};
-let studentApprovalProfiles = new Map();
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -113,24 +112,6 @@ function normalizeIdUnique(value) {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "");
-}
-
-function normalizeStudentName(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
-function buildStudentKeyFromParts(idUnique, studentName) {
-  const normalizedId = normalizeIdUnique(idUnique);
-  if (normalizedId) return `id:${normalizedId}`;
-
-  const normalizedName = normalizeStudentName(studentName);
-  return normalizedName ? `name:${normalizedName}` : "";
 }
 
 function getField(answer, possibleNames) {
@@ -228,38 +209,6 @@ async function loadStatusesForSheet(sheetId) {
   }
 }
 
-async function loadStatusesForAllSheets() {
-  try {
-    const firebase = await waitForFirebaseReady();
-    const nextStatuses = {};
-
-    const results = await Promise.allSettled(SHEETS.map(async (sheet) => {
-      const statusesRef = firebase.collection(firebase.db, STATUS_COLLECTION);
-      const q = firebase.query(statusesRef, firebase.where("sheetId", "==", sheet.id));
-      const snap = await firebase.getDocs(q);
-
-      snap.forEach(docSnap => {
-        const data = docSnap.data();
-
-        if (data.answerKey && data.status) {
-          nextStatuses[data.answerKey] = data.status;
-        }
-      });
-    }));
-
-    results.forEach((result) => {
-      if (result.status === "rejected") {
-        console.warn("Statut custom partiel impossible à charger :", result.reason);
-      }
-    });
-
-    answerStatuses = nextStatuses;
-  } catch (error) {
-    console.error("Erreur chargement global statuts Firebase :", error);
-    answerStatuses = {};
-  }
-}
-
 async function saveAnswerStatusToFirebase(answerKey, sheetId, status, meta = {}) {
   const firebase = await waitForFirebaseReady();
   const docId = buildStatusDocId(answerKey);
@@ -314,102 +263,6 @@ function getStatusMeta(status) {
 
 function getAnswerStatus(answerKey) {
   return answerStatuses[answerKey] || "pending";
-}
-
-async function fetchAnswersForSheet(sheet) {
-  if (cache.has(sheet.id)) {
-    return cache.get(sheet.id);
-  }
-
-  const response = await fetch(buildCsvUrl(sheet));
-
-  if (!response.ok) {
-    throw new Error(`Erreur Google Sheets : ${response.status}`);
-  }
-
-  const csvText = await response.text();
-  const rows = parseCsv(csvText);
-  const answers = rowsToAnswers(rows);
-
-  cache.set(sheet.id, answers);
-  return answers;
-}
-
-async function ensureAllAnswersLoaded(activeSheet, activeAnswers) {
-  cache.set(activeSheet.id, activeAnswers);
-
-  const results = await Promise.allSettled(
-    SHEETS
-      .filter(sheet => !cache.has(sheet.id))
-      .map(sheet => fetchAnswersForSheet(sheet))
-  );
-
-  results.forEach((result) => {
-    if (result.status === "rejected") {
-      console.warn("Réponses custom partielles impossibles à charger :", result.reason);
-    }
-  });
-}
-
-function buildStudentApprovalProfiles() {
-  const profiles = new Map();
-
-  SHEETS.forEach((sheet) => {
-    const answers = cache.get(sheet.id) || [];
-
-    answers.forEach((answer, index) => {
-      const studentName = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
-      const idUnique = getField(answer, ["ID Unique", "ID"]);
-      const studentKey = buildStudentKeyFromParts(idUnique, studentName);
-
-      if (!studentKey) return;
-
-      const answerKey = buildAnswerKey(answer, sheet.id, index);
-      const status = getAnswerStatus(answerKey);
-
-      const profile = profiles.get(studentKey) || {
-        customIds: new Set(),
-        approvedAnswerKeys: new Set(),
-        approvedLabels: new Set()
-      };
-
-      profile.customIds.add(sheet.id);
-
-      if (status === "approved") {
-        profile.approvedAnswerKeys.add(answerKey);
-        profile.approvedLabels.add(sheet.label);
-      }
-
-      profiles.set(studentKey, profile);
-    });
-  });
-
-  studentApprovalProfiles = profiles;
-}
-
-function getAlreadyApprovedInfo(answerKey, idUnique, studentName, status) {
-  if (status !== "pending") return null;
-
-  const studentKey = buildStudentKeyFromParts(idUnique, studentName);
-  if (!studentKey) return null;
-
-  const profile = studentApprovalProfiles.get(studentKey);
-  if (!profile) return null;
-
-  const hasAllCustoms = profile.customIds.size >= SHEETS.length;
-  const hasApprovedCustom = profile.approvedAnswerKeys.size > 0;
-  const isApprovedCard = profile.approvedAnswerKeys.has(answerKey);
-
-  if (!hasAllCustoms || !hasApprovedCustom || isApprovedCard) return null;
-
-  return {
-    labels: Array.from(profile.approvedLabels)
-  };
-}
-
-function formatAlreadyApprovedLabel(info) {
-  if (!info?.labels?.length) return "Déjà approuvé";
-  return `Déjà approuvé (${info.labels.join(", ")})`;
 }
 
 /* =========================================================
@@ -526,10 +379,6 @@ function renderAnswerCard(answer, index, sheet) {
   const statusMeta = getStatusMeta(status);
 
   const studentName = nom || `Élève ${index + 1}`;
-  const studentKey = buildStudentKeyFromParts(idUnique, studentName);
-  const alreadyApprovedInfo = getAlreadyApprovedInfo(answerKey, idUnique, studentName, status);
-  const alreadyApprovedClass = alreadyApprovedInfo ? " already-approved-elsewhere" : "";
-  const alreadyApprovedLabel = formatAlreadyApprovedLabel(alreadyApprovedInfo);
 
   const identityHtml = [
     renderField("Nom RP", nom),
@@ -555,16 +404,14 @@ function renderAnswerCard(answer, index, sheet) {
 
   return `
     <article
-      class="student-answer-card collapsed status-${escapeHtml(statusMeta.className)}${alreadyApprovedClass}"
+      class="student-answer-card collapsed status-${escapeHtml(statusMeta.className)}"
       data-answer-card
       data-answer-key="${escapeHtml(answerKey)}"
       data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
       data-id-unique="${escapeHtml(idUnique)}"
       data-student-name="${escapeHtml(studentName)}"
-      data-student-key="${escapeHtml(studentKey)}"
       data-custom-label="${escapeHtml(sheet.label)}"
-      data-already-approved="${alreadyApprovedInfo ? "true" : "false"}"
     >
       <button type="button" class="student-card-top" data-toggle-card>
         <div class="student-card-main">
@@ -579,21 +426,12 @@ function renderAnswerCard(answer, index, sheet) {
             ${escapeHtml(statusMeta.shortLabel)}
           </span>
 
-          <span class="student-already-approved-badge" data-already-approved-badge ${alreadyApprovedInfo ? "" : "hidden"}>
-            ${escapeHtml(alreadyApprovedLabel)}
-          </span>
-
           <span class="student-toggle-icon">+</span>
         </div>
       </button>
 
       <div class="student-card-body">
-        <div class="student-already-approved-panel" data-already-approved-panel ${alreadyApprovedInfo ? "" : "hidden"}>
-          <strong>Déjà approuvé</strong>
-          <span>Un custom de cet élève est déjà validé. Cette réponse reste consultable.</span>
-        </div>
-
-        <div class="student-status-actions" ${alreadyApprovedInfo ? "hidden" : ""}>
+        <div class="student-status-actions">
           <button type="button" class="student-status-btn approve" data-set-status="approved">
             ✔ Approuver
           </button>
@@ -667,9 +505,7 @@ async function renderAnswers(answers, sheet) {
     return;
   }
 
-  await ensureAllAnswersLoaded(sheet, answers);
-  await loadStatusesForAllSheets();
-  buildStudentApprovalProfiles();
+  await loadStatusesForSheet(sheet.id);
 
   sheetStatus.hidden = true;
   sheetStatus.style.display = "none";
@@ -825,47 +661,6 @@ function updateCardStatus(card, status) {
   });
 }
 
-function setAlreadyApprovedState(card, info) {
-  const isAlreadyApproved = !!info;
-  const label = formatAlreadyApprovedLabel(info);
-
-  card.classList.toggle("already-approved-elsewhere", isAlreadyApproved);
-  card.dataset.alreadyApproved = isAlreadyApproved ? "true" : "false";
-
-  const badge = card.querySelector("[data-already-approved-badge]");
-  if (badge) {
-    badge.hidden = !isAlreadyApproved;
-    badge.textContent = label;
-  }
-
-  const panel = card.querySelector("[data-already-approved-panel]");
-  if (panel) {
-    panel.hidden = !isAlreadyApproved;
-  }
-
-  const actions = card.querySelector(".student-status-actions");
-  if (actions) {
-    actions.hidden = isAlreadyApproved;
-  }
-
-  card.querySelectorAll("[data-set-status]").forEach((btn) => {
-    btn.disabled = isAlreadyApproved;
-  });
-}
-
-function applyAlreadyApprovedStates() {
-  document.querySelectorAll("[data-answer-card]").forEach((card) => {
-    const info = getAlreadyApprovedInfo(
-      card.dataset.answerKey || "",
-      card.dataset.idUnique || "",
-      card.dataset.studentName || "",
-      card.dataset.status || "pending"
-    );
-
-    setAlreadyApprovedState(card, info);
-  });
-}
-
 function bindStatusButtons() {
   document.querySelectorAll("[data-set-status]").forEach((button) => {
     button.addEventListener("click", async (event) => {
@@ -892,8 +687,6 @@ function bindStatusButtons() {
 
       updateCardStatus(card, newStatus);
       answerStatuses[answerKey] = newStatus;
-      buildStudentApprovalProfiles();
-      applyAlreadyApprovedStates();
 
       try {
         await saveAnswerStatusToFirebase(answerKey, sheetId, newStatus, meta);
@@ -902,8 +695,6 @@ function bindStatusButtons() {
 
         updateCardStatus(card, oldStatus);
         answerStatuses[answerKey] = oldStatus;
-        buildStudentApprovalProfiles();
-        applyAlreadyApprovedStates();
 
         alert("Impossible de sauvegarder le statut. Réessaie dans quelques instants.");
       }
@@ -913,8 +704,6 @@ function bindStatusButtons() {
   document.querySelectorAll("[data-answer-card]").forEach((card) => {
     updateCardStatus(card, card.dataset.status || "pending");
   });
-
-  applyAlreadyApprovedStates();
 }
 
 /* =========================================================
