@@ -32,6 +32,7 @@ const answersBody = document.getElementById("answersBody");
 
 const cache = new Map();
 let answerStatuses = {};
+let approvedCustomAnswers = [];
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -108,10 +109,65 @@ function normalizeHeader(value) {
 }
 
 function normalizeIdUnique(value) {
-  return String(value || "")
+  const normalizedId = String(value || "")
     .trim()
     .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, "");
+
+  const invalidIds = new Set([
+    "",
+    "-",
+    "aucun",
+    "idindisponible",
+    "idinconnu",
+    "inconnu",
+    "n/a",
+    "na",
+    "nonrenseigne"
+  ]);
+
+  return invalidIds.has(normalizedId) ? "" : normalizedId;
+}
+
+function normalizeStudentName(value) {
+  const normalizedName = String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+  const invalidNames = new Set([
+    "",
+    "aucun",
+    "eleve inconnu",
+    "inconnu",
+    "non renseigne"
+  ]);
+
+  return invalidNames.has(normalizedName) ? "" : normalizedName;
+}
+
+function buildStudentIdentity(idUnique, studentName) {
+  return {
+    id: normalizeIdUnique(idUnique),
+    name: normalizeStudentName(studentName)
+  };
+}
+
+function isSameStudentIdentity(firstIdentity, secondIdentity) {
+  if (firstIdentity.id && secondIdentity.id) {
+    return firstIdentity.id === secondIdentity.id;
+  }
+
+  return Boolean(
+    firstIdentity.name &&
+    secondIdentity.name &&
+    firstIdentity.name === secondIdentity.name
+  );
 }
 
 function getField(answer, possibleNames) {
@@ -186,25 +242,34 @@ function buildStatusDocId(answerKey) {
   return encodeURIComponent(answerKey);
 }
 
-async function loadStatusesForSheet(sheetId) {
+async function loadStatusesForAllSheets() {
   try {
     const firebase = await waitForFirebaseReady();
+    const nextStatuses = {};
 
-    const statusesRef = firebase.collection(firebase.db, STATUS_COLLECTION);
-    const q = firebase.query(statusesRef, firebase.where("sheetId", "==", sheetId));
-    const snap = await firebase.getDocs(q);
+    const results = await Promise.allSettled(SHEETS.map(async (sheet) => {
+      const statusesRef = firebase.collection(firebase.db, STATUS_COLLECTION);
+      const q = firebase.query(statusesRef, firebase.where("sheetId", "==", sheet.id));
+      const snap = await firebase.getDocs(q);
 
-    answerStatuses = {};
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
 
-    snap.forEach(docSnap => {
-      const data = docSnap.data();
+        if (data.answerKey && data.status) {
+          nextStatuses[data.answerKey] = data.status;
+        }
+      });
+    }));
 
-      if (data.answerKey && data.status) {
-        answerStatuses[data.answerKey] = data.status;
+    results.forEach((result) => {
+      if (result.status === "rejected") {
+        console.warn("Statut custom partiel impossible à charger :", result.reason);
       }
     });
+
+    answerStatuses = nextStatuses;
   } catch (error) {
-    console.error("Erreur chargement statuts Firebase :", error);
+    console.error("Erreur chargement global statuts Firebase :", error);
     answerStatuses = {};
   }
 }
@@ -263,6 +328,92 @@ function getStatusMeta(status) {
 
 function getAnswerStatus(answerKey) {
   return answerStatuses[answerKey] || "pending";
+}
+
+async function fetchAnswersForSheet(sheet) {
+  if (cache.has(sheet.id)) {
+    return cache.get(sheet.id);
+  }
+
+  const response = await fetch(buildCsvUrl(sheet));
+
+  if (!response.ok) {
+    throw new Error(`Erreur Google Sheets : ${response.status}`);
+  }
+
+  const csvText = await response.text();
+  const rows = parseCsv(csvText);
+  const answers = rowsToAnswers(rows);
+
+  cache.set(sheet.id, answers);
+  return answers;
+}
+
+async function ensureAllAnswersLoaded(activeSheet, activeAnswers) {
+  cache.set(activeSheet.id, activeAnswers);
+
+  const results = await Promise.allSettled(
+    SHEETS
+      .filter(sheet => !cache.has(sheet.id))
+      .map(sheet => fetchAnswersForSheet(sheet))
+  );
+
+  results.forEach((result) => {
+    if (result.status === "rejected") {
+      console.warn("Réponses custom partielles impossibles à charger :", result.reason);
+    }
+  });
+}
+
+function buildApprovedCustomAnswers() {
+  const approvals = [];
+
+  SHEETS.forEach((sheet) => {
+    const answers = cache.get(sheet.id) || [];
+
+    answers.forEach((answer, index) => {
+      const answerKey = buildAnswerKey(answer, sheet.id, index);
+
+      if (getAnswerStatus(answerKey) !== "approved") return;
+
+      const studentName = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
+      const idUnique = getField(answer, ["ID Unique", "ID"]);
+      const identity = buildStudentIdentity(idUnique, studentName);
+
+      if (!identity.id && !identity.name) return;
+
+      approvals.push({
+        answerKey,
+        identity,
+        label: sheet.label
+      });
+    });
+  });
+
+  approvedCustomAnswers = approvals;
+}
+
+function getAlreadyApprovedInfo(answerKey, idUnique, studentName, status) {
+  if (status === "approved") return null;
+
+  const identity = buildStudentIdentity(idUnique, studentName);
+  if (!identity.id && !identity.name) return null;
+
+  const matchingApprovals = approvedCustomAnswers.filter((approval) => (
+    approval.answerKey !== answerKey &&
+    isSameStudentIdentity(identity, approval.identity)
+  ));
+
+  if (!matchingApprovals.length) return null;
+
+  return {
+    labels: Array.from(new Set(matchingApprovals.map(approval => approval.label)))
+  };
+}
+
+function formatAlreadyApprovedLabel(info) {
+  if (!info?.labels?.length) return "Déjà approuvé";
+  return `Déjà approuvé (${info.labels.join(", ")})`;
 }
 
 /* =========================================================
@@ -379,6 +530,9 @@ function renderAnswerCard(answer, index, sheet) {
   const statusMeta = getStatusMeta(status);
 
   const studentName = nom || `Élève ${index + 1}`;
+  const alreadyApprovedInfo = getAlreadyApprovedInfo(answerKey, idUnique, nom, status);
+  const alreadyApprovedClass = alreadyApprovedInfo ? " already-approved-elsewhere" : "";
+  const alreadyApprovedLabel = formatAlreadyApprovedLabel(alreadyApprovedInfo);
 
   const identityHtml = [
     renderField("Nom RP", nom),
@@ -404,14 +558,15 @@ function renderAnswerCard(answer, index, sheet) {
 
   return `
     <article
-      class="student-answer-card collapsed status-${escapeHtml(statusMeta.className)}"
+      class="student-answer-card collapsed status-${escapeHtml(statusMeta.className)}${alreadyApprovedClass}"
       data-answer-card
       data-answer-key="${escapeHtml(answerKey)}"
       data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
       data-id-unique="${escapeHtml(idUnique)}"
-      data-student-name="${escapeHtml(studentName)}"
+      data-student-name="${escapeHtml(nom)}"
       data-custom-label="${escapeHtml(sheet.label)}"
+      data-already-approved="${alreadyApprovedInfo ? "true" : "false"}"
     >
       <button type="button" class="student-card-top" data-toggle-card>
         <div class="student-card-main">
@@ -426,12 +581,21 @@ function renderAnswerCard(answer, index, sheet) {
             ${escapeHtml(statusMeta.shortLabel)}
           </span>
 
+          <span class="student-already-approved-badge" data-already-approved-badge ${alreadyApprovedInfo ? "" : "hidden"}>
+            ${escapeHtml(alreadyApprovedLabel)}
+          </span>
+
           <span class="student-toggle-icon">+</span>
         </div>
       </button>
 
       <div class="student-card-body">
-        <div class="student-status-actions">
+        <div class="student-already-approved-panel" data-already-approved-panel ${alreadyApprovedInfo ? "" : "hidden"}>
+          <strong>Déjà approuvé</strong>
+          <span>Un autre custom de cet élève est déjà validé. Cette réponse n’est plus modifiable.</span>
+        </div>
+
+        <div class="student-status-actions" ${alreadyApprovedInfo ? "hidden" : ""}>
           <button type="button" class="student-status-btn approve" data-set-status="approved">
             ✔ Approuver
           </button>
@@ -505,7 +669,9 @@ async function renderAnswers(answers, sheet) {
     return;
   }
 
-  await loadStatusesForSheet(sheet.id);
+  await ensureAllAnswersLoaded(sheet, answers);
+  await loadStatusesForAllSheets();
+  buildApprovedCustomAnswers();
 
   sheetStatus.hidden = true;
   sheetStatus.style.display = "none";
@@ -661,6 +827,47 @@ function updateCardStatus(card, status) {
   });
 }
 
+function setAlreadyApprovedState(card, info) {
+  const isAlreadyApproved = Boolean(info);
+  const label = formatAlreadyApprovedLabel(info);
+
+  card.classList.toggle("already-approved-elsewhere", isAlreadyApproved);
+  card.dataset.alreadyApproved = isAlreadyApproved ? "true" : "false";
+
+  const badge = card.querySelector("[data-already-approved-badge]");
+  if (badge) {
+    badge.hidden = !isAlreadyApproved;
+    badge.textContent = label;
+  }
+
+  const panel = card.querySelector("[data-already-approved-panel]");
+  if (panel) {
+    panel.hidden = !isAlreadyApproved;
+  }
+
+  const actions = card.querySelector(".student-status-actions");
+  if (actions) {
+    actions.hidden = isAlreadyApproved;
+  }
+
+  card.querySelectorAll("[data-set-status]").forEach((btn) => {
+    btn.disabled = isAlreadyApproved;
+  });
+}
+
+function applyAlreadyApprovedStates() {
+  document.querySelectorAll("[data-answer-card]").forEach((card) => {
+    const info = getAlreadyApprovedInfo(
+      card.dataset.answerKey || "",
+      card.dataset.idUnique || "",
+      card.dataset.studentName || "",
+      card.dataset.status || "pending"
+    );
+
+    setAlreadyApprovedState(card, info);
+  });
+}
+
 function bindStatusButtons() {
   document.querySelectorAll("[data-set-status]").forEach((button) => {
     button.addEventListener("click", async (event) => {
@@ -687,6 +894,8 @@ function bindStatusButtons() {
 
       updateCardStatus(card, newStatus);
       answerStatuses[answerKey] = newStatus;
+      buildApprovedCustomAnswers();
+      applyAlreadyApprovedStates();
 
       try {
         await saveAnswerStatusToFirebase(answerKey, sheetId, newStatus, meta);
@@ -695,6 +904,8 @@ function bindStatusButtons() {
 
         updateCardStatus(card, oldStatus);
         answerStatuses[answerKey] = oldStatus;
+        buildApprovedCustomAnswers();
+        applyAlreadyApprovedStates();
 
         alert("Impossible de sauvegarder le statut. Réessaie dans quelques instants.");
       }
@@ -704,6 +915,8 @@ function bindStatusButtons() {
   document.querySelectorAll("[data-answer-card]").forEach((card) => {
     updateCardStatus(card, card.dataset.status || "pending");
   });
+
+  applyAlreadyApprovedStates();
 }
 
 /* =========================================================
