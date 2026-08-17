@@ -1112,7 +1112,7 @@
     overflow-x: hidden !important;
     overflow-y: auto !important;
     background: var(--pm-bg) !important;
-    animation: pmCorrectionIn .22s cubic-bezier(.2, .75, .2, 1) both !important;
+    animation: pmCorrectionIn .22s cubic-bezier(.2, .75, .2, 1) !important;
   }
 
   body.exam-v2-page .student-answer-card.is-open .student-card-top,
