@@ -503,7 +503,7 @@
   body.rp-v2-page .rp-v2-content,
   body.modules-page .modules-v2-content,
   body.customs-v2-page .customs-v2-content {
-    animation: pmPageIn .28s ease-out both;
+    animation: pmPageIn .28s ease-out;
   }
 
   body.prof-v2-page .v2-hero,
@@ -902,6 +902,16 @@
     border-bottom: 1px solid var(--pm-line) !important;
     background: color-mix(in srgb, var(--pm-bg) 92%, transparent) !important;
     backdrop-filter: blur(22px) !important;
+  }
+
+  /* La fiche ouverte doit rester seule au-dessus de la liste sur mobile. */
+  body.exam-v2-page.mobile-correction-open .student-sheet-tabs,
+  body.rp-v2-page.mobile-correction-open .student-sheet-tabs,
+  body.exam-v2-page.mobile-correction-open .exam-dashboard-tools,
+  body.exam-v2-page.mobile-correction-open .student-results-head,
+  body.rp-v2-page.mobile-correction-open .student-results-head {
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   body.exam-v2-page .student-results-head .student-kicker,
