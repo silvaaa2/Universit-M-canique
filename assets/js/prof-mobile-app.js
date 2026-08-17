@@ -44,10 +44,11 @@
     <a class="prof-mobile-brand" href="espace-prof.html" aria-label="Tableau de bord professeur">
       <img src="../Images/logo.png" alt="">
       <span>
-        <small>Mécanique · Université</small>
+        <small>Centre professeur</small>
         <strong>${currentMeta.title}</strong>
       </span>
     </a>
+    <span class="prof-mobile-online" aria-label="Session active"><i></i>Actif</span>
     <button type="button" class="prof-mobile-menu-trigger" data-prof-mobile-menu-open aria-label="Ouvrir le menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -59,23 +60,23 @@
   tabbar.setAttribute("aria-label", "Navigation mobile professeur");
   tabbar.innerHTML = `
     <a href="espace-prof.html" data-mobile-section="home">
-      <span class="prof-mobile-tab-icon">AC</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">⌂</span>
       <small>Accueil</small>
     </a>
     <a href="prof-rp-7x92q.html" data-mobile-section="customs">
-      <span class="prof-mobile-tab-icon">CU</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">◆</span>
       <small>Customs</small>
     </a>
     <a href="prof-exam-4x91q.html" data-mobile-section="exams">
-      <span class="prof-mobile-tab-icon">EX</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">✓</span>
       <small>Examens</small>
     </a>
     <a href="prof-modules-eleves.html" data-mobile-section="modules">
-      <span class="prof-mobile-tab-icon">MO</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">▦</span>
       <small>Modules</small>
     </a>
     <a href="prof-customs-eleves.html" data-mobile-section="access">
-      <span class="prof-mobile-tab-icon">GE</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">⚙</span>
       <small>Gérer</small>
     </a>
   `;
@@ -121,8 +122,14 @@
   statusDock.setAttribute("aria-label", "Actions de correction");
   statusDock.hidden = true;
 
+  const correctionProgress = document.createElement("div");
+  correctionProgress.className = "prof-mobile-correction-progress";
+  correctionProgress.setAttribute("aria-hidden", "true");
+  correctionProgress.innerHTML = "<span></span>";
+  correctionProgress.hidden = true;
+
   body.prepend(appbar);
-  body.append(menu, tabbar, statusDock);
+  body.append(menu, tabbar, statusDock, correctionProgress);
 
   tabbar.querySelectorAll("[data-mobile-section]").forEach((link) => {
     const isActive = link.dataset.mobileSection === currentMeta.section;
@@ -252,6 +259,26 @@
 
   const dashboard = document.getElementById("profDashboard");
   let statusDockSignature = "";
+  let activeCorrectionCard = null;
+
+  function updateCorrectionProgress() {
+    if (!activeCorrectionCard) return;
+    const scrollable = Math.max(0, activeCorrectionCard.scrollHeight - activeCorrectionCard.clientHeight);
+    const progress = scrollable ? activeCorrectionCard.scrollTop / scrollable : 1;
+    correctionProgress.style.setProperty("--pm-correction-progress", String(Math.min(1, Math.max(0, progress))));
+  }
+
+  function syncCorrectionProgress(openCard) {
+    if (activeCorrectionCard !== openCard) {
+      activeCorrectionCard?.removeEventListener("scroll", updateCorrectionProgress);
+      activeCorrectionCard = openCard || null;
+      activeCorrectionCard?.addEventListener("scroll", updateCorrectionProgress, { passive: true });
+    }
+
+    const shouldShow = Boolean(openCard && window.matchMedia("(max-width: 900px)").matches);
+    if (correctionProgress.hidden !== !shouldShow) correctionProgress.hidden = !shouldShow;
+    updateCorrectionProgress();
+  }
 
   function hideStatusDock() {
     if (!statusDock.hidden) statusDock.hidden = true;
@@ -325,6 +352,7 @@
       Boolean(document.querySelector(".module-warning-modal.is-open"))
     );
     syncStatusDock(openCard);
+    syncCorrectionProgress(openCard);
   }
 
   syncSessionVisibility();
