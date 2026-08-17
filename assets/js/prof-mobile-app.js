@@ -115,8 +115,14 @@
     </section>
   `;
 
+  const statusDock = document.createElement("div");
+  statusDock.className = "student-status-actions prof-mobile-status-dock";
+  statusDock.dataset.profMobileStatusDock = "true";
+  statusDock.setAttribute("aria-label", "Actions de correction");
+  statusDock.hidden = true;
+
   body.prepend(appbar);
-  body.append(menu, tabbar);
+  body.append(menu, tabbar, statusDock);
 
   tabbar.querySelectorAll("[data-mobile-section]").forEach((link) => {
     const isActive = link.dataset.mobileSection === currentMeta.section;
@@ -245,6 +251,63 @@
   });
 
   const dashboard = document.getElementById("profDashboard");
+  let statusDockSignature = "";
+
+  function hideStatusDock() {
+    if (!statusDock.hidden) statusDock.hidden = true;
+    if (statusDock.childElementCount) statusDock.replaceChildren();
+    statusDockSignature = "";
+  }
+
+  function syncStatusDock(openCard) {
+    const isMobile = window.matchMedia("(max-width: 900px)").matches;
+    const source = openCard?.querySelector(".student-status-actions");
+
+    if (!isMobile || !source || source.hidden) {
+      hideStatusDock();
+      return;
+    }
+
+    const sourceButtons = Array.from(source.querySelectorAll("[data-set-status]"));
+    if (!sourceButtons.length) {
+      hideStatusDock();
+      return;
+    }
+
+    const signature = sourceButtons.map((button) => [
+      button.dataset.setStatus || "",
+      button.className,
+      button.disabled ? "disabled" : "enabled",
+      button.textContent?.trim() || ""
+    ].join(":")).join("|");
+
+    if (signature !== statusDockSignature) {
+      const dockButtons = sourceButtons.map((button) => {
+        const clone = button.cloneNode(true);
+        clone.removeAttribute("data-set-status");
+        clone.dataset.mobileSetStatus = button.dataset.setStatus || "";
+        clone.disabled = button.disabled;
+        return clone;
+      });
+
+      statusDock.replaceChildren(...dockButtons);
+      statusDockSignature = signature;
+    }
+
+    if (statusDock.hidden) statusDock.hidden = false;
+  }
+
+  statusDock.addEventListener("click", (event) => {
+    const dockButton = event.target.closest("[data-mobile-set-status]");
+    if (!dockButton || dockButton.disabled) return;
+
+    const openCard = document.querySelector(".student-answer-card.is-open");
+    const requestedStatus = dockButton.dataset.mobileSetStatus;
+    const sourceButton = Array.from(openCard?.querySelectorAll("[data-set-status]") || [])
+      .find((button) => button.dataset.setStatus === requestedStatus);
+
+    sourceButton?.click();
+  });
 
   function syncSessionVisibility() {
     const hasVisibleDashboard = !dashboard || !dashboard.hidden;
@@ -252,14 +315,16 @@
   }
 
   function syncOverlayState() {
+    const openCard = document.querySelector(".student-answer-card.is-open");
     body.classList.toggle(
       "mobile-correction-open",
-      Boolean(document.querySelector(".student-answer-card.is-open"))
+      Boolean(openCard)
     );
     body.classList.toggle(
       "mobile-warning-open",
       Boolean(document.querySelector(".module-warning-modal.is-open"))
     );
+    syncStatusDock(openCard);
   }
 
   syncSessionVisibility();
@@ -272,7 +337,7 @@
 
   observer.observe(body, {
     attributes: true,
-    attributeFilter: ["class", "hidden"],
+    attributeFilter: ["class", "hidden", "disabled"],
     childList: true,
     subtree: true
   });

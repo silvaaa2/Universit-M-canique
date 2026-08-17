@@ -1,6 +1,7 @@
 .prof-mobile-appbar,
 .prof-mobile-tabbar,
-.prof-mobile-menu {
+.prof-mobile-menu,
+.prof-mobile-status-dock {
   display: none;
 }
 
@@ -1183,10 +1184,12 @@
   }
 
   body.exam-v2-page .student-answer-card.is-open .student-status-actions,
-  body.rp-v2-page .student-answer-card.is-open .student-status-actions {
+  body.rp-v2-page .student-answer-card.is-open .student-status-actions,
+  body.exam-v2-page .prof-mobile-status-dock,
+  body.rp-v2-page .prof-mobile-status-dock {
     position: fixed !important;
     inset: auto 0 0 !important;
-    z-index: 2205 !important;
+    z-index: 2305 !important;
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 7px !important;
@@ -1195,6 +1198,18 @@
     border-top: 1px solid var(--pm-line) !important;
     background: color-mix(in srgb, var(--pm-bg) 95%, transparent) !important;
     backdrop-filter: blur(24px) !important;
+  }
+
+  body.exam-v2-page.mobile-correction-open .student-answer-card.is-open .student-status-actions,
+  body.rp-v2-page.mobile-correction-open .student-answer-card.is-open .student-status-actions {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body.exam-v2-page.mobile-correction-open .prof-mobile-status-dock,
+  body.rp-v2-page.mobile-correction-open .prof-mobile-status-dock {
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 
   body.exam-v2-page .student-status-actions[hidden],
