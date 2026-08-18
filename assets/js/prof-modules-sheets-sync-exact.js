@@ -415,12 +415,12 @@ function validateExactHeaders(values, headerRowIndex) {
 
 function getStudentRows(values, headerRowIndex) {
   const labels = (values[headerRowIndex] || []).map(normalizeHeaderLabel);
-  const idColumn = labels.findIndex(label => label.includes("idunique") || (label.includes("id") && label.includes("unique")));
-  const nameColumn = labels.findIndex(label => label.includes("nom") || label.includes("eleve"));
-
-  if (idColumn < 0) {
-    throw new Error("Colonne ID Unique introuvable dans la feuille.");
-  }
+  const detectedIdColumn = labels.findIndex(label => label.includes("idunique") || (label.includes("id") && label.includes("unique")));
+  const detectedNameColumn = labels.findIndex(label => label.includes("nom") || label.includes("eleve"));
+  // Le modèle Suivi de Stage garde volontairement l'en-tête A vide :
+  // A contient l'ID Unique et B le nom de l'élève.
+  const idColumn = detectedIdColumn >= 0 ? detectedIdColumn : 0;
+  const nameColumn = detectedNameColumn >= 0 ? detectedNameColumn : 1;
 
   const studentRows = [];
   const seenIds = new Set();
@@ -540,8 +540,9 @@ async function syncModulesToGoogleSheetsExact() {
     alert("Synchronisation Google Sheets terminée.");
   } catch (error) {
     console.error("Synchronisation Google Sheets exacte impossible :", error);
-    setStatus("Synchronisation impossible.", "error");
-    alert("Synchronisation impossible. Vérifie les réglages de la feuille puis réessaie.");
+    const errorMessage = String(error?.message || "Erreur inconnue.");
+    setStatus(errorMessage, "error");
+    alert(`Synchronisation impossible : ${errorMessage}`);
   } finally {
     if (exactSyncButton) exactSyncButton.disabled = false;
     hideLoader();

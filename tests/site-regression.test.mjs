@@ -116,3 +116,10 @@ test("Vercel applique les protections de navigateur non bloquantes", () => {
   assert.equal(byName.get("x-frame-options"), "DENY");
   assert.equal(byName.get("x-content-type-options"), "nosniff");
 });
+
+test("la synchronisation Suivi de Stage utilise A et B quand leurs en-têtes sont absents", () => {
+  const sync = read("assets/js/prof-modules-sheets-sync-exact.js");
+  assert.match(sync, /const idColumn = detectedIdColumn >= 0 \? detectedIdColumn : 0;/);
+  assert.match(sync, /const nameColumn = detectedNameColumn >= 0 \? detectedNameColumn : 1;/);
+  assert.doesNotMatch(sync, /throw new Error\("Colonne ID Unique introuvable dans la feuille\."\)/);
+});
