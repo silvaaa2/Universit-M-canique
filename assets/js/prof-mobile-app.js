@@ -37,6 +37,35 @@
     section: "home"
   };
 
+  const mobileSectionOrder = ["home", "customs", "exams", "modules", "access"];
+  const navigationTransitionKey = "profMobileNavigationTransition";
+  const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let incomingTransition = null;
+
+  try {
+    const savedTransition = JSON.parse(sessionStorage.getItem(navigationTransitionKey) || "null");
+    const isRecent = Date.now() - Number(savedTransition?.createdAt || 0) < 2500;
+
+    if (isRecent && savedTransition?.to === currentMeta.section) {
+      incomingTransition = savedTransition;
+    }
+
+    sessionStorage.removeItem(navigationTransitionKey);
+  } catch (error) {
+    console.warn("Transition mobile indisponible :", error);
+  }
+
+  if (incomingTransition && !reducedMotionQuery.matches) {
+    body.classList.add(
+      "prof-mobile-page-entering",
+      incomingTransition.direction > 0 ? "prof-mobile-nav-forward" : "prof-mobile-nav-backward"
+    );
+
+    window.setTimeout(() => {
+      body.classList.remove("prof-mobile-page-entering", "prof-mobile-nav-forward", "prof-mobile-nav-backward");
+    }, 480);
+  }
+
   const appbar = document.createElement("header");
   appbar.className = "prof-mobile-appbar";
   appbar.dataset.profMobileAppbar = "true";
@@ -80,6 +109,11 @@
       <small>Gérer</small>
     </a>
   `;
+
+  const tabGlider = document.createElement("span");
+  tabGlider.className = "prof-mobile-tab-glider";
+  tabGlider.setAttribute("aria-hidden", "true");
+  tabbar.prepend(tabGlider);
 
   const menu = document.createElement("div");
   menu.className = "prof-mobile-menu";
@@ -131,10 +165,116 @@
   body.prepend(appbar);
   body.append(menu, tabbar, statusDock, correctionProgress);
 
-  tabbar.querySelectorAll("[data-mobile-section]").forEach((link) => {
+  const tabLinks = Array.from(tabbar.querySelectorAll("[data-mobile-section]"));
+
+  tabLinks.forEach((link) => {
     const isActive = link.dataset.mobileSection === currentMeta.section;
     link.classList.toggle("active", isActive);
     if (isActive) link.setAttribute("aria-current", "page");
+  });
+
+  function positionTabGlider(link, immediate = false) {
+    if (!(link instanceof HTMLElement) || !tabbar.offsetWidth) return;
+
+    const tabbarRect = tabbar.getBoundingClientRect();
+    const linkRect = link.getBoundingClientRect();
+
+    if (immediate) tabGlider.classList.add("is-instant");
+
+    tabGlider.style.setProperty("--pm-tab-x", `${linkRect.left - tabbarRect.left}px`);
+    tabGlider.style.setProperty("--pm-tab-y", `${linkRect.top - tabbarRect.top}px`);
+    tabGlider.style.setProperty("--pm-tab-width", `${linkRect.width}px`);
+    tabGlider.style.setProperty("--pm-tab-height", `${linkRect.height}px`);
+
+    if (immediate) {
+      window.requestAnimationFrame(() => tabGlider.classList.remove("is-instant"));
+    }
+  }
+
+  function setActiveMobileTab(link) {
+    tabLinks.forEach((candidate) => {
+      const isActive = candidate === link;
+      candidate.classList.toggle("active", isActive);
+
+      if (isActive) candidate.setAttribute("aria-current", "page");
+      else candidate.removeAttribute("aria-current");
+    });
+
+    positionTabGlider(link);
+  }
+
+  let mobileNavigationInProgress = false;
+
+  tabbar.addEventListener("click", (event) => {
+    const link = event.target instanceof Element
+      ? event.target.closest("a[data-mobile-section]")
+      : null;
+    if (!(link instanceof HTMLAnchorElement)) return;
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (link.target === "_blank" || link.hasAttribute("download")) return;
+
+    const targetSection = link.dataset.mobileSection;
+    const currentIndex = mobileSectionOrder.indexOf(currentMeta.section);
+    const targetIndex = mobileSectionOrder.indexOf(targetSection);
+
+    if (mobileNavigationInProgress || targetIndex < 0 || currentIndex < 0) {
+      event.preventDefault();
+      return;
+    }
+
+    if (targetSection === currentMeta.section) {
+      event.preventDefault();
+      window.scrollTo({ top: 0, behavior: reducedMotionQuery.matches ? "auto" : "smooth" });
+      return;
+    }
+
+    event.preventDefault();
+    mobileNavigationInProgress = true;
+
+    const direction = targetIndex > currentIndex ? 1 : -1;
+    const directionClass = direction > 0 ? "prof-mobile-nav-forward" : "prof-mobile-nav-backward";
+
+    tabbar.classList.add("is-navigating");
+    setActiveMobileTab(link);
+
+    if (reducedMotionQuery.matches) {
+      window.location.assign(link.href);
+      return;
+    }
+
+    body.classList.add("prof-mobile-page-leaving", directionClass);
+
+    try {
+      sessionStorage.setItem(navigationTransitionKey, JSON.stringify({
+        from: currentMeta.section,
+        to: targetSection,
+        direction,
+        createdAt: Date.now()
+      }));
+    } catch (error) {
+      console.warn("Transition mobile indisponible :", error);
+    }
+
+    window.setTimeout(() => window.location.assign(link.href), 285);
+  });
+
+  window.addEventListener("resize", () => {
+    const activeLink = tabbar.querySelector("a.active");
+    positionTabGlider(activeLink, true);
+  }, { passive: true });
+
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+
+    mobileNavigationInProgress = false;
+    tabbar.classList.remove("is-navigating");
+    body.classList.remove("prof-mobile-page-leaving", "prof-mobile-nav-forward", "prof-mobile-nav-backward");
+
+    const activeLink = tabLinks.find((link) => link.dataset.mobileSection === currentMeta.section);
+    if (activeLink) {
+      setActiveMobileTab(activeLink);
+      window.requestAnimationFrame(() => positionTabGlider(activeLink, true));
+    }
   });
 
   const trigger = appbar.querySelector("[data-prof-mobile-menu-open]");
@@ -338,7 +478,14 @@
 
   function syncSessionVisibility() {
     const hasVisibleDashboard = !dashboard || !dashboard.hidden;
+    const wasVisible = body.classList.contains("mobile-prof-session");
     body.classList.toggle("mobile-prof-session", hasVisibleDashboard);
+
+    if (hasVisibleDashboard && !wasVisible) {
+      window.requestAnimationFrame(() => {
+        positionTabGlider(tabbar.querySelector("a.active"), true);
+      });
+    }
   }
 
   function syncOverlayState() {
@@ -357,6 +504,11 @@
 
   syncSessionVisibility();
   syncOverlayState();
+
+  window.requestAnimationFrame(() => {
+    const activeLink = tabbar.querySelector("a.active");
+    positionTabGlider(activeLink, true);
+  });
 
   const observer = new MutationObserver(() => {
     syncSessionVisibility();

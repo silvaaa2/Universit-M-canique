@@ -2023,7 +2023,40 @@
     -webkit-backdrop-filter: blur(28px) saturate(155%) !important;
   }
 
+  .prof-mobile-tab-glider {
+    position: absolute;
+    z-index: 0;
+    width: var(--pm-tab-width, 0);
+    height: var(--pm-tab-height, 56px);
+    border: 1px solid rgba(240, 207, 114, .34);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(240, 207, 114, .24), rgba(240, 207, 114, .095));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 24px rgba(0,0,0,.2);
+    pointer-events: none;
+    transform: translate3d(var(--pm-tab-x, 0), calc(var(--pm-tab-y, 0) - 2px), 0);
+    transition:
+      transform .34s cubic-bezier(.22, .9, .3, 1),
+      width .34s cubic-bezier(.22, .9, .3, 1),
+      height .34s cubic-bezier(.22, .9, .3, 1);
+    will-change: transform, width;
+  }
+
+  .prof-mobile-tab-glider::after {
+    position: absolute;
+    inset: auto 22% 4px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--pm-gold-strong);
+    box-shadow: 0 0 14px rgba(240, 207, 114, .72);
+    content: "";
+  }
+
+  .prof-mobile-tab-glider.is-instant {
+    transition: none !important;
+  }
+
   .prof-mobile-tabbar a {
+    z-index: 1;
     min-height: 56px !important;
     gap: 2px !important;
     border: 1px solid transparent !important;
@@ -2033,12 +2066,45 @@
   }
 
   .prof-mobile-tabbar a.active {
-    border-color: rgba(240, 207, 114, .34) !important;
-    background:
-      linear-gradient(145deg, rgba(240, 207, 114, .24), rgba(240, 207, 114, .095)) !important;
+    border-color: transparent !important;
+    background: transparent !important;
     color: var(--pm-gold-strong) !important;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 24px rgba(0,0,0,.2) !important;
+    box-shadow: none !important;
     transform: translateY(-2px) !important;
+  }
+
+  .prof-mobile-tabbar.is-navigating a {
+    pointer-events: none;
+  }
+
+  body.prof-v2-page.prof-mobile-page-leaving .v2-workspace,
+  body.prof-v2-page.prof-mobile-page-entering .v2-workspace {
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+
+  body.prof-v2-page.prof-mobile-page-leaving.prof-mobile-nav-forward .v2-workspace {
+    animation: pmPageLeaveForward .285s cubic-bezier(.55, .02, .85, .52) both !important;
+  }
+
+  body.prof-v2-page.prof-mobile-page-leaving.prof-mobile-nav-backward .v2-workspace {
+    animation: pmPageLeaveBackward .285s cubic-bezier(.55, .02, .85, .52) both !important;
+  }
+
+  body.prof-v2-page.prof-mobile-page-entering.prof-mobile-nav-forward .v2-workspace {
+    animation: pmPageEnterForward .44s cubic-bezier(.16, .82, .24, 1) both !important;
+  }
+
+  body.prof-v2-page.prof-mobile-page-entering.prof-mobile-nav-backward .v2-workspace {
+    animation: pmPageEnterBackward .44s cubic-bezier(.16, .82, .24, 1) both !important;
+  }
+
+  body.prof-v2-page.prof-mobile-page-entering .v2-home,
+  body.prof-v2-page.prof-mobile-page-entering .exam-v2-content,
+  body.prof-v2-page.prof-mobile-page-entering .rp-v2-content,
+  body.prof-v2-page.prof-mobile-page-entering .modules-v2-content,
+  body.prof-v2-page.prof-mobile-page-entering .customs-v2-content {
+    animation: none !important;
   }
 
   .prof-mobile-tab-icon {
@@ -2776,6 +2842,26 @@
     50% { opacity: 1; transform: scale(1.15); }
   }
 
+  @keyframes pmPageLeaveForward {
+    from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    to { opacity: 0; transform: translate3d(-18%, 0, 0) scale(.985); }
+  }
+
+  @keyframes pmPageLeaveBackward {
+    from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+    to { opacity: 0; transform: translate3d(18%, 0, 0) scale(.985); }
+  }
+
+  @keyframes pmPageEnterForward {
+    from { opacity: 0; transform: translate3d(18%, 0, 0) scale(.985); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  }
+
+  @keyframes pmPageEnterBackward {
+    from { opacity: 0; transform: translate3d(-18%, 0, 0) scale(.985); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  }
+
   /* Garde-fous communs */
   body.prof-v2-page [hidden] {
     display: none !important;
@@ -2826,6 +2912,9 @@
     body.modules-page .modules-v2-content,
     body.customs-v2-page .customs-v2-content,
     body.prof-v2-page .student-answer-card.is-open,
+    body.prof-v2-page.prof-mobile-page-leaving .v2-workspace,
+    body.prof-v2-page.prof-mobile-page-entering .v2-workspace,
+    .prof-mobile-tab-glider,
     .prof-mobile-correction-progress span,
     .prof-mobile-online i {
       animation: none !important;
