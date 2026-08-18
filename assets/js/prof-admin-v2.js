@@ -1,5 +1,5 @@
 const ADMIN_MODULES = [
-  "./prof-admin.js?v=1005",
+  "./prof-admin.js?v=1006",
   "./prof-admin-polish.js?v=1006",
   "./prof-admin-preview.js?v=1008",
   "./prof-admin-free-tools.js?v=1011",
