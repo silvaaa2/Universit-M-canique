@@ -46,9 +46,9 @@ let currentAccess = { role: null, admin: false };
 let effectifRows = [];
 let progressById = new Map();
 let currentFilter = "";
-let writesAvailable = true;
 let currentCursusKey = "";
 let currentCursusSettings = null;
+const studentWriteQueues = new Map();
 
 function withTimeout(promise, ms, message) {
   let timer;
@@ -392,13 +392,8 @@ async function loadEffectifRows() {
   return rows;
 }
 
-function isPermissionError(error) {
-  return String(error?.code || error?.message || "").toLowerCase().includes("permission");
-}
-
 async function loadStudentProgress() {
   progressById = new Map();
-  writesAvailable = true;
 
   try {
     const snap = await withTimeout(
@@ -418,8 +413,7 @@ async function loadStudentProgress() {
     });
   } catch (error) {
     console.warn("Lecture des modules élèves impossible :", error);
-    writesAvailable = !isPermissionError(error);
-    setStatus("La progression n’a pas pu être chargée.", "error");
+    setStatus("Progression non chargée. Les nouvelles validations restent disponibles.", "error");
   }
 }
 
@@ -553,34 +547,68 @@ function getStudentById(studentId) {
 
 async function saveStudentModulePatch(student, moduleKey, patch) {
   if (!student) throw new Error("Élève introuvable dans l'effectif.");
-  if (!writesAvailable) throw new Error("La sauvegarde des modules est momentanément indisponible.");
 
-  const data = {
-    idUnique: student.idUnique,
-    studentId: student.normalizedIdUnique,
-    normalizedIdUnique: student.normalizedIdUnique,
-    studentName: student.studentName,
-    searchText: student.searchText,
-    cursusKey: currentCursusKey,
-    cursusSpreadsheetId: currentCursusSettings?.spreadsheetId || null,
-    cursusGid: currentCursusSettings?.gid || null,
-    updatedAt: serverTimestamp(),
-    updatedBy: currentUser?.email || null
-  };
+  const progress = getProgress(student.normalizedIdUnique);
 
   if (Object.prototype.hasOwnProperty.call(patch, "checked")) {
-    data.checks = { [moduleKey]: patch.checked === true };
+    progress.checks[moduleKey] = patch.checked === true;
   }
 
   if (Object.prototype.hasOwnProperty.call(patch, "date")) {
-    data.dates = { [moduleKey]: normalizeDateValue(patch.date) };
+    progress.dates[moduleKey] = normalizeDateValue(patch.date);
   }
 
-  await withTimeout(
-    setDoc(doc(db, STUDENT_MODULES_COLLECTION, getStudentModuleDocId(student.normalizedIdUnique)), data, { merge: true }),
-    FIRESTORE_TIMEOUT_MS,
-    "La sauvegarde prend trop de temps."
-  );
+  const studentId = student.normalizedIdUnique;
+  const previousWrite = studentWriteQueues.get(studentId) || Promise.resolve();
+  const nextWrite = previousWrite
+    .catch(() => undefined)
+    .then(async () => {
+      const latestProgress = cloneProgress(getProgress(studentId));
+      const data = {
+        idUnique: student.idUnique,
+        studentId,
+        normalizedIdUnique: studentId,
+        studentName: student.studentName,
+        searchText: student.searchText,
+        cursusKey: currentCursusKey,
+        cursusSpreadsheetId: currentCursusSettings?.spreadsheetId || null,
+        cursusGid: currentCursusSettings?.gid || null,
+        checks: latestProgress.checks,
+        dates: latestProgress.dates,
+        updatedAt: serverTimestamp(),
+        updatedBy: currentUser?.email || null
+      };
+      const moduleDoc = doc(db, STUDENT_MODULES_COLLECTION, getStudentModuleDocId(studentId));
+
+      const commitWrite = () => withTimeout(
+        setDoc(moduleDoc, data, { merge: true }),
+        FIRESTORE_TIMEOUT_MS,
+        "La sauvegarde prend trop de temps."
+      );
+
+      try {
+        await commitWrite();
+      } catch (error) {
+        const errorText = String(error?.code || error?.message || "").toLowerCase();
+        const canRetry = ["permission", "unauthenticated", "unavailable", "deadline", "aborted", "network"]
+          .some(token => errorText.includes(token));
+
+        if (!canRetry || !currentUser?.getIdToken) throw error;
+
+        await currentUser.getIdToken(true);
+        await commitWrite();
+      }
+    });
+
+  studentWriteQueues.set(studentId, nextWrite);
+
+  try {
+    await nextWrite;
+  } finally {
+    if (studentWriteQueues.get(studentId) === nextWrite) {
+      studentWriteQueues.delete(studentId);
+    }
+  }
 }
 
 async function handleModuleCheckChange(input) {

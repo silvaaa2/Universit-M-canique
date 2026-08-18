@@ -176,18 +176,18 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
     const wasChecked = checkInput.checked === true;
     const hadToday = dateInput.value === today;
 
-    if (!hadToday) {
-      dateInput.value = today;
-      dateInput.dataset.empty = "false";
-      dispatchNativeChange(dateInput);
-    }
-
     if (!wasChecked) {
       checkInput.checked = true;
       dispatchNativeChange(checkInput);
       flashScannedRow(row, "ok");
       setScanStatus(`${moduleLabel} validé : ${studentName}.`, "ok");
       return true;
+    }
+
+    if (!hadToday) {
+      dateInput.value = today;
+      dateInput.dataset.empty = "false";
+      dispatchNativeChange(dateInput);
     }
 
     flashScannedRow(row, "duplicate");
