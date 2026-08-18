@@ -114,6 +114,7 @@ test("Vercel applique les protections de navigateur", () => {
   const headers = config.headers?.[0]?.headers || [];
   const byName = new Map(headers.map(header => [header.key.toLowerCase(), header.value]));
   assert.match(byName.get("content-security-policy") || "", /frame-ancestors 'none'/);
+  assert.match(byName.get("content-security-policy") || "", /connect-src[^;]*https:\/\/\*\.googleusercontent\.com/);
   assert.equal(byName.get("x-frame-options"), "DENY");
   assert.equal(byName.get("x-content-type-options"), "nosniff");
 });
