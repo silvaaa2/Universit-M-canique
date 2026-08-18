@@ -145,6 +145,9 @@
         <button type="button" data-mobile-action="settings" hidden>Paramètres</button>
         <button type="button" data-mobile-theme="dark">Mode sombre</button>
         <button type="button" data-mobile-theme="light">Mode clair</button>
+        <button type="button" data-simplified-toggle role="switch" aria-checked="false">
+          Mode Simplifié : <span data-simplified-label>Désactivé</span>
+        </button>
         <button type="button" data-mobile-action="logout" hidden>Déconnexion</button>
       </div>
     </section>
@@ -179,6 +182,7 @@
 
   body.prepend(appbar);
   body.append(menu, tabbar, statusDock, quickCorrection, correctionProgress);
+  window.profSimplifiedMode?.sync();
 
   const tabLinks = Array.from(tabbar.querySelectorAll("[data-mobile-section]"));
 
@@ -432,7 +436,13 @@
   const quickNext = quickCorrection.querySelector("[data-quick-correction-next]");
   const quickAuto = quickCorrection.querySelector("[data-quick-correction-auto]");
 
+  function isSimplifiedCorrectionMode() {
+    return document.documentElement.classList.contains("prof-simplified-mode");
+  }
+
   function syncQuickAutoButton() {
+    const simplified = isSimplifiedCorrectionMode();
+    if (quickAuto && quickAuto.hidden !== simplified) quickAuto.hidden = simplified;
     quickAuto?.classList.toggle("active", quickAutoAdvanceEnabled);
     quickAuto?.setAttribute("aria-pressed", quickAutoAdvanceEnabled ? "true" : "false");
     if (quickAuto) quickAuto.textContent = quickAutoAdvanceEnabled ? "Auto ✓" : "Auto";
@@ -537,13 +547,28 @@
 
     setQuickSaveState(detail.state || "ready");
 
-    if (detail.state !== "saved" || !detail.advance || !quickAutoAdvanceEnabled) return;
+    if (
+      detail.state !== "saved" ||
+      !detail.advance ||
+      !quickAutoAdvanceEnabled ||
+      isSimplifiedCorrectionMode()
+    ) return;
 
     if (quickAdvanceTimer) window.clearTimeout(quickAdvanceTimer);
     quickAdvanceTimer = window.setTimeout(() => {
       quickAdvanceTimer = null;
       if (!quickAutoAdvanceEnabled || !moveQuickCorrection(1)) setQuickSaveState("done");
     }, 520);
+  });
+
+  window.addEventListener("prof:simplified-mode-change", () => {
+    if (isSimplifiedCorrectionMode() && quickAdvanceTimer) {
+      window.clearTimeout(quickAdvanceTimer);
+      quickAdvanceTimer = null;
+    }
+
+    syncQuickAutoButton();
+    syncOverlayState();
   });
 
   function updateCorrectionProgress() {

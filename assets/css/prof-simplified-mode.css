@@ -1,0 +1,361 @@
+/* Mode simplifié : préférence locale pour une lecture calme et des corrections essentielles. */
+
+.v2-simplified-setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: var(--v2-radius);
+  background: color-mix(in srgb, var(--v2-panel-soft) 78%, transparent);
+}
+
+.v2-simplified-copy h3 {
+  margin: 3px 0 8px;
+  color: var(--v2-text);
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.1;
+}
+
+.v2-simplified-copy > p:not(.v2-eyebrow) {
+  max-width: 720px;
+  margin: 0;
+  color: var(--v2-muted);
+  line-height: 1.55;
+}
+
+.v2-simplified-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.v2-simplified-benefits li {
+  padding: 7px 10px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: 999px;
+  background: var(--v2-panel-strong);
+  color: var(--v2-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.v2-simplified-control {
+  min-width: 190px;
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.v2-simplified-switch {
+  min-width: 178px;
+  min-height: 54px;
+  display: inline-grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 7px 8px 7px 16px;
+  border: 1px solid var(--v2-line);
+  border-radius: 18px;
+  background: var(--v2-panel-strong);
+  color: var(--v2-text);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.v2-simplified-switch i {
+  position: relative;
+  width: 46px;
+  height: 30px;
+  border: 1px solid var(--v2-line);
+  border-radius: 999px;
+  background: var(--v2-panel-soft);
+}
+
+.v2-simplified-switch i::after {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--v2-muted);
+  content: "";
+  transition: transform .18s ease, background .18s ease;
+}
+
+.v2-simplified-switch.active {
+  border-color: color-mix(in srgb, var(--v2-green) 50%, transparent);
+  background: color-mix(in srgb, var(--v2-green) 12%, var(--v2-panel-strong));
+  color: var(--v2-green);
+}
+
+.v2-simplified-switch.active i::after {
+  background: var(--v2-green);
+  transform: translateX(16px);
+}
+
+.v2-simplified-control small {
+  max-width: 220px;
+  color: var(--v2-faint);
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: right;
+}
+
+/* Lecture */
+html.prof-simplified-mode {
+  scroll-behavior: auto !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page,
+html.prof-simplified-mode body.prof-v2-page button,
+html.prof-simplified-mode body.prof-v2-page input,
+html.prof-simplified-mode body.prof-v2-page select,
+html.prof-simplified-mode body.prof-v2-page textarea {
+  font-family: Verdana, Arial, sans-serif !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page::before {
+  display: none !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page *,
+html.prof-simplified-mode body.prof-v2-page *::before,
+html.prof-simplified-mode body.prof-v2-page *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page p,
+html.prof-simplified-mode body.prof-v2-page li,
+html.prof-simplified-mode body.prof-v2-page label,
+html.prof-simplified-mode body.prof-v2-page .student-answer-field strong,
+html.prof-simplified-mode body.prof-v2-page .exam-line-content strong {
+  line-height: 1.6 !important;
+  letter-spacing: .012em !important;
+  word-spacing: .07em !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page .v2-eyebrow,
+html.prof-simplified-mode body.prof-v2-page .student-kicker,
+html.prof-simplified-mode body.prof-v2-page .v2-nav p,
+html.prof-simplified-mode body.prof-v2-page .v2-stat-card > span,
+html.prof-simplified-mode body.prof-v2-page .exam-stat-card > span,
+html.prof-simplified-mode body.prof-v2-page .student-already-approved-panel strong {
+  text-transform: none !important;
+  letter-spacing: .015em !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page button,
+html.prof-simplified-mode body.prof-v2-page a,
+html.prof-simplified-mode body.prof-v2-page input,
+html.prof-simplified-mode body.prof-v2-page select {
+  min-height: 46px;
+}
+
+html.prof-simplified-mode body.prof-v2-page .v2-sidebar,
+html.prof-simplified-mode body.prof-v2-page .v2-workspace,
+html.prof-simplified-mode body.prof-v2-page .v2-hero,
+html.prof-simplified-mode body.prof-v2-page .v2-stat-card,
+html.prof-simplified-mode body.prof-v2-page .v2-insight-card,
+html.prof-simplified-mode body.prof-v2-page .inline-corrections-card,
+html.prof-simplified-mode body.prof-v2-page .student-answer-card {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page .v2-cockpit-head,
+html.prof-simplified-mode body.prof-v2-page .v2-stat-card,
+html.prof-simplified-mode body.prof-v2-page .v2-insight-card,
+html.prof-simplified-mode body.prof-v2-page .v2-settings-card {
+  background-image: none !important;
+}
+
+/* Corrections : une seule tâche à la fois. */
+html.prof-simplified-mode body.exam-v2-page .exam-v2-hero,
+html.prof-simplified-mode body.rp-v2-page .rp-v2-hero,
+html.prof-simplified-mode body.exam-v2-page .exam-stats-grid {
+  display: none !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .exam-v2-content,
+html.prof-simplified-mode body.rp-v2-page .rp-v2-content {
+  padding: 16px !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .inline-corrections-head,
+html.prof-simplified-mode body.rp-v2-page .inline-corrections-head {
+  background: var(--v2-panel-strong) !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .student-answer-grid,
+html.prof-simplified-mode body.rp-v2-page .student-answer-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 14px !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .student-answer-card,
+html.prof-simplified-mode body.rp-v2-page .student-answer-card {
+  border-width: 2px !important;
+  background: var(--v2-panel-strong) !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .student-answer-card.collapsed,
+html.prof-simplified-mode body.rp-v2-page .student-answer-card.collapsed {
+  min-height: 112px !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .student-answer-card.is-open .student-card-top h2,
+html.prof-simplified-mode body.rp-v2-page .student-answer-card.is-open .student-card-top h2 {
+  font-size: clamp(30px, 5vw, 46px) !important;
+  line-height: 1.12 !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .student-status-btn,
+html.prof-simplified-mode body.rp-v2-page .student-status-btn,
+html.prof-simplified-mode body.exam-v2-page .prof-mobile-status-dock button,
+html.prof-simplified-mode body.rp-v2-page .prof-mobile-status-dock button {
+  min-height: 52px !important;
+  font-size: 15px !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .exam-line {
+  min-height: 108px !important;
+  border-width: 2px !important;
+  background: var(--v2-panel-soft) !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .exam-line-content > span,
+html.prof-simplified-mode body.rp-v2-page .student-answer-field > span,
+html.prof-simplified-mode body.rp-v2-page .student-link-card > span {
+  color: var(--v2-muted) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  text-transform: none !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .exam-line-content strong,
+html.prof-simplified-mode body.rp-v2-page .student-answer-field strong,
+html.prof-simplified-mode body.rp-v2-page .student-link-card strong {
+  font-size: 17px !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .exam-score-control input {
+  min-width: 76px !important;
+  min-height: 52px !important;
+  font-size: 22px !important;
+}
+
+html.prof-simplified-mode body.rp-v2-page .student-section {
+  padding: 18px !important;
+  border-width: 2px !important;
+  background: var(--v2-panel-soft) !important;
+}
+
+html.prof-simplified-mode body.rp-v2-page .student-section-grid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 12px !important;
+}
+
+html.prof-simplified-mode body.rp-v2-page .student-answer-field,
+html.prof-simplified-mode body.rp-v2-page .student-link-card {
+  min-height: 84px !important;
+  border-width: 2px !important;
+  background: var(--v2-panel-strong) !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .prof-mobile-quick-auto,
+html.prof-simplified-mode body.rp-v2-page .prof-mobile-quick-auto {
+  display: none !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page .prof-mobile-tab-glider {
+  transition: none !important;
+}
+
+@media (min-width: 901px) {
+  html.prof-simplified-mode body.exam-v2-page .student-answer-card.is-open .student-status-actions,
+  html.prof-simplified-mode body.rp-v2-page .student-answer-card.is-open .student-status-actions {
+    position: sticky !important;
+    top: 12px !important;
+    z-index: 20 !important;
+    padding: 10px !important;
+    border: 2px solid var(--v2-line) !important;
+    border-radius: var(--v2-radius) !important;
+    background: var(--v2-bg) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .v2-simplified-setting {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 16px;
+  }
+
+  .v2-simplified-benefits {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .v2-simplified-control {
+    min-width: 0;
+    justify-items: stretch;
+  }
+
+  .v2-simplified-switch {
+    width: 100%;
+  }
+
+  .v2-simplified-control small {
+    max-width: none;
+    text-align: left;
+  }
+
+  html.prof-simplified-mode body.exam-v2-page .exam-v2-content,
+  html.prof-simplified-mode body.rp-v2-page .rp-v2-content {
+    padding: 0 !important;
+  }
+
+  html.prof-simplified-mode body.exam-v2-page .exam-line {
+    grid-template-columns: 42px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+
+  html.prof-simplified-mode body.exam-v2-page .exam-line-score {
+    grid-column: 2 !important;
+    justify-self: start !important;
+  }
+
+  html.prof-simplified-mode body.exam-v2-page .student-answer-card.is-open,
+  html.prof-simplified-mode body.rp-v2-page .student-answer-card.is-open {
+    padding-right: 16px !important;
+    padding-left: 16px !important;
+  }
+
+  html.prof-simplified-mode body.prof-v2-page .prof-mobile-menu-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  html.prof-simplified-mode body.prof-v2-page .prof-mobile-menu-grid a {
+    min-height: 74px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-simplified-switch i::after {
+    transition: none;
+  }
+}

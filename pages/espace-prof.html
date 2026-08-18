@@ -25,6 +25,8 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260812-mobile-essential5">
   <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260818-7">
+  <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=1">
+  <script src="../assets/js/prof-simplified-mode.js?v=1"></script>
 </head>
 
 <body class="prof-v2-page" data-theme="dark">
@@ -277,6 +279,36 @@
               <small id="v2ProfilePreviewMeta">Compte professeur</small>
             </aside>
           </div>
+
+          <section class="v2-simplified-setting" aria-labelledby="simplifiedModeTitle">
+            <div class="v2-simplified-copy">
+              <p class="v2-eyebrow">Accessibilité</p>
+              <h3 id="simplifiedModeTitle">Mode Simplifié</h3>
+              <p>Un affichage plus calme et plus lisible, pensé pour réduire la charge visuelle pendant les corrections.</p>
+              <ul class="v2-simplified-benefits" aria-label="Effets du mode simplifié">
+                <li>Textes mieux espacés</li>
+                <li>Animations limitées</li>
+                <li>Corrections centrées sur l’essentiel</li>
+              </ul>
+            </div>
+
+            <div class="v2-simplified-control">
+              <button
+                type="button"
+                class="v2-simplified-switch"
+                data-simplified-toggle
+                role="switch"
+                aria-checked="false"
+                aria-labelledby="simplifiedModeTitle"
+                aria-describedby="simplifiedModeLocalNote"
+              >
+                <span data-simplified-label>Désactivé</span>
+                <i aria-hidden="true"></i>
+              </button>
+              <small id="simplifiedModeLocalNote">Enregistré uniquement sur cet appareil, jamais sur votre compte.</small>
+              <small data-simplified-status aria-live="polite">Mode simplifié désactivé.</small>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -343,7 +375,7 @@
 <script type="module" src="../assets/js/prof-auth-v2.js?v=13"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=2"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=3"></script>
-<script src="../assets/js/prof-mobile-app.js?v=20260818-6"></script>
+<script src="../assets/js/prof-mobile-app.js?v=20260818-7"></script>
 
 </body>
 </html>
