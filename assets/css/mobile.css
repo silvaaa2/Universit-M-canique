@@ -1854,10 +1854,11 @@
     font-size: 11px !important;
   }
 
-  header .prof-button {
+  header nav button.prof-button {
     width: 44px !important;
     min-width: 44px !important;
     height: 44px !important;
+    min-height: 44px !important;
     padding: 0 !important;
   }
 
