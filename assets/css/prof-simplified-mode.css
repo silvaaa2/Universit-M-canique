@@ -12,6 +12,84 @@
   background: color-mix(in srgb, var(--v2-panel-soft) 78%, transparent);
 }
 
+.v2-display-setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, .72fr);
+  align-items: center;
+  gap: 24px;
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: var(--v2-radius);
+  background: color-mix(in srgb, var(--v2-panel-soft) 78%, transparent);
+}
+
+.v2-display-copy h3 {
+  margin: 3px 0 8px;
+  color: var(--v2-text);
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.1;
+}
+
+.v2-display-copy > p:not(.v2-eyebrow) {
+  max-width: 680px;
+  margin: 0;
+  color: var(--v2-muted);
+  line-height: 1.55;
+}
+
+.v2-display-controls {
+  display: grid;
+  gap: 16px;
+}
+
+.v2-display-control {
+  display: grid;
+  gap: 8px;
+}
+
+.v2-display-control > span {
+  color: var(--v2-muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.v2-display-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.v2-display-options[data-text-size-options] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.v2-display-options button {
+  min-height: 46px;
+  padding: 8px 10px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: 14px;
+  background: var(--v2-panel-strong);
+  color: var(--v2-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.v2-display-options button:hover,
+.v2-display-options button.active {
+  border-color: color-mix(in srgb, var(--v2-gold) 48%, transparent);
+  background: var(--v2-gold-soft);
+  color: var(--v2-gold);
+}
+
+.v2-display-control small {
+  color: var(--v2-faint);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .v2-simplified-copy h3 {
   margin: 3px 0 8px;
   color: var(--v2-text);
@@ -123,6 +201,30 @@ html.prof-simplified-mode body.prof-v2-page textarea {
   font-family: Verdana, Arial, sans-serif !important;
 }
 
+html.prof-simplified-mode body.prof-v2-page {
+  --prof-simple-body-size: 15px;
+  --prof-simple-control-size: 14px;
+  --prof-simple-label-size: 14px;
+  --prof-simple-answer-size: 17px;
+  --prof-simple-section-size: 20px;
+}
+
+html.prof-simplified-mode[data-simplified-text-size="large"] body.prof-v2-page {
+  --prof-simple-body-size: 17px;
+  --prof-simple-control-size: 16px;
+  --prof-simple-label-size: 16px;
+  --prof-simple-answer-size: 20px;
+  --prof-simple-section-size: 23px;
+}
+
+html.prof-simplified-mode[data-simplified-text-size="xlarge"] body.prof-v2-page {
+  --prof-simple-body-size: 19px;
+  --prof-simple-control-size: 18px;
+  --prof-simple-label-size: 18px;
+  --prof-simple-answer-size: 23px;
+  --prof-simple-section-size: 26px;
+}
+
 html.prof-simplified-mode body.prof-v2-page::before {
   display: none !important;
 }
@@ -144,6 +246,19 @@ html.prof-simplified-mode body.prof-v2-page .exam-line-content strong {
   line-height: 1.6 !important;
   letter-spacing: .012em !important;
   word-spacing: .07em !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page .v2-workspace p,
+html.prof-simplified-mode body.prof-v2-page .v2-workspace li,
+html.prof-simplified-mode body.prof-v2-page .v2-workspace label {
+  font-size: var(--prof-simple-body-size) !important;
+}
+
+html.prof-simplified-mode body.prof-v2-page .v2-workspace button,
+html.prof-simplified-mode body.prof-v2-page .v2-workspace input,
+html.prof-simplified-mode body.prof-v2-page .v2-workspace select,
+html.prof-simplified-mode body.prof-v2-page .v2-workspace textarea {
+  font-size: var(--prof-simple-control-size) !important;
 }
 
 html.prof-simplified-mode body.prof-v2-page .v2-eyebrow,
@@ -240,15 +355,21 @@ html.prof-simplified-mode body.exam-v2-page .exam-line-content > span,
 html.prof-simplified-mode body.rp-v2-page .student-answer-field > span,
 html.prof-simplified-mode body.rp-v2-page .student-link-card > span {
   color: var(--v2-muted) !important;
-  font-size: 14px !important;
+  font-size: var(--prof-simple-label-size) !important;
   line-height: 1.5 !important;
   text-transform: none !important;
 }
 
 html.prof-simplified-mode body.exam-v2-page .exam-line-content strong,
+html.prof-simplified-mode body.exam-v2-page .exam-line-content > a,
 html.prof-simplified-mode body.rp-v2-page .student-answer-field strong,
 html.prof-simplified-mode body.rp-v2-page .student-link-card strong {
-  font-size: 17px !important;
+  font-size: var(--prof-simple-answer-size) !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .student-section-head h3,
+html.prof-simplified-mode body.rp-v2-page .student-section-head h3 {
+  font-size: var(--prof-simple-section-size) !important;
 }
 
 html.prof-simplified-mode body.exam-v2-page .exam-score-control input {
@@ -288,6 +409,49 @@ html.prof-simplified-mode body.prof-v2-page .prof-mobile-tab-glider {
   transition: none !important;
 }
 
+.prof-simplified-speak-btn {
+  display: none !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .prof-simplified-speak-btn,
+html.prof-simplified-mode body.rp-v2-page .prof-simplified-speak-btn {
+  width: max-content !important;
+  min-width: 0 !important;
+  min-height: 42px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 10px 0 0 !important;
+  padding: 8px 13px !important;
+  border: 2px solid color-mix(in srgb, var(--v2-gold) 42%, transparent) !important;
+  border-radius: 13px !important;
+  background: var(--v2-gold-soft) !important;
+  color: var(--v2-gold) !important;
+  font: inherit !important;
+  font-size: var(--prof-simple-control-size) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+}
+
+html.prof-simplified-mode body.exam-v2-page .prof-simplified-speak-btn.is-speaking,
+html.prof-simplified-mode body.rp-v2-page .prof-simplified-speak-btn.is-speaking {
+  border-color: color-mix(in srgb, var(--v2-red) 55%, transparent) !important;
+  background: color-mix(in srgb, var(--v2-red) 14%, var(--v2-panel-strong)) !important;
+  color: var(--v2-red) !important;
+}
+
+.prof-simplified-speech-status {
+  position: fixed !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
 @media (min-width: 901px) {
   html.prof-simplified-mode body.exam-v2-page .student-answer-card.is-open .student-status-actions,
   html.prof-simplified-mode body.rp-v2-page .student-answer-card.is-open .student-status-actions {
@@ -302,6 +466,16 @@ html.prof-simplified-mode body.prof-v2-page .prof-mobile-tab-glider {
 }
 
 @media (max-width: 900px) {
+  .v2-display-setting {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 16px;
+  }
+
+  .v2-display-options[data-text-size-options] {
+    grid-template-columns: 1fr;
+  }
+
   .v2-simplified-setting {
     grid-template-columns: 1fr;
     gap: 18px;

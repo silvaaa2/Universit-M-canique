@@ -143,11 +143,6 @@
       <div class="prof-mobile-menu-tools">
         <button type="button" data-mobile-action="notifications" hidden>Notifications</button>
         <button type="button" data-mobile-action="settings" hidden>Paramètres</button>
-        <button type="button" data-mobile-theme="dark">Mode sombre</button>
-        <button type="button" data-mobile-theme="light">Mode clair</button>
-        <button type="button" data-simplified-toggle role="switch" aria-checked="false">
-          Mode Simplifié : <span data-simplified-label>Désactivé</span>
-        </button>
         <button type="button" data-mobile-action="logout" hidden>Déconnexion</button>
       </div>
     </section>
@@ -381,26 +376,6 @@
       logoutButton.click();
     });
   }
-
-  menu.querySelectorAll("[data-mobile-theme]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const theme = button.dataset.mobileTheme === "light" ? "light" : "dark";
-      const existingThemeButton = document.querySelector(`[data-theme-choice="${theme}"]`);
-
-      if (existingThemeButton instanceof HTMLElement) {
-        existingThemeButton.click();
-      } else {
-        body.dataset.theme = theme;
-        try {
-          localStorage.setItem("profV2Theme", theme);
-        } catch (error) {
-          console.warn("Thème mobile indisponible :", error);
-        }
-      }
-
-      closeMenu();
-    });
-  });
 
   const dashboard = document.getElementById("profDashboard");
   let statusDockSignature = "";

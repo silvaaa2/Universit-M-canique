@@ -24,9 +24,9 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260812-mobile-essential5">
-  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260818-8">
-  <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=2">
-  <script src="../assets/js/prof-simplified-mode.js?v=1"></script>
+  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260818-9">
+  <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=3">
+  <script src="../assets/js/prof-simplified-mode.js?v=2"></script>
 </head>
 
 <body class="prof-v2-page" data-theme="dark">
@@ -120,13 +120,6 @@
         </button>
       </nav>
 
-      <div class="v2-theme-box">
-        <span>Mode</span>
-        <div class="v2-theme-toggle" role="group" aria-label="Thème">
-          <button type="button" data-theme-choice="dark" class="active">Sombre</button>
-          <button type="button" data-theme-choice="light">Clair</button>
-        </div>
-      </div>
     </aside>
 
     <div class="v2-workspace">
@@ -280,6 +273,34 @@
             </aside>
           </div>
 
+          <section class="v2-display-setting" aria-labelledby="displaySettingsTitle">
+            <div class="v2-display-copy">
+              <p class="v2-eyebrow">Affichage</p>
+              <h3 id="displaySettingsTitle">Confort de lecture</h3>
+              <p>Choisissez ici l’apparence du site et la taille des textes du Mode Simplifié.</p>
+            </div>
+
+            <div class="v2-display-controls">
+              <div class="v2-display-control">
+                <span>Thème du site</span>
+                <div class="v2-display-options" role="group" aria-label="Thème du site">
+                  <button type="button" data-theme-choice="dark" class="active">Sombre</button>
+                  <button type="button" data-theme-choice="light">Clair</button>
+                </div>
+              </div>
+
+              <div class="v2-display-control">
+                <span>Taille du texte simplifié</span>
+                <div class="v2-display-options" data-text-size-options role="group" aria-label="Taille du texte en Mode Simplifié">
+                  <button type="button" data-simplified-text-size="standard" aria-pressed="true">Standard</button>
+                  <button type="button" data-simplified-text-size="large" aria-pressed="false">Grand</button>
+                  <button type="button" data-simplified-text-size="xlarge" aria-pressed="false">Très grand</button>
+                </div>
+                <small data-simplified-text-size-status aria-live="polite">Taille standard enregistrée pour le Mode Simplifié.</small>
+              </div>
+            </div>
+          </section>
+
           <section class="v2-simplified-setting" aria-labelledby="simplifiedModeTitle">
             <div class="v2-simplified-copy">
               <p class="v2-eyebrow">Accessibilité</p>
@@ -287,6 +308,7 @@
               <p>Un affichage plus calme et plus lisible, pensé pour réduire la charge visuelle pendant les corrections.</p>
               <ul class="v2-simplified-benefits" aria-label="Effets du mode simplifié">
                 <li>Textes mieux espacés</li>
+                <li>Lecture à voix haute</li>
                 <li>Animations limitées</li>
                 <li>Corrections centrées sur l’essentiel</li>
               </ul>
@@ -375,7 +397,7 @@
 <script type="module" src="../assets/js/prof-auth-v2.js?v=13"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=2"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=3"></script>
-<script src="../assets/js/prof-mobile-app.js?v=20260818-8"></script>
+<script src="../assets/js/prof-mobile-app.js?v=20260818-9"></script>
 
 </body>
 </html>
