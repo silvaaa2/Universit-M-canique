@@ -482,7 +482,7 @@
     const isMobile = window.matchMedia("(max-width: 900px)").matches;
 
     if (!isMobile || !openCard) {
-      quickCorrection.hidden = true;
+      if (!quickCorrection.hidden) quickCorrection.hidden = true;
       quickCorrectionCard = null;
       return;
     }
@@ -491,7 +491,7 @@
     const currentIndex = cards.indexOf(openCard);
 
     if (currentIndex < 0) {
-      quickCorrection.hidden = true;
+      if (!quickCorrection.hidden) quickCorrection.hidden = true;
       return;
     }
 
@@ -503,11 +503,17 @@
     }
 
     if (quickCount) quickCount.textContent = `Copie ${currentIndex + 1} / ${cards.length}`;
-    if (quickPrevious) quickPrevious.disabled = currentIndex <= 0;
-    if (quickNext) quickNext.disabled = currentIndex >= cards.length - 1;
+    const previousDisabled = currentIndex <= 0;
+    const nextDisabled = currentIndex >= cards.length - 1;
+    if (quickPrevious && quickPrevious.disabled !== previousDisabled) {
+      quickPrevious.disabled = previousDisabled;
+    }
+    if (quickNext && quickNext.disabled !== nextDisabled) {
+      quickNext.disabled = nextDisabled;
+    }
 
     syncQuickAutoButton();
-    quickCorrection.hidden = false;
+    if (quickCorrection.hidden) quickCorrection.hidden = false;
   }
 
   quickPrevious?.addEventListener("click", () => moveQuickCorrection(-1));
@@ -681,9 +687,16 @@
     positionTabGlider(activeLink, true);
   });
 
+  let interfaceSyncQueued = false;
   const observer = new MutationObserver(() => {
-    syncSessionVisibility();
-    syncOverlayState();
+    if (interfaceSyncQueued) return;
+    interfaceSyncQueued = true;
+
+    window.requestAnimationFrame(() => {
+      interfaceSyncQueued = false;
+      syncSessionVisibility();
+      syncOverlayState();
+    });
   });
 
   observer.observe(body, {
