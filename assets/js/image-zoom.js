@@ -9,6 +9,7 @@
   zoomBtn.className = "image-zoom-btn";
   zoomBtn.innerHTML = "⌕";
   zoomBtn.title = "Agrandir l'image";
+  zoomBtn.setAttribute("aria-label", "Agrandir la photo du véhicule");
 
   photoCard.appendChild(zoomBtn);
 
@@ -17,10 +18,10 @@
   overlay.hidden = true;
 
   overlay.innerHTML = `
-    <button type="button" class="image-zoom-close" title="Fermer">×</button>
+    <button type="button" class="image-zoom-close" title="Fermer" aria-label="Fermer l’image agrandie">×</button>
 
     <div class="image-zoom-box">
-      <img id="zoomedVehicleImage" src="" alt="Image agrandie">
+      <img id="zoomedVehicleImage" alt="Image agrandie">
     </div>
   `;
 
@@ -48,7 +49,7 @@
 
     setTimeout(() => {
       overlay.hidden = true;
-      zoomedImage.src = "";
+      zoomedImage.removeAttribute("src");
     }, 180);
   }
 

@@ -16,13 +16,13 @@ const PAGE_DEFAULTS = {
     vehicleName: "Sentinel Classic",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdOz9FE8Kodhlzze1BBWW0FCB4C5ElFlIF2AcXwDunDkNT2wg/viewform?usp=dialog",
     formText: "Remplir le formulaire",
-    meteoImage: "../Images/meteo.png",
+    meteoImage: "../Images/meteo.webp",
     images: [
-      "../Images/COTÉ SENTINEL.png",
-      "../Images/COTÉ GAUCHE SENTINEL.png",
-      "../Images/DEVANT SENTINEL.png",
-      "../Images/DERRIÈRE SENTINEL.png",
-      "../Images/FINAL SENTINEL.png"
+      "../Images/COTÉ SENTINEL.webp",
+      "../Images/COTÉ GAUCHE SENTINEL.webp",
+      "../Images/DEVANT SENTINEL.webp",
+      "../Images/DERRIÈRE SENTINEL.webp",
+      "../Images/FINAL SENTINEL.webp"
     ],
     infoRows: [
       { label: "Couleur principale", value: "Oui", tone: "yes" },
@@ -42,13 +42,13 @@ const PAGE_DEFAULTS = {
     vehicleName: "Argento 2F",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdSqcoHBjIWW6HS9cR5CQtiLFTiIVqW21ysQ4gi1bo8g_56jA/viewform?usp=publish-editor",
     formText: "Remplir le formulaire",
-    meteoImage: "../Images/meteo.png",
+    meteoImage: "../Images/meteo.webp",
     images: [
-      "../Images/FINAL RS2 (2).png",
-      "../Images/DEVANT RS2 (2).png",
-      "../Images/COTÉ RS2 (2).png",
-      "../Images/COTÉ GAUCHE RS2 (2).png",
-      "../Images/DERRIÈRE RS2 (2).png"
+      "../Images/FINAL RS2 (2).webp",
+      "../Images/DEVANT RS2 (2).webp",
+      "../Images/COTÉ RS2 (2).webp",
+      "../Images/COTÉ GAUCHE RS2 (2).webp",
+      "../Images/DERRIÈRE RS2 (2).webp"
     ],
     infoRows: [
       { label: "Couleur principale", value: "Oui", tone: "yes" },
@@ -69,13 +69,13 @@ const PAGE_DEFAULTS = {
     vehicleName: "Cypher",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeT_AsDK5uMVVLm3m5OKq_XPGYrW-YPMwH-THKwE0MLX6hEcA/viewform?usp=publish-editor",
     formText: "Remplir le formulaire",
-    meteoImage: "../Images/meteo.png",
+    meteoImage: "../Images/meteo.webp",
     images: [
-      "../Images/FINAL CYPHER.png",
-      "../Images/DEVANT CYPHER.png",
-      "../Images/COTÉ CYPHER.png",
-      "../Images/COTÉ GAUCHE CYPHER.png",
-      "../Images/DERRIÈRE CYPHER.png"
+      "../Images/FINAL CYPHER.webp",
+      "../Images/DEVANT CYPHER.webp",
+      "../Images/COTÉ CYPHER.webp",
+      "../Images/COTÉ GAUCHE CYPHER.webp",
+      "../Images/DERRIÈRE CYPHER.webp"
     ],
     infoRows: [
       { label: "Couleur principale", value: "Oui", tone: "yes" },

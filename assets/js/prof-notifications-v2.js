@@ -186,7 +186,7 @@
     try {
       new Notification(title, {
         body: message,
-        icon: new URL("../Images/logo.png", window.location.href).href,
+        icon: new URL("../Images/favicon.png", window.location.href).href,
         tag,
         renotify: true,
         silent: false

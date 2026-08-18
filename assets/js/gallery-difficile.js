@@ -1,9 +1,9 @@
 ﻿const images = [
-  "../Images/FINAL CYPHER.png",
-  "../Images/DEVANT CYPHER.png",
-  "../Images/COTÉ CYPHER.png",
-  "../Images/COTÉ GAUCHE CYPHER.png",
-  "../Images/DERRIÈRE CYPHER.png"
+  "../Images/FINAL CYPHER.webp",
+  "../Images/DEVANT CYPHER.webp",
+  "../Images/COTÉ CYPHER.webp",
+  "../Images/COTÉ GAUCHE CYPHER.webp",
+  "../Images/DERRIÈRE CYPHER.webp"
 ];
 
 let currentIndex = 0;

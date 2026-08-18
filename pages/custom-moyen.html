@@ -5,8 +5,8 @@
   <title>Custom Moyen - Argento 2F</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   
-  <link rel="icon" type="image/png" href="../Images/logo.png?v=22">
-  <link rel="shortcut icon" type="image/png" href="../Images/logo.png?v=22">
+  <link rel="icon" type="image/png" href="../Images/favicon.png?v=23">
+  <link rel="shortcut icon" type="image/png" href="../Images/favicon.png?v=23">
   <link rel="stylesheet" href="../assets/css/base.css?v=20260808-mobile2">
   <link rel="stylesheet" href="../assets/css/header.css">
   <link rel="stylesheet" href="../assets/css/loader.css">
@@ -27,7 +27,7 @@
 
 <header>
   <div class="logo" onclick="goPage('../index.html')">
-    <img src="../Images/logo.png" alt="Logo Module 4">
+    <img src="../Images/logo.webp" width="507" height="512" alt="Logo Module 4">
     <span>Module 4 - Mécanique</span>
   </div>
 
@@ -37,7 +37,7 @@
     <button data-custom-link="argento2f" onclick="goPage('custom-moyen.html')">Custom Moyen</button>
     <button data-custom-link="cypher" onclick="goPage('custom-difficile.html')">Custom Difficile</button>
 
-    <button class="prof-button" onclick="goPage('espace-prof.html')">
+    <button class="prof-button" aria-label="Ouvrir l’espace professeur" onclick="goPage('espace-prof.html')">
       <span class="prof-icon">👤</span>
       <span class="prof-text">Espace Prof</span>
     </button>
@@ -70,13 +70,13 @@
         </div>
 
         <div id="photosPanel" class="media-panel active">
-          <button class="panel-close" onclick="closeMediaPanels()">×</button>
+          <button type="button" class="panel-close" aria-label="Fermer les photos" onclick="closeMediaPanels()">×</button>
 
           <div class="photo-card gallery-card">
-            <img id="vehicleImage" src="../Images/FINAL RS2 (2).png" alt="Argento 2F rendu final">
+            <img id="vehicleImage" src="../Images/FINAL RS2 (2).webp" width="1200" height="719" decoding="async" alt="Argento 2F rendu final">
 
-            <button class="gallery-arrow left" onclick="changeImage(-1)">‹</button>
-            <button class="gallery-arrow right" onclick="changeImage(1)">›</button>
+            <button type="button" class="gallery-arrow left" aria-label="Photo précédente" onclick="changeImage(-1)">‹</button>
+            <button type="button" class="gallery-arrow right" aria-label="Photo suivante" onclick="changeImage(1)">›</button>
 
             <div class="gallery-counter">
               <span id="currentImage">1</span>/<span id="totalImages">5</span>
@@ -85,10 +85,10 @@
         </div>
 
         <div id="meteoPanel" class="media-panel">
-          <button class="panel-close" onclick="closeMediaPanels()">×</button>
+          <button type="button" class="panel-close" aria-label="Fermer la météo" onclick="closeMediaPanels()">×</button>
 
           <div class="meteo-card">
-            <img src="../Images/meteo.png" alt="Informations météo obligatoires">
+            <img src="../Images/meteo.webp" width="1156" height="418" loading="lazy" decoding="async" alt="Informations météo obligatoires">
           </div>
         </div>
 

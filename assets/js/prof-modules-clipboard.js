@@ -73,7 +73,7 @@ function setScanButtonState() {
   if (!button) return;
 
   button.classList.toggle("active", clipboardScanEnabled);
-  button.textContent = clipboardScanEnabled ? "Auto actif" : "Auto arrêté";
+  button.textContent = clipboardScanEnabled ? "Arrêter l’auto" : "Activer l’auto";
 }
 
 function extractIdCandidates(text) {
@@ -226,8 +226,8 @@ async function readClipboardOnce() {
     lastClipboardCandidate = firstCandidate;
     await validateStudentModuleFromId(text, "clipboard");
   } catch (error) {
-    console.warn("Lecture presse-papiers impossible :", error);
-    setScanStatus("Auto actif. Ctrl+V si besoin.", "info");
+    stopClipboardScan(false);
+    setScanStatus("Auto bloqué par le navigateur. Ctrl+V reste prêt.", "info");
   } finally {
     clipboardScanBusy = false;
   }
@@ -278,7 +278,7 @@ function createScanControls() {
         <option value="${column.key}" ${column.key === savedTarget ? "selected" : ""}>${column.label}</option>
       `).join("")}
     </select>
-    <button type="button" class="modules-scan-toggle" data-modules-scan-toggle hidden>Auto arrêté</button>
+    <button type="button" class="modules-scan-toggle" data-modules-scan-toggle>Activer l’auto</button>
     <span class="modules-scan-status" data-modules-scan-status data-tone="info">Ctrl+V prêt</span>
   `;
 
@@ -315,17 +315,8 @@ function bindPasteScan() {
 function initClipboardModuleScan() {
   createScanControls();
   bindPasteScan();
-  setScanStatus("Auto prêt.", "info");
-  startClipboardScan();
+  setScanStatus("Ctrl+V prêt. L’auto est optionnel.", "info");
 }
-
-window.addEventListener("focus", () => {
-  if (document.body.classList.contains("modules-page")) startClipboardScan();
-});
-
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && document.body.classList.contains("modules-page")) startClipboardScan();
-});
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initClipboardModuleScan);

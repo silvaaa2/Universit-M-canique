@@ -2,20 +2,17 @@
   {
     id: "sentinelClassic",
     label: "Sentinel Classic",
-    spreadsheetId: "1rroFCRTih9jdnIJmp5n2WvXagITjaARiv4i0b-JejvU",
-    gid: "574123607"
+    source: "customResponses"
   },
   {
     id: "argento2f",
     label: "Argento 2F",
-    spreadsheetId: "1Vv6XRfEKpCJGVFtGKoauE0rFyOTlEhuLHR_qUyfwqZw",
-    gid: "848029927"
+    source: "customResponses"
   },
   {
     id: "cypher",
     label: "Cypher",
-    spreadsheetId: "1mkKA6K9f6n6sScfG93hShySKkOgxCDZQXwDL0LafvEQ",
-    gid: "154372807"
+    source: "customResponses"
   }
 ];
 
@@ -44,7 +41,23 @@ function escapeHtml(value) {
 }
 
 function buildCsvUrl(sheet) {
-  return `https://docs.google.com/spreadsheets/d/${sheet.spreadsheetId}/export?format=csv&gid=${sheet.gid}`;
+  const params = new URLSearchParams({
+    source: sheet.source || "customResponses",
+    sheet: sheet.id
+  });
+
+  return `/api/secure-sheet?${params.toString()}`;
+}
+
+async function buildSecureSheetHeaders() {
+  const user = window.currentProfUser;
+  if (!user?.getIdToken) {
+    throw new Error("Connexion professeur requise.");
+  }
+
+  return {
+    Authorization: `Bearer ${await user.getIdToken(true)}`
+  };
 }
 
 function parseCsv(text) {
@@ -335,10 +348,13 @@ async function fetchAnswersForSheet(sheet) {
     return cache.get(sheet.id);
   }
 
-  const response = await fetch(buildCsvUrl(sheet));
+  const response = await fetch(buildCsvUrl(sheet), {
+    cache: "no-store",
+    headers: await buildSecureSheetHeaders()
+  });
 
   if (!response.ok) {
-    throw new Error(`Erreur Google Sheets : ${response.status}`);
+    throw new Error(`Erreur lecture sécurisée : ${response.status}`);
   }
 
   const csvText = await response.text();
@@ -703,10 +719,13 @@ async function loadSheet(sheet) {
     if (cache.has(sheet.id)) {
       answers = cache.get(sheet.id);
     } else {
-      const response = await fetch(buildCsvUrl(sheet));
+      const response = await fetch(buildCsvUrl(sheet), {
+        cache: "no-store",
+        headers: await buildSecureSheetHeaders()
+      });
 
       if (!response.ok) {
-        throw new Error(`Erreur Google Sheets : ${response.status}`);
+        throw new Error(`Erreur lecture sécurisée : ${response.status}`);
       }
 
       const csvText = await response.text();
@@ -718,8 +737,8 @@ async function loadSheet(sheet) {
 
     await renderAnswers(answers, sheet);
   } catch (error) {
-    console.error("Erreur chargement Google Sheets :", error);
-    setError("Vérifie que le Google Sheet est bien public avec lien, et que le GID est correct.");
+    console.error("Erreur chargement des réponses customs :", error);
+    setError("Impossible de charger les réponses customs. Réessaie dans quelques instants.");
   }
 }
 

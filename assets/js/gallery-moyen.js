@@ -1,9 +1,9 @@
 ﻿const images = [
-  "../Images/FINAL RS2 (2).png",
-  "../Images/DEVANT RS2 (2).png",
-  "../Images/COTÉ RS2 (2).png",
-  "../Images/COTÉ GAUCHE RS2 (2).png",
-  "../Images/DERRIÈRE RS2 (2).png"
+  "../Images/FINAL RS2 (2).webp",
+  "../Images/DEVANT RS2 (2).webp",
+  "../Images/COTÉ RS2 (2).webp",
+  "../Images/COTÉ GAUCHE RS2 (2).webp",
+  "../Images/DERRIÈRE RS2 (2).webp"
 ];
 
 let currentIndex = 0;

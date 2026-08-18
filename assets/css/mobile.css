@@ -1820,7 +1820,7 @@
   header .logo {
     width: auto !important;
     min-width: 0 !important;
-    min-height: 38px !important;
+    min-height: 44px !important;
   }
 
   header nav {
@@ -1840,8 +1840,8 @@
   }
 
   header .logo img {
-    width: 38px !important;
-    height: 38px !important;
+    width: 44px !important;
+    height: 44px !important;
   }
 
   header nav {
@@ -1849,15 +1849,15 @@
   }
 
   header nav button {
-    min-height: 36px !important;
+    min-height: 44px !important;
     padding: 7px 10px !important;
     font-size: 11px !important;
   }
 
   header .prof-button {
-    width: 38px !important;
-    min-width: 38px !important;
-    height: 38px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
     padding: 0 !important;
   }
 
@@ -1980,5 +1980,85 @@
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
+  }
+}
+
+/* Téléphones en paysage : le logo reste compact et toute la navigation reste
+   accessible par défilement horizontal, sans déborder hors de l’écran. */
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 900px) {
+  header {
+    min-height: 54px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: max(5px, env(safe-area-inset-top)) 8px 5px !important;
+    overflow: hidden !important;
+  }
+
+  header .logo {
+    width: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    flex: 0 0 44px !important;
+  }
+
+  header .logo img {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  header .logo span {
+    display: none !important;
+  }
+
+  header nav {
+    width: auto !important;
+    max-width: calc(100vw - 60px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    padding: 0 2px 3px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  header nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  header nav button,
+  header .prof-button,
+  .panel-close,
+  .gallery-arrow,
+  .image-zoom-btn,
+  .image-zoom-close {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  header nav button {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px 11px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+  }
+
+  header nav button.prof-button {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+  }
+
+  header .prof-text {
+    display: none !important;
   }
 }

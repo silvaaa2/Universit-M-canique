@@ -11,6 +11,11 @@
 }
 
 @media (max-width: 900px) {
+  body.prof-v2-page:not(.mobile-prof-session) .prof-mobile-appbar,
+  body.prof-v2-page:not(.mobile-prof-session) .prof-mobile-tabbar {
+    display: none !important;
+  }
+
   body.prof-v2-page {
     --pm-bg: #080807;
     --pm-surface: #121210;
@@ -186,9 +191,9 @@
   }
 
   .prof-mobile-menu-trigger {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
     display: grid;
     place-content: center;
     gap: 4px;

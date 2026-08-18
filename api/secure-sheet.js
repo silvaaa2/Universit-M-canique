@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const FIREBASE_WEB_API_KEY = "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c";
 const FIREBASE_PROJECT_ID = "universit-4b11e";
 
@@ -82,6 +84,8 @@ const SOURCE_DOCS = {
   customResponses: "customResponses"
 };
 
+let googleAccessTokenCache = null;
+
 function sendJson(res, status, payload) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -128,6 +132,115 @@ function readFirstEnv(names) {
     if (String(value || "").trim()) return value;
   }
   return "";
+}
+
+function getGoogleServiceAccount() {
+  const email = String(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || "").trim();
+  const privateKey = String(process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY || "")
+    .replace(/\\n/g, "\n")
+    .trim();
+
+  return email && privateKey ? { email, privateKey } : null;
+}
+
+function encodeBase64Url(value) {
+  return Buffer.from(value)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+}
+
+async function getGoogleAccessToken() {
+  const serviceAccount = getGoogleServiceAccount();
+  if (!serviceAccount) return "";
+
+  if (googleAccessTokenCache?.token && googleAccessTokenCache.expiresAt > Date.now() + 60_000) {
+    return googleAccessTokenCache.token;
+  }
+
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const header = encodeBase64Url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
+  const claim = encodeBase64Url(JSON.stringify({
+    iss: serviceAccount.email,
+    scope: "https://www.googleapis.com/auth/spreadsheets.readonly",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: issuedAt,
+    exp: issuedAt + 3600
+  }));
+  const unsignedToken = `${header}.${claim}`;
+  const signature = crypto
+    .createSign("RSA-SHA256")
+    .update(unsignedToken)
+    .sign(serviceAccount.privateKey);
+  const assertion = `${unsignedToken}.${encodeBase64Url(signature)}`;
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion
+    })
+  });
+  const payload = await response.json();
+
+  if (!response.ok || !payload.access_token) {
+    throw new Error(`Authentification Google privée impossible (${response.status}).`);
+  }
+
+  googleAccessTokenCache = {
+    token: payload.access_token,
+    expiresAt: Date.now() + Math.max(300, Number(payload.expires_in) || 3600) * 1000
+  };
+
+  return googleAccessTokenCache.token;
+}
+
+function escapeCsvCell(value) {
+  const text = String(value ?? "");
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function rowsToCsv(rows) {
+  return (rows || [])
+    .map(row => (row || []).map(escapeCsvCell).join(","))
+    .join("\r\n");
+}
+
+async function fetchPrivateGoogleCsv({ spreadsheetId, gid }) {
+  const accessToken = await getGoogleAccessToken();
+  if (!accessToken) return "";
+
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  const metadataResponse = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=sheets.properties`,
+    { headers, cache: "no-store" }
+  );
+
+  if (!metadataResponse.ok) {
+    throw new Error(`Feuille Google privée inaccessible (${metadataResponse.status}).`);
+  }
+
+  const metadata = await metadataResponse.json();
+  const sheet = (metadata.sheets || []).find(item => String(item.properties?.sheetId) === String(gid));
+  const sheetTitle = String(sheet?.properties?.title || "").trim();
+
+  if (!sheetTitle) {
+    throw new Error("Onglet Google Sheets introuvable côté serveur.");
+  }
+
+  const escapedTitle = `'${sheetTitle.replace(/'/g, "''")}'`;
+  const valuesResponse = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(escapedTitle)}?majorDimension=ROWS`,
+    { headers, cache: "no-store" }
+  );
+
+  if (!valuesResponse.ok) {
+    throw new Error(`Lecture Google privée impossible (${valuesResponse.status}).`);
+  }
+
+  const values = await valuesResponse.json();
+  return rowsToCsv(values.values || []);
 }
 
 function decodeJwtPayload(idToken) {
@@ -349,6 +462,10 @@ async function fetchGoogleCsv(url) {
 async function fetchCsv({ spreadsheetId, gid }) {
   if (!spreadsheetId || !gid) {
     throw new Error("Réglage Google Sheets incomplet côté serveur.");
+  }
+
+  if (getGoogleServiceAccount()) {
+    return fetchPrivateGoogleCsv({ spreadsheetId, gid });
   }
 
   const attempts = [];

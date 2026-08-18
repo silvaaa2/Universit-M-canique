@@ -45,27 +45,23 @@ const CUSTOM_AVAILABILITY = [
 const DEFAULT_EXAM_SHEET = {
   id: "exam-form-1",
   label: "Réponses formulaire",
-  spreadsheetId: "1Nqivjm5iqWTwyzWvKCH35vb8tGMzcLHFoSTHtnwp_RY",
-  gid: "282279229"
+  source: "examResponses"
 };
 const CURRENT_CUSTOM_SHEETS = [
   {
     id: "sentinelClassic",
     label: "Sentinel Classic",
-    spreadsheetId: "1rroFCRTih9jdnIJmp5n2WvXagITjaARiv4i0b-JejvU",
-    gid: "574123607"
+    source: "customResponses"
   },
   {
     id: "argento2f",
     label: "Argento 2F",
-    spreadsheetId: "1Vv6XRfEKpCJGVFtGKoauE0rFyOTlEhuLHR_qUyfwqZw",
-    gid: "848029927"
+    source: "customResponses"
   },
   {
     id: "cypher",
     label: "Cypher",
-    spreadsheetId: "1mkKA6K9f6n6sScfG93hShySKkOgxCDZQXwDL0LafvEQ",
-    gid: "154372807"
+    source: "customResponses"
   }
 ];
 
@@ -645,12 +641,27 @@ function rowsToAnswers(rows) {
 }
 
 function buildCsvUrl(sheet) {
-  return `https://docs.google.com/spreadsheets/d/${sheet.spreadsheetId}/export?format=csv&gid=${sheet.gid}`;
+  const params = new URLSearchParams({
+    source: sheet.source,
+    sheet: sheet.id
+  });
+
+  return `/api/secure-sheet?${params.toString()}`;
 }
 
 async function fetchSheetAnswers(sheet) {
+  const user = auth.currentUser;
+  if (!user?.getIdToken) {
+    throw new Error("Connexion professeur requise.");
+  }
+
   const response = await withTimeout(
-    fetch(buildCsvUrl(sheet), { cache: "no-store" }),
+    fetch(buildCsvUrl(sheet), {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${await user.getIdToken(true)}`
+      }
+    }),
     DASHBOARD_TIMEOUT_MS,
     `Chargement ${sheet.label} trop long.`
   );
@@ -737,8 +748,6 @@ async function loadCurrentExamSheets() {
 
     return [{
       ...DEFAULT_EXAM_SHEET,
-      spreadsheetId: extractSpreadsheetId(data.spreadsheetUrl) || extractSpreadsheetId(data.spreadsheetId) || DEFAULT_EXAM_SHEET.spreadsheetId,
-      gid: String(data.gid || DEFAULT_EXAM_SHEET.gid),
       label: String(data.label || DEFAULT_EXAM_SHEET.label)
     }];
   } catch (error) {

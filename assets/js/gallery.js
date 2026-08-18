@@ -1,9 +1,9 @@
 ﻿const images = [
-  "../Images/COTÉ SENTINEL.png",
-  "../Images/COTÉ GAUCHE SENTINEL.png",
-  "../Images/DEVANT SENTINEL.png",
-  "../Images/DERRIÈRE SENTINEL.png",
-  "../Images/FINAL SENTINEL.png"
+  "../Images/COTÉ SENTINEL.webp",
+  "../Images/COTÉ GAUCHE SENTINEL.webp",
+  "../Images/DEVANT SENTINEL.webp",
+  "../Images/DERRIÈRE SENTINEL.webp",
+  "../Images/FINAL SENTINEL.webp"
 ];
 
 let currentIndex = 0;

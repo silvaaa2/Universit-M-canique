@@ -71,7 +71,7 @@
   appbar.dataset.profMobileAppbar = "true";
   appbar.innerHTML = `
     <a class="prof-mobile-brand" href="espace-prof.html" aria-label="Tableau de bord professeur">
-      <img src="../Images/logo.png" alt="">
+      <img src="../Images/logo.webp" alt="">
       <span>
         <small>Centre professeur</small>
         <strong>${currentMeta.title}</strong>
