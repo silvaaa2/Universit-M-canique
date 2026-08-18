@@ -276,7 +276,11 @@ html.prof-simplified-mode body.rp-v2-page .student-link-card {
 }
 
 html.prof-simplified-mode body.exam-v2-page .prof-mobile-quick-auto,
-html.prof-simplified-mode body.rp-v2-page .prof-mobile-quick-auto {
+html.prof-simplified-mode body.rp-v2-page .prof-mobile-quick-auto,
+html.prof-simplified-mode body.exam-v2-page .prof-mobile-quick-correction,
+html.prof-simplified-mode body.rp-v2-page .prof-mobile-quick-correction,
+html.prof-simplified-mode body.exam-v2-page .prof-mobile-status-dock,
+html.prof-simplified-mode body.rp-v2-page .prof-mobile-status-dock {
   display: none !important;
 }
 
@@ -329,13 +333,14 @@ html.prof-simplified-mode body.prof-v2-page .prof-mobile-tab-glider {
   }
 
   html.prof-simplified-mode body.exam-v2-page .exam-line {
-    grid-template-columns: 42px minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 12px !important;
     padding: 16px !important;
   }
 
   html.prof-simplified-mode body.exam-v2-page .exam-line-score {
-    grid-column: 2 !important;
+    grid-column: 1 !important;
+    width: 100% !important;
     justify-self: start !important;
   }
 

@@ -1064,20 +1064,6 @@ function renderAnswerCard(answer, index, sheet) {
       </div>
 
       <div class="student-card-body">
-        <div class="student-status-actions">
-          <button type="button" class="student-status-btn approve" data-set-status="approved">
-            ✔ Approuver
-          </button>
-
-          <button type="button" class="student-status-btn reject" data-set-status="rejected">
-            ✖ Refuser
-          </button>
-
-          <button type="button" class="student-status-btn pending" data-set-status="pending">
-            • En attente
-          </button>
-        </div>
-
         ${renderExamAnswersSection(answer, record)}
       </div>
     </article>

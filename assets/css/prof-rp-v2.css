@@ -851,3 +851,66 @@ body[data-theme="light"].rp-v2-page .inline-empty-box {
   }
 }
 
+/* Décision directe : deux actions compactes au niveau de chaque réponse. */
+.rp-v2-page .student-card-main {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  font: inherit !important;
+  text-align: left !important;
+  cursor: pointer !important;
+}
+
+.rp-v2-page .student-inline-decisions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rp-v2-page .student-inline-decisions[hidden] {
+  display: none !important;
+}
+
+.rp-v2-page .student-decision-btn {
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--v2-line-soft) !important;
+  border-radius: 12px !important;
+  background: var(--v2-panel-soft) !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  font-weight: 1000 !important;
+  cursor: pointer !important;
+}
+
+.rp-v2-page .student-decision-btn.approve {
+  border-color: rgba(134, 239, 172, .30) !important;
+  background: rgba(34, 197, 94, .10) !important;
+  color: var(--v2-green) !important;
+}
+
+.rp-v2-page .student-decision-btn.reject {
+  border-color: rgba(252, 165, 165, .30) !important;
+  background: rgba(248, 113, 113, .10) !important;
+  color: var(--v2-red) !important;
+}
+
+.rp-v2-page .student-decision-btn.active {
+  border-width: 2px !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 13%, transparent) !important;
+}
+
+.rp-v2-page .student-decision-btn:disabled {
+  opacity: .35 !important;
+  cursor: not-allowed !important;
+}
+

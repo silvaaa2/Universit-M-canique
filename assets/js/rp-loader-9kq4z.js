@@ -511,7 +511,6 @@ function getExtraFields(answer) {
 ========================================================= */
 
 function renderAnswerCard(answer, index, sheet) {
-  const horodateur = getField(answer, ["Horodateur"]);
   const nom = getField(answer, ["Prénom - Nom (RP)", "Prénom - Nom", "Nom"]);
   const idUnique = getField(answer, ["ID Unique", "ID"]);
 
@@ -519,8 +518,6 @@ function renderAnswerCard(answer, index, sheet) {
   const couleurSecondaire = getField(answer, ["Couleur secondaire"]);
   const couleurInterieur = getField(answer, ["Couleur intérieur", "Couleur intérieure"]);
   const nacre = getField(answer, ["Nacré", "Nacre"]);
-
-  const email = getField(answer, ["Adresse e-mail", "Email", "Adresse mail"]);
 
   const photoFields = getPhotoFields(answer);
   const extraFields = getExtraFields(answer);
@@ -533,13 +530,6 @@ function renderAnswerCard(answer, index, sheet) {
   const alreadyApprovedInfo = getAlreadyApprovedInfo(answerKey, idUnique, nom, status);
   const alreadyApprovedClass = alreadyApprovedInfo ? " already-approved-elsewhere" : "";
   const alreadyApprovedLabel = formatAlreadyApprovedLabel(alreadyApprovedInfo);
-
-  const identityHtml = [
-    renderField("Nom RP", nom),
-    renderField("ID Unique", idUnique),
-    renderField("Horodateur", horodateur),
-    renderField("E-mail", email)
-  ].join("");
 
   const colorsHtml = [
     renderField("Couleur principale", couleurPrincipale),
@@ -568,11 +558,11 @@ function renderAnswerCard(answer, index, sheet) {
       data-custom-label="${escapeHtml(sheet.label)}"
       data-already-approved="${alreadyApprovedInfo ? "true" : "false"}"
     >
-      <button type="button" class="student-card-top" data-toggle-card>
-        <div class="student-card-main">
+      <div class="student-card-top">
+        <button type="button" class="student-card-main student-card-open-zone" data-toggle-card>
           <p class="student-kicker">${escapeHtml(sheet.label)} · Réponse ${index + 1}</p>
           <h2>${escapeHtml(studentName)}</h2>
-        </div>
+        </button>
 
         <div class="student-tags">
           <span class="student-id-badge">${escapeHtml(idUnique || "ID inconnu")}</span>
@@ -581,13 +571,30 @@ function renderAnswerCard(answer, index, sheet) {
             ${escapeHtml(statusMeta.shortLabel)}
           </span>
 
+          <span class="student-inline-decisions" data-inline-decisions ${alreadyApprovedInfo ? "hidden" : ""}>
+            <button
+              type="button"
+              class="student-decision-btn approve"
+              data-set-status="approved"
+              aria-label="Valider la réponse de ${escapeHtml(studentName)}"
+              title="Valider"
+            >✓</button>
+            <button
+              type="button"
+              class="student-decision-btn reject"
+              data-set-status="rejected"
+              aria-label="Refuser la réponse de ${escapeHtml(studentName)}"
+              title="Refuser"
+            >✕</button>
+          </span>
+
           <span class="student-already-approved-badge" data-already-approved-badge ${alreadyApprovedInfo ? "" : "hidden"}>
             ${escapeHtml(alreadyApprovedLabel)}
           </span>
 
-          <span class="student-toggle-icon">+</span>
+          <button type="button" class="student-toggle-icon" data-toggle-card aria-label="Ouvrir ou fermer la réponse">+</button>
         </div>
-      </button>
+      </div>
 
       <div class="student-card-body">
         <div class="student-already-approved-panel" data-already-approved-panel ${alreadyApprovedInfo ? "" : "hidden"}>
@@ -595,21 +602,6 @@ function renderAnswerCard(answer, index, sheet) {
           <span>Un autre custom de cet élève est déjà validé. Cette réponse n’est plus modifiable.</span>
         </div>
 
-        <div class="student-status-actions" ${alreadyApprovedInfo ? "hidden" : ""}>
-          <button type="button" class="student-status-btn approve" data-set-status="approved">
-            ✔ Approuver
-          </button>
-
-          <button type="button" class="student-status-btn reject" data-set-status="rejected">
-            ✖ Refuser
-          </button>
-
-          <button type="button" class="student-status-btn pending" data-set-status="pending">
-            • En attente
-          </button>
-        </div>
-
-        ${renderSection("Identité", identityHtml)}
         ${renderSection("Couleurs", colorsHtml)}
         ${renderSection("Photos envoyées", photosHtml)}
         ${renderSection("Autres réponses", extraHtml)}
@@ -845,7 +837,7 @@ function setAlreadyApprovedState(card, info) {
     panel.hidden = !isAlreadyApproved;
   }
 
-  const actions = card.querySelector(".student-status-actions");
+  const actions = card.querySelector("[data-inline-decisions]");
   if (actions) {
     actions.hidden = isAlreadyApproved;
   }

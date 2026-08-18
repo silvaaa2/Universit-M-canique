@@ -1196,7 +1196,7 @@
     gap: 7px !important;
     margin: 0 !important;
     padding: 9px 9px calc(9px + env(safe-area-inset-bottom)) !important;
-    border-top: 1px solid var(--pm-line) !important;
+    border-top: 1px solid var(--pm-line, rgba(255, 255, 255, .10)) !important;
     background: color-mix(in srgb, var(--pm-bg) 95%, transparent) !important;
     backdrop-filter: blur(24px) !important;
   }
@@ -3102,5 +3102,136 @@
 
   body.modules-page .modules-row:not(.head) {
     grid-template-columns: 108px minmax(0, 1fr) !important;
+  }
+}
+
+/* Correction mobile épurée, y compris en paysage. */
+@media (max-width: 980px), (hover: none) and (pointer: coarse) {
+  body.exam-v2-page .prof-mobile-status-dock,
+  body.rp-v2-page .prof-mobile-status-dock,
+  body.exam-v2-page .prof-mobile-quick-correction,
+  body.rp-v2-page .prof-mobile-quick-correction,
+  body.exam-v2-page .student-answer-card.is-open .student-status-actions,
+  body.rp-v2-page .student-answer-card.is-open .student-status-actions {
+    display: none !important;
+  }
+
+  body.exam-v2-page .student-answer-card.is-open,
+  body.rp-v2-page .student-answer-card.is-open {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom)) !important;
+  }
+
+  body.exam-v2-page .student-answer-card.is-open .student-kicker,
+  body.rp-v2-page .student-answer-card.is-open .student-kicker,
+  body.exam-v2-page .student-answer-card.is-open .copy-result-btn {
+    display: none !important;
+  }
+
+  body.exam-v2-page .exam-line {
+    position: relative !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 14px !important;
+    overflow: visible !important;
+  }
+
+  body.exam-v2-page .exam-line-number {
+    position: static !important;
+    grid-column: 1 !important;
+    width: max-content !important;
+    min-width: 38px !important;
+    height: 30px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+  }
+
+  body.exam-v2-page .exam-line-content {
+    grid-column: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.exam-v2-page .exam-line-content span,
+  body.exam-v2-page .exam-line-content strong,
+  body.exam-v2-page .exam-line-content a {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    hyphens: none !important;
+  }
+
+  body.exam-v2-page .exam-line-score {
+    grid-column: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 10px 0 0 !important;
+    border-top: 1px solid var(--pm-line, rgba(255, 255, 255, .10)) !important;
+    background: transparent !important;
+  }
+
+  body.exam-v2-page .exam-score-control {
+    width: 100% !important;
+    max-width: 440px !important;
+    grid-template-columns: auto 68px auto minmax(0, 1fr) !important;
+  }
+
+  body.rp-v2-page .student-card-main {
+    width: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+  }
+
+  body.rp-v2-page .student-inline-decisions {
+    display: inline-flex !important;
+    gap: 7px !important;
+  }
+
+  body.rp-v2-page .student-inline-decisions[hidden] {
+    display: none !important;
+  }
+
+  body.rp-v2-page .student-decision-btn {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    border-radius: 13px !important;
+    font-size: 20px !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 620px) and (hover: none) {
+  body.exam-v2-page .student-answer-card.is-open .student-card-top,
+  body.rp-v2-page .student-answer-card.is-open .student-card-top {
+    min-height: 0 !important;
+    padding-top: calc(10px + env(safe-area-inset-top)) !important;
+    padding-bottom: 10px !important;
+  }
+
+  body.exam-v2-page .student-answer-card.is-open .student-card-top h2,
+  body.rp-v2-page .student-answer-card.is-open .student-card-top h2 {
+    font-size: clamp(24px, 6vw, 34px) !important;
+    line-height: 1.05 !important;
+  }
+
+  body.exam-v2-page .student-answer-card.is-open .student-tags,
+  body.rp-v2-page .student-answer-card.is-open .student-tags {
+    gap: 5px !important;
+  }
+
+  body.exam-v2-page .exam-line,
+  body.rp-v2-page .student-answer-field,
+  body.rp-v2-page .student-link-card {
+    padding: 11px !important;
   }
 }

@@ -165,23 +165,8 @@
   correctionProgress.innerHTML = "<span></span>";
   correctionProgress.hidden = true;
 
-  const quickCorrection = document.createElement("section");
-  quickCorrection.className = "prof-mobile-quick-correction";
-  quickCorrection.dataset.profMobileQuickCorrection = "true";
-  quickCorrection.setAttribute("aria-label", "Navigation rapide entre les copies");
-  quickCorrection.hidden = true;
-  quickCorrection.innerHTML = `
-    <button type="button" class="prof-mobile-quick-arrow" data-quick-correction-prev aria-label="Copie précédente">‹</button>
-    <div class="prof-mobile-quick-copy">
-      <strong data-quick-correction-count>Copie 1 / 1</strong>
-      <span data-quick-correction-save>Sauvegarde auto</span>
-    </div>
-    <button type="button" class="prof-mobile-quick-auto" data-quick-correction-auto aria-pressed="true">Auto</button>
-    <button type="button" class="prof-mobile-quick-arrow" data-quick-correction-next aria-label="Copie suivante">›</button>
-  `;
-
   body.prepend(appbar);
-  body.append(menu, tabbar, statusDock, quickCorrection, correctionProgress);
+  body.append(menu, tabbar, statusDock, correctionProgress);
   window.profSimplifiedMode?.sync();
 
   const tabLinks = Array.from(tabbar.querySelectorAll("[data-mobile-section]"));
@@ -420,156 +405,6 @@
   const dashboard = document.getElementById("profDashboard");
   let statusDockSignature = "";
   let activeCorrectionCard = null;
-  let quickCorrectionCard = null;
-  let quickAdvanceTimer = null;
-  let quickAutoAdvanceEnabled = true;
-
-  try {
-    quickAutoAdvanceEnabled = localStorage.getItem("profMobileAutoAdvance") !== "false";
-  } catch (error) {
-    console.warn("Préférence de correction rapide indisponible :", error);
-  }
-
-  const quickCount = quickCorrection.querySelector("[data-quick-correction-count]");
-  const quickSave = quickCorrection.querySelector("[data-quick-correction-save]");
-  const quickPrevious = quickCorrection.querySelector("[data-quick-correction-prev]");
-  const quickNext = quickCorrection.querySelector("[data-quick-correction-next]");
-  const quickAuto = quickCorrection.querySelector("[data-quick-correction-auto]");
-
-  function isSimplifiedCorrectionMode() {
-    return document.documentElement.classList.contains("prof-simplified-mode");
-  }
-
-  function syncQuickAutoButton() {
-    const simplified = isSimplifiedCorrectionMode();
-    if (quickAuto && quickAuto.hidden !== simplified) quickAuto.hidden = simplified;
-    quickAuto?.classList.toggle("active", quickAutoAdvanceEnabled);
-    quickAuto?.setAttribute("aria-pressed", quickAutoAdvanceEnabled ? "true" : "false");
-    if (quickAuto) quickAuto.textContent = quickAutoAdvanceEnabled ? "Auto ✓" : "Auto";
-  }
-
-  function setQuickSaveState(state) {
-    if (!quickSave) return;
-
-    const labels = {
-      ready: "Sauvegarde auto",
-      saving: "Enregistrement…",
-      saved: "Enregistré ✓",
-      done: "Dernière copie ✓",
-      error: "Échec · réessayer"
-    };
-
-    quickSave.dataset.state = state;
-    quickSave.textContent = labels[state] || labels.ready;
-  }
-
-  function getCorrectionCards() {
-    return Array.from(document.querySelectorAll(".student-answer-card"))
-      .filter((card) => !card.hidden && card.getClientRects().length > 0);
-  }
-
-  function openCorrectionCard(card) {
-    if (!(card instanceof HTMLElement)) return false;
-
-    const trigger = card.querySelector(".student-card-open-zone[data-toggle-card], [data-toggle-card]");
-    if (!(trigger instanceof HTMLElement)) return false;
-
-    trigger.click();
-    return true;
-  }
-
-  function moveQuickCorrection(offset) {
-    const cards = getCorrectionCards();
-    const openCard = document.querySelector(".student-answer-card.is-open");
-    const currentIndex = cards.indexOf(openCard);
-    const target = cards[currentIndex + offset];
-
-    if (!target) return false;
-    return openCorrectionCard(target);
-  }
-
-  function syncQuickCorrection(openCard) {
-    const isMobile = window.matchMedia("(max-width: 900px)").matches;
-
-    if (!isMobile || !openCard) {
-      if (!quickCorrection.hidden) quickCorrection.hidden = true;
-      quickCorrectionCard = null;
-      return;
-    }
-
-    const cards = getCorrectionCards();
-    const currentIndex = cards.indexOf(openCard);
-
-    if (currentIndex < 0) {
-      if (!quickCorrection.hidden) quickCorrection.hidden = true;
-      return;
-    }
-
-    if (quickCorrectionCard !== openCard) {
-      if (quickAdvanceTimer) window.clearTimeout(quickAdvanceTimer);
-      quickAdvanceTimer = null;
-      quickCorrectionCard = openCard;
-      setQuickSaveState("ready");
-    }
-
-    if (quickCount) quickCount.textContent = `Copie ${currentIndex + 1} / ${cards.length}`;
-    const previousDisabled = currentIndex <= 0;
-    const nextDisabled = currentIndex >= cards.length - 1;
-    if (quickPrevious && quickPrevious.disabled !== previousDisabled) {
-      quickPrevious.disabled = previousDisabled;
-    }
-    if (quickNext && quickNext.disabled !== nextDisabled) {
-      quickNext.disabled = nextDisabled;
-    }
-
-    syncQuickAutoButton();
-    if (quickCorrection.hidden) quickCorrection.hidden = false;
-  }
-
-  quickPrevious?.addEventListener("click", () => moveQuickCorrection(-1));
-  quickNext?.addEventListener("click", () => moveQuickCorrection(1));
-  quickAuto?.addEventListener("click", () => {
-    quickAutoAdvanceEnabled = !quickAutoAdvanceEnabled;
-    syncQuickAutoButton();
-
-    try {
-      localStorage.setItem("profMobileAutoAdvance", String(quickAutoAdvanceEnabled));
-    } catch (error) {
-      console.warn("Préférence de correction rapide indisponible :", error);
-    }
-  });
-
-  window.addEventListener("prof:correction-save", (event) => {
-    const detail = event.detail || {};
-    const openCard = document.querySelector(".student-answer-card.is-open");
-
-    if (!openCard || detail.card !== openCard) return;
-
-    setQuickSaveState(detail.state || "ready");
-
-    if (
-      detail.state !== "saved" ||
-      !detail.advance ||
-      !quickAutoAdvanceEnabled ||
-      isSimplifiedCorrectionMode()
-    ) return;
-
-    if (quickAdvanceTimer) window.clearTimeout(quickAdvanceTimer);
-    quickAdvanceTimer = window.setTimeout(() => {
-      quickAdvanceTimer = null;
-      if (!quickAutoAdvanceEnabled || !moveQuickCorrection(1)) setQuickSaveState("done");
-    }, 520);
-  });
-
-  window.addEventListener("prof:simplified-mode-change", () => {
-    if (isSimplifiedCorrectionMode() && quickAdvanceTimer) {
-      window.clearTimeout(quickAdvanceTimer);
-      quickAdvanceTimer = null;
-    }
-
-    syncQuickAutoButton();
-    syncOverlayState();
-  });
 
   function updateCorrectionProgress() {
     if (!activeCorrectionCard) return;
@@ -670,7 +505,6 @@
     );
     syncStatusDock(openCard);
     syncCorrectionProgress(openCard);
-    syncQuickCorrection(openCard);
     syncMobileSkeletons();
   }
 
