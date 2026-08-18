@@ -96,20 +96,33 @@
     const toast = document.createElement("article");
     toast.className = "v2-notification-toast";
     toast.dataset.tone = tone;
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
     toast.innerHTML = `
       <span class="v2-notification-pulse" aria-hidden="true"></span>
-      <div>
+      <div class="v2-notification-copy">
         <strong>${escapeHtml(title)}</strong>
         <p>${escapeHtml(message)}</p>
       </div>
+      <button type="button" class="v2-notification-close" aria-label="Fermer la notification">×</button>
     `;
+
+    while (host.children.length >= 2) {
+      host.firstElementChild?.remove();
+    }
 
     host.appendChild(toast);
 
-    window.setTimeout(() => {
+    let dismissed = false;
+    const dismiss = () => {
+      if (dismissed) return;
+      dismissed = true;
       toast.classList.add("leaving");
       window.setTimeout(() => toast.remove(), 260);
-    }, 8000);
+    };
+
+    toast.querySelector(".v2-notification-close")?.addEventListener("click", dismiss);
+    window.setTimeout(dismiss, 4500);
   }
 
   async function unlockSound() {

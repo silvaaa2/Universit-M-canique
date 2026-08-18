@@ -897,8 +897,15 @@ function bindStatusButtons() {
       buildApprovedCustomAnswers();
       applyAlreadyApprovedStates();
 
+      window.dispatchEvent(new CustomEvent("prof:correction-save", {
+        detail: { state: "saving", card, advance: true }
+      }));
+
       try {
         await saveAnswerStatusToFirebase(answerKey, sheetId, newStatus, meta);
+        window.dispatchEvent(new CustomEvent("prof:correction-save", {
+          detail: { state: "saved", card, advance: true }
+        }));
       } catch (error) {
         console.error("Erreur sauvegarde statut Firebase :", error);
 
@@ -906,6 +913,10 @@ function bindStatusButtons() {
         answerStatuses[answerKey] = oldStatus;
         buildApprovedCustomAnswers();
         applyAlreadyApprovedStates();
+
+        window.dispatchEvent(new CustomEvent("prof:correction-save", {
+          detail: { state: "error", card, advance: false }
+        }));
 
         alert("Impossible de sauvegarder le statut. Réessaie dans quelques instants.");
       }

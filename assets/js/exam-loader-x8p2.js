@@ -1465,10 +1465,20 @@ function bindScoreControls() {
 
       updateScoreUi(card, record);
 
+      window.dispatchEvent(new CustomEvent("prof:correction-save", {
+        detail: { state: "saving", card, advance: false }
+      }));
+
       try {
         await saveExamRecordToFirebase(answerKey, sheetId, record, identity);
+        window.dispatchEvent(new CustomEvent("prof:correction-save", {
+          detail: { state: "saved", card, advance: false }
+        }));
       } catch (error) {
         console.error("Erreur sauvegarde score Firebase :", error);
+        window.dispatchEvent(new CustomEvent("prof:correction-save", {
+          detail: { state: "error", card, advance: false }
+        }));
         alert("Impossible de sauvegarder les points. Réessaie dans quelques instants.");
       }
     });
@@ -1873,10 +1883,20 @@ function bindStatusButtons() {
 
       updateCardStatus(card, newStatus);
 
+      window.dispatchEvent(new CustomEvent("prof:correction-save", {
+        detail: { state: "saving", card, advance: true }
+      }));
+
       try {
         await saveExamRecordToFirebase(answerKey, sheetId, record, identity);
+        window.dispatchEvent(new CustomEvent("prof:correction-save", {
+          detail: { state: "saved", card, advance: true }
+        }));
       } catch (error) {
         console.error("Erreur sauvegarde statut Firebase examens :", error);
+        window.dispatchEvent(new CustomEvent("prof:correction-save", {
+          detail: { state: "error", card, advance: false }
+        }));
         alert("Impossible de sauvegarder le statut. Réessaie dans quelques instants.");
       }
     });

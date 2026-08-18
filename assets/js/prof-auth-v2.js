@@ -912,14 +912,38 @@ async function summarizeCustomAvailability() {
 function renderWatchList({ modules, exams, customAccess, customAnswers }) {
   const items = [];
 
-  if (exams.pending > 0) items.push({ label: "Examens en attente", value: exams.pending, tone: "warning" });
-  if (exams.rejected > 0) items.push({ label: "Examens refusés", value: exams.rejected, tone: "danger" });
-  if (modules.inactive > 0) items.push({ label: "Élèves sans module", value: modules.inactive, tone: "warning" });
-  if (modules.warnings > 0) items.push({ label: "Avertissements modules", value: modules.warnings, tone: "danger" });
-  if (customAccess.closed > 0) items.push({ label: "Customs fermés", value: customAccess.closed, tone: "info" });
-  if (customAnswers.pending > 0) items.push({ label: "Réponses customs à voir", value: customAnswers.pending, tone: "warning" });
+  if (exams.pending > 0) items.push({
+    label: "Examens en attente",
+    value: exams.pending,
+    tone: "warning",
+    eyebrow: "Corrections",
+    href: "prof-exam-4x91q.html"
+  });
+  if (customAnswers.pending > 0) items.push({
+    label: "Customs à corriger",
+    value: customAnswers.pending,
+    tone: "warning",
+    eyebrow: "Réponses élèves",
+    href: "prof-rp-7x92q.html"
+  });
+  if (modules.warnings > 0) items.push({
+    label: "Avertissements modules",
+    value: modules.warnings,
+    tone: "danger",
+    eyebrow: "Suivi prioritaire",
+    href: "prof-modules-eleves.html"
+  });
+  if (modules.inactive > 0) items.push({
+    label: "Élèves sans module",
+    value: modules.inactive,
+    tone: "info",
+    eyebrow: "Cursus",
+    href: "prof-modules-eleves.html"
+  });
 
-  if (v2WatchCount) v2WatchCount.textContent = String(items.length);
+  if (v2WatchCount) {
+    v2WatchCount.textContent = String(items.reduce((total, item) => total + Number(item.value || 0), 0));
+  }
 
   if (!v2WatchList) return;
 
@@ -929,10 +953,13 @@ function renderWatchList({ modules, exams, customAccess, customAnswers }) {
   }
 
   v2WatchList.innerHTML = items.map(item => `
-    <div class="v2-watch-item" data-tone="${item.tone}">
-      <span>${item.label}</span>
-      <strong>${item.value}</strong>
-    </div>
+    <a class="v2-watch-item" data-tone="${item.tone}" href="${item.href}">
+      <span class="v2-watch-copy">
+        <small>${item.eyebrow}</small>
+        <b>${item.label}</b>
+      </span>
+      <strong>${item.value}<i aria-hidden="true">›</i></strong>
+    </a>
   `).join("");
 }
 
