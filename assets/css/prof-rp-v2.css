@@ -668,6 +668,15 @@
 .rp-v2-page .student-link-card {
   display: block !important;
   text-decoration: none !important;
+  position: relative !important;
+  z-index: 2 !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+}
+
+.rp-v2-page .student-link-card > * {
+  pointer-events: none !important;
 }
 
 .rp-v2-page .student-link-card strong {
@@ -871,6 +880,12 @@ body[data-theme="light"].rp-v2-page .inline-empty-box {
 }
 
 .rp-v2-page .student-inline-decisions[hidden] {
+  display: none !important;
+}
+
+/* Les styles visuels ne doivent jamais annuler l'état hidden. */
+.rp-v2-page .student-already-approved-badge[hidden],
+.rp-v2-page .student-already-approved-panel[hidden] {
   display: none !important;
 }
 

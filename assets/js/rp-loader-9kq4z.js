@@ -192,8 +192,13 @@ function getField(answer, possibleNames) {
   return "";
 }
 
-function isLink(value) {
-  return /^https?:\/\//i.test(String(value || "").trim());
+function getSafeExternalUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+  } catch (error) {
+    return "";
+  }
 }
 
 function getValue(value) {
@@ -438,10 +443,11 @@ function formatAlreadyApprovedLabel(info) {
 
 function renderField(label, value) {
   const cleanValue = getValue(value);
+  const externalUrl = getSafeExternalUrl(cleanValue);
 
-  if (isLink(cleanValue)) {
+  if (externalUrl) {
     return `
-      <a class="student-answer-field student-link-card" href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">
+      <a class="student-answer-field student-link-card" href="${escapeHtml(externalUrl)}" target="_blank" rel="noopener noreferrer" data-open-external-link>
         <span>${escapeHtml(label)}</span>
         <strong>Ouvrir le lien</strong>
       </a>
@@ -702,6 +708,7 @@ async function renderAnswers(answers, sheet) {
 
   bindCardToggles();
   bindStatusButtons();
+  bindExternalLinks();
 }
 
 async function loadSheet(sheet) {
@@ -813,6 +820,36 @@ function bindCardToggles() {
       }
     });
   });
+}
+
+function bindExternalLinks() {
+  if (!sheetContent || sheetContent.dataset.externalLinksBound === "true") return;
+
+  sheetContent.dataset.externalLinksBound = "true";
+  sheetContent.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const link = target?.closest("a[data-open-external-link]");
+
+    if (!(link instanceof HTMLAnchorElement)) return;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const externalUrl = getSafeExternalUrl(link.href);
+    if (!externalUrl) {
+      event.preventDefault();
+      alert("Ce lien est invalide ou incomplet.");
+      return;
+    }
+
+    // Créé directement pendant le clic pour être accepté par les bloqueurs
+    // de fenêtres des navigateurs, avec le vrai lien HTML comme secours.
+    const newTab = window.open("about:blank", "_blank");
+    if (!newTab) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    newTab.opener = null;
+    newTab.location.replace(externalUrl);
+  }, true);
 }
 
 /* =========================================================

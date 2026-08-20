@@ -123,3 +123,24 @@ test("la synchronisation Suivi de Stage utilise A et B quand leurs en-têtes son
   assert.match(sync, /const nameColumn = detectedNameColumn >= 0 \? detectedNameColumn : 1;/);
   assert.doesNotMatch(sync, /throw new Error\("Colonne ID Unique introuvable dans la feuille\."\)/);
 });
+
+test("Déjà approuvé reste masqué tant qu'aucune autre réponse n'est validée", () => {
+  const css = read("assets/css/prof-rp-v2.css");
+  assert.match(css, /\.rp-v2-page \.student-already-approved-badge\[hidden\],[\s\S]*?display: none !important;/);
+  assert.match(css, /\.rp-v2-page \.student-already-approved-panel\[hidden\][\s\S]*?display: none !important;/);
+});
+
+test("les liens customs ont une ouverture externe native et un secours navigateur", () => {
+  const loader = read("assets/js/rp-loader-9kq4z.js");
+  assert.match(loader, /target="_blank" rel="noopener noreferrer" data-open-external-link/);
+  assert.match(loader, /window\.open\("about:blank", "_blank"\)/);
+  assert.match(loader, /newTab\.location\.replace\(externalUrl\)/);
+});
+
+test("les coches modules se sauvegardent au changement et au clic", () => {
+  const modules = read("assets/js/prof-modules-eleves-safe.js");
+  assert.match(modules, /data-persisted-checked=/);
+  assert.match(modules, /modulesTable\?\.addEventListener\("change"/);
+  assert.match(modules, /modulesTable\?\.addEventListener\("click"/);
+  assert.match(modules, /scheduleModuleCheckSave\(checkInput\)/);
+});
