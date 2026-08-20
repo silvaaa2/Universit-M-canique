@@ -458,10 +458,9 @@ function renderModuleCheck(row, column, progress) {
   const moduleKey = escapeHtml(column.key);
 
   return `
-    <label class="module-check${checked ? " checked" : ""}" title="${checked ? "Validé" : "Non validé"}" aria-label="${escapeHtml(column.label)} · ${escapeHtml(row.studentName)}">
-      <input type="checkbox" aria-label="Valider ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}" data-module-check="true" data-student-id="${studentId}" data-module-key="${moduleKey}" data-persisted-checked="${checked ? "true" : "false"}" ${checked ? "checked" : ""}>
+    <button type="button" class="module-check${checked ? " checked" : ""}" title="${checked ? "Validé" : "Non validé"}" aria-label="Valider ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}" aria-pressed="${checked ? "true" : "false"}" data-module-check="true" data-student-id="${studentId}" data-module-key="${moduleKey}" data-checked="${checked ? "true" : "false"}" data-persisted-checked="${checked ? "true" : "false"}">
       <span class="module-check-icon" aria-hidden="true"></span>
-    </label>
+    </button>
   `;
 }
 
@@ -611,20 +610,19 @@ async function saveStudentModulePatch(student, moduleKey, patch) {
   }
 }
 
-async function handleModuleCheckChange(input) {
-  if (input.dataset.moduleSaving === "true") return;
+async function handleModuleCheckChange(control) {
+  if (control.dataset.moduleSaving === "true") return;
 
-  const studentId = input.dataset.studentId || "";
-  const moduleKey = input.dataset.moduleKey || "";
+  const studentId = control.dataset.studentId || "";
+  const moduleKey = control.dataset.moduleKey || "";
   const student = getStudentById(studentId);
   const progress = getProgress(studentId);
   const before = cloneProgress(progress);
-  const checked = input.checked === true;
-  const row = input.closest(".modules-row");
+  const checked = control.dataset.checked === "true";
+  const row = control.closest(".modules-row");
   const dateInput = row?.querySelector(`[data-module-date][data-module-key="${moduleKey}"]`);
-  const checkLabel = input.closest(".module-check");
 
-  input.dataset.moduleSaving = "true";
+  control.dataset.moduleSaving = "true";
 
   progress.checks[moduleKey] = checked;
 
@@ -636,8 +634,8 @@ async function handleModuleCheckChange(input) {
     }
   }
 
-  checkLabel?.classList.toggle("checked", checked);
-  checkLabel?.classList.add("saving");
+  control.classList.toggle("checked", checked);
+  control.classList.add("saving");
   dateInput?.classList.add("saving");
   renderSummary();
 
@@ -646,7 +644,7 @@ async function handleModuleCheckChange(input) {
       checked,
       date: progress.dates[moduleKey] || ""
     });
-    input.dataset.persistedChecked = checked ? "true" : "false";
+    control.dataset.persistedChecked = checked ? "true" : "false";
     setStatus("", "");
   } catch (error) {
     progressById.set(studentId, before);
@@ -655,23 +653,10 @@ async function handleModuleCheckChange(input) {
     setStatus("Sauvegarde impossible.", "error");
     alert("Sauvegarde impossible. Réessaie dans quelques instants.");
   } finally {
-    delete input.dataset.moduleSaving;
-    checkLabel?.classList.remove("saving");
+    delete control.dataset.moduleSaving;
+    control.classList.remove("saving");
     dateInput?.classList.remove("saving");
   }
-}
-
-function scheduleModuleCheckSave(input) {
-  if (!(input instanceof HTMLInputElement) || input.type !== "checkbox") return;
-
-  window.setTimeout(() => {
-    if (!input.isConnected || input.dataset.moduleSaving === "true") return;
-
-    const checkedValue = input.checked ? "true" : "false";
-    if (input.dataset.persistedChecked === checkedValue) return;
-
-    handleModuleCheckChange(input);
-  }, 0);
 }
 
 async function handleModuleDateChange(input) {
@@ -712,26 +697,29 @@ reloadModulesBtn?.addEventListener("click", () => {
 
 modulesTable?.addEventListener("change", event => {
   const target = event.target instanceof Element ? event.target : null;
-  const checkInput = target?.closest("[data-module-check]");
-  if (checkInput) {
-    scheduleModuleCheckSave(checkInput);
-    return;
-  }
-
   const dateInput = target?.closest("[data-module-date]");
   if (dateInput) {
     handleModuleDateChange(dateInput);
   }
 });
 
-// Filet de sécurité : certains navigateurs mobiles déclenchent le clic de la
-// case mais pas toujours l'événement change du contrôle transparent.
+// Un vrai bouton évite les différences de comportement des cases transparentes
+// entre Chrome, Firefox, Safari et les navigateurs mobiles.
 modulesTable?.addEventListener("click", event => {
   const target = event.target instanceof Element ? event.target : null;
-  const checkLabel = target?.closest(".module-check");
-  const checkInput = checkLabel?.querySelector("[data-module-check]");
+  const control = target?.closest("button[data-module-check]");
 
-  if (checkInput) scheduleModuleCheckSave(checkInput);
+  if (!(control instanceof HTMLButtonElement)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  if (control.dataset.moduleSaving === "true") return;
+
+  const checked = control.dataset.checked !== "true";
+  control.dataset.checked = checked ? "true" : "false";
+  control.setAttribute("aria-pressed", checked ? "true" : "false");
+  control.title = checked ? "Validé" : "Non validé";
+  control.classList.toggle("checked", checked);
+  handleModuleCheckChange(control);
 });
 
 onAuthStateChanged(auth, async user => {

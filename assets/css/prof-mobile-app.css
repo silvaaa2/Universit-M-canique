@@ -1515,7 +1515,7 @@
     width: 100% !important;
     min-width: 0 !important;
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 7px !important;
     padding: 7px !important;
     border: 1px solid var(--pm-line) !important;
@@ -1530,8 +1530,7 @@
     white-space: normal !important;
   }
 
-  body.modules-page .modules-scan-select,
-  body.modules-page .modules-scan-toggle {
+  body.modules-page .modules-scan-select {
     min-width: 0 !important;
     min-height: 40px !important;
     border-radius: 12px !important;
@@ -2866,7 +2865,7 @@
     background: var(--pm-surface-2) !important;
   }
 
-  body.modules-page .module-check:checked {
+  body.modules-page .module-check.checked {
     border-color: rgba(112,227,155,.4) !important;
     background: var(--pm-green) !important;
     box-shadow: 0 0 20px rgba(112,227,155,.16) !important;

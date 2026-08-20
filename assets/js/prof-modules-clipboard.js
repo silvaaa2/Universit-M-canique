@@ -15,6 +15,7 @@ let clipboardScanEnabled = false;
 let clipboardScanTimer = null;
 let clipboardScanBusy = false;
 let lastClipboardCandidate = "";
+let clipboardReadUnavailable = false;
 
 function isWarningModalActive() {
   const warningModal = document.getElementById("moduleWarningModal");
@@ -66,14 +67,6 @@ function setScanStatus(message, tone = "info") {
 
   status.textContent = message;
   status.dataset.tone = tone;
-}
-
-function setScanButtonState() {
-  const button = document.querySelector("[data-modules-scan-toggle]");
-  if (!button) return;
-
-  button.classList.toggle("active", clipboardScanEnabled);
-  button.textContent = clipboardScanEnabled ? "Arrêter l’auto" : "Activer l’auto";
 }
 
 function extractIdCandidates(text) {
@@ -163,22 +156,21 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
     if (isWarningModalActive()) return false;
     if (!row) continue;
 
-    const checkInput = row.querySelector(`[data-module-check][data-module-key="${moduleKey}"]`);
+    const checkControl = row.querySelector(`button[data-module-check][data-module-key="${moduleKey}"]`);
     const dateInput = row.querySelector(`[data-module-date][data-module-key="${moduleKey}"]`);
     const studentName = row.querySelector(".modules-student strong")?.textContent?.trim() || candidate;
 
-    if (!checkInput || !dateInput) {
+    if (!checkControl || !dateInput) {
       flashScannedRow(row, "error");
       setScanStatus(`${moduleLabel} introuvable pour ${studentName}.`, "error");
       return false;
     }
 
-    const wasChecked = checkInput.checked === true;
+    const wasChecked = checkControl.dataset.checked === "true";
     const hadToday = dateInput.value === today;
 
     if (!wasChecked) {
-      checkInput.checked = true;
-      dispatchNativeChange(checkInput);
+      checkControl.click();
       flashScannedRow(row, "ok");
       setScanStatus(`${moduleLabel} validé : ${studentName}.`, "ok");
       return true;
@@ -204,6 +196,7 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
 
 async function readClipboardOnce() {
   if (!clipboardScanEnabled || clipboardScanBusy) return;
+  if (clipboardReadUnavailable) return;
   if (document.hidden || !document.body.classList.contains("modules-page")) return;
   if (shouldPauseClipboardScan()) return;
 
@@ -226,8 +219,8 @@ async function readClipboardOnce() {
     lastClipboardCandidate = firstCandidate;
     await validateStudentModuleFromId(text, "clipboard");
   } catch (error) {
-    stopClipboardScan(false);
-    setScanStatus("Auto bloqué par le navigateur. Ctrl+V reste prêt.", "info");
+    clipboardReadUnavailable = true;
+    setScanStatus("Auto actif. Ctrl+V si le navigateur bloque la lecture.", "info");
   } finally {
     clipboardScanBusy = false;
   }
@@ -237,29 +230,12 @@ function startClipboardScan() {
   if (clipboardScanEnabled) return;
 
   clipboardScanEnabled = true;
-  setScanButtonState();
+  clipboardReadUnavailable = false;
   setScanStatus(`Auto ${getScanTargetLabel()} actif.`, "ok");
 
   window.clearInterval(clipboardScanTimer);
   clipboardScanTimer = window.setInterval(readClipboardOnce, CLIPBOARD_SCAN_DELAY_MS);
   readClipboardOnce();
-}
-
-function stopClipboardScan(showMessage = true) {
-  clipboardScanEnabled = false;
-  window.clearInterval(clipboardScanTimer);
-  clipboardScanTimer = null;
-  setScanButtonState();
-
-  if (showMessage) setScanStatus("Pointage arrêté. Ctrl+V reste prêt.", "info");
-}
-
-function toggleClipboardScan() {
-  if (clipboardScanEnabled) {
-    stopClipboardScan();
-  } else {
-    startClipboardScan();
-  }
 }
 
 function createScanControls() {
@@ -278,8 +254,7 @@ function createScanControls() {
         <option value="${column.key}" ${column.key === savedTarget ? "selected" : ""}>${column.label}</option>
       `).join("")}
     </select>
-    <button type="button" class="modules-scan-toggle" data-modules-scan-toggle>Activer l’auto</button>
-    <span class="modules-scan-status" data-modules-scan-status data-tone="info">Ctrl+V prêt</span>
+    <span class="modules-scan-status" data-modules-scan-status data-tone="ok">Auto actif</span>
   `;
 
   searchInput.insertAdjacentElement("afterend", controls);
@@ -290,8 +265,6 @@ function createScanControls() {
     setScanStatus(`Cible : ${getScanTargetLabel()}.`, "info");
   });
 
-  controls.querySelector("[data-modules-scan-toggle]")?.addEventListener("click", toggleClipboardScan);
-  setScanButtonState();
 }
 
 function bindPasteScan() {
@@ -315,7 +288,15 @@ function bindPasteScan() {
 function initClipboardModuleScan() {
   createScanControls();
   bindPasteScan();
-  setScanStatus("Ctrl+V prêt. L’auto est optionnel.", "info");
+  startClipboardScan();
+
+  // Une interaction volontaire permet de retenter la lecture dans les
+  // navigateurs qui exigent un geste utilisateur pour le presse-papiers.
+  document.addEventListener("pointerdown", () => {
+    if (!clipboardReadUnavailable) return;
+    clipboardReadUnavailable = false;
+    readClipboardOnce();
+  }, { capture: true });
 }
 
 if (document.readyState === "loading") {

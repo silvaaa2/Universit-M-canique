@@ -26,13 +26,13 @@ test("la clé de correction n'est plus publiée", () => {
   assert.equal(existsSync(join(root, "assets/js/update-corrections.js")), false);
 });
 
-test("le presse-papiers ne démarre jamais sans action utilisateur", () => {
+test("le pointage automatique démarre par défaut avec Ctrl+V en secours", () => {
   const source = read("assets/js/prof-modules-clipboard.js");
   const init = source.match(/function initClipboardModuleScan\(\) \{([\s\S]*?)\n\}/)?.[1] || "";
-  assert.doesNotMatch(init, /startClipboardScan\s*\(/);
-  assert.doesNotMatch(source, /data-modules-scan-toggle hidden/);
-  assert.match(source, /Auto bloqué par le navigateur/);
-  assert.match(source, /stopClipboardScan\(false\)/);
+  assert.match(init, /startClipboardScan\s*\(/);
+  assert.match(source, /Auto actif/);
+  assert.match(source, /Ctrl\+V si le navigateur bloque/);
+  assert.doesNotMatch(source, /Activer l’auto|data-modules-scan-toggle|toggleClipboardScan/);
 });
 
 test("la page Modules reste visible avec animations réduites", () => {
@@ -137,10 +137,12 @@ test("les liens customs ont une ouverture externe native et un secours navigateu
   assert.match(loader, /newTab\.location\.replace\(externalUrl\)/);
 });
 
-test("les coches modules se sauvegardent au changement et au clic", () => {
+test("les modules utilisent un vrai bouton compatible entre navigateurs", () => {
   const modules = read("assets/js/prof-modules-eleves-safe.js");
+  assert.match(modules, /<button type="button" class="module-check/);
+  assert.match(modules, /aria-pressed=/);
   assert.match(modules, /data-persisted-checked=/);
-  assert.match(modules, /modulesTable\?\.addEventListener\("change"/);
   assert.match(modules, /modulesTable\?\.addEventListener\("click"/);
-  assert.match(modules, /scheduleModuleCheckSave\(checkInput\)/);
+  assert.match(modules, /handleModuleCheckChange\(control\)/);
+  assert.doesNotMatch(modules, /<input type="checkbox"[^>]*data-module-check/);
 });
