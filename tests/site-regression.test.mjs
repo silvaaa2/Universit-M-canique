@@ -30,9 +30,14 @@ test("le pointage automatique démarre par défaut avec Ctrl+V en secours", () =
   const source = read("assets/js/prof-modules-clipboard.js");
   const init = source.match(/function initClipboardModuleScan\(\) \{([\s\S]*?)\n\}/)?.[1] || "";
   assert.match(init, /startClipboardScan\s*\(/);
+  assert.match(source, /CLIPBOARD_SCAN_DELAY_MS = 5000/);
   assert.match(source, /Auto actif/);
   assert.match(source, /Ctrl\+V si le navigateur bloque/);
+  assert.match(source, /ID \$\{candidate\} déjà noté pour \$\{moduleLabel\}/);
   assert.doesNotMatch(source, /Activer l’auto|data-modules-scan-toggle|toggleClipboardScan/);
+  assert.doesNotMatch(source, /if \(clipboardReadUnavailable\) return;\n  if \(document\.hidden/);
+  assert.doesNotMatch(source, /firstCandidate === lastClipboardCandidate/);
+  assert.doesNotMatch(source, /déjà validé, date mise à jour/);
 });
 
 test("la page Modules reste visible avec animations réduites", () => {

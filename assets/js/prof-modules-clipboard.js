@@ -14,7 +14,6 @@ const SCAN_FLASH_DURATION_MS = 5000;
 let clipboardScanEnabled = false;
 let clipboardScanTimer = null;
 let clipboardScanBusy = false;
-let lastClipboardCandidate = "";
 let clipboardReadUnavailable = false;
 
 function isWarningModalActive() {
@@ -42,13 +41,6 @@ function normalizeScanId(value) {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "");
-}
-
-function getTodayDateValue() {
-  const now = new Date();
-  const offset = now.getTimezoneOffset();
-  const local = new Date(now.getTime() - offset * 60000);
-  return local.toISOString().slice(0, 10);
 }
 
 function getScanTarget() {
@@ -128,10 +120,6 @@ function flashScannedRow(row, tone = "ok") {
   }, SCAN_FLASH_DURATION_MS);
 }
 
-function dispatchNativeChange(input) {
-  input.dispatchEvent(new Event("change", { bubbles: true }));
-}
-
 async function validateStudentModuleFromId(rawText, source = "paste") {
   if (isWarningModalActive()) return false;
 
@@ -149,7 +137,6 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
 
   const moduleKey = getScanTarget();
   const moduleLabel = getScanTargetLabel();
-  const today = getTodayDateValue();
 
   for (const candidate of candidates) {
     const row = await showStudentInTable(candidate);
@@ -167,8 +154,6 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
     }
 
     const wasChecked = checkControl.dataset.checked === "true";
-    const hadToday = dateInput.value === today;
-
     if (!wasChecked) {
       checkControl.click();
       flashScannedRow(row, "ok");
@@ -176,17 +161,7 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
       return true;
     }
 
-    if (!hadToday) {
-      dateInput.value = today;
-      dateInput.dataset.empty = "false";
-      dispatchNativeChange(dateInput);
-    }
-
-    flashScannedRow(row, "duplicate");
-    setScanStatus(
-      hadToday ? `${studentName} déjà validé.` : `${studentName} déjà validé, date mise à jour.`,
-      "info"
-    );
+    setScanStatus(`ID ${candidate} déjà noté pour ${moduleLabel} · ${studentName}.`, "info");
     return true;
   }
 
@@ -196,7 +171,6 @@ async function validateStudentModuleFromId(rawText, source = "paste") {
 
 async function readClipboardOnce() {
   if (!clipboardScanEnabled || clipboardScanBusy) return;
-  if (clipboardReadUnavailable) return;
   if (document.hidden || !document.body.classList.contains("modules-page")) return;
   if (shouldPauseClipboardScan()) return;
 
@@ -209,14 +183,12 @@ async function readClipboardOnce() {
 
   try {
     const text = await navigator.clipboard.readText();
+    clipboardReadUnavailable = false;
     if (shouldPauseClipboardScan()) return;
 
     const firstCandidate = extractIdCandidates(text)[0] || "";
 
     if (!firstCandidate) return;
-    if (firstCandidate === lastClipboardCandidate) return;
-
-    lastClipboardCandidate = firstCandidate;
     await validateStudentModuleFromId(text, "clipboard");
   } catch (error) {
     clipboardReadUnavailable = true;
@@ -261,7 +233,6 @@ function createScanControls() {
 
   controls.querySelector("[data-modules-scan-target]")?.addEventListener("change", event => {
     localStorage.setItem(SCAN_TARGET_STORAGE_KEY, event.target.value);
-    lastClipboardCandidate = "";
     setScanStatus(`Cible : ${getScanTargetLabel()}.`, "info");
   });
 
@@ -274,7 +245,6 @@ function bindPasteScan() {
 
     const text = event.clipboardData?.getData("text") || "";
     if (isEditableClipboardTarget(event.target)) {
-      lastClipboardCandidate = extractIdCandidates(text)[0] || lastClipboardCandidate;
       return;
     }
 
@@ -290,13 +260,14 @@ function initClipboardModuleScan() {
   bindPasteScan();
   startClipboardScan();
 
-  // Une interaction volontaire permet de retenter la lecture dans les
-  // navigateurs qui exigent un geste utilisateur pour le presse-papiers.
-  document.addEventListener("pointerdown", () => {
+  // Une interaction volontaire permet une nouvelle tentative immédiate dans
+  // les navigateurs qui exigent un geste utilisateur pour le presse-papiers.
+  document.addEventListener("pointerup", () => {
     if (!clipboardReadUnavailable) return;
-    clipboardReadUnavailable = false;
     readClipboardOnce();
   }, { capture: true });
+
+  window.addEventListener("focus", readClipboardOnce);
 }
 
 if (document.readyState === "loading") {
