@@ -84,6 +84,9 @@ const SOURCE_DOCS = {
   customResponses: "customResponses"
 };
 
+const EFFECTIF_SOURCE = "effectif";
+const EFFECTIF_SHEET_KEY = "current";
+
 let googleAccessTokenCache = null;
 
 function sendJson(res, status, payload) {
@@ -343,9 +346,35 @@ async function getUserAccess(email, idToken) {
   };
 }
 
+async function resolveEffectifSheet(idToken) {
+  const settings = await getFirestoreDocument(["stageSettings", "effectif"], idToken);
+  const spreadsheetId =
+    extractSpreadsheetId(settings.spreadsheetId) ||
+    extractSpreadsheetId(settings.spreadsheetUrl) ||
+    extractSpreadsheetId(settings.link) ||
+    extractSpreadsheetId(settings.url);
+  const gid =
+    extractGid(settings.gid) ||
+    extractGid(settings.spreadsheetId) ||
+    extractGid(settings.spreadsheetUrl) ||
+    extractGid(settings.link) ||
+    extractGid(settings.url);
+
+  if (!spreadsheetId || !gid) {
+    throw new Error("Le cursus actif est incomplet dans les réglages.");
+  }
+
+  return { spreadsheetId, gid };
+}
+
 async function resolveSheet(source, sheetKey, idToken) {
-  const safeSource = SOURCE_DOCS[source] ? source : "";
   const safeSheetKey = normalizeSheetKey(sheetKey);
+
+  if (source === EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY) {
+    return resolveEffectifSheet(idToken);
+  }
+
+  const safeSource = SOURCE_DOCS[source] ? source : "";
 
   if (!safeSource || !safeSheetKey) {
     throw new Error("Feuille demandée invalide.");

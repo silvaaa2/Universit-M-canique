@@ -456,15 +456,31 @@ async function loadCurrentCursus() {
     throw new Error("Le cursus actif est incomplet dans les réglages.");
   }
 
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(gid)}&cacheBust=${Date.now()}`;
+  const user = auth.currentUser || window.currentProfUser;
+  if (!user?.getIdToken) {
+    throw new Error("Connexion professeur requise pour charger le cursus actif.");
+  }
+
+  const idToken = await withTimeout(
+    user.getIdToken(),
+    DASHBOARD_TIMEOUT_MS,
+    "Vérification de la session trop longue."
+  );
+  const csvUrl = "/api/secure-sheet?source=effectif&sheet=current";
   const response = await withTimeout(
-    fetch(csvUrl, { cache: "no-store" }),
+    fetch(csvUrl, {
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${idToken}`
+      }
+    }),
     EFFECTIF_TIMEOUT_MS,
     "Chargement de l'effectif actif trop long."
   );
 
   if (!response.ok) {
-    throw new Error(`Effectif actif impossible à lire (${response.status}).`);
+    const details = await response.json().catch(() => null);
+    throw new Error(details?.error || `Effectif actif impossible à lire (${response.status}).`);
   }
 
   const csv = await withTimeout(

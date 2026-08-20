@@ -22,6 +22,17 @@ test("le serveur est prêt pour des feuilles Google privées", () => {
   assert.match(endpoint, /fetchPrivateGoogleCsv/);
 });
 
+test("le tableau de bord charge l'effectif actif par l'API sécurisée", () => {
+  const dashboard = read("assets/js/prof-auth-v2.js");
+  const secureSheet = read("api/secure-sheet.js");
+
+  assert.match(dashboard, /\/api\/secure-sheet\?source=effectif&sheet=current/);
+  assert.match(dashboard, /Authorization: `Bearer \$\{idToken\}`/);
+  assert.doesNotMatch(dashboard, /const csvUrl = `https:\/\/docs\.google\.com\/spreadsheets\/d\/\$\{encodeURIComponent\(spreadsheetId\)\}/);
+  assert.match(secureSheet, /source === EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY/);
+  assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "effectif"\], idToken\)/);
+});
+
 test("la clé de correction n'est plus publiée", () => {
   assert.equal(existsSync(join(root, "assets/js/update-corrections.js")), false);
 });
