@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-2">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
   <script src="../assets/js/prof-simplified-mode.js?v=5"></script>
-  <script src="../assets/js/prof-local-preferences.js?v=1"></script>
+  <script src="../assets/js/prof-local-preferences.js?v=2"></script>
 </head>
 
 <body class="prof-v2-page" data-theme="dark">
@@ -289,11 +289,6 @@
                 <strong>Accessibilité</strong>
                 <small>Lecture et confort</small>
               </button>
-              <button type="button" data-settings-category="corrections" aria-selected="false">
-                <span aria-hidden="true">CO</span>
-                <strong>Corrections</strong>
-                <small>Outils rapides</small>
-              </button>
             </nav>
 
             <div class="v2-settings-panels">
@@ -445,51 +440,11 @@
                     </button>
                   </article>
                 </div>
-              </section>
-
-              <section class="v2-settings-panel" data-settings-panel="corrections" aria-labelledby="correctionSettingsTitle" hidden>
-                <header class="v2-settings-panel-head">
-                  <div>
-                    <p class="v2-eyebrow">Productivité</p>
-                    <h3 id="correctionSettingsTitle">Outils de correction</h3>
-                    <p>Des raccourcis pratiques pour les cours et les corrections sur téléphone.</p>
-                  </div>
-                  <span class="v2-local-badge">2 outils</span>
-                </header>
-
-                <div class="v2-preference-grid">
-                  <article class="v2-preference-card">
-                    <div class="v2-preference-copy">
-                      <span class="v2-preference-icon" aria-hidden="true">ID</span>
-                      <div>
-                        <h4>Auto-collage des modules</h4>
-                        <p>Vérifie le presse-papiers toutes les 5 secondes dans Modules élèves. Ctrl+V reste toujours disponible.</p>
-                      </div>
-                    </div>
-                    <button type="button" class="v2-preference-switch" data-local-preference="autoPaste" role="switch" aria-checked="true">
-                      <span data-preference-label>Activé</span><i aria-hidden="true"></i>
-                    </button>
-                  </article>
-
-                  <article class="v2-preference-card">
-                    <div class="v2-preference-copy">
-                      <span class="v2-preference-icon" aria-hidden="true">ON</span>
-                      <div>
-                        <h4>Garder l’écran allumé</h4>
-                        <p>Évite la mise en veille pendant une correction lorsque le navigateur le permet.</p>
-                        <small data-preference-status="keepAwake" aria-live="polite"></small>
-                      </div>
-                    </div>
-                    <button type="button" class="v2-preference-switch" data-local-preference="keepAwake" role="switch" aria-checked="false">
-                      <span data-preference-label>Désactivé</span><i aria-hidden="true"></i>
-                    </button>
-                  </article>
-                </div>
 
                 <section class="v2-settings-reset-zone" aria-labelledby="resetPreferencesTitle">
                   <div>
                     <h4 id="resetPreferencesTitle">Réinitialiser les préférences</h4>
-                    <p>Remet le thème, l’accessibilité et les outils à leur valeur par défaut. Le nom et la connexion sont conservés.</p>
+                    <p>Remet le thème et l’accessibilité à leur valeur par défaut. Le nom et la connexion sont conservés.</p>
                   </div>
                   <button type="button" class="v2-secondary-btn" data-reset-local-preferences>Réinitialiser l’affichage</button>
                   <small data-reset-preferences-status aria-live="polite"></small>

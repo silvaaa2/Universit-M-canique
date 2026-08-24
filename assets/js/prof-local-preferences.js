@@ -2,7 +2,7 @@
   "use strict";
 
   const CATEGORY_STORAGE_KEY = "profSettingsActiveCategory";
-  const CATEGORIES = new Set(["profile", "display", "accessibility", "corrections"]);
+  const CATEGORIES = new Set(["profile", "display", "accessibility"]);
   const PREFERENCES = Object.freeze({
     highContrast: {
       storageKey: "profHighContrast",
@@ -13,20 +13,11 @@
       storageKey: "profReducedMotion",
       rootClass: "prof-reduced-motion",
       defaultValue: false
-    },
-    keepAwake: {
-      storageKey: "profKeepScreenAwake",
-      defaultValue: false
-    },
-    autoPaste: {
-      storageKey: "profModulesAutoPasteEnabled",
-      defaultValue: true
     }
   });
 
   const root = document.documentElement;
   const state = Object.create(null);
-  let wakeLock = null;
   let controlsBound = false;
 
   function readStorage(key) {
@@ -68,54 +59,6 @@
     root.dataset[name] = enabled ? "on" : "off";
   }
 
-  function setPreferenceStatus(name, message) {
-    document.querySelectorAll(`[data-preference-status="${name}"]`).forEach((status) => {
-      status.textContent = message;
-    });
-  }
-
-  function supportsWakeLock() {
-    return Boolean(navigator.wakeLock && typeof navigator.wakeLock.request === "function");
-  }
-
-  async function releaseWakeLock() {
-    const activeLock = wakeLock;
-    wakeLock = null;
-    if (!activeLock) return;
-
-    try {
-      await activeLock.release();
-    } catch (error) {
-      // Le navigateur peut avoir libéré le verrou pendant la mise en veille.
-    }
-  }
-
-  async function requestWakeLock() {
-    if (!state.keepAwake || document.visibilityState !== "visible" || wakeLock) return Boolean(wakeLock);
-
-    if (!supportsWakeLock()) {
-      setPreferenceStatus("keepAwake", "Cette fonction n’est pas disponible sur ce navigateur.");
-      return false;
-    }
-
-    try {
-      wakeLock = await navigator.wakeLock.request("screen");
-      setPreferenceStatus("keepAwake", "Écran maintenu allumé pendant l’utilisation du site.");
-
-      wakeLock.addEventListener("release", () => {
-        wakeLock = null;
-        if (state.keepAwake && document.visibilityState === "visible") {
-          setPreferenceStatus("keepAwake", "Le maintien de l’écran sera réactivé automatiquement.");
-        }
-      }, { once: true });
-
-      return true;
-    } catch (error) {
-      setPreferenceStatus("keepAwake", "Le navigateur a refusé le maintien de l’écran.");
-      return false;
-    }
-  }
-
   function syncPreferenceControls() {
     document.querySelectorAll("[data-local-preference]").forEach((control) => {
       const name = control.dataset.localPreference;
@@ -128,33 +71,18 @@
       const label = control.querySelector("[data-preference-label]");
       if (label) label.textContent = enabled ? "Activé" : "Désactivé";
 
-      if (name === "keepAwake" && !supportsWakeLock()) {
-        control.disabled = true;
-        control.setAttribute("aria-disabled", "true");
-        setPreferenceStatus(name, "Cette fonction n’est pas disponible sur ce navigateur.");
-      }
     });
   }
 
-  async function applyLocalPreference(name, enabled, { persist = false } = {}) {
+  function applyLocalPreference(name, enabled, { persist = false } = {}) {
     const preference = PREFERENCES[name];
     if (!preference) return false;
 
-    let safeEnabled = Boolean(enabled);
-    if (name === "keepAwake" && safeEnabled && !supportsWakeLock()) safeEnabled = false;
+    const safeEnabled = Boolean(enabled);
 
     state[name] = safeEnabled;
     applyRootPreference(name, safeEnabled);
     if (persist) writeStorage(preference.storageKey, String(safeEnabled));
-
-    if (name === "keepAwake") {
-      if (safeEnabled) {
-        await requestWakeLock();
-      } else {
-        await releaseWakeLock();
-        setPreferenceStatus("keepAwake", "");
-      }
-    }
 
     syncPreferenceControls();
     window.dispatchEvent(new CustomEvent("prof:local-preference-change", {
@@ -234,7 +162,6 @@
     bindControls();
     showSettingsCategory(readCategoryPreference());
     syncPreferenceControls();
-    if (state.keepAwake) requestWakeLock();
   }
 
   if (document.readyState === "loading") {
@@ -243,11 +170,6 @@
     initializeLocalPreferences();
   }
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && state.keepAwake) requestWakeLock();
-  });
-
-  window.addEventListener("pagehide", releaseWakeLock);
   window.addEventListener("storage", (event) => {
     const entry = Object.entries(PREFERENCES)
       .find(([, preference]) => preference.storageKey === event.key);
