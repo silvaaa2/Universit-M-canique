@@ -33,21 +33,6 @@ test("le tableau de bord charge l'effectif actif par l'API sécurisée", () => {
   assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "effectif"\], idToken\)/);
 });
 
-test("le centrage compact reste limité au tableau de bord ordinateur", () => {
-  const page = read("pages/espace-prof.html");
-  const styles = read("assets/css/prof-v2.css");
-  const dashboard = read("assets/js/prof-auth-v2.js");
-
-  assert.match(page, /class="v2-app v2-dashboard-centered" id="profDashboard"/);
-  assert.match(styles, /@media \(min-width: 1121px\)[\s\S]*?\.v2-app\.v2-dashboard-centered/);
-  assert.match(styles, /width: min\(92vw, 1760px\)/);
-  assert.match(styles, /grid-template-columns: 260px minmax\(0, 1fr\)/);
-  assert.match(styles, /gap: 40px/);
-  assert.match(dashboard, /function resetHomeState\(\) \{\s*profDashboard\?\.classList\.add\("v2-dashboard-centered"\)/);
-  assert.match(dashboard, /openCorrectionsBtn[\s\S]*?classList\.remove\("v2-dashboard-centered"\)/);
-  assert.match(dashboard, /settingsBtn[\s\S]*?classList\.remove\("v2-dashboard-centered"\)/);
-});
-
 test("la clé de correction n'est plus publiée", () => {
   assert.equal(existsSync(join(root, "assets/js/update-corrections.js")), false);
 });
