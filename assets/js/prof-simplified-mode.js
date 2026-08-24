@@ -3,6 +3,7 @@
 
   const STORAGE_KEY = "profSimplifiedMode";
   const TEXT_SIZE_STORAGE_KEY = "profSimplifiedTextSize";
+  const THEME_STORAGE_KEY = "profV2Theme";
   const ROOT_CLASS = "prof-simplified-mode";
   const TEXT_SIZES = new Set(["standard", "large", "xlarge"]);
   const root = document.documentElement;
@@ -33,6 +34,19 @@
     }
   }
 
+  function readThemePreference() {
+    try {
+      return window.localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
+    } catch (error) {
+      console.warn("Thème local indisponible :", error);
+      return "dark";
+    }
+  }
+
+  function getTheme() {
+    return document.body?.dataset.theme === "light" ? "light" : "dark";
+  }
+
   function getTextSize() {
     return TEXT_SIZES.has(root.dataset.simplifiedTextSize)
       ? root.dataset.simplifiedTextSize
@@ -49,6 +63,12 @@
 
   function syncControls() {
     const enabled = isEnabled();
+
+    document.querySelectorAll("[data-theme-choice]").forEach((control) => {
+      const isActive = control.dataset.themeChoice === getTheme();
+      control.classList.toggle("active", isActive);
+      control.setAttribute("aria-pressed", String(isActive));
+    });
 
     document.querySelectorAll("[data-simplified-toggle]").forEach((control) => {
       control.classList.toggle("active", enabled);
@@ -78,6 +98,27 @@
         ? `Taille ${getTextSizeLabel(textSize).toLowerCase()} active.`
         : `Taille ${getTextSizeLabel(textSize).toLowerCase()} enregistrée pour le Mode Simplifié.`;
     });
+  }
+
+  function applyTheme(theme, { persist = false, notify = true } = {}) {
+    const safeTheme = theme === "light" ? "light" : "dark";
+    if (document.body) document.body.dataset.theme = safeTheme;
+
+    if (persist) {
+      try {
+        window.localStorage.setItem(THEME_STORAGE_KEY, safeTheme);
+      } catch (error) {
+        console.warn("Impossible d’enregistrer le thème :", error);
+      }
+    }
+
+    syncControls();
+
+    if (notify) {
+      window.dispatchEvent(new CustomEvent("prof:theme-change", {
+        detail: { theme: safeTheme, localOnly: true }
+      }));
+    }
   }
 
   function applyTextSize(size, { persist = false, notify = true } = {}) {
@@ -131,6 +172,14 @@
   function bindPreferenceControls() {
     if (preferenceControlsBound) return;
     preferenceControlsBound = true;
+
+    document.querySelectorAll("[data-theme-choice]").forEach((control) => {
+      control.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        applyTheme(control.dataset.themeChoice, { persist: true });
+      });
+    });
 
     document.querySelectorAll("[data-simplified-text-size]").forEach((control) => {
       control.addEventListener("click", (event) => {
@@ -303,6 +352,7 @@
 
   function initializeSimplifiedMode() {
     bindPreferenceControls();
+    applyTheme(readThemePreference(), { notify: false });
     syncControls();
     initSpeechEnhancement();
   }
@@ -323,15 +373,22 @@
     if (event.key === TEXT_SIZE_STORAGE_KEY) {
       applyTextSize(event.newValue, { notify: true });
     }
+
+    if (event.key === THEME_STORAGE_KEY) {
+      applyTheme(event.newValue, { notify: true });
+    }
   });
 
   window.profSimplifiedMode = Object.freeze({
     storageKey: STORAGE_KEY,
     textSizeStorageKey: TEXT_SIZE_STORAGE_KEY,
+    themeStorageKey: THEME_STORAGE_KEY,
     isEnabled,
     getTextSize,
+    getTheme,
     set: (enabled) => applyPreference(enabled, { persist: true }),
     setTextSize: (size) => applyTextSize(size, { persist: true }),
+    setTheme: (theme) => applyTheme(theme, { persist: true }),
     sync: () => {
       bindPreferenceControls();
       syncControls();

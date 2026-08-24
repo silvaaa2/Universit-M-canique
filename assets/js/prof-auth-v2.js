@@ -35,7 +35,6 @@ const firebaseConfig = {
 };
 
 const AUTH_TIMEOUT_MS = 8500;
-const THEME_STORAGE_KEY = "profV2Theme";
 const PROFILE_STORAGE_KEY = "profV2Profile";
 const DASHBOARD_TIMEOUT_MS = 7000;
 const EFFECTIF_TIMEOUT_MS = 12000;
@@ -158,26 +157,6 @@ function setDiscordLoading(isLoading) {
   discordLoginBtn.disabled = isLoading;
   discordLoginBtn.classList.toggle("loading", isLoading);
   discordLoginBtnText.textContent = isLoading ? "Connexion à Discord..." : "Continuer avec Discord";
-}
-
-function setTheme(theme) {
-  const safeTheme = ["dark", "light"].includes(theme) ? theme : "dark";
-  document.body.dataset.theme = safeTheme;
-  localStorage.setItem(THEME_STORAGE_KEY, safeTheme);
-
-  document.querySelectorAll("[data-theme-choice]").forEach(button => {
-    button.classList.toggle("active", button.dataset.themeChoice === safeTheme);
-  });
-}
-
-function initTheme() {
-  setTheme(localStorage.getItem(THEME_STORAGE_KEY) || document.body.dataset.theme || "dark");
-
-  document.querySelectorAll("[data-theme-choice]").forEach(button => {
-    button.addEventListener("click", () => {
-      setTheme(button.dataset.themeChoice);
-    });
-  });
 }
 
 function getInitials(email) {
@@ -1547,7 +1526,6 @@ function initAuth() {
   });
 }
 
-initTheme();
 initV2Actions();
 initCommandSearch();
 initAuth();

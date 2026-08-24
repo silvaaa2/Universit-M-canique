@@ -66,7 +66,18 @@ test("le Mode Simplifié branche directement son interrupteur et sauvegarde le c
   assert.match(source, /localStorage\.setItem\(STORAGE_KEY, String\(safeEnabled\)\)/);
   assert.match(source, /document\.readyState === "loading"/);
   assert.match(dashboard, /id="simplifiedModeToggle"/);
-  assert.match(dashboard, /prof-simplified-mode\.js\?v=3/);
+  assert.match(dashboard, /prof-simplified-mode\.js\?v=4/);
+});
+
+test("le Confort de lecture applique directement le thème et les tailles", () => {
+  const source = read("assets/js/prof-simplified-mode.js");
+  const auth = read("assets/js/prof-auth-v2.js");
+
+  assert.match(source, /querySelectorAll\("\[data-theme-choice\]"\)[\s\S]*?control\.addEventListener\("click"/);
+  assert.match(source, /applyTheme\(control\.dataset\.themeChoice, \{ persist: true \}\)/);
+  assert.match(source, /localStorage\.setItem\(THEME_STORAGE_KEY, safeTheme\)/);
+  assert.match(source, /querySelectorAll\("\[data-simplified-text-size\]"\)[\s\S]*?control\.addEventListener\("click"/);
+  assert.doesNotMatch(auth, /function initTheme\(/);
 });
 
 test("le zoom ne charge jamais une URL vide", () => {
