@@ -319,19 +319,30 @@ async function getFirebaseUser(idToken) {
 
 async function getFirestoreDocument(pathParts, idToken) {
   const encodedPath = pathParts.map(part => encodeURIComponent(part)).join("/");
-  const response = await fetch(
-    `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${encodedPath}`,
-    {
+  const url = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${encodedPath}`;
+  const retryDelays = [0, 180, 620];
+  let response;
+
+  for (let attempt = 0; attempt < retryDelays.length; attempt += 1) {
+    if (retryDelays[attempt]) {
+      await new Promise(resolve => setTimeout(resolve, retryDelays[attempt]));
+    }
+
+    response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${idToken}`
       }
-    }
-  );
+    });
+
+    if (response.status !== 429 || attempt === retryDelays.length - 1) break;
+  }
 
   if (response.status === 404) return {};
 
   if (!response.ok) {
-    throw new Error(`Lecture Firebase impossible (${response.status}).`);
+    const error = new Error(`Lecture Firebase impossible (${response.status}).`);
+    error.status = response.status;
+    throw error;
   }
 
   const data = await response.json();
@@ -347,8 +358,22 @@ async function getUserAccess(email, idToken) {
   };
 }
 
-async function resolveEffectifSheet(idToken) {
-  const settings = await getFirestoreDocument(["stageSettings", "effectif"], idToken);
+async function resolveEffectifSheet(idToken, clientFallback = {}) {
+  let settings;
+
+  try {
+    settings = await getFirestoreDocument(["stageSettings", "effectif"], idToken);
+  } catch (error) {
+    const spreadsheetId = extractSpreadsheetId(clientFallback.spreadsheetId);
+    const gid = safeGid(clientFallback.gid);
+    const transientStatuses = new Set([408, 425, 429, 500, 502, 503, 504]);
+
+    if (!transientStatuses.has(Number(error?.status)) || !spreadsheetId || !gid) throw error;
+
+    console.warn(`Réglage effectif Firebase indisponible (${error.status}), utilisation publique du réglage déjà vérifié côté professeur.`);
+    return { spreadsheetId, gid, publicOnly: true };
+  }
+
   const spreadsheetId =
     extractSpreadsheetId(settings.spreadsheetId) ||
     extractSpreadsheetId(settings.spreadsheetUrl) ||
@@ -368,11 +393,11 @@ async function resolveEffectifSheet(idToken) {
   return { spreadsheetId, gid };
 }
 
-async function resolveSheet(source, sheetKey, idToken) {
+async function resolveSheet(source, sheetKey, idToken, options = {}) {
   const safeSheetKey = normalizeSheetKey(sheetKey);
 
   if (source === EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY) {
-    return resolveEffectifSheet(idToken);
+    return resolveEffectifSheet(idToken, options.effectifFallback);
   }
 
   const safeSource = SOURCE_DOCS[source] ? source : "";
@@ -489,12 +514,14 @@ async function fetchGoogleCsv(url) {
   };
 }
 
-async function fetchCsv({ spreadsheetId, gid }) {
+async function fetchCsv({ spreadsheetId, gid, publicOnly = false }) {
   if (!spreadsheetId || !gid) {
     throw new Error("Réglage Google Sheets incomplet côté serveur.");
   }
 
-  if (getGoogleServiceAccount()) {
+  // Le repli fourni par le navigateur ne doit jamais donner accès aux feuilles
+  // privées du compte de service. Il est limité aux exports déjà publics.
+  if (!publicOnly && getGoogleServiceAccount()) {
     return fetchPrivateGoogleCsv({ spreadsheetId, gid });
   }
 
@@ -547,7 +574,12 @@ module.exports = async function handler(req, res) {
     const url = new URL(req.url, `https://${req.headers.host || "localhost"}`);
     const source = url.searchParams.get("source") || "";
     const sheet = url.searchParams.get("sheet") || "";
-    const resolvedSheet = await resolveSheet(source, sheet, idToken);
+    const resolvedSheet = await resolveSheet(source, sheet, idToken, {
+      effectifFallback: {
+        spreadsheetId: url.searchParams.get("spreadsheetId") || "",
+        gid: url.searchParams.get("gid") || ""
+      }
+    });
     const csv = await fetchCsv(resolvedSheet);
 
     res.statusCode = 200;

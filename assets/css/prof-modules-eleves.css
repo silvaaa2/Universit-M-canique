@@ -237,6 +237,76 @@ body.modules-page .modules-status[data-tone="ok"] {
     0 8px 18px rgba(0,0,0,.20) !important;
 }
 
+.module-check-group {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.module-verification-check {
+  width: auto !important;
+  min-width: 70px !important;
+  grid-template-columns: 16px auto !important;
+  gap: 6px !important;
+  padding: 0 8px !important;
+}
+
+.module-verification-check::before {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+.module-verification-check > .module-verification-label {
+  display: inline !important;
+  color: inherit;
+  font-size: 9px;
+  font-weight: 1000;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.module-verification-check.checked::after {
+  left: 15px !important;
+  width: 6px !important;
+  height: 10px !important;
+  border-width: 0 2px 2px 0 !important;
+}
+
+.module-check.is-locked {
+  border-color: rgba(148,163,184,.20) !important;
+  background: rgba(71,85,105,.10) !important;
+  color: #667085 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: .58 !important;
+}
+
+.module-check.is-locked:hover {
+  transform: none !important;
+}
+
+.module-date:disabled {
+  border-color: rgba(148,163,184,.16) !important;
+  background: rgba(71,85,105,.08) !important;
+  color: #667085 !important;
+  cursor: not-allowed !important;
+  opacity: .55 !important;
+}
+
+.module-check.is-blocked-pulse {
+  animation: moduleBlockedPulse .58s ease !important;
+}
+
+@keyframes moduleBlockedPulse {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
 .module-check:focus-visible {
   outline: 3px solid rgba(125,211,252,.55) !important;
   outline-offset: 3px !important;

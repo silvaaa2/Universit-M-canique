@@ -115,3 +115,80 @@ test("l'API sécurisée résout et renvoie l'effectif actif", async () => {
     else process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = originalKey;
   }
 });
+
+test("l'effectif reste disponible quand Firestore limite temporairement le serveur", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const originalKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+  let settingsAttempts = 0;
+
+  process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = "service@example.iam.gserviceaccount.com";
+  process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = privateKey.export({ type: "pkcs8", format: "pem" });
+
+  globalThis.fetch = async url => {
+    const requestUrl = String(url);
+
+    if (requestUrl.includes("securetoken@system.gserviceaccount.com")) {
+      return new Response(JSON.stringify({ "effectif-test-key": publicKeyPem }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=3600"
+        }
+      });
+    }
+
+    if (requestUrl.includes("/documents/users/prof%40example.com")) {
+      return jsonResponse({ fields: { role: { stringValue: "prof" } } });
+    }
+
+    if (requestUrl.includes("/documents/stageSettings/effectif")) {
+      settingsAttempts += 1;
+      return jsonResponse({ error: { message: "quota" } }, 429);
+    }
+
+    if (requestUrl.includes("docs.google.com/spreadsheets")) {
+      assert.match(requestUrl, /1FallbackSpreadsheetId1234567890/);
+      assert.match(requestUrl, /gid=77/);
+      return new Response("ID Unique,Nom de l'élève\n654321,Élève Secours", { status: 200 });
+    }
+
+    throw new Error(`Requête inattendue : ${requestUrl}`);
+  };
+
+  const req = {
+    method: "GET",
+    url: "/api/secure-sheet?source=effectif&sheet=current&spreadsheetId=1FallbackSpreadsheetId1234567890&gid=77",
+    headers: {
+      authorization: `Bearer ${createLegacyToken()}`,
+      host: "localhost"
+    }
+  };
+  const res = {
+    statusCode: 0,
+    headers: {},
+    body: "",
+    setHeader(name, value) {
+      this.headers[name] = value;
+    },
+    end(body = "") {
+      this.body = String(body);
+    }
+  };
+
+  try {
+    await secureSheetHandler(req, res);
+
+    assert.equal(settingsAttempts, 3);
+    assert.equal(res.statusCode, 200);
+    assert.match(res.body, /654321,Élève Secours/);
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (originalEmail === undefined) delete process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    else process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = originalEmail;
+
+    if (originalKey === undefined) delete process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+    else process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = originalKey;
+  }
+});

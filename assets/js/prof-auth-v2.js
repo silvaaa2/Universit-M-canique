@@ -514,7 +514,7 @@ async function loadCurrentCursus() {
     DASHBOARD_TIMEOUT_MS,
     "Vérification de la session trop longue."
   );
-  const csvUrl = "/api/secure-sheet?source=effectif&sheet=current";
+  const csvUrl = `/api/secure-sheet?source=effectif&sheet=current&spreadsheetId=${encodeURIComponent(spreadsheetId)}&gid=${encodeURIComponent(gid)}`;
   const response = await withTimeout(
     fetch(csvUrl, {
       cache: "no-store",

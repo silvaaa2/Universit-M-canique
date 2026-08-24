@@ -27,10 +27,14 @@ test("le tableau de bord charge l'effectif actif par l'API sécurisée", () => {
   const secureSheet = read("api/secure-sheet.js");
 
   assert.match(dashboard, /\/api\/secure-sheet\?source=effectif&sheet=current/);
+  assert.match(dashboard, /spreadsheetId=\$\{encodeURIComponent\(spreadsheetId\)\}&gid=\$\{encodeURIComponent\(gid\)\}/);
   assert.match(dashboard, /Authorization: `Bearer \$\{idToken\}`/);
   assert.doesNotMatch(dashboard, /const csvUrl = `https:\/\/docs\.google\.com\/spreadsheets\/d\/\$\{encodeURIComponent\(spreadsheetId\)\}/);
   assert.match(secureSheet, /source === EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY/);
   assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "effectif"\], idToken\)/);
+  assert.match(secureSheet, /publicOnly: true/);
+  assert.match(secureSheet, /!publicOnly && getGoogleServiceAccount\(\)/);
+  assert.match(secureSheet, /utilisation publique du réglage déjà vérifié côté professeur/);
 });
 
 test("la clé de correction n'est plus publiée", () => {
@@ -236,7 +240,8 @@ test("les liens customs ont une ouverture externe native et un secours navigateu
 
 test("les modules utilisent un vrai bouton compatible entre navigateurs", () => {
   const modules = read("assets/js/prof-modules-eleves-safe.js");
-  assert.match(modules, /<button type="button" class="module-check/);
+  assert.match(modules, /<button type="button" class="\$\{classes\}"/);
+  assert.match(modules, /"module-check"/);
   assert.match(modules, /aria-pressed=/);
   assert.match(modules, /data-persisted-checked=/);
   assert.match(modules, /modulesTable\?\.addEventListener\("click"/);

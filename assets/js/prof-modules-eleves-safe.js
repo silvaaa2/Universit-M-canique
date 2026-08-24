@@ -2,6 +2,11 @@ import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebase
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { getProfAccess, getProfActorId } from "./prof-identity.js?v=2";
+import {
+  ALL_PROGRESS_CHECK_KEYS,
+  getCheckLabel,
+  getProgressionBlockReason
+} from "./module-progression-rules.js?v=1";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -22,8 +27,8 @@ const EFFECTIF_TIMEOUT_MS = 12000;
 const MODULE_COLUMNS = [
   { key: "module1", label: "Module 1" },
   { key: "module2", label: "Module 2" },
-  { key: "module3", label: "Module 3" },
-  { key: "module4", label: "Module 4" },
+  { key: "module3", label: "Module 3", verificationKey: "verif3", verificationLabel: "Vérif 3" },
+  { key: "module4", label: "Module 4", verificationKey: "verif4", verificationLabel: "Vérif 4" },
   { key: "exam", label: "Examen" },
   { key: "retakeExam", label: "Rattrapage" }
 ];
@@ -185,8 +190,8 @@ function getTodayDateValue() {
 }
 
 function getEmptyChecks() {
-  return MODULE_COLUMNS.reduce((checks, column) => {
-    checks[column.key] = false;
+  return ALL_PROGRESS_CHECK_KEYS.reduce((checks, checkKey) => {
+    checks[checkKey] = false;
     return checks;
   }, {});
 }
@@ -211,8 +216,11 @@ function normalizeProgress(data = {}) {
     dates: data.dates || data.completedAt || {}
   });
 
+  ALL_PROGRESS_CHECK_KEYS.forEach(checkKey => {
+    progress.checks[checkKey] = progress.checks[checkKey] === true;
+  });
+
   MODULE_COLUMNS.forEach(column => {
-    progress.checks[column.key] = progress.checks[column.key] === true;
     progress.dates[column.key] = normalizeDateValue(progress.dates[column.key]);
   });
 
@@ -449,26 +457,77 @@ function renderSummary() {
   modulesSummary.innerHTML = stats.join("");
 }
 
-function renderModuleCheck(row, column, progress) {
-  const checked = progress.checks[column.key] === true;
+function renderCheckButton(row, checkKey, label, progress, { verification = false } = {}) {
+  const checked = progress.checks[checkKey] === true;
+  const lockReason = checked ? "" : getProgressionBlockReason(progress.checks, checkKey, true);
+  const locked = Boolean(lockReason);
   const studentId = escapeHtml(row.normalizedIdUnique);
-  const moduleKey = escapeHtml(column.key);
+  const moduleKey = escapeHtml(checkKey);
+  const safeLabel = escapeHtml(label);
+  const classes = [
+    "module-check",
+    verification ? "module-verification-check" : "",
+    checked ? "checked" : "",
+    locked ? "is-locked" : ""
+  ].filter(Boolean).join(" ");
+  const title = lockReason || (checked ? `${label} validé` : `${label} non validé`);
 
   return `
-    <button type="button" class="module-check${checked ? " checked" : ""}" title="${checked ? "Validé" : "Non validé"}" aria-label="Valider ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}" aria-pressed="${checked ? "true" : "false"}" data-module-check="true" data-student-id="${studentId}" data-module-key="${moduleKey}" data-checked="${checked ? "true" : "false"}" data-persisted-checked="${checked ? "true" : "false"}">
+    <button type="button" class="${classes}" title="${escapeHtml(title)}" aria-label="${safeLabel} pour ${escapeHtml(row.studentName)}" aria-pressed="${checked ? "true" : "false"}" aria-disabled="${locked ? "true" : "false"}" data-module-check="true" data-student-id="${studentId}" data-module-key="${moduleKey}" data-check-label="${safeLabel}" data-checked="${checked ? "true" : "false"}" data-persisted-checked="${checked ? "true" : "false"}" data-locked="${locked ? "true" : "false"}">
       <span class="module-check-icon" aria-hidden="true"></span>
+      ${verification ? `<span class="module-verification-label">${safeLabel}</span>` : ""}
     </button>
+  `;
+}
+
+function renderModuleCheck(row, column, progress) {
+  return `
+    <div class="module-check-group">
+      ${renderCheckButton(row, column.key, column.label, progress)}
+      ${column.verificationKey
+        ? renderCheckButton(row, column.verificationKey, column.verificationLabel, progress, { verification: true })
+        : ""}
+    </div>
   `;
 }
 
 function renderModuleDate(row, column, progress) {
   const dateValue = normalizeDateValue(progress.dates[column.key]);
+  const lockReason = progress.checks[column.key] === true
+    ? ""
+    : getProgressionBlockReason(progress.checks, column.key, true);
   const studentId = escapeHtml(row.normalizedIdUnique);
   const moduleKey = escapeHtml(column.key);
 
   return `
-    <input class="module-date" type="date" aria-label="Date ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}" data-module-date="true" data-empty="${dateValue ? "false" : "true"}" data-student-id="${studentId}" data-module-key="${moduleKey}" value="${escapeHtml(dateValue)}">
+    <input class="module-date" type="date" aria-label="Date ${escapeHtml(column.label)} pour ${escapeHtml(row.studentName)}" title="${escapeHtml(lockReason)}" data-module-date="true" data-empty="${dateValue ? "false" : "true"}" data-student-id="${studentId}" data-module-key="${moduleKey}" value="${escapeHtml(dateValue)}" ${lockReason ? "disabled" : ""}>
   `;
+}
+
+function refreshRowControlStates(row, progress) {
+  if (!row) return;
+
+  row.querySelectorAll("button[data-module-check]").forEach(control => {
+    const checkKey = control.dataset.moduleKey || "";
+    const checked = progress.checks[checkKey] === true;
+    const lockReason = checked ? "" : getProgressionBlockReason(progress.checks, checkKey, true);
+    const label = control.dataset.checkLabel || getCheckLabel(checkKey);
+
+    control.dataset.locked = lockReason ? "true" : "false";
+    control.setAttribute("aria-disabled", lockReason ? "true" : "false");
+    control.classList.toggle("is-locked", Boolean(lockReason));
+    control.title = lockReason || (checked ? `${label} validé` : `${label} non validé`);
+  });
+
+  row.querySelectorAll("[data-module-date]").forEach(input => {
+    const moduleKey = input.dataset.moduleKey || "";
+    const lockReason = progress.checks[moduleKey] === true
+      ? ""
+      : getProgressionBlockReason(progress.checks, moduleKey, true);
+
+    input.disabled = Boolean(lockReason);
+    input.title = lockReason;
+  });
 }
 
 function renderTable() {
@@ -634,6 +693,7 @@ async function handleModuleCheckChange(control) {
   control.classList.toggle("checked", checked);
   control.classList.add("saving");
   dateInput?.classList.add("saving");
+  refreshRowControlStates(row, progress);
   renderSummary();
 
   try {
@@ -642,6 +702,7 @@ async function handleModuleCheckChange(control) {
       date: progress.dates[moduleKey] || ""
     });
     control.dataset.persistedChecked = checked ? "true" : "false";
+    refreshRowControlStates(row, progress);
     setStatus("", "");
   } catch (error) {
     progressById.set(studentId, before);
@@ -711,7 +772,20 @@ modulesTable?.addEventListener("click", event => {
   event.stopPropagation();
   if (control.dataset.moduleSaving === "true") return;
 
+  const studentId = control.dataset.studentId || "";
+  const moduleKey = control.dataset.moduleKey || "";
+  const progress = getProgress(studentId);
   const checked = control.dataset.checked !== "true";
+  const blockReason = getProgressionBlockReason(progress.checks, moduleKey, checked);
+
+  if (blockReason) {
+    setStatus(blockReason, "info");
+    control.classList.remove("is-blocked-pulse");
+    requestAnimationFrame(() => control.classList.add("is-blocked-pulse"));
+    window.setTimeout(() => control.classList.remove("is-blocked-pulse"), 620);
+    return;
+  }
+
   control.dataset.checked = checked ? "true" : "false";
   control.setAttribute("aria-pressed", checked ? "true" : "false");
   control.title = checked ? "Validé" : "Non validé";
