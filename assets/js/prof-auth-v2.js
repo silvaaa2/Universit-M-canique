@@ -227,9 +227,18 @@ function renderProfileForm(user = window.currentProfUser, access = currentAccess
 
 function updateProfile(user, access) {
   const profile = getDisplayProfile(user, access);
+  const firstName = String(profile.displayName || "Professeur").trim().split(/\s+/)[0] || "Professeur";
 
   if (v2UserEmail) v2UserEmail.textContent = profile.displayName;
   if (v2UserInitials) renderProfAvatar(v2UserInitials, user, profile.initials);
+  setText("v2ApexFirstName", firstName);
+  setText("v2ApexDate", new Intl.DateTimeFormat("fr-FR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date()).replace(",", " ·"));
   if (v2ProfileMenuTrigger) {
     v2ProfileMenuTrigger.setAttribute("aria-label", `Ouvrir le menu du profil de ${profile.displayName}`);
   }
@@ -803,9 +812,13 @@ function summarizeModules(rows, cursusTotal = rows.length) {
   let exam = 0;
   let warnings = 0;
   let refused = 0;
+  const moduleCounts = Object.fromEntries(MODULE_KEYS.map(key => [key, 0]));
 
   rows.forEach(({ data }) => {
     const checkedModules = MODULE_KEYS.filter(key => isCheckedValue(getNestedValue(data, key))).length;
+    MODULE_KEYS.forEach(key => {
+      if (isCheckedValue(getNestedValue(data, key))) moduleCounts[key]++;
+    });
     if (checkedModules > 0) active++;
     if (checkedModules === MODULE_KEYS.length) complete++;
     if (isCheckedValue(getNestedValue(data, MODULE_EXAM_KEY))) exam++;
@@ -824,6 +837,7 @@ function summarizeModules(rows, cursusTotal = rows.length) {
     retake,
     warnings,
     refused,
+    moduleCounts,
     inactive: Math.max(cursusTotal - active, 0)
   };
 }
@@ -993,6 +1007,9 @@ function renderWatchList({ modules, exams, customAccess, customAnswers }) {
   if (v2WatchCount) {
     v2WatchCount.textContent = String(items.reduce((total, item) => total + Number(item.value || 0), 0));
   }
+  const queueCount = String(items.reduce((total, item) => total + Number(item.value || 0), 0));
+  setText("v2ApexQueueCount", queueCount);
+  setText("v2ApexQueueAction", queueCount);
 
   if (!v2WatchList) return;
 
@@ -1017,6 +1034,52 @@ function renderCursusStats(cursus, modules) {
   setText("v2StatModuleCompleteState", `${formatCount(modules.complete)} / ${formatCount(cursus.total)} du cursus`);
 }
 
+function renderApexDashboard({ cursus, modules, exams, customAnswers, customAccess }) {
+  const total = Math.max(Number(cursus.total || modules.total || 0), 0);
+  const load = modules.inactive
+    + (modules.warnings * 2)
+    + exams.pending
+    + (customAnswers.pending * .5)
+    + (customAccess.closed * 3);
+  const score = total > 0
+    ? Math.max(0, Math.min(100, Math.round(100 - ((load / Math.max(total * 2, 1)) * 100))))
+    : 0;
+  const healthLabel = score >= 85 ? "Excellent" : score >= 70 ? "Très bon" : score >= 50 ? "À surveiller" : "Prioritaire";
+  const healthCaption = score >= 85
+    ? "Cursus parfaitement maîtrisé"
+    : score >= 70
+      ? "Progression régulière"
+      : score >= 50
+        ? "Quelques actions recommandées"
+        : "Intervention nécessaire";
+  const alerts = modules.warnings + exams.pending + customAnswers.pending;
+
+  setText("v2ApexHealthScore", String(score));
+  setText("v2DashboardHealth", healthLabel);
+  setText("v2ApexHealthCaption", healthCaption);
+  setText("v2ApexHeroActive", `${formatCount(modules.active)} / ${formatCount(total)}`);
+  setText("v2ApexHeroComplete", formatCount(modules.complete));
+  setText("v2ApexHeroAlerts", formatCount(alerts));
+  setText("v2ApexCustomPending", formatCount(customAnswers.pending));
+  setText("v2ApexProgressTotal", formatCount(total));
+  setText("v2ApexInactive", formatCount(modules.inactive));
+  setText("v2ApexComplete", formatCount(modules.complete));
+
+  const ring = document.getElementById("v2ApexHealthRing");
+  if (ring) {
+    ring.style.setProperty("--apex-score", String(score));
+    ring.setAttribute("aria-label", `Santé du cursus : ${score} sur 100, ${healthLabel}`);
+  }
+
+  MODULE_KEYS.forEach((key, index) => {
+    const count = Number(modules.moduleCounts?.[key] || 0);
+    const percent = total > 0 ? Math.max(0, Math.min(100, Math.round((count / total) * 100))) : 0;
+    setText(`v2ApexModule${index + 1}Value`, `${formatCount(count)} / ${formatCount(total)}`);
+    const bar = document.getElementById(`v2ApexModule${index + 1}Bar`);
+    if (bar) bar.style.width = `${percent}%`;
+  });
+}
+
 function setDashboardFallback(message) {
   [
     "v2StatExamSent",
@@ -1027,15 +1090,36 @@ function setDashboardFallback(message) {
     "v2StatCustomsOpen",
     "v2StatModuleTotal",
     "v2StatCustomApproved",
-    "v2StatWarnings"
+    "v2StatWarnings",
+    "v2ApexHealthScore",
+    "v2ApexHeroActive",
+    "v2ApexHeroComplete",
+    "v2ApexHeroAlerts",
+    "v2ApexCustomPending",
+    "v2ApexProgressTotal",
+    "v2ApexInactive",
+    "v2ApexComplete",
+    "v2ApexQueueCount",
+    "v2ApexQueueAction",
+    "v2ApexModule1Value",
+    "v2ApexModule2Value",
+    "v2ApexModule3Value",
+    "v2ApexModule4Value"
   ].forEach(id => setText(id, "--"));
 
   setText("v2StatExamPending", "Données indisponibles");
-  setText("v2StatExamRejected", "Refusés : --");
+  setText("v2StatExamRejected", "--");
   setText("v2StatCustomsState", "Réponses indisponibles");
   setText("v2StatModuleActiveState", "Cursus indisponible");
   setText("v2StatModuleCompleteState", "Cursus indisponible");
   if (v2DashboardHealth) v2DashboardHealth.textContent = "Indisponible";
+  setText("v2ApexHealthCaption", "Données indisponibles");
+  const ring = document.getElementById("v2ApexHealthRing");
+  if (ring) ring.style.setProperty("--apex-score", "0");
+  MODULE_KEYS.forEach((_, index) => {
+    const bar = document.getElementById(`v2ApexModule${index + 1}Bar`);
+    if (bar) bar.style.width = "0%";
+  });
   if (v2WatchCount) v2WatchCount.textContent = "--";
   if (v2WatchList) v2WatchList.innerHTML = `<p class="v2-watch-empty">${message}</p>`;
   if (v2DashboardUpdated) v2DashboardUpdated.textContent = "--";
@@ -1085,7 +1169,7 @@ async function loadDashboardStats() {
     setText("v2StatExamSent", formatCount(exams.total));
     setText("v2StatExamApproved", formatCount(exams.approved));
     setText("v2StatExamPending", exams.unavailable ? "Feuille indisponible" : `En attente : ${formatCount(exams.pending)}`);
-    setText("v2StatExamRejected", `Refusés : ${formatCount(exams.rejected)}`);
+    setText("v2StatExamRejected", formatCount(exams.rejected));
 
     setText("v2StatModuleActive", formatCount(modules.active));
     setText("v2StatModuleComplete", formatCount(modules.complete));
@@ -1100,9 +1184,7 @@ async function loadDashboardStats() {
     );
     setText("v2StatCustomApproved", formatCount(customAnswers.approved));
     renderCursusStats(cursus, modules);
-
-    const health = exams.pending || modules.inactive || modules.warnings || customAccess.closed ? "À vérifier" : "À jour";
-    if (v2DashboardHealth) v2DashboardHealth.textContent = health;
+    renderApexDashboard({ cursus, modules, exams, customAnswers, customAccess });
     if (v2DashboardUpdated) {
       v2DashboardUpdated.textContent = new Date().toLocaleTimeString("fr-FR", {
         hour: "2-digit",
@@ -1290,6 +1372,8 @@ function initV2Actions() {
     settingsBtn.classList.add("active");
     renderProfileForm();
   });
+
+  document.getElementById("apexSettingsShortcut")?.addEventListener("click", () => settingsBtn?.click());
 
   closeSettingsBtn?.addEventListener("click", resetHomeState);
 

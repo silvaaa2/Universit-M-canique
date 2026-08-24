@@ -25,6 +25,7 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
   <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-2">
+  <link rel="stylesheet" href="../assets/css/prof-dashboard-apex.css?v=1">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
   <script src="../assets/js/prof-simplified-mode.js?v=5"></script>
   <script src="../assets/js/prof-local-preferences.js?v=3"></script>
@@ -97,13 +98,14 @@
           <strong>Mécanique</strong>
           <small>Université</small>
         </span>
+        <i class="apex-version-badge" aria-label="Version 3">V3</i>
       </button>
 
       <nav class="v2-nav" aria-label="Navigation professeur">
         <p>Principal</p>
         <button type="button" class="v2-nav-item active" data-v2-home>
-          <span class="v2-nav-mark">TB</span>
-          Tableau de bord
+          <span class="v2-nav-mark">⌘</span>
+          Centre de pilotage
         </button>
         <button type="button" class="v2-nav-item" id="openCorrectionsBtn">
           <span class="v2-nav-mark">CO</span>
@@ -145,12 +147,14 @@
 
     <div class="v2-workspace">
       <header class="v2-topbar">
-        <div>
-          <p class="v2-eyebrow">Professeur</p>
-          <h1>Tableau Prof</h1>
+        <div class="apex-topbar-title">
+          <h1>Centre de pilotage</h1>
+          <span><i aria-hidden="true"></i> Cursus actif</span>
         </div>
 
         <div class="v2-topbar-actions">
+          <span class="apex-sync-chip"><i aria-hidden="true">↻</i> Données synchronisées</span>
+          <time class="apex-date-chip" id="v2ApexDate"></time>
           <div class="v2-profile-menu" id="v2ProfileMenu">
             <button
               type="button"
@@ -172,91 +176,129 @@
         </div>
       </header>
 
-      <section class="v2-home" id="v2HomePanel">
-        <div class="v2-hero">
-          <div class="v2-cockpit">
-            <div class="v2-cockpit-head">
-              <div>
-                <p class="v2-eyebrow">Mécanique - Université</p>
-                <h2>Suivi du cursus</h2>
-              </div>
-            </div>
-
-            <div class="v2-stat-grid" aria-label="Statistiques professeur">
-              <article class="v2-stat-card">
-                <span>Examens envoyés</span>
-                <strong id="v2StatExamSent">--</strong>
-                <small id="v2StatExamPending">Chargement...</small>
-              </article>
-
-              <article class="v2-stat-card success">
-                <span>Examens approuvés</span>
-                <strong id="v2StatExamApproved">--</strong>
-                <small id="v2StatExamRejected">Refusés : --</small>
-              </article>
-
-              <article class="v2-stat-card success">
-                <span>Élèves démarrés</span>
-                <strong id="v2StatModuleActive">--</strong>
-                <small id="v2StatModuleActiveState">Sur l’effectif actif</small>
-              </article>
-
-              <article class="v2-stat-card">
-                <span>Parcours complets</span>
-                <strong id="v2StatModuleComplete">--</strong>
-                <small id="v2StatModuleCompleteState">Modules 1 à 4</small>
-              </article>
-
-              <article class="v2-stat-card warning">
-                <span>Rattrapages</span>
-                <strong id="v2StatRetake">--</strong>
-                <small>Examen rattrapage</small>
-              </article>
-
-              <article class="v2-stat-card">
-                <span>Customs élèves</span>
-                <strong id="v2StatCustomsOpen">--</strong>
-                <small id="v2StatCustomsState">Réponses reçues</small>
-              </article>
-            </div>
-
-            <div class="v2-insight-grid">
-              <section class="v2-insight-card">
-                <div class="v2-insight-head">
-                  <span>À traiter</span>
-                  <strong id="v2WatchCount">--</strong>
-                </div>
-                <div class="v2-watch-list" id="v2WatchList">
-                  <div class="v2-watch-skeleton" aria-hidden="true"><i></i><i></i><i></i></div>
-                </div>
-              </section>
-
-              <section class="v2-insight-card">
-                <div class="v2-insight-head">
-                  <span>État du cursus</span>
-                  <strong id="v2DashboardHealth">--</strong>
-                </div>
-                <dl class="v2-cursus-state">
-                  <div>
-                    <dt>Élèves suivis</dt>
-                    <dd id="v2StatModuleTotal">--</dd>
-                  </div>
-                  <div>
-                    <dt>Customs approuvés</dt>
-                    <dd id="v2StatCustomApproved">--</dd>
-                  </div>
-                  <div>
-                    <dt>Avertissements</dt>
-                    <dd id="v2StatWarnings">--</dd>
-                  </div>
-                  <div>
-                    <dt>Mise à jour</dt>
-                    <dd id="v2DashboardUpdated">--</dd>
-                  </div>
-                </dl>
-              </section>
+      <section class="v2-home apex-dashboard" id="v2HomePanel">
+        <article class="apex-hero">
+          <span class="apex-watermark" aria-hidden="true">M4</span>
+          <div class="apex-hero-copy">
+            <p class="apex-kicker">Université Mécanique · Promotion actuelle</p>
+            <h2>Bonsoir <span id="v2ApexFirstName">Professeur</span>.<br>Le cursus avance.</h2>
+            <p class="apex-hero-summary">Les urgences, la progression et les corrections sont regroupées au même endroit.</p>
+            <div class="apex-hero-actions">
+              <a class="apex-primary-action" href="prof-rp-7x92q.html">Ouvrir les priorités <span id="v2ApexQueueAction">--</span></a>
+              <a class="apex-secondary-action" href="prof-modules-eleves.html">Voir tous les élèves</a>
             </div>
           </div>
+
+          <div class="apex-health-panel">
+            <div class="apex-health-ring" id="v2ApexHealthRing" style="--apex-score: 0" role="img" aria-label="Santé du cursus en chargement">
+              <div>
+                <strong id="v2ApexHealthScore">--</strong>
+                <small id="v2DashboardHealth">Chargement</small>
+              </div>
+            </div>
+            <div class="apex-health-copy">
+              <span>Signal du cursus</span>
+              <strong id="v2ApexHealthCaption">Analyse en cours</strong>
+              <dl>
+                <div><dt>Élèves démarrés</dt><dd id="v2ApexHeroActive">--</dd></div>
+                <div><dt>Parcours terminés</dt><dd id="v2ApexHeroComplete">--</dd></div>
+                <div><dt>Alertes ouvertes</dt><dd id="v2ApexHeroAlerts">--</dd></div>
+              </dl>
+            </div>
+          </div>
+        </article>
+
+        <div class="apex-kpi-grid" aria-label="Indicateurs du cursus">
+          <article class="apex-kpi apex-kpi-gold">
+            <div>
+              <span>Examens</span>
+              <strong id="v2StatExamSent">--</strong>
+              <small id="v2StatExamPending">Chargement...</small>
+            </div>
+            <dl>
+              <div><dt>Validés</dt><dd id="v2StatExamApproved">--</dd></div>
+              <div><dt>Refusés</dt><dd id="v2StatExamRejected">--</dd></div>
+            </dl>
+          </article>
+
+          <article class="apex-kpi apex-kpi-green">
+            <div>
+              <span>Progression</span>
+              <strong id="v2StatModuleActive">--</strong>
+              <small id="v2StatModuleActiveState">Sur l’effectif actif</small>
+            </div>
+            <dl>
+              <div><dt>Terminés</dt><dd id="v2StatModuleComplete">--</dd></div>
+              <div><dt>Effectif</dt><dd id="v2StatModuleTotal">--</dd></div>
+            </dl>
+          </article>
+
+          <article class="apex-kpi apex-kpi-red">
+            <div>
+              <span>À surveiller</span>
+              <strong id="v2WatchCount">--</strong>
+              <small>actions recommandées</small>
+            </div>
+            <dl>
+              <div><dt>Rattrapages</dt><dd id="v2StatRetake">--</dd></div>
+              <div><dt>Avertos</dt><dd id="v2StatWarnings">--</dd></div>
+            </dl>
+          </article>
+
+          <article class="apex-kpi apex-kpi-blue">
+            <div>
+              <span>Customs</span>
+              <strong id="v2StatCustomsOpen">--</strong>
+              <small id="v2StatCustomsState">Réponses reçues</small>
+            </div>
+            <dl>
+              <div><dt>Approuvés</dt><dd id="v2StatCustomApproved">--</dd></div>
+              <div><dt>À corriger</dt><dd id="v2ApexCustomPending">--</dd></div>
+            </dl>
+          </article>
+        </div>
+
+        <div class="apex-command-grid">
+          <article class="apex-panel apex-priority-panel">
+            <header class="apex-panel-head">
+              <div><span>File de travail</span><h3>Corrections prioritaires</h3></div>
+              <strong><i id="v2ApexQueueCount">--</i> à traiter</strong>
+            </header>
+            <div class="v2-watch-list apex-priority-list" id="v2WatchList">
+              <div class="v2-watch-skeleton" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </article>
+
+          <article class="apex-panel apex-progress-panel">
+            <header class="apex-panel-head">
+              <div><span>Cursus</span><h3>Progression modules</h3></div>
+              <strong><i id="v2ApexProgressTotal">--</i> élèves</strong>
+            </header>
+            <div class="apex-module-progress">
+              <div><span>Module 1</span><i><b id="v2ApexModule1Bar"></b></i><strong id="v2ApexModule1Value">--</strong></div>
+              <div><span>Module 2</span><i><b id="v2ApexModule2Bar"></b></i><strong id="v2ApexModule2Value">--</strong></div>
+              <div><span>Module 3</span><i><b id="v2ApexModule3Bar"></b></i><strong id="v2ApexModule3Value">--</strong></div>
+              <div><span>Module 4</span><i><b id="v2ApexModule4Bar"></b></i><strong id="v2ApexModule4Value">--</strong></div>
+            </div>
+            <div class="apex-progress-summary">
+              <div><span>Sans module</span><strong id="v2ApexInactive">--</strong></div>
+              <div><span>Terminés</span><strong id="v2ApexComplete">--</strong></div>
+            </div>
+          </article>
+
+          <article class="apex-panel apex-actions-panel">
+            <header class="apex-panel-head">
+              <div><span>Accès direct</span><h3>Actions rapides</h3></div>
+              <time id="v2DashboardUpdated">--</time>
+            </header>
+            <nav class="apex-quick-actions" aria-label="Actions rapides">
+              <a href="prof-rp-7x92q.html"><span>RE</span><div><strong>Corriger les customs</strong><small>Réponses élèves</small></div><i>›</i></a>
+              <a href="prof-exam-4x91q.html"><span>EX</span><div><strong>Corriger les examens</strong><small>Copies en attente</small></div><i>›</i></a>
+              <a href="prof-modules-eleves.html"><span>ME</span><div><strong>Suivre les modules</strong><small>Effectif du cursus</small></div><i>›</i></a>
+              <button type="button" id="apexSettingsShortcut"><span>PA</span><div><strong>Ouvrir les paramètres</strong><small>Confort et profil</small></div><i>›</i></button>
+            </nav>
+            <p class="apex-sync-note"><i aria-hidden="true"></i> Dernière mise à jour automatique</p>
+          </article>
         </div>
       </section>
 
@@ -554,7 +596,7 @@
 <script src="../assets/js/navigation.js?v=1007"></script>
 <script src="../assets/js/prof-ui.js?v=1003"></script>
 <script src="../assets/js/prof-local-profile.js?v=2"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=26"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=27"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=4"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=5"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260824-12"></script>
