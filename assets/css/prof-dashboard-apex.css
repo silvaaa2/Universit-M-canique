@@ -196,8 +196,7 @@ body.prof-v2-page .apex-topbar-title h1 {
   text-transform: uppercase;
 }
 
-.apex-topbar-title > span i,
-.apex-sync-note > i {
+.apex-topbar-title > span i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -577,7 +576,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-command-grid {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(300px, .82fr) minmax(300px, .82fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, .8fr);
   gap: 10px;
 }
 
@@ -747,89 +746,6 @@ body.prof-v2-page .v2-home.apex-dashboard {
   color: var(--apex-green);
 }
 
-.apex-quick-actions {
-  display: grid;
-  gap: 6px;
-  margin-top: 9px;
-}
-
-.apex-quick-actions a,
-.apex-quick-actions button {
-  width: 100%;
-  min-height: 43px;
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) 16px;
-  align-items: center;
-  gap: 9px;
-  margin: 0;
-  padding: 6px 8px;
-  border: 1px solid transparent;
-  border-radius: 11px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-  transition: border-color .18s ease, background .18s ease, transform .18s ease;
-}
-
-.apex-quick-actions a:hover,
-.apex-quick-actions button:hover {
-  border-color: var(--apex-line);
-  background: rgba(255,255,255,.025);
-  transform: translateX(2px);
-}
-
-.apex-quick-actions > * > span {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--apex-line-gold);
-  border-radius: 10px;
-  background: rgba(239,206,114,.07);
-  color: var(--apex-gold);
-  font-size: 7px;
-  font-weight: 950;
-}
-
-.apex-quick-actions div {
-  min-width: 0;
-  display: grid;
-  gap: 2px;
-}
-
-.apex-quick-actions strong {
-  overflow: hidden;
-  color: var(--apex-text);
-  font-size: 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.apex-quick-actions small {
-  color: #777a72;
-  font-size: 7px;
-  font-weight: 800;
-}
-
-.apex-quick-actions > * > i {
-  color: #777a72;
-  font-size: 18px;
-  font-style: normal;
-}
-
-.apex-sync-note {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 8px 2px 0;
-  color: #70736c;
-  font-size: 7px;
-  font-weight: 850;
-}
-
 body.prof-v2-page .v2-app.dashboard-visible .apex-hero,
 body.prof-v2-page .v2-app.dashboard-visible .apex-kpi,
 body.prof-v2-page .v2-app.dashboard-visible .apex-panel {
@@ -913,10 +829,6 @@ body.prof-v2-page[data-theme="light"] .apex-primary-action {
 
   .apex-command-grid {
     grid-template-columns: minmax(0, 1.05fr) minmax(260px, .8fr);
-  }
-
-  .apex-actions-panel {
-    display: none;
   }
 }
 
@@ -1063,29 +975,6 @@ body.prof-v2-page[data-theme="light"] .apex-primary-action {
     font-size: 24px;
   }
 
-  .apex-quick-actions a,
-  .apex-quick-actions button {
-    min-height: 56px;
-    grid-template-columns: 38px minmax(0, 1fr) 18px;
-    padding: 8px 10px;
-    border-color: var(--apex-line);
-    border-radius: 16px;
-    background: rgba(255,255,255,.018);
-  }
-
-  .apex-quick-actions > * > span {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-  }
-
-  .apex-quick-actions strong {
-    font-size: 11px;
-  }
-
-  .apex-quick-actions small {
-    font-size: 8px;
-  }
 }
 
 @media (max-width: 430px) {

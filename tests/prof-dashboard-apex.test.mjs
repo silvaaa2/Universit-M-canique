@@ -17,9 +17,10 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(html, /id="v2StatExamSent"/);
   assert.match(html, /id="v2StatModuleActive"/);
   assert.match(html, /id="v2StatCustomsOpen"/);
-  assert.match(html, /href="prof-rp-7x92q\.html"/);
-  assert.match(html, /href="prof-exam-4x91q\.html"/);
-  assert.match(html, /href="prof-modules-eleves\.html"/);
+  assert.match(html, /prof-rp-7x92q\.html/);
+  assert.match(html, /prof-exam-4x91q\.html/);
+  assert.match(html, /prof-modules-eleves\.html/);
+  assert.doesNotMatch(html, /Accès direct|Actions rapides|apexSettingsShortcut/);
   assert.match(script, /function renderApexDashboard/);
   assert.match(script, /modules\.moduleCounts/);
   assert.match(script, /renderApexDashboard\(\{ cursus, modules, exams, customAnswers, customAccess \}\)/);

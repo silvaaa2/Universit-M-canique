@@ -1373,8 +1373,6 @@ function initV2Actions() {
     renderProfileForm();
   });
 
-  document.getElementById("apexSettingsShortcut")?.addEventListener("click", () => settingsBtn?.click());
-
   closeSettingsBtn?.addEventListener("click", resetHomeState);
 
   window.addEventListener("profProfileChanged", () => {
