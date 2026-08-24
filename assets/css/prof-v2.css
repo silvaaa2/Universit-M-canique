@@ -1013,9 +1013,10 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 }
 
 .v2-hero h2 {
-  max-width: 720px;
+  max-width: none;
   font-size: clamp(56px, 6vw, 102px);
   text-wrap: balance;
+  white-space: nowrap;
 }
 
 .v2-cockpit {
@@ -1027,7 +1028,7 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 
 .v2-cockpit-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
