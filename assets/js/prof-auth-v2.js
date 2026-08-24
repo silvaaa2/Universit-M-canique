@@ -580,6 +580,27 @@ async function ensureCurrentCursusSnapshot(cursus, moduleRows) {
   return moduleRows;
 }
 
+async function loadAndRenderCursusHistory(cursus, moduleRows = []) {
+  try {
+    renderCursusHistory(buildCursusHistory({ moduleRows, currentCursus: cursus }));
+    await ensureCurrentCursusSnapshot(cursus, moduleRows);
+
+    const archiveRows = await getCollectionSnapshot("studentModuleArchives").catch(error => {
+      console.warn("Archives de cursus indisponibles :", error);
+      return [];
+    });
+
+    renderCursusHistory(buildCursusHistory({
+      moduleRows,
+      archiveRows,
+      currentCursus: cursus
+    }));
+  } catch (error) {
+    console.warn("Historique des effectifs indisponible :", error);
+    renderCursusHistory(buildCursusHistory({ currentCursus: cursus }));
+  }
+}
+
 function renderCursusHistory(history = []) {
   setText("v2ApexHistoryCount", formatCount(history.length));
   if (!v2ApexHistoryChart) return;
@@ -1214,24 +1235,16 @@ async function loadDashboardStats() {
 
   dashboardStatsLoading = true;
   try {
-    const [cursusResult, modulesResult, customAccessResult, archivesResult] = await Promise.allSettled([
+    const [cursusResult, modulesResult, customAccessResult] = await Promise.allSettled([
       loadCurrentCursus(),
       getCollectionSnapshot("studentModules"),
-      summarizeCustomAvailability(),
-      getCollectionSnapshot("studentModuleArchives")
+      summarizeCustomAvailability()
     ]);
 
     if (cursusResult.status !== "fulfilled") throw cursusResult.reason;
 
     const cursus = cursusResult.value;
     const allModuleRows = modulesResult.status === "fulfilled" ? modulesResult.value : [];
-    await ensureCurrentCursusSnapshot(cursus, allModuleRows);
-    const archiveRows = archivesResult.status === "fulfilled" ? archivesResult.value : [];
-    const cursusHistory = buildCursusHistory({
-      moduleRows: allModuleRows,
-      archiveRows,
-      currentCursus: cursus
-    });
     const moduleRows = getCurrentCursusModuleRows(allModuleRows, cursus);
     const modules = summarizeModules(moduleRows, cursus.total);
     const customAccess = customAccessResult.status === "fulfilled"
@@ -1277,7 +1290,7 @@ async function loadDashboardStats() {
     setText("v2StatCustomApproved", formatCount(customAnswers.approved));
     renderCursusStats(cursus, modules);
     renderApexDashboard({ cursus, modules, exams, customAnswers, customAccess });
-    renderCursusHistory(cursusHistory);
+    void loadAndRenderCursusHistory(cursus, allModuleRows);
     if (v2DashboardUpdated) {
       v2DashboardUpdated.textContent = new Date().toLocaleTimeString("fr-FR", {
         hour: "2-digit",

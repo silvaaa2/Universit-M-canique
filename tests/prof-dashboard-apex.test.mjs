@@ -25,14 +25,23 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.doesNotMatch(html, /Accès direct|Actions rapides|apexSettingsShortcut/);
   assert.match(script, /function renderApexDashboard/);
   assert.match(script, /function ensureCurrentCursusSnapshot/);
+  assert.match(script, /function loadAndRenderCursusHistory/);
   assert.match(script, /function renderCursusHistory/);
   assert.match(script, /viewport\.scrollLeft = viewport\.scrollWidth/);
   assert.match(script, /getCollectionSnapshot\("studentModuleArchives"\)/);
+  assert.match(script, /void loadAndRenderCursusHistory\(cursus, allModuleRows\)/);
   assert.match(script, /modules\.moduleCounts/);
   assert.match(script, /renderApexDashboard\(\{ cursus, modules, exams, customAnswers, customAccess \}\)/);
   assert.match(styles, /\.apex-command-grid/);
   assert.match(styles, /\.apex-history-chart/);
   assert.match(styles, /@media \(max-width: 900px\)/);
+
+  const dashboardLoader = script.slice(
+    script.indexOf("async function loadDashboardStats"),
+    script.indexOf("function showLogin")
+  );
+  assert.doesNotMatch(dashboardLoader, /await ensureCurrentCursusSnapshot/);
+  assert.doesNotMatch(dashboardLoader, /await getCollectionSnapshot\("studentModuleArchives"\)/);
 });
 
 test("le tableau APEX ne contient aucun identifiant HTML en double", async () => {
