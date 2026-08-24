@@ -16,11 +16,14 @@ test("l'écran de préparation souhaite la bienvenue au professeur", async () =>
   assert.match(script, /`Bienvenue, \$\{displayName\}`/);
 });
 
-test("le tableau reste masqué jusqu'à la fin du chargement statistique", async () => {
+test("le tableau reste masqué jusqu'à la fin du chargement statistique après connexion", async () => {
   const script = await readFile(scriptUrl, "utf8");
   const start = script.indexOf("async function prepareAndShowDashboard");
   const end = script.indexOf("function showDashboardInstant", start);
   const preparation = script.slice(start, end);
+  const instantStart = end;
+  const instantEnd = script.indexOf("function showDashboardWithTransition", instantStart);
+  const instantDisplay = script.slice(instantStart, instantEnd);
 
   assert.ok(start >= 0 && end > start, "Le flux de préparation doit exister.");
   assert.ok(
@@ -28,6 +31,9 @@ test("le tableau reste masqué jusqu'à la fin du chargement statistique", async
       < preparation.indexOf('profDashboard?.removeAttribute("hidden")'),
     "Les statistiques doivent finir de charger avant l'affichage du tableau."
   );
-  assert.match(script, /await showDashboardInstant\(user\)/);
+  assert.ok(instantEnd > instantStart, "L'affichage direct du tableau doit exister.");
+  assert.doesNotMatch(instantDisplay, /prepareAndShowDashboard/);
+  assert.match(instantDisplay, /loadDashboardStats\(\)/);
+  assert.match(script, /showDashboardInstant\(\)/);
   assert.match(script, /await showDashboardWithTransition\(user\)/);
 });

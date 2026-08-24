@@ -1193,8 +1193,22 @@ async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
   setLoginLoading(false);
 }
 
-function showDashboardInstant(user) {
-  return prepareAndShowDashboard(user);
+function showDashboardInstant() {
+  if (loginTransition) {
+    loginTransition.hidden = true;
+    loginTransition.classList.remove("active");
+  }
+
+  loginSection?.setAttribute("hidden", "");
+  loginSection?.classList.remove("leaving");
+  profDashboard?.removeAttribute("hidden");
+  if (loginSection) loginSection.style.display = "none";
+  if (profDashboard) profDashboard.style.display = "grid";
+  window.scrollTo(0, 0);
+
+  requestAnimationFrame(() => profDashboard?.classList.add("dashboard-visible"));
+  loadDashboardStats();
+  setLoginLoading(false);
 }
 
 function showDashboardWithTransition(user) {
@@ -1454,7 +1468,7 @@ function initAuth() {
 
     window.currentProfUser = user;
     updateProfile(user, currentAccess);
-    await showDashboardInstant(user);
+    showDashboardInstant();
   });
 
   loginBtn?.addEventListener("click", event => {
