@@ -1905,3 +1905,28 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
   }
 }
 
+@media (min-width: 1121px) {
+  .v2-app.v2-dashboard-centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(92vw, 1760px);
+    height: min(90vh, 920px);
+    min-height: 0;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 56px;
+    padding: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .v2-app.v2-dashboard-centered .v2-sidebar,
+  .v2-app.v2-dashboard-centered .v2-workspace {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .v2-app.v2-dashboard-centered .v2-workspace {
+    overflow: hidden;
+  }
+}
+

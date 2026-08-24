@@ -1258,6 +1258,7 @@ async function refuseAccess(user) {
 }
 
 function resetHomeState() {
+  profDashboard?.classList.add("v2-dashboard-centered");
   document.getElementById("v2HomePanel")?.removeAttribute("hidden");
   const inlineCorrections = document.getElementById("inlineCorrections");
   if (inlineCorrections) inlineCorrections.hidden = true;
@@ -1274,6 +1275,7 @@ function initV2Actions() {
   });
 
   document.getElementById("openCorrectionsBtn")?.addEventListener("click", () => {
+    profDashboard?.classList.remove("v2-dashboard-centered");
     document.getElementById("v2HomePanel")?.setAttribute("hidden", "");
     if (settingsPanel) settingsPanel.hidden = true;
     document.querySelectorAll(".v2-nav-item").forEach(item => item.classList.remove("active"));
@@ -1281,6 +1283,7 @@ function initV2Actions() {
   });
 
   settingsBtn?.addEventListener("click", () => {
+    profDashboard?.classList.remove("v2-dashboard-centered");
     document.getElementById("v2HomePanel")?.setAttribute("hidden", "");
     const inlineCorrections = document.getElementById("inlineCorrections");
     if (inlineCorrections) inlineCorrections.hidden = true;
