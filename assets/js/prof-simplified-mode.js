@@ -9,6 +9,7 @@
   const root = document.documentElement;
   let activeSpeechButton = null;
   let speechStatus = null;
+  let speechVoices = [];
   let preferenceControlsBound = false;
 
   function readPreference() {
@@ -196,22 +197,15 @@
         applyPreference(!isEnabled(), { persist: true });
       });
     });
+
+    document.querySelectorAll("[data-simplified-speak]").forEach(bindSpeechButton);
   }
 
-  document.addEventListener("click", (event) => {
-    const speechControl = event.target instanceof Element
-      ? event.target.closest("[data-simplified-speak]")
-      : null;
-
-    if (speechControl instanceof HTMLButtonElement) {
-      event.preventDefault();
-      event.stopPropagation();
-      toggleSpeech(speechControl);
-    }
-  });
-
   function supportsSpeech() {
-    return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+    return Boolean(
+      window.speechSynthesis
+      && typeof window.SpeechSynthesisUtterance === "function"
+    );
   }
 
   function setSpeechStatus(message) {
@@ -229,7 +223,8 @@
     if (!(button instanceof HTMLButtonElement)) return;
     button.classList.remove("is-speaking");
     button.setAttribute("aria-pressed", "false");
-    button.innerHTML = '<span aria-hidden="true">▶</span> Lire';
+    const idleLabel = button.dataset.simplifiedIdleLabel || "Lire";
+    button.innerHTML = `<span aria-hidden="true">▶</span> ${idleLabel}`;
   }
 
   function stopSpeech(message = "Lecture arrêtée.") {
@@ -240,10 +235,51 @@
     if (speechStatus && message) setSpeechStatus(message);
   }
 
-  function getFrenchVoice() {
-    return window.speechSynthesis
-      .getVoices()
-      .find((voice) => String(voice.lang || "").toLowerCase().startsWith("fr")) || null;
+  function refreshSpeechVoices() {
+    if (!supportsSpeech()) return [];
+    speechVoices = window.speechSynthesis.getVoices() || [];
+    return speechVoices;
+  }
+
+  function getFrenchMaleVoice() {
+    const voices = refreshSpeechVoices();
+    const frenchVoices = voices.filter((voice) => {
+      return String(voice.lang || "").toLowerCase().startsWith("fr");
+    });
+
+    const maleHints = [
+      "male", "homme", "masculin", "thomas", "henri", "paul", "alain",
+      "claude", "daniel", "jacques", "jean", "louis", "nicolas", "pierre",
+      "hugo", "mathieu", "antoine", "gabriel"
+    ];
+    const femaleHints = [
+      "female", "femme", "denise", "hortense", "amelie", "amélie",
+      "virginie", "audrey", "julie", "celine", "céline", "lea", "léa", "marie"
+    ];
+
+    return frenchVoices
+      .map((voice) => {
+        const name = String(voice.name || "").toLowerCase();
+        let score = 0;
+        if (maleHints.some((hint) => name.includes(hint))) score += 100;
+        if (femaleHints.some((hint) => name.includes(hint))) score -= 100;
+        if (voice.localService) score += 8;
+        if (voice.default) score += 4;
+        if (/natural|neural|premium/.test(name)) score += 6;
+        return { voice, score };
+      })
+      .sort((left, right) => right.score - left.score)[0]?.voice || null;
+  }
+
+  function bindSpeechButton(button) {
+    if (!(button instanceof HTMLButtonElement) || button.dataset.simplifiedSpeechBound === "true") return;
+    button.dataset.simplifiedSpeechBound = "true";
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!isEnabled()) applyPreference(true, { persist: true });
+      toggleSpeech(button);
+    });
   }
 
   function toggleSpeech(button) {
@@ -267,18 +303,24 @@
     }
 
     const utterance = new window.SpeechSynthesisUtterance(text);
-    const frenchVoice = getFrenchVoice();
+    const frenchVoice = getFrenchMaleVoice();
 
     utterance.lang = frenchVoice?.lang || "fr-FR";
-    utterance.rate = 0.88;
-    utterance.pitch = 1;
+    utterance.rate = 0.9;
+    utterance.pitch = 0.82;
+    utterance.volume = 1;
     if (frenchVoice) utterance.voice = frenchVoice;
 
     activeSpeechButton = button;
     button.classList.add("is-speaking");
     button.setAttribute("aria-pressed", "true");
     button.innerHTML = '<span aria-hidden="true">■</span> Arrêter';
-    setSpeechStatus("Lecture en cours.");
+    setSpeechStatus("Démarrage de la voix...");
+
+    utterance.onstart = () => {
+      const voiceLabel = frenchVoice?.name ? ` (${frenchVoice.name})` : "";
+      setSpeechStatus(`Lecture en cours${voiceLabel}.`);
+    };
 
     utterance.onend = () => {
       if (activeSpeechButton !== button) return;
@@ -293,9 +335,10 @@
         resetSpeechButton(button);
         activeSpeechButton = null;
       }
-      setSpeechStatus("La lecture vocale n’est pas disponible pour ce texte.");
+      setSpeechStatus("Le navigateur a bloqué la voix. Vérifiez le volume média puis réessayez.");
     };
 
+    window.speechSynthesis.resume();
     window.speechSynthesis.speak(utterance);
   }
 
@@ -322,9 +365,11 @@
       button.className = "prof-simplified-speak-btn";
       button.dataset.simplifiedSpeak = "true";
       button.dataset.simplifiedSpeechText = speechText;
+      button.dataset.simplifiedIdleLabel = "Lire";
       button.setAttribute("aria-label", `Lire : ${speechText.slice(0, 120)}`);
       button.setAttribute("aria-pressed", "false");
       button.innerHTML = '<span aria-hidden="true">▶</span> Lire';
+      bindSpeechButton(button);
 
       const target = container.querySelector(".exam-line-content") || container;
       target.append(button);
@@ -355,6 +400,7 @@
     applyTheme(readThemePreference(), { notify: false });
     syncControls();
     initSpeechEnhancement();
+    refreshSpeechVoices();
   }
 
   if (document.readyState === "loading") {
@@ -364,6 +410,10 @@
   }
 
   window.addEventListener("pagehide", () => stopSpeech(""));
+
+  if (supportsSpeech()) {
+    window.speechSynthesis.addEventListener?.("voiceschanged", refreshSpeechVoices);
+  }
 
   window.addEventListener("storage", (event) => {
     if (event.key === STORAGE_KEY) {

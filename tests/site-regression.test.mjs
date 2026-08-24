@@ -66,7 +66,22 @@ test("le Mode Simplifié branche directement son interrupteur et sauvegarde le c
   assert.match(source, /localStorage\.setItem\(STORAGE_KEY, String\(safeEnabled\)\)/);
   assert.match(source, /document\.readyState === "loading"/);
   assert.match(dashboard, /id="simplifiedModeToggle"/);
-  assert.match(dashboard, /prof-simplified-mode\.js\?v=4/);
+  assert.match(dashboard, /prof-simplified-mode\.js\?v=5/);
+});
+
+test("la lecture vocale utilise un clic direct et privilégie une voix française masculine", () => {
+  const source = read("assets/js/prof-simplified-mode.js");
+  const dashboard = read("pages/espace-prof.html");
+
+  assert.match(source, /function bindSpeechButton\(button\)/);
+  assert.match(source, /button\.addEventListener\("click"/);
+  assert.match(source, /function getFrenchMaleVoice\(\)/);
+  assert.match(source, /"thomas", "henri", "paul"/);
+  assert.match(source, /utterance\.pitch = 0\.82/);
+  assert.match(source, /window\.speechSynthesis\.resume\(\)/);
+  assert.match(source, /voiceschanged/);
+  assert.match(dashboard, /id="simplifiedVoiceTest"/);
+  assert.match(dashboard, /Tester la voix masculine/);
 });
 
 test("le Confort de lecture applique directement le thème et les tailles", () => {

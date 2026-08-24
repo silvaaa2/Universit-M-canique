@@ -180,6 +180,17 @@
   transform: translateX(16px);
 }
 
+.v2-simplified-voice-test {
+  width: 100%;
+  min-height: 46px;
+  padding-inline: 14px;
+}
+
+.v2-simplified-voice-test.is-speaking {
+  border-color: color-mix(in srgb, var(--v2-green) 54%, transparent);
+  color: var(--v2-green);
+}
+
 .v2-simplified-control small {
   max-width: 220px;
   color: var(--v2-faint);
