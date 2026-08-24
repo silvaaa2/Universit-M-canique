@@ -85,6 +85,8 @@ const loginBtn = document.getElementById("loginBtn");
 const loginBtnText = loginBtn?.querySelector(".btn-text");
 const discordLoginBtn = document.getElementById("discordLoginBtn");
 const discordLoginBtnText = discordLoginBtn?.querySelector(".discord-btn-text");
+const emailLoginDetails = document.getElementById("emailLoginDetails");
+const emailLoginSummary = document.getElementById("emailLoginSummary");
 const loginTransition = document.getElementById("loginTransition");
 const v2UserEmail = document.getElementById("v2UserEmail");
 const v2UserRole = document.getElementById("v2UserRole");
@@ -1371,6 +1373,19 @@ function initAuth() {
   setLoginLoading(false);
   setDiscordLoading(false);
 
+  emailLoginSummary?.addEventListener("click", event => {
+    event.preventDefault();
+    if (!emailLoginDetails) return;
+
+    const shouldOpen = !emailLoginDetails.open;
+    emailLoginDetails.open = shouldOpen;
+    emailLoginSummary.setAttribute("aria-expanded", String(shouldOpen));
+
+    if (shouldOpen) {
+      requestAnimationFrame(() => document.getElementById("email")?.focus({ preventScroll: true }));
+    }
+  });
+
   const authParams = new URLSearchParams(window.location.search);
   const discordError = authParams.get("discord_error");
   const discordComplete = authParams.get("discord") === "complete";
@@ -1425,6 +1440,20 @@ function initAuth() {
     window.currentProfUser = user;
     updateProfile(user, currentAccess);
     showDashboardInstant();
+  });
+
+  loginBtn?.addEventListener("click", event => {
+    event.preventDefault();
+    if (!loginForm?.checkValidity()) {
+      loginForm?.reportValidity();
+      return;
+    }
+
+    if (typeof loginForm.requestSubmit === "function") {
+      loginForm.requestSubmit();
+    } else {
+      loginForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    }
   });
 
   loginForm?.addEventListener("submit", async event => {

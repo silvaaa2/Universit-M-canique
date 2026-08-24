@@ -498,8 +498,17 @@
 
   body.prof-v2-page .v2-discord-btn {
     margin-top: 20px !important;
-    grid-template-columns: 36px 1fr 18px !important;
+    grid-template-columns: 38px 1fr 22px !important;
     padding: 8px 14px !important;
+  }
+
+  body.prof-v2-page .v2-login-fallback summary {
+    min-height: 50px !important;
+    font-size: 14px !important;
+  }
+
+  body.prof-v2-page .v2-login-fallback .v2-login-form {
+    padding: 15px !important;
   }
 
   /* Tableau de bord */

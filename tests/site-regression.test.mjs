@@ -95,6 +95,21 @@ test("les contrôles mobiles principaux ont un nom accessible", () => {
   }
 });
 
+test("la connexion Discord utilise le logo officiel et garde l'e-mail fonctionnel", () => {
+  const html = read("pages/espace-prof.html");
+  const auth = read("assets/js/prof-auth-v2.js");
+
+  assert.match(html, /Images\/discord-symbol\.svg/);
+  assert.match(html, /<span>Connexion e-mail<\/span>/);
+  assert.doesNotMatch(html, /Connexion e-mail de secours/);
+  assert.match(html, /id="loginForm"/);
+  assert.match(auth, /signInWithEmailAndPassword/);
+  assert.match(auth, /loginForm\?\.addEventListener\("submit"/);
+  assert.match(auth, /emailLoginDetails\.open = shouldOpen/);
+  assert.match(auth, /loginForm\.requestSubmit\(\)/);
+  assert.equal(existsSync(join(root, "Images/discord-symbol.svg")), true);
+});
+
 test("les ressources locales référencées par les pages existent", () => {
   const pages = [
     "index.html",

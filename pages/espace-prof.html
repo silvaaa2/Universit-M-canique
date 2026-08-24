@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../assets/css/base.css?v=20260808-mobile2">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=12">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=13">
   <link rel="stylesheet" href="../assets/css/prof-notifications-v2.css?v=3">
   <style>
     #profAdminBtn[hidden],
@@ -24,7 +24,7 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
-  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-1">
+  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-2">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=3">
   <script src="../assets/js/prof-simplified-mode.js?v=2"></script>
 </head>
@@ -52,16 +52,24 @@
       <p class="v2-muted">Utilisez votre compte Discord autorisé pour ouvrir l’espace professeur.</p>
 
       <button type="button" class="v2-discord-btn" id="discordLoginBtn">
-        <span class="v2-discord-mark" aria-hidden="true">DC</span>
+        <span class="v2-discord-mark" aria-hidden="true">
+          <img src="../Images/discord-symbol.svg" width="64" height="48" alt="">
+        </span>
         <span class="discord-btn-text">Continuer avec Discord</span>
+        <span class="v2-discord-arrow" aria-hidden="true">→</span>
         <span class="btn-spinner" aria-hidden="true"></span>
       </button>
 
       <p class="v2-discord-note">Votre accès et votre rôle sont vérifiés automatiquement.</p>
 
-      <details class="v2-login-fallback">
-        <summary>Connexion e-mail de secours</summary>
+      <details class="v2-login-fallback" id="emailLoginDetails">
+        <summary id="emailLoginSummary" aria-expanded="false">
+          <span class="v2-email-mark" aria-hidden="true">@</span>
+          <span>Connexion e-mail</span>
+          <span class="v2-email-chevron" aria-hidden="true">⌄</span>
+        </summary>
         <form id="loginForm" class="v2-login-form">
+          <p class="v2-email-intro">Connectez-vous avec vos identifiants professeur.</p>
           <label for="email">Adresse mail</label>
           <input type="email" id="email" placeholder="prof@email.com" autocomplete="email" required>
 
@@ -405,7 +413,7 @@
 
 <script src="../assets/js/navigation.js?v=1007"></script>
 <script src="../assets/js/prof-ui.js?v=1003"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=16"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=18"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=3"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=4"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260818-10"></script>

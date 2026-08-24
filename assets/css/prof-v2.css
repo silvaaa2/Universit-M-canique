@@ -292,6 +292,8 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 }
 
 .v2-login-card {
+  position: relative;
+  overflow: hidden;
   width: min(520px, 100%);
   padding: 34px;
   border: 1px solid var(--v2-line);
@@ -301,6 +303,24 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
     var(--v2-panel-strong);
   box-shadow: 0 34px 100px var(--v2-shadow);
   animation: v2CardIn .58s var(--v2-smooth) both;
+}
+
+.v2-login-card::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  right: -110px;
+  bottom: -150px;
+  width: 300px;
+  height: 300px;
+  border: 1px solid color-mix(in srgb, var(--v2-gold) 13%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.v2-login-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .v2-eyebrow {
@@ -330,6 +350,7 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 }
 
 .v2-discord-btn {
+  position: relative;
   width: 100%;
   min-height: 58px;
   margin-top: 26px;
@@ -337,21 +358,43 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
   border: 1px solid color-mix(in srgb, #7289da 70%, white 10%);
   border-radius: var(--v2-radius);
   display: grid;
-  grid-template-columns: 38px 1fr 22px;
+  grid-template-columns: 42px 1fr 24px;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, #5865f2, #7289da);
+  background: #5865f2;
   color: #fff;
   font: inherit;
   font-weight: 1000;
   cursor: pointer;
   box-shadow: 0 16px 36px rgba(88, 101, 242, .28);
-  transition: transform var(--v2-fast), box-shadow var(--v2-fast), opacity var(--v2-fast);
+  isolation: isolate;
+  overflow: hidden;
+  transition: transform var(--v2-fast), box-shadow var(--v2-fast), background var(--v2-fast), opacity var(--v2-fast);
+}
+
+.v2-discord-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, .14) 50%, transparent 80%);
+  transform: translateX(-110%);
+  transition: transform .55s var(--v2-smooth);
 }
 
 .v2-discord-btn:hover {
   transform: translateY(-1px);
+  background: #6571f5;
   box-shadow: 0 20px 44px rgba(88, 101, 242, .36);
+}
+
+.v2-discord-btn:hover::before {
+  transform: translateX(110%);
+}
+
+.v2-discord-btn:focus-visible {
+  outline: 3px solid rgba(224, 227, 255, .92);
+  outline-offset: 3px;
 }
 
 .v2-discord-btn:disabled {
@@ -360,17 +403,33 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 }
 
 .v2-discord-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 42px;
+  height: 34px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, .16);
-  font-size: 12px;
-  letter-spacing: .06em;
+}
+
+.v2-discord-mark img {
+  display: block;
+  width: 32px;
+  height: 24px;
+}
+
+.v2-discord-arrow {
+  color: rgba(255, 255, 255, .84);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform var(--v2-fast), opacity var(--v2-fast);
+}
+
+.v2-discord-btn:hover .v2-discord-arrow {
+  transform: translateX(3px);
 }
 
 .v2-discord-btn .btn-spinner {
+  position: absolute;
+  right: 20px;
   width: 18px;
   height: 18px;
   border: 2px solid rgba(255, 255, 255, .35);
@@ -384,6 +443,10 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
   opacity: 1;
 }
 
+.v2-discord-btn.loading .v2-discord-arrow {
+  opacity: 0;
+}
+
 .v2-discord-note {
   margin: 10px 0 0;
   color: var(--v2-muted);
@@ -395,24 +458,87 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 .v2-login-fallback {
   margin-top: 20px;
   border-top: 1px solid var(--v2-line);
-  padding-top: 16px;
+  padding-top: 14px;
 }
 
 .v2-login-fallback summary {
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: 30px 1fr 24px;
+  align-items: center;
+  gap: 10px;
   color: var(--v2-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
-  text-align: center;
+  text-align: left;
   cursor: pointer;
-  list-style-position: inside;
+  list-style: none;
+  transition: color var(--v2-fast), border-color var(--v2-fast), background var(--v2-fast);
+}
+
+.v2-login-fallback summary::-webkit-details-marker {
+  display: none;
+}
+
+.v2-login-fallback summary:hover {
+  border-color: var(--v2-line);
+  background: var(--v2-panel-soft);
+  color: var(--v2-text);
+}
+
+.v2-login-fallback summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--v2-gold) 34%, transparent);
+  outline-offset: 2px;
 }
 
 .v2-login-fallback[open] summary {
+  border-color: var(--v2-line);
+  background: var(--v2-panel-soft);
   color: var(--v2-text);
+}
+
+.v2-email-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--v2-gold) 12%, transparent);
+  color: var(--v2-gold);
+  font-size: 14px;
+  font-weight: 1000;
+}
+
+.v2-email-chevron {
+  justify-self: center;
+  font-size: 20px;
+  line-height: 1;
+  transform: translateY(-2px);
+  transition: transform var(--v2-fast);
+}
+
+.v2-login-fallback[open] .v2-email-chevron {
+  transform: rotate(180deg) translateY(1px);
 }
 
 .v2-login-fallback .v2-login-form {
   margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--v2-line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--v2-panel-soft) 88%, transparent);
+  animation: v2SlideDown .24s var(--v2-smooth) both;
+}
+
+.v2-email-intro {
+  margin: 0 0 2px;
+  color: var(--v2-muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.5;
 }
 
 .v2-login-form {
