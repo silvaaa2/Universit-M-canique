@@ -88,6 +88,8 @@ const discordLoginBtnText = discordLoginBtn?.querySelector(".discord-btn-text");
 const emailLoginDetails = document.getElementById("emailLoginDetails");
 const emailLoginSummary = document.getElementById("emailLoginSummary");
 const loginTransition = document.getElementById("loginTransition");
+const loginTransitionTitle = document.getElementById("loginTransitionTitle");
+const loginTransitionStatus = document.getElementById("loginTransitionStatus");
 const v2UserEmail = document.getElementById("v2UserEmail");
 const v2UserRole = document.getElementById("v2UserRole");
 const v2UserInitials = document.getElementById("v2UserInitials");
@@ -1037,7 +1039,7 @@ function setDashboardFallback(message) {
 }
 
 async function loadDashboardStats() {
-  if (dashboardStatsLoading || !window.currentProfUser) return;
+  if (dashboardStatsLoading || !window.currentProfUser) return false;
 
   dashboardStatsLoading = true;
   try {
@@ -1106,9 +1108,11 @@ async function loadDashboardStats() {
     }
 
     renderWatchList({ modules, exams, customAccess, customAnswers });
+    return true;
   } catch (error) {
     console.warn("Tableau de bord impossible à charger :", error);
     setDashboardFallback("Impossible de charger les statistiques pour le moment.");
+    return false;
   } finally {
     dashboardStatsLoading = false;
   }
@@ -1130,60 +1134,71 @@ function showLogin() {
   setLoginLoading(false);
 }
 
-function showDashboardInstant() {
-  if (loginTransition) {
-    loginTransition.hidden = true;
-    loginTransition.classList.remove("active");
-  }
-
-  loginSection?.setAttribute("hidden", "");
-  profDashboard?.removeAttribute("hidden");
-
-  if (loginSection) loginSection.style.display = "none";
-  if (profDashboard) profDashboard.style.display = "grid";
-
-  requestAnimationFrame(() => {
-    profDashboard?.classList.add("dashboard-visible");
-    loadDashboardStats();
-  });
-
-  setLoginLoading(false);
-  window.scrollTo(0, 0);
+function setDashboardTransition(user, status = "Chargement de vos statistiques...") {
+  const displayName = getProfDisplayName(user) || "Professeur";
+  if (loginTransitionTitle) loginTransitionTitle.textContent = `Bienvenue, ${displayName}`;
+  if (loginTransitionStatus) loginTransitionStatus.textContent = status;
+  if (loginTransition) loginTransition.dataset.ready = "false";
 }
 
-async function showDashboardWithTransition() {
-  loginSection?.classList.add("leaving");
+async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
+  if (animateLogin) {
+    loginSection?.classList.add("leaving");
+    await wait(220);
+  }
 
-  await wait(220);
+  setDashboardTransition(user);
 
   if (loginTransition) {
     loginTransition.hidden = false;
     requestAnimationFrame(() => loginTransition.classList.add("active"));
   }
 
-  await wait(760);
+  await wait(40);
 
   loginSection?.setAttribute("hidden", "");
-  profDashboard?.removeAttribute("hidden");
-
+  profDashboard?.setAttribute("hidden", "");
+  profDashboard?.classList.remove("dashboard-visible");
   if (loginSection) loginSection.style.display = "none";
-  if (profDashboard) profDashboard.style.display = "grid";
+  if (profDashboard) profDashboard.style.display = "none";
 
-  await wait(220);
+  const preparationStartedAt = Date.now();
+  const statsReady = await loadDashboardStats();
+  const minimumDisplayMs = 720;
+  const remainingDisplayMs = Math.max(0, minimumDisplayMs - (Date.now() - preparationStartedAt));
+  if (remainingDisplayMs) await wait(remainingDisplayMs);
+
+  if (loginTransitionStatus) {
+    loginTransitionStatus.textContent = statsReady
+      ? "Vos statistiques sont prêtes."
+      : "Espace prêt, certaines données restent indisponibles.";
+  }
+  if (loginTransition) loginTransition.dataset.ready = "true";
+
+  profDashboard?.removeAttribute("hidden");
+  if (profDashboard) profDashboard.style.display = "grid";
+  window.scrollTo(0, 0);
+
+  await wait(180);
+  requestAnimationFrame(() => profDashboard?.classList.add("dashboard-visible"));
+
+  await wait(120);
 
   loginTransition?.classList.remove("active");
 
   await wait(220);
 
   if (loginTransition) loginTransition.hidden = true;
-
-  requestAnimationFrame(() => {
-    profDashboard?.classList.add("dashboard-visible");
-    loadDashboardStats();
-  });
-
+  loginSection?.classList.remove("leaving");
   setLoginLoading(false);
-  window.scrollTo(0, 0);
+}
+
+function showDashboardInstant(user) {
+  return prepareAndShowDashboard(user);
+}
+
+function showDashboardWithTransition(user) {
+  return prepareAndShowDashboard(user, { animateLogin: true });
 }
 
 async function getUserAccess(user) {
@@ -1439,7 +1454,7 @@ function initAuth() {
 
     window.currentProfUser = user;
     updateProfile(user, currentAccess);
-    showDashboardInstant();
+    await showDashboardInstant(user);
   });
 
   loginBtn?.addEventListener("click", event => {
@@ -1479,7 +1494,7 @@ function initAuth() {
 
       window.currentProfUser = user;
       updateProfile(user, currentAccess);
-      await showDashboardWithTransition();
+      await showDashboardWithTransition(user);
     } catch (error) {
       console.error("Erreur Firebase :", error.code, error.message);
 
@@ -1542,7 +1557,7 @@ function initAuth() {
           ? "Connexion validée. Le rôle Discord n'a pas pu être synchronisé automatiquement."
           : "";
         cleanDiscordQuery();
-        await showDashboardWithTransition();
+        await showDashboardWithTransition(user);
       } catch (error) {
         console.error("Connexion Discord impossible :", error);
         if (loginError) loginError.textContent = error.message || discordErrorMessages.unknown;

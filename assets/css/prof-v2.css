@@ -1511,14 +1511,32 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 }
 
 .v2-transition-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: min(430px, 92%);
-  padding: 26px;
-  border: 1px solid var(--v2-line);
-  border-radius: var(--v2-radius);
-  background: var(--v2-panel-strong);
+  padding: 34px 30px 32px;
+  border: 1px solid color-mix(in srgb, var(--v2-gold) 36%, var(--v2-line));
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 50% -15%, color-mix(in srgb, var(--v2-gold) 22%, transparent), transparent 48%),
+    var(--v2-panel-strong);
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, .48),
+    inset 0 1px 0 rgba(255, 255, 255, .06);
   text-align: center;
   transform: translateY(10px) scale(.98);
   transition: transform 220ms ease;
+}
+
+.v2-transition-card::after {
+  position: absolute;
+  inset: auto 12% 0;
+  z-index: -1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--v2-gold), transparent);
+  content: "";
+  opacity: .72;
 }
 
 .v2-transition.active .v2-transition-card {
@@ -1526,23 +1544,38 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
 }
 
 .v2-transition-card h2 {
-  margin: 8px 0;
-  letter-spacing: 0;
+  margin: 10px 0 8px;
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.08;
+  letter-spacing: -.035em;
 }
 
 .v2-transition-card p {
   margin: 0;
   color: var(--v2-muted);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.v2-transition-eyebrow {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--v2-gold);
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
 
 .v2-spinner {
-  width: 34px;
-  height: 34px;
-  margin: 0 auto 12px;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 16px;
   border: 3px solid color-mix(in srgb, var(--v2-gold) 18%, transparent);
   border-top-color: var(--v2-gold);
   border-radius: 999px;
   animation: v2Spin .72s linear infinite;
+  box-shadow: 0 0 28px color-mix(in srgb, var(--v2-gold) 22%, transparent);
 }
 
 .v2-login-view.leaving {

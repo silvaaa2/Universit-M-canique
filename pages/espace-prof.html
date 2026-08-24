@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../assets/css/base.css?v=20260808-mobile2">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=13">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=14">
   <link rel="stylesheet" href="../assets/css/prof-notifications-v2.css?v=3">
   <style>
     #profAdminBtn[hidden],
@@ -31,11 +31,12 @@
 
 <body class="prof-v2-page" data-theme="dark">
 
-<div id="loginTransition" class="v2-transition" hidden>
+<div id="loginTransition" class="v2-transition" role="status" aria-live="polite" aria-atomic="true" hidden>
   <div class="v2-transition-card">
-    <div class="v2-spinner"></div>
-    <h2>Connexion validée</h2>
-    <p>Préparation de l'espace professeur...</p>
+    <span class="v2-transition-eyebrow">Espace professeur</span>
+    <div class="v2-spinner" aria-hidden="true"></div>
+    <h2 id="loginTransitionTitle">Bienvenue</h2>
+    <p id="loginTransitionStatus">Chargement de vos statistiques...</p>
   </div>
 </div>
 
@@ -413,7 +414,7 @@
 
 <script src="../assets/js/navigation.js?v=1007"></script>
 <script src="../assets/js/prof-ui.js?v=1003"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=18"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=19"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=3"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=4"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260818-10"></script>
