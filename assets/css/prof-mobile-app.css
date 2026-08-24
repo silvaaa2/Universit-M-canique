@@ -6,6 +6,18 @@
   display: none;
 }
 
+.prof-nav-svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.v2-nav-mark .prof-nav-svg {
+  width: 17px;
+  height: 17px;
+}
+
 .prof-mobile-menu[hidden] {
   display: none !important;
 }
@@ -257,6 +269,16 @@
     font-size: 8px;
     font-weight: 950;
     letter-spacing: .04em;
+  }
+
+  .prof-mobile-tab-icon .prof-nav-svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .prof-mobile-menu-grid a > span .prof-nav-svg {
+    width: 21px;
+    height: 21px;
   }
 
   .prof-mobile-tabbar small {

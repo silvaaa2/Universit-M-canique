@@ -4,6 +4,35 @@
   if (!body?.classList.contains("prof-v2-page")) return;
   if (document.querySelector("[data-prof-mobile-appbar]")) return;
 
+  const profNavIconPaths = {
+    home: '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+    corrections: '<path d="M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10Z"/><path d="m7.5 12 3 3 6-7"/>',
+    responses: '<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/><path d="M8 9h8M8 13h5"/>',
+    exams: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 14l2 2 5-5"/>',
+    modules: '<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><path d="m15 17 2 2 4-5"/>',
+    customs: '<path d="M5 17h14l1-5-3-5H7l-3 5Z"/><path d="M7 7 9 3h6l2 4M6 17v3M18 17v3M7.5 12h.01M16.5 12h.01"/>',
+    settings: '<path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.63 15 1.7 1.7 0 0 0 3.07 14H3v-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.63 1.7 1.7 0 0 0 10 3.07V3h4v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 9 1.7 1.7 0 0 0 20.93 10H21v4h-.09A1.7 1.7 0 0 0 19.4 15Z"/>',
+    admin: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/>',
+    university: '<path d="m3 10 9-6 9 6"/><path d="M5 10h14v9H5zM3 22h18M8 13v4M12 13v4M16 13v4"/>'
+  };
+
+  function profNavIcon(name) {
+    const paths = profNavIconPaths[name] || profNavIconPaths.home;
+    return `<svg class="prof-nav-svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+  }
+
+  const desktopIconNames = {
+    "TB": "home", "⌘": "home", "CO": "corrections", "RE": "responses", "EX": "exams",
+    "ME": "modules", "CE": "customs", "PA": "settings", "AD": "admin"
+  };
+
+  document.querySelectorAll(".v2-nav-mark").forEach(mark => {
+    const iconName = desktopIconNames[String(mark.textContent || "").trim()];
+    if (!iconName) return;
+    mark.innerHTML = profNavIcon(iconName);
+    mark.dataset.navIcon = iconName;
+  });
+
   const currentPage = window.location.pathname.split("/").pop() || "espace-prof.html";
   const pageMeta = {
     "espace-prof.html": {
@@ -89,23 +118,23 @@
   tabbar.setAttribute("aria-label", "Navigation mobile professeur");
   tabbar.innerHTML = `
     <a href="espace-prof.html" data-mobile-section="home">
-      <span class="prof-mobile-tab-icon" aria-hidden="true">⌂</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("home")}</span>
       <small>Accueil</small>
     </a>
     <a href="prof-rp-7x92q.html" data-mobile-section="customs">
-      <span class="prof-mobile-tab-icon" aria-hidden="true">◆</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("responses")}</span>
       <small>Customs</small>
     </a>
     <a href="prof-exam-4x91q.html" data-mobile-section="exams">
-      <span class="prof-mobile-tab-icon" aria-hidden="true">✓</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("exams")}</span>
       <small>Examens</small>
     </a>
     <a href="prof-modules-eleves.html" data-mobile-section="modules">
-      <span class="prof-mobile-tab-icon" aria-hidden="true">▦</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("modules")}</span>
       <small>Modules</small>
     </a>
     <a href="prof-customs-eleves.html" data-mobile-section="access">
-      <span class="prof-mobile-tab-icon" aria-hidden="true">⚙</span>
+      <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("customs")}</span>
       <small>Gérer</small>
     </a>
   `;
@@ -132,12 +161,12 @@
       </div>
 
       <div class="prof-mobile-menu-grid">
-        <a href="espace-prof.html"><span>AC</span><strong>Tableau de bord</strong><small>Résumé du cursus</small></a>
-        <a href="prof-rp-7x92q.html"><span>CU</span><strong>Réponses customs</strong><small>Valider les customs</small></a>
-        <a href="prof-exam-4x91q.html"><span>EX</span><strong>Examens</strong><small>Corriger les copies</small></a>
-        <a href="prof-modules-eleves.html"><span>MO</span><strong>Modules élèves</strong><small>Cocher et dater</small></a>
-        <a href="prof-customs-eleves.html"><span>GE</span><strong>Accès customs</strong><small>Ouvrir ou fermer</small></a>
-        <a href="../index.html"><span>SI</span><strong>Site principal</strong><small>Voir l’université</small></a>
+        <a href="espace-prof.html"><span>${profNavIcon("home")}</span><strong>Tableau de bord</strong><small>Résumé du cursus</small></a>
+        <a href="prof-rp-7x92q.html"><span>${profNavIcon("responses")}</span><strong>Réponses customs</strong><small>Valider les customs</small></a>
+        <a href="prof-exam-4x91q.html"><span>${profNavIcon("exams")}</span><strong>Examens</strong><small>Corriger les copies</small></a>
+        <a href="prof-modules-eleves.html"><span>${profNavIcon("modules")}</span><strong>Modules élèves</strong><small>Cocher et dater</small></a>
+        <a href="prof-customs-eleves.html"><span>${profNavIcon("customs")}</span><strong>Accès customs</strong><small>Ouvrir ou fermer</small></a>
+        <a href="../index.html"><span>${profNavIcon("university")}</span><strong>Site principal</strong><small>Voir l’université</small></a>
       </div>
 
       <div class="prof-mobile-menu-tools">

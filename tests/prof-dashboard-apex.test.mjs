@@ -35,3 +35,17 @@ test("le tableau APEX ne contient aucun identifiant HTML en double", async () =>
 
   assert.deepEqual([...new Set(duplicates)], []);
 });
+
+test("la navigation professeur remplace les initiales par de vraies icônes SVG", async () => {
+  const mobileNavigation = await read("../assets/js/prof-mobile-app.js");
+
+  assert.match(mobileNavigation, /function profNavIcon\(name\)/);
+  assert.match(mobileNavigation, /"CO": "corrections"/);
+  assert.match(mobileNavigation, /"RE": "responses"/);
+  assert.match(mobileNavigation, /"EX": "exams"/);
+  assert.match(mobileNavigation, /"ME": "modules"/);
+  assert.match(mobileNavigation, /"CE": "customs"/);
+  assert.match(mobileNavigation, /"PA": "settings"/);
+  assert.match(mobileNavigation, /"AD": "admin"/);
+  assert.match(mobileNavigation, /class="prof-nav-svg"/);
+});

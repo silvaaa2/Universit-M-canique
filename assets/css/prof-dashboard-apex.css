@@ -231,9 +231,9 @@ body.prof-v2-page .v2-profile-trigger {
 }
 
 body.prof-v2-page .v2-home.apex-dashboard {
-  min-height: 780px;
+  min-height: 810px;
   display: grid;
-  grid-template-rows: 280px 142px 334px;
+  grid-template-rows: 310px 142px 334px;
   gap: 12px;
   padding: 0 0 12px;
   overflow: visible;
