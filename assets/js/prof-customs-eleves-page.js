@@ -7,7 +7,7 @@ import {
   setDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { getProfAccess, getProfActorId, getProfDisplayName } from "./prof-identity.js?v=1";
+import { getProfAccess, getProfActorId, getProfDisplayName, renderProfAvatar } from "./prof-identity.js?v=2";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -90,7 +90,7 @@ function getLocalDisplayName() {
 
 function setUserPill(user, access = currentAccess) {
   const displayName = getLocalDisplayName() || getProfDisplayName(user);
-  if (userInitials) userInitials.textContent = getInitials(displayName);
+  if (userInitials) renderProfAvatar(userInitials, user, getInitials(displayName));
   if (userEmail) userEmail.textContent = displayName;
   if (userRole) userRole.textContent = access.admin ? "Admin privé" : "Compte professeur";
 }

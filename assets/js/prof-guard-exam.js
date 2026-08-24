@@ -17,7 +17,7 @@ import {
   where,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-import { getProfAccess, isProfAllowed } from "./prof-identity.js?v=1";
+import { getProfAccess, isProfAllowed } from "./prof-identity.js?v=2";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",

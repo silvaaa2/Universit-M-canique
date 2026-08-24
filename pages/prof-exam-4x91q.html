@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../assets/css/buttons.css?v=9028">
   <link rel="stylesheet" href="../assets/css/loader.css?v=9028">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9028">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=12">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=15">
   <link rel="stylesheet" href="../assets/css/prof-exam-v2.css?v=2">
   <link rel="stylesheet" href="../assets/css/mobile-correction.css?v=20260808-ios1">
   <link rel="stylesheet" href="../assets/css/mobile-correction-flow.css?v=20260808-flow1">
@@ -212,7 +212,11 @@
       const initials = document.getElementById("examUserInitials");
 
       if (email) email.textContent = label;
-      if (initials) initials.textContent = getInitials(label);
+      if (initials) {
+        const renderAvatar = window.profIdentityUtils?.renderProfAvatar;
+        if (typeof renderAvatar === "function") renderAvatar(initials, user, getInitials(label));
+        else initials.textContent = getInitials(label);
+      }
     }
 
     try {
@@ -228,9 +232,10 @@
     syncUserPill();
     window.setTimeout(syncUserPill, 500);
     window.setTimeout(syncUserPill, 1200);
+    window.addEventListener("profIdentityReady", syncUserPill);
   })();
 </script>
-<script type="module" src="../assets/js/prof-guard-exam.js?v=9051"></script>
+<script type="module" src="../assets/js/prof-guard-exam.js?v=9052"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260824-11"></script>
 
 </body>

@@ -1,4 +1,4 @@
-import "./prof-identity.js?v=1";
+import "./prof-identity.js?v=2";
 
 const ADMIN_MODULES = [
   "./prof-admin.js?v=1007",

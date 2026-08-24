@@ -38,6 +38,16 @@
     );
   }
 
+  function renderAvatar(element, initials) {
+    if (!element) return;
+    const renderer = window.profIdentityUtils?.renderProfAvatar;
+    if (typeof renderer === "function") {
+      renderer(element, window.currentProfUser, initials);
+      return;
+    }
+    element.textContent = initials;
+  }
+
   function sync(displayName) {
     const safeName = cleanName(displayName) || identityName();
     const initials = initialsFor(safeName);
@@ -49,7 +59,7 @@
 
     ["v2UserInitials", "v2ProfilePreviewInitials"].forEach((id) => {
       const element = document.getElementById(id);
-      if (element) element.textContent = initials;
+      renderAvatar(element, initials);
     });
 
     const transitionTitle = document.getElementById("loginTransitionTitle");
@@ -132,7 +142,7 @@
       const preview = document.getElementById("v2ProfilePreviewName");
       const previewInitials = document.getElementById("v2ProfilePreviewInitials");
       if (preview) preview.textContent = previewName;
-      if (previewInitials) previewInitials.textContent = initialsFor(previewName);
+      renderAvatar(previewInitials, initialsFor(previewName));
       const status = document.getElementById("v2ProfileStatus");
       if (status) status.textContent = "";
     });

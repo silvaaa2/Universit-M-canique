@@ -10,8 +10,9 @@ import {
   getProfAccess,
   getProfDisplayName,
   getProfSecondaryLabel,
-  isProfAllowed
-} from "./prof-identity.js?v=1";
+  isProfAllowed,
+  renderProfAvatar
+} from "./prof-identity.js?v=2";
 import {
   getFirestore,
   doc,
@@ -203,6 +204,7 @@ function getDisplayProfile(user, access) {
   return {
     displayName,
     initials,
+    avatarUrl: user?.profIdentity?.avatarUrl || "",
     roleLabel: getRoleLabel(access),
     secondaryLabel
   };
@@ -213,7 +215,7 @@ function renderProfileForm(user = window.currentProfUser, access = currentAccess
   const profile = getDisplayProfile(user, access);
 
   if (profileNameInput) profileNameInput.value = saved.displayName;
-  if (profilePreviewInitials) profilePreviewInitials.textContent = profile.initials;
+  if (profilePreviewInitials) renderProfAvatar(profilePreviewInitials, user, profile.initials);
   if (profilePreviewName) profilePreviewName.textContent = profile.displayName;
   if (profilePreviewMeta) profilePreviewMeta.textContent = profile.secondaryLabel
     ? `${profile.roleLabel} • ${profile.secondaryLabel}`
@@ -224,7 +226,7 @@ function updateProfile(user, access) {
   const profile = getDisplayProfile(user, access);
 
   if (v2UserEmail) v2UserEmail.textContent = profile.displayName;
-  if (v2UserInitials) v2UserInitials.textContent = profile.initials;
+  if (v2UserInitials) renderProfAvatar(v2UserInitials, user, profile.initials);
   if (v2UserRole) v2UserRole.textContent = profile.secondaryLabel
     ? `${profile.roleLabel} • ${profile.secondaryLabel}`
     : profile.roleLabel;

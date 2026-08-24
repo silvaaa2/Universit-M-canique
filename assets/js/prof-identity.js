@@ -58,7 +58,24 @@ function decorateUser(user, identity) {
     user.profDisplayName = identity.displayName;
   }
   window.currentProfIdentity = identity;
+  window.dispatchEvent(new CustomEvent("profIdentityReady", {
+    detail: { user, identity }
+  }));
   return identity;
+}
+
+function getTrustedAvatarUrl(value) {
+  const source = clean(value, 500);
+  if (!source) return "";
+
+  try {
+    const url = new URL(source);
+    const isDiscordCdn = url.protocol === "https:"
+      && (url.hostname === "cdn.discordapp.com" || url.hostname === "media.discordapp.net");
+    return isDiscordCdn ? url.href : "";
+  } catch {
+    return "";
+  }
 }
 
 export async function resolveProfIdentity(user, { forceRefresh = false } = {}) {
@@ -126,11 +143,50 @@ export function getProfSecondaryLabel(user) {
   return clean(user?.email, 180);
 }
 
+export function getProfAvatarUrl(user) {
+  const identity = user?.profIdentity || window.currentProfIdentity;
+  if (identity?.provider !== "discord") return "";
+  return getTrustedAvatarUrl(identity.avatarUrl);
+}
+
+export function renderProfAvatar(element, user, fallbackText = "PR") {
+  if (!(element instanceof HTMLElement)) return false;
+
+  const safeFallback = clean(fallbackText, 4) || "PR";
+  const avatarUrl = getProfAvatarUrl(user);
+  element.classList.remove("has-prof-avatar");
+  element.textContent = safeFallback;
+
+  if (!avatarUrl) return false;
+
+  const image = new Image();
+  image.className = "prof-avatar-image";
+  image.alt = `Photo de profil Discord de ${getProfDisplayName(user)}`;
+  image.decoding = "async";
+  image.referrerPolicy = "no-referrer";
+
+  image.addEventListener("load", () => {
+    element.textContent = "";
+    element.appendChild(image);
+    element.classList.add("has-prof-avatar");
+  }, { once: true });
+
+  image.addEventListener("error", () => {
+    element.classList.remove("has-prof-avatar");
+    element.textContent = safeFallback;
+  }, { once: true });
+
+  image.src = avatarUrl;
+  return true;
+}
+
 window.profIdentityUtils = {
+  getProfAvatarUrl,
   getProfAccess,
   getProfActorId,
   getProfDisplayName,
   getProfSecondaryLabel,
   isProfAllowed,
+  renderProfAvatar,
   resolveProfIdentity
 };
