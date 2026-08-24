@@ -195,6 +195,11 @@ function cleanProfileName(value) {
 }
 
 function loadLocalProfile() {
+  const sharedProfile = window.profLocalProfile?.read?.();
+  if (sharedProfile) {
+    return { displayName: cleanProfileName(sharedProfile.displayName) };
+  }
+
   try {
     const saved = JSON.parse(localStorage.getItem(PROFILE_STORAGE_KEY) || "{}");
     return {
@@ -203,25 +208,6 @@ function loadLocalProfile() {
   } catch (error) {
     console.warn("Profil local illisible :", error);
     return { displayName: "" };
-  }
-}
-
-function saveLocalProfile(profile) {
-  const safeProfile = {
-    displayName: cleanProfileName(profile.displayName)
-  };
-
-  try {
-    if (!safeProfile.displayName) {
-      localStorage.removeItem(PROFILE_STORAGE_KEY);
-      return { ...safeProfile, persisted: true };
-    }
-
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(safeProfile));
-    return { ...safeProfile, persisted: true };
-  } catch (error) {
-    console.warn("Sauvegarde du profil local impossible :", error);
-    return { ...safeProfile, persisted: false };
   }
 }
 
@@ -1295,60 +1281,9 @@ function initV2Actions() {
 
   closeSettingsBtn?.addEventListener("click", resetHomeState);
 
-  profileForm?.addEventListener("submit", event => {
-    event.preventDefault();
-
-    const saved = saveLocalProfile({
-      displayName: profileNameInput?.value
-    });
-
-    if (profileNameInput) profileNameInput.value = saved.displayName;
+  window.addEventListener("profProfileChanged", () => {
     updateProfile(window.currentProfUser, currentAccess);
     setDashboardTransition(window.currentProfUser);
-    window.dispatchEvent(new CustomEvent("profProfileChanged", {
-      detail: { displayName: saved.displayName }
-    }));
-
-    if (profileStatus) {
-      profileStatus.textContent = saved.persisted
-        ? "Nom enregistré sur ce navigateur."
-        : "Enregistrement local impossible sur ce navigateur.";
-      profileStatus.dataset.tone = saved.persisted ? "ok" : "error";
-    }
-  });
-
-  resetProfileBtn?.addEventListener("click", () => {
-    try {
-      localStorage.removeItem(PROFILE_STORAGE_KEY);
-    } catch (error) {
-      console.warn("Réinitialisation du profil local impossible :", error);
-    }
-    updateProfile(window.currentProfUser, currentAccess);
-    setDashboardTransition(window.currentProfUser);
-    window.dispatchEvent(new CustomEvent("profProfileChanged", {
-      detail: { displayName: getDisplayProfile(window.currentProfUser, currentAccess).displayName }
-    }));
-
-    if (profileStatus) {
-      profileStatus.textContent = "Profil local réinitialisé.";
-      profileStatus.dataset.tone = "info";
-    }
-  });
-
-  profileNameInput?.addEventListener("input", () => {
-    const displayName = cleanProfileName(profileNameInput.value) || getProfDisplayName(window.currentProfUser);
-
-    if (profilePreviewInitials) profilePreviewInitials.textContent = getInitials(displayName);
-    if (profilePreviewName) profilePreviewName.textContent = displayName;
-    if (profilePreviewMeta) {
-      const roleLabel = getRoleLabel(currentAccess);
-      const secondaryLabel = getProfSecondaryLabel(window.currentProfUser);
-      profilePreviewMeta.textContent = secondaryLabel
-        ? `${roleLabel} • ${secondaryLabel}`
-        : roleLabel;
-    }
-
-    if (profileStatus) profileStatus.textContent = "";
   });
 
 }
