@@ -42,7 +42,8 @@
   if (!button) return;
 
   function notificationsEnabled() {
-    return localStorage.getItem(ENABLED_KEY) === "true";
+    const savedValue = localStorage.getItem(ENABLED_KEY);
+    return savedValue === null ? true : savedValue === "true";
   }
 
   function setNotificationsEnabled(value) {
@@ -61,11 +62,12 @@
     button.classList.toggle("active", enabled);
     button.dataset.permission = permission;
     button.setAttribute("aria-pressed", enabled ? "true" : "false");
+    button.setAttribute("aria-checked", enabled ? "true" : "false");
 
     if (label) {
       label.textContent = enabled
-        ? (permission === "denied" ? "Notifications du site" : "Notifications actives")
-        : "Activer les notifications";
+        ? (permission === "denied" ? "Alertes du site actives" : "Notifications actives")
+        : "Notifications désactivées";
     }
   }
 

@@ -93,6 +93,9 @@ const loginTransitionStatus = document.getElementById("loginTransitionStatus");
 const v2UserEmail = document.getElementById("v2UserEmail");
 const v2UserRole = document.getElementById("v2UserRole");
 const v2UserInitials = document.getElementById("v2UserInitials");
+const v2ProfileMenu = document.getElementById("v2ProfileMenu");
+const v2ProfileMenuTrigger = document.getElementById("v2ProfileMenuTrigger");
+const v2ProfileDropdown = document.getElementById("v2ProfileDropdown");
 const v2SessionChip = document.getElementById("v2SessionChip");
 const v2CommandInput = document.getElementById("v2CommandInput");
 const v2DashboardUpdated = document.getElementById("v2DashboardUpdated");
@@ -227,12 +230,40 @@ function updateProfile(user, access) {
 
   if (v2UserEmail) v2UserEmail.textContent = profile.displayName;
   if (v2UserInitials) renderProfAvatar(v2UserInitials, user, profile.initials);
+  if (v2ProfileMenuTrigger) {
+    v2ProfileMenuTrigger.setAttribute("aria-label", `Ouvrir le menu du profil de ${profile.displayName}`);
+  }
   if (v2UserRole) v2UserRole.textContent = profile.secondaryLabel
     ? `${profile.roleLabel} • ${profile.secondaryLabel}`
     : profile.roleLabel;
   if (v2SessionChip) v2SessionChip.textContent = access.admin ? "Session admin" : "Session prof";
   if (adminBtn) adminBtn.hidden = access.admin !== true;
   renderProfileForm(user, access);
+}
+
+function setProfileMenuOpen(open) {
+  if (!v2ProfileMenuTrigger || !v2ProfileDropdown) return;
+  const shouldOpen = Boolean(open);
+  v2ProfileMenu?.classList.toggle("is-open", shouldOpen);
+  v2ProfileMenuTrigger.setAttribute("aria-expanded", String(shouldOpen));
+  v2ProfileDropdown.hidden = !shouldOpen;
+}
+
+function initProfileMenu() {
+  if (!v2ProfileMenuTrigger || !v2ProfileDropdown) return;
+
+  v2ProfileMenuTrigger.addEventListener("click", event => {
+    event.stopPropagation();
+    setProfileMenuOpen(v2ProfileDropdown.hidden);
+  });
+
+  v2ProfileDropdown.addEventListener("click", event => event.stopPropagation());
+  document.addEventListener("click", () => setProfileMenuOpen(false));
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape" || v2ProfileDropdown.hidden) return;
+    setProfileMenuOpen(false);
+    v2ProfileMenuTrigger.focus();
+  });
 }
 
 function setText(id, value) {
@@ -1522,6 +1553,7 @@ function initAuth() {
   }
 
   logoutBtn?.addEventListener("click", async () => {
+    setProfileMenuOpen(false);
     await signOut(auth);
     window.currentProfUser = null;
     showLogin();
@@ -1530,4 +1562,5 @@ function initAuth() {
 
 initV2Actions();
 initCommandSearch();
+initProfileMenu();
 initAuth();

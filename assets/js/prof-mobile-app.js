@@ -141,7 +141,6 @@
       </div>
 
       <div class="prof-mobile-menu-tools">
-        <button type="button" data-mobile-action="notifications" hidden>Notifications</button>
         <button type="button" data-mobile-action="settings" hidden>Paramètres</button>
         <button type="button" data-mobile-action="logout" hidden>Déconnexion</button>
       </div>
@@ -347,21 +346,11 @@
   window.setTimeout(syncMobileUser, 1400);
   window.addEventListener("profProfileChanged", syncMobileUser);
 
-  const notificationButton = document.getElementById("v2NotificationsBtn");
   const settingsButton = document.getElementById("profSettingsBtn");
   const logoutButton = document.getElementById("logoutBtn");
 
-  const mobileNotificationButton = menu.querySelector('[data-mobile-action="notifications"]');
   const mobileSettingsButton = menu.querySelector('[data-mobile-action="settings"]');
   const mobileLogoutButton = menu.querySelector('[data-mobile-action="logout"]');
-
-  if (notificationButton && mobileNotificationButton) {
-    mobileNotificationButton.hidden = false;
-    mobileNotificationButton.addEventListener("click", () => {
-      closeMenu();
-      notificationButton.click();
-    });
-  }
 
   if (settingsButton && mobileSettingsButton) {
     mobileSettingsButton.hidden = false;

@@ -2,7 +2,7 @@
   "use strict";
 
   const CATEGORY_STORAGE_KEY = "profSettingsActiveCategory";
-  const CATEGORIES = new Set(["profile", "display", "accessibility"]);
+  const CATEGORIES = new Set(["profile", "display", "accessibility", "notifications"]);
   const PREFERENCES = Object.freeze({
     highContrast: {
       storageKey: "profHighContrast",

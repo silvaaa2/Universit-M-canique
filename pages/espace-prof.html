@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../assets/css/base.css?v=20260808-mobile2">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=15">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=16">
   <link rel="stylesheet" href="../assets/css/prof-notifications-v2.css?v=3">
   <style>
     #profAdminBtn[hidden],
@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-2">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
   <script src="../assets/js/prof-simplified-mode.js?v=5"></script>
-  <script src="../assets/js/prof-local-preferences.js?v=2"></script>
+  <script src="../assets/js/prof-local-preferences.js?v=3"></script>
 </head>
 
 <body class="prof-v2-page" data-theme="dark">
@@ -151,17 +151,24 @@
         </div>
 
         <div class="v2-topbar-actions">
-          <button type="button" class="v2-notify-btn" id="v2NotificationsBtn">
-            <span aria-hidden="true">NT</span>
-            <strong id="v2NotificationsLabel">Activer les notifications</strong>
-          </button>
+          <div class="v2-profile-menu" id="v2ProfileMenu">
+            <button
+              type="button"
+              class="v2-profile-trigger"
+              id="v2ProfileMenuTrigger"
+              aria-label="Ouvrir le menu du profil"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              aria-controls="v2ProfileDropdown"
+            >
+              <span id="v2UserInitials">PR</span>
+            </button>
 
-          <div class="v2-user-pill">
-            <span id="v2UserInitials">PR</span>
-            <strong id="v2UserEmail">Professeur</strong>
-            <small id="v2UserRole">Compte prof</small>
+            <div class="v2-profile-dropdown" id="v2ProfileDropdown" role="menu" hidden>
+              <strong id="v2UserEmail">Professeur</strong>
+              <button id="logoutBtn" type="button" role="menuitem">Déconnexion</button>
+            </div>
           </div>
-          <button id="logoutBtn" class="v2-secondary-btn" type="button">Déconnexion</button>
         </div>
       </header>
 
@@ -288,6 +295,11 @@
                 <span aria-hidden="true">AC</span>
                 <strong>Accessibilité</strong>
                 <small>Lecture et confort</small>
+              </button>
+              <button type="button" data-settings-category="notifications" aria-selected="false">
+                <span aria-hidden="true">NT</span>
+                <strong>Notifications</strong>
+                <small>Alertes du site</small>
               </button>
             </nav>
 
@@ -450,6 +462,39 @@
                   <small data-reset-preferences-status aria-live="polite"></small>
                 </section>
               </section>
+
+              <section class="v2-settings-panel" data-settings-panel="notifications" aria-labelledby="notificationSettingsTitle" hidden>
+                <header class="v2-settings-panel-head">
+                  <div>
+                    <p class="v2-eyebrow">Alertes</p>
+                    <h3 id="notificationSettingsTitle">Notifications</h3>
+                    <p>Choisissez si le site doit vous prévenir lors de nouvelles réponses.</p>
+                  </div>
+                  <span class="v2-local-badge">Activées par défaut</span>
+                </header>
+
+                <div class="v2-preference-grid v2-notification-settings-grid">
+                  <article class="v2-preference-card">
+                    <div class="v2-preference-copy">
+                      <span class="v2-preference-icon" aria-hidden="true">NT</span>
+                      <div>
+                        <h4>Alertes du site</h4>
+                        <p>Surveille les nouvelles réponses d’examens et de customs toutes les 30 secondes.</p>
+                        <small>Ce réglage est enregistré uniquement sur cet appareil.</small>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="v2-preference-switch"
+                      id="v2NotificationsBtn"
+                      role="switch"
+                      aria-checked="true"
+                    >
+                      <span id="v2NotificationsLabel">Notifications actives</span><i aria-hidden="true"></i>
+                    </button>
+                  </article>
+                </div>
+              </section>
             </div>
           </div>
         </div>
@@ -516,10 +561,10 @@
 <script src="../assets/js/navigation.js?v=1007"></script>
 <script src="../assets/js/prof-ui.js?v=1003"></script>
 <script src="../assets/js/prof-local-profile.js?v=2"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=23"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=24"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=4"></script>
-<script type="module" src="../assets/js/prof-notifications-v2.js?v=4"></script>
-<script src="../assets/js/prof-mobile-app.js?v=20260824-11"></script>
+<script type="module" src="../assets/js/prof-notifications-v2.js?v=5"></script>
+<script src="../assets/js/prof-mobile-app.js?v=20260824-12"></script>
 
 </body>
 </html>

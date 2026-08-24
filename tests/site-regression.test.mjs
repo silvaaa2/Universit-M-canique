@@ -105,7 +105,7 @@ test("les paramètres utiles sont classés et restent locaux", () => {
   const preferences = read("assets/js/prof-local-preferences.js");
   const styles = read("assets/css/prof-simplified-mode.css");
 
-  for (const category of ["profile", "display", "accessibility"]) {
+  for (const category of ["profile", "display", "accessibility", "notifications"]) {
     assert.match(dashboard, new RegExp(`data-settings-category="${category}"`));
     assert.match(dashboard, new RegExp(`data-settings-panel="${category}"`));
   }
