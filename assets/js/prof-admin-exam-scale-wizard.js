@@ -567,7 +567,7 @@ async function saveWizardScale() {
     await firebase.setDoc(firebase.doc(firebase.db, "profSettings", EXAM_SETTINGS_DOC), {
       ...currentSettings,
       updatedAt: firebase.serverTimestamp(),
-      updatedBy: window.currentProfUser?.email || firebase.auth?.currentUser?.email || null
+      updatedBy: window.currentProfUser?.profActorId || window.currentProfUser?.email || firebase.auth?.currentUser?.profActorId || firebase.auth?.currentUser?.email || null
     }, { merge: true });
 
     updateSummary();

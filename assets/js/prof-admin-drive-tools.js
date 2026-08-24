@@ -1,4 +1,4 @@
-import "./prof-admin-free-tools.js?v=1011";
+import "./prof-admin-free-tools.js?v=1012";
 
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -41,10 +41,13 @@ onAuthStateChanged(auth, async user => {
 });
 
 async function loadAdminAccess(user) {
-  if (!user?.email) return false;
-
-  const snap = await getDoc(doc(db, "users", user.email));
-  return snap.exists() && snap.data().admin === true;
+  if (!user) return false;
+  const access = await window.profIdentityUtils.getProfAccess(user, async () => {
+    if (!user.email) return { role: null, admin: false };
+    const snap = await getDoc(doc(db, "users", user.email));
+    return snap.exists() ? snap.data() : { role: null, admin: false };
+  });
+  return access.admin === true;
 }
 
 function escapeHtml(value) {
@@ -179,7 +182,7 @@ async function saveDriveSettings() {
     await setDoc(doc(db, "profSettings", DRIVE_SETTINGS_DOC), {
       ...settings,
       updatedAt: serverTimestamp(),
-      updatedBy: currentUser?.email || null
+      updatedBy: window.profIdentityUtils.getProfActorId(currentUser)
     }, { merge: true });
 
     driveSettingsLoaded = false;

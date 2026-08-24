@@ -311,7 +311,7 @@ async function saveAnswerStatusToFirebase(answerKey, sheetId, status, meta = {})
     studentName: meta.studentName || "",
     customLabel: meta.customLabel || "",
 
-    updatedBy: window.currentProfUser?.email || "professeur inconnu",
+    updatedBy: window.currentProfUser?.profActorId || window.currentProfUser?.email || "professeur inconnu",
     updatedAt: firebase.serverTimestamp()
   }, { merge: true });
 }

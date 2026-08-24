@@ -115,20 +115,15 @@ function waitForProfFirebase() {
 }
 
 async function loadUserAccess(user) {
-  if (!user?.email) return { role: null, admin: false };
-
   const firebase = await waitForProfFirebase();
-  const ref = firebase.doc(firebase.db, "users", user.email);
-  const snap = await firebase.getDoc(ref);
-
-  if (!snap.exists()) return { role: null, admin: false };
-
-  const data = snap.data();
-
-  return {
-    role: data.role || null,
-    admin: data.admin === true
-  };
+  return window.profIdentityUtils.getProfAccess(user, async () => {
+    if (!user?.email) return { role: null, admin: false };
+    const ref = firebase.doc(firebase.db, "users", user.email);
+    const snap = await firebase.getDoc(ref);
+    if (!snap.exists()) return { role: null, admin: false };
+    const data = snap.data();
+    return { role: data.role || null, admin: data.admin === true };
+  });
 }
 
 function isAdmin() {
@@ -954,7 +949,7 @@ async function saveCorrectionEditor() {
     const payload = {
       ...collectCorrectionEditor(),
       updatedAt: firebase.serverTimestamp(),
-      updatedBy: currentAdminUser?.email || null
+      updatedBy: window.profIdentityUtils.getProfActorId(currentAdminUser)
     };
 
     await firebase.setDoc(firebase.doc(firebase.db, "customAnswerKeys", selectedCorrectionId), payload);
@@ -1060,7 +1055,7 @@ async function savePageEditor() {
     const payload = {
       ...collectPageEditor(),
       updatedAt: firebase.serverTimestamp(),
-      updatedBy: currentAdminUser?.email || null
+      updatedBy: window.profIdentityUtils.getProfActorId(currentAdminUser)
     };
 
     await firebase.setDoc(firebase.doc(firebase.db, "customPages", selectedPageId), payload);
@@ -1147,7 +1142,7 @@ async function saveMessageEditor() {
       title: getFormValue("messageTitleInput"),
       body: getFormValue("messageBodyInput"),
       updatedAt: firebase.serverTimestamp(),
-      updatedBy: currentAdminUser?.email || null
+      updatedBy: window.profIdentityUtils.getProfActorId(currentAdminUser)
     };
 
     await firebase.setDoc(firebase.doc(firebase.db, "profSettings", "adminMessage"), payload);

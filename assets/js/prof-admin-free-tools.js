@@ -41,10 +41,13 @@ onAuthStateChanged(auth, async user => {
 });
 
 async function loadAdminAccess(user) {
-  if (!user?.email) return false;
-
-  const snap = await getDoc(doc(db, "users", user.email));
-  return snap.exists() && snap.data().admin === true;
+  if (!user) return false;
+  const access = await window.profIdentityUtils.getProfAccess(user, async () => {
+    if (!user.email) return { role: null, admin: false };
+    const snap = await getDoc(doc(db, "users", user.email));
+    return snap.exists() ? snap.data() : { role: null, admin: false };
+  });
+  return access.admin === true;
 }
 
 async function getAdminMessage() {
@@ -393,7 +396,7 @@ function saveMessageMetaAfterCoreSave() {
           priority,
           expiresAt,
           updatedAt: serverTimestamp(),
-          updatedBy: currentUser?.email || null
+          updatedBy: window.profIdentityUtils.getProfActorId(currentUser)
         }, { merge: true });
 
         await styleToastFromFirestore();

@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getProfAccess, getProfActorId } from "./prof-identity.js?v=1";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -254,21 +255,17 @@ function showGuardMessage(title, message) {
 }
 
 async function getUserAccess(user) {
-  if (!user?.email) return { role: null, admin: false };
-
-  const snap = await withTimeout(
-    getDoc(doc(db, "users", user.email)),
-    FIRESTORE_TIMEOUT_MS,
-    "Vérification du compte trop longue."
-  );
-
-  if (!snap.exists()) return { role: null, admin: false };
-
-  const data = snap.data();
-  return {
-    role: data.role || null,
-    admin: data.admin === true
-  };
+  return getProfAccess(user, async () => {
+    if (!user?.email) return { role: null, admin: false };
+    const snap = await withTimeout(
+      getDoc(doc(db, "users", user.email)),
+      FIRESTORE_TIMEOUT_MS,
+      "Vérification du compte trop longue."
+    );
+    if (!snap.exists()) return { role: null, admin: false };
+    const data = snap.data();
+    return { role: data.role || null, admin: data.admin === true };
+  });
 }
 
 async function loadEffectifSettings() {
@@ -575,7 +572,7 @@ async function saveStudentModulePatch(student, moduleKey, patch) {
         checks: latestProgress.checks,
         dates: latestProgress.dates,
         updatedAt: serverTimestamp(),
-        updatedBy: currentUser?.email || null
+        updatedBy: getProfActorId(currentUser)
       };
       const moduleDoc = doc(db, STUDENT_MODULES_COLLECTION, getStudentModuleDocId(studentId));
 

@@ -17,6 +17,7 @@ import {
   where,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getProfAccess, isProfAllowed } from "./prof-identity.js?v=1";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -135,20 +136,15 @@ function applyExamLabel() {
   });
 }
 
-async function getUserRole(user) {
-  if (!user?.email) return null;
-
-  try {
+async function getUserAccess(user) {
+  return getProfAccess(user, async () => {
+    if (!user?.email) return { role: null, admin: false };
     const userRef = doc(db, "users", user.email);
     const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) return null;
-
-    return userSnap.data().role || null;
-  } catch (error) {
-    console.error("Erreur lecture rôle utilisateur :", error);
-    return null;
-  }
+    if (!userSnap.exists()) return { role: null, admin: false };
+    const data = userSnap.data();
+    return { role: data.role || null, admin: data.admin === true };
+  });
 }
 
 function isInlineGuard() {
@@ -192,10 +188,10 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  const role = await getUserRole(user);
+  const access = await getUserAccess(user);
 
-  if (role !== "prof") {
-    console.warn("Accès refusé page examens :", user.email, "role =", role);
+  if (!isProfAllowed(access)) {
+    console.warn("Accès refusé page examens :", user.profActorId || user.email, "role =", access.role);
 
     window.currentProfUser = null;
 

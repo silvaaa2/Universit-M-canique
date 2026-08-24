@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getProfAccess, getProfActorId } from "./prof-identity.js?v=1";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -412,22 +413,18 @@ function getWarningState(value) {
 }
 
 async function getUserAccess(user) {
-  if (!user?.email) return { role: null, admin: false };
-
   try {
-    const snap = await withTimeout(
-      getDoc(doc(db, "users", user.email)),
-      FIRESTORE_TIMEOUT_MS,
-      "Vérification accès avertos trop longue."
-    );
-
-    if (!snap.exists()) return { role: null, admin: false };
-
-    const data = snap.data();
-    return {
-      role: data.role || null,
-      admin: data.admin === true
-    };
+    return await getProfAccess(user, async () => {
+      if (!user?.email) return { role: null, admin: false };
+      const snap = await withTimeout(
+        getDoc(doc(db, "users", user.email)),
+        FIRESTORE_TIMEOUT_MS,
+        "Vérification accès avertos trop longue."
+      );
+      if (!snap.exists()) return { role: null, admin: false };
+      const data = snap.data();
+      return { role: data.role || null, admin: data.admin === true };
+    });
   } catch (error) {
     console.warn("Accès avertos modules indisponible :", error);
     return { role: null, admin: false };
@@ -732,7 +729,7 @@ async function saveWarning(studentId, record) {
       warningLevel: normalized.level,
       warningComment: normalized.comment,
       warningUpdatedAt: serverTimestamp(),
-      warningUpdatedBy: currentUser?.email || null
+      warningUpdatedBy: getProfActorId(currentUser)
     }, { merge: true }),
     FIRESTORE_TIMEOUT_MS,
     "Sauvegarde averto trop longue."

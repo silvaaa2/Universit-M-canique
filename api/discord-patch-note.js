@@ -1,6 +1,7 @@
 const MAX_MESSAGE_LENGTH = 3800;
 const EMBED_COLOR = 0xd6b46a;
 const FIREBASE_PROJECT_ID = "universit-4b11e";
+const { verifyFirebaseProfAccess } = require("../lib/server/firebase-prof-access.js");
 
 function sendJson(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -101,17 +102,15 @@ module.exports = async function handler(request, response) {
   }
 
   const idToken = getBearerToken(request);
-  const email = getEmailFromToken(idToken);
-
-  if (!idToken || !email) {
+  if (!idToken) {
     sendJson(response, 401, { error: "Connexion admin requise" });
     return;
   }
 
   try {
-    const isAdmin = await loadAdminAccess(idToken, email);
+    const access = await verifyFirebaseProfAccess(idToken);
 
-    if (!isAdmin) {
+    if (!access.admin) {
       sendJson(response, 403, { error: "Accès admin requis" });
       return;
     }

@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getProfAccess } from "./prof-identity.js?v=1";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -197,17 +198,14 @@ function hideLoader() {
 }
 
 async function getUserAccess(user) {
-  if (!user?.email) return { role: null, admin: false };
-
   try {
-    const snap = await getDoc(doc(db, "users", user.email));
-    if (!snap.exists()) return { role: null, admin: false };
-
-    const data = snap.data();
-    return {
-      role: data.role || null,
-      admin: data.admin === true
-    };
+    return await getProfAccess(user, async () => {
+      if (!user?.email) return { role: null, admin: false };
+      const snap = await getDoc(doc(db, "users", user.email));
+      if (!snap.exists()) return { role: null, admin: false };
+      const data = snap.data();
+      return { role: data.role || null, admin: data.admin === true };
+    });
   } catch (error) {
     console.warn("Accès sync Sheets exact indisponible :", error);
     return { role: null, admin: false };

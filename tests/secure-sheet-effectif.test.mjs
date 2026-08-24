@@ -26,7 +26,7 @@ test("l'API sécurisée résout et renvoie l'effectif actif", async () => {
     calls.push({ url: requestUrl, options });
 
     if (requestUrl.includes("identitytoolkit.googleapis.com")) {
-      return jsonResponse({ users: [{ email: "prof@example.com" }] });
+      return jsonResponse({ users: [{ localId: "legacy-prof", email: "prof@example.com" }] });
     }
 
     if (requestUrl.includes("/documents/users/prof%40example.com")) {

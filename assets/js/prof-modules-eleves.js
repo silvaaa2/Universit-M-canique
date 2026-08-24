@@ -21,5 +21,5 @@ function keepModulesDashboardVisible() {
 window.setInterval(keepModulesDashboardVisible, 250);
 requestAnimationFrame(keepModulesDashboardVisible);
 
-import "./prof-modules-eleves-safe.js?v=1009";
-import "./prof-modules-alerts.js?v=1010";
+import "./prof-modules-eleves-safe.js?v=1010";
+import "./prof-modules-alerts.js?v=1011";

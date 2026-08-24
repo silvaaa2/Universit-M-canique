@@ -7,6 +7,7 @@ import {
   setDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getProfAccess, getProfActorId, getProfDisplayName } from "./prof-identity.js?v=1";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -78,8 +79,9 @@ function getInitials(value) {
 }
 
 function setUserPill(user, access = currentAccess) {
-  if (userInitials) userInitials.textContent = getInitials(user?.email);
-  if (userEmail) userEmail.textContent = user?.email || "Professeur";
+  const displayName = getProfDisplayName(user);
+  if (userInitials) userInitials.textContent = getInitials(displayName);
+  if (userEmail) userEmail.textContent = displayName;
   if (userRole) userRole.textContent = access.admin ? "Admin privé" : "Compte professeur";
 }
 
@@ -122,21 +124,17 @@ function renderSummary() {
 }
 
 async function loadAccess(user) {
-  if (!user?.email) return { role: null, admin: false };
-
-  const snap = await withTimeout(
-    getDoc(doc(db, "users", user.email)),
-    FIRESTORE_TIMEOUT_MS,
-    "Verification du compte trop longue."
-  );
-
-  if (!snap.exists()) return { role: null, admin: false };
-
-  const data = snap.data();
-  return {
-    role: data.role || null,
-    admin: data.admin === true
-  };
+  return getProfAccess(user, async () => {
+    if (!user?.email) return { role: null, admin: false };
+    const snap = await withTimeout(
+      getDoc(doc(db, "users", user.email)),
+      FIRESTORE_TIMEOUT_MS,
+      "Verification du compte trop longue."
+    );
+    if (!snap.exists()) return { role: null, admin: false };
+    const data = snap.data();
+    return { role: data.role || null, admin: data.admin === true };
+  });
 }
 
 function renderRows() {
@@ -220,7 +218,7 @@ async function toggleCustom(button) {
       setDoc(doc(db, "customAvailability", customId), {
         enabled: nextEnabled,
         updatedAt: serverTimestamp(),
-        updatedBy: currentUser?.email || null
+        updatedBy: getProfActorId(currentUser)
       }, { merge: true }),
       FIRESTORE_TIMEOUT_MS,
       "Sauvegarde des reglages customs trop longue."

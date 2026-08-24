@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/loader.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=9">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=12">
   <link rel="stylesheet" href="../assets/css/prof-modules-eleves.css?v=1005" data-modules-table-colors>
   <style>
     body.modules-page {
@@ -491,7 +491,7 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
-  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260818-10">
+  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-1">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=3">
   <script src="../assets/js/prof-simplified-mode.js?v=2"></script>
 </head>
@@ -646,7 +646,7 @@
 
     function syncUserPill() {
       const user = window.currentProfUser;
-      const label = readDisplayName() || user?.email || "Professeur";
+      const label = readDisplayName() || user?.profDisplayName || user?.email || "Professeur";
       const email = document.getElementById("modulesUserEmail");
       const initials = document.getElementById("modulesUserInitials");
 
@@ -669,10 +669,10 @@
     window.setTimeout(syncUserPill, 1200);
   })();
 </script>
-<script type="module" src="../assets/js/prof-modules-eleves.js?v=1012"></script>
-<script type="module" src="../assets/js/prof-modules-sheets-sync.js?v=1004"></script>
-    <script type="module" src="../assets/js/prof-modules-sheets-sync-exact.js?v=1005"></script>
-<script type="module" src="../assets/js/prof-modules-archives.js?v=1002"></script>
+<script type="module" src="../assets/js/prof-modules-eleves.js?v=1013"></script>
+<script type="module" src="../assets/js/prof-modules-sheets-sync.js?v=1005"></script>
+    <script type="module" src="../assets/js/prof-modules-sheets-sync-exact.js?v=1006"></script>
+<script type="module" src="../assets/js/prof-modules-archives.js?v=1003"></script>
 <script type="module" src="../assets/js/prof-modules-clipboard.js?v=7"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260818-10"></script>
 

@@ -469,7 +469,7 @@ async function saveExamRecordToFirebase(answerKey, sheetId, record, identity = {
     totalScore: Number(record.totalScore || 0),
     maxScore: getExamMaxPoints(),
     hasScoring: Boolean(record.hasScoring),
-    updatedBy: window.currentProfUser?.email || "professeur inconnu",
+    updatedBy: window.currentProfUser?.profActorId || window.currentProfUser?.email || "professeur inconnu",
     updatedAt: firebase.serverTimestamp()
   }, { merge: true });
 }

@@ -340,7 +340,7 @@ async function saveExamSettings() {
     await firebase.setDoc(firebase.doc(firebase.db, "profSettings", EXAM_SETTINGS_DOC), {
       ...settings,
       updatedAt: firebase.serverTimestamp(),
-      updatedBy: currentUser?.email || null
+      updatedBy: window.profIdentityUtils.getProfActorId(currentUser)
     }, { merge: true });
 
     examSettingsLoaded = false;
@@ -361,7 +361,7 @@ async function refreshAdminAccess() {
     const firebase = await waitForProfFirebase();
     const user = window.currentProfUser || firebase.auth?.currentUser || null;
 
-    if (!user?.email) {
+    if (!user) {
       currentUser = null;
       currentUserIsAdmin = false;
       examSettingsLoaded = false;
@@ -370,8 +370,12 @@ async function refreshAdminAccess() {
 
     currentUser = user;
 
-    const snap = await firebase.getDoc(firebase.doc(firebase.db, "users", user.email));
-    currentUserIsAdmin = snap.exists() && snap.data().admin === true;
+    const access = await window.profIdentityUtils.getProfAccess(user, async () => {
+      if (!user.email) return { role: null, admin: false };
+      const snap = await firebase.getDoc(firebase.doc(firebase.db, "users", user.email));
+      return snap.exists() ? snap.data() : { role: null, admin: false };
+    });
+    currentUserIsAdmin = access.admin === true;
 
     if (currentUserIsAdmin) {
       ensureExamSettingsPanel();

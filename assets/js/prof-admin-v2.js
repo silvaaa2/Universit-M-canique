@@ -1,12 +1,14 @@
+import "./prof-identity.js?v=1";
+
 const ADMIN_MODULES = [
-  "./prof-admin.js?v=1006",
+  "./prof-admin.js?v=1007",
   "./prof-admin-polish.js?v=1006",
   "./prof-admin-preview.js?v=1008",
-  "./prof-admin-free-tools.js?v=1011",
-  "./prof-admin-media.js?v=1010",
-  "./prof-admin-drive-tools.js?v=1005",
-  "./prof-admin-exam-settings.js?v=1011",
-  "./prof-admin-exam-scale-wizard.js?v=1006",
+  "./prof-admin-free-tools.js?v=1012",
+  "./prof-admin-media.js?v=1011",
+  "./prof-admin-drive-tools.js?v=1006",
+  "./prof-admin-exam-settings.js?v=1012",
+  "./prof-admin-exam-scale-wizard.js?v=1007",
   "./prof-admin-patch-notes.js?v=1003"
 ];
 

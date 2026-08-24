@@ -354,11 +354,11 @@
     document.head.appendChild(link);
   }
 
-  import("./prof-modules-archives.js?v=1001").catch(error => {
+  import("./prof-modules-archives.js?v=1003").catch(error => {
     console.warn("Archives modules indisponibles :", error);
   });
 
-  import("./prof-modules-alerts.js?v=1010").catch(error => {
+  import("./prof-modules-alerts.js?v=1011").catch(error => {
     console.warn("Avertos modules indisponibles :", error);
   });
 })();

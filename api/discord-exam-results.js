@@ -1,6 +1,7 @@
 const FIREBASE_WEB_API_KEY = "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c";
 const FIREBASE_PROJECT_ID = "universit-4b11e";
 const ALLOWED_ROLE_IDS = new Set(["1199780299786158160", "1169634939797524480"]);
+const { verifyFirebaseProfAccess } = require("../lib/server/firebase-prof-access.js");
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -135,10 +136,9 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const user = await getFirebaseUser(idToken);
-    const access = await getUserAccess(user.email, idToken);
+    const access = await verifyFirebaseProfAccess(idToken);
 
-    if (access.role !== "prof" && access.admin !== true) {
+    if (!access.allowed) {
       sendJson(res, 403, { error: "Accès réservé aux professeurs." });
       return;
     }
