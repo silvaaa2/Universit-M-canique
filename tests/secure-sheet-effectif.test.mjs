@@ -1,9 +1,32 @@
 import assert from "node:assert/strict";
+import { generateKeyPairSync, sign } from "node:crypto";
 import { createRequire } from "node:module";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
 const secureSheetHandler = require("../api/secure-sheet.js");
+const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+const publicKeyPem = publicKey.export({ type: "spki", format: "pem" });
+
+function encode(value) {
+  return Buffer.from(JSON.stringify(value)).toString("base64url");
+}
+
+function createLegacyToken() {
+  const now = Math.floor(Date.now() / 1000);
+  const header = encode({ alg: "RS256", typ: "JWT", kid: "effectif-test-key" });
+  const payload = encode({
+    aud: "universit-4b11e",
+    iss: "https://securetoken.google.com/universit-4b11e",
+    sub: "legacy-prof",
+    email: "prof@example.com",
+    iat: now - 10,
+    exp: now + 3600
+  });
+  const signature = sign("RSA-SHA256", Buffer.from(`${header}.${payload}`), privateKey)
+    .toString("base64url");
+  return `${header}.${payload}.${signature}`;
+}
 
 function jsonResponse(payload, status = 200) {
   return new Response(JSON.stringify(payload), {
@@ -25,8 +48,14 @@ test("l'API sécurisée résout et renvoie l'effectif actif", async () => {
     const requestUrl = String(url);
     calls.push({ url: requestUrl, options });
 
-    if (requestUrl.includes("identitytoolkit.googleapis.com")) {
-      return jsonResponse({ users: [{ localId: "legacy-prof", email: "prof@example.com" }] });
+    if (requestUrl.includes("securetoken@system.gserviceaccount.com")) {
+      return new Response(JSON.stringify({ "effectif-test-key": publicKeyPem }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=3600"
+        }
+      });
     }
 
     if (requestUrl.includes("/documents/users/prof%40example.com")) {
@@ -54,7 +83,7 @@ test("l'API sécurisée résout et renvoie l'effectif actif", async () => {
     method: "GET",
     url: "/api/secure-sheet?source=effectif&sheet=current",
     headers: {
-      authorization: "Bearer test-token",
+      authorization: `Bearer ${createLegacyToken()}`,
       host: "localhost"
     }
   };

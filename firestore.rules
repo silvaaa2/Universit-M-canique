@@ -1,0 +1,120 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function tokenValue(name, fallback) {
+      return request.auth.token.get(name, fallback);
+    }
+
+    function hasEmailIdentity() {
+      return isSignedIn() && tokenValue("email", "") != "";
+    }
+
+    function userData() {
+      return get(/databases/$(database)/documents/users/$(tokenValue("email", ""))).data;
+    }
+
+    function userRole() {
+      return userData().role;
+    }
+
+    function isDiscordProf() {
+      return isSignedIn()
+        && tokenValue("authProvider", "") == "discord"
+        && tokenValue("role", "") == "prof";
+    }
+
+    function isDiscordAdmin() {
+      return isDiscordProf() && tokenValue("admin", false) == true;
+    }
+
+    function isProf() {
+      return isDiscordProf() || (hasEmailIdentity() && userRole() == "prof");
+    }
+
+    function isStage() {
+      return hasEmailIdentity() && userRole() == "stage";
+    }
+
+    function isAdmin() {
+      return isDiscordAdmin() || (hasEmailIdentity() && userData().admin == true);
+    }
+
+    match /users/{userEmail} {
+      allow read: if isSignedIn() && (tokenValue("email", "") == userEmail || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /studentAnswerStatuses/{docId} {
+      allow read, write: if isProf() || isAdmin();
+    }
+
+    match /studentModules/{docId} {
+      allow read, write: if isProf() || isAdmin();
+    }
+
+    match /studentModuleArchives/{docId} {
+      allow read: if isProf() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /examAnswerStatuses/{docId} {
+      allow read: if isProf() || isStage() || isAdmin();
+      allow write: if isProf() || isAdmin();
+    }
+
+    match /examCorrections/{docId} {
+      allow read, write: if isProf() || isAdmin();
+    }
+
+    match /customAnswerKeys/{docId} {
+      allow read: if isProf() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /customPages/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /customAvailability/{docId} {
+      allow read: if true;
+      allow write: if isProf() || isAdmin();
+    }
+
+    match /profSettings/{docId} {
+      allow read: if isProf() || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /stageValidations/{docId} {
+      allow read, write: if isProf() || isStage() || isAdmin();
+    }
+
+    match /stageArchives/{docId} {
+      allow read: if isProf() || isStage() || isAdmin();
+      allow write: if isProf() || isAdmin();
+    }
+
+    match /stageHistory/{docId} {
+      allow read: if isProf() || isAdmin();
+      allow create: if isProf() || isStage() || isAdmin();
+      allow update, delete: if false;
+    }
+
+    match /stageSettings/{docId} {
+      allow read: if docId == "effectif";
+      allow write: if docId == "effectif" && isAdmin();
+    }
+
+    match /stageComments/{docId} {
+      allow read: if isProf() || isStage() || isAdmin();
+      allow create, update: if isProf() || isStage() || isAdmin();
+      allow delete: if false;
+    }
+  }
+}
