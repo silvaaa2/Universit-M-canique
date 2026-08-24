@@ -8,6 +8,7 @@
   const root = document.documentElement;
   let activeSpeechButton = null;
   let speechStatus = null;
+  let preferenceControlsBound = false;
 
   function readPreference() {
     try {
@@ -127,17 +128,28 @@
   applyTextSize(readTextSizePreference(), { notify: false });
   applyPreference(readPreference(), { notify: false });
 
+  function bindPreferenceControls() {
+    if (preferenceControlsBound) return;
+    preferenceControlsBound = true;
+
+    document.querySelectorAll("[data-simplified-text-size]").forEach((control) => {
+      control.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        applyTextSize(control.dataset.simplifiedTextSize, { persist: true });
+      });
+    });
+
+    document.querySelectorAll("[data-simplified-toggle]").forEach((control) => {
+      control.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        applyPreference(!isEnabled(), { persist: true });
+      });
+    });
+  }
+
   document.addEventListener("click", (event) => {
-    const textSizeControl = event.target instanceof Element
-      ? event.target.closest("[data-simplified-text-size]")
-      : null;
-
-    if (textSizeControl instanceof HTMLElement) {
-      event.preventDefault();
-      applyTextSize(textSizeControl.dataset.simplifiedTextSize, { persist: true });
-      return;
-    }
-
     const speechControl = event.target instanceof Element
       ? event.target.closest("[data-simplified-speak]")
       : null;
@@ -146,16 +158,7 @@
       event.preventDefault();
       event.stopPropagation();
       toggleSpeech(speechControl);
-      return;
     }
-
-    const control = event.target instanceof Element
-      ? event.target.closest("[data-simplified-toggle]")
-      : null;
-
-    if (!(control instanceof HTMLElement)) return;
-    event.preventDefault();
-    applyPreference(!isEnabled(), { persist: true });
   });
 
   function supportsSpeech() {
@@ -298,10 +301,17 @@
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function initializeSimplifiedMode() {
+    bindPreferenceControls();
     syncControls();
     initSpeechEnhancement();
-  }, { once: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeSimplifiedMode, { once: true });
+  } else {
+    initializeSimplifiedMode();
+  }
 
   window.addEventListener("pagehide", () => stopSpeech(""));
 
@@ -322,6 +332,9 @@
     getTextSize,
     set: (enabled) => applyPreference(enabled, { persist: true }),
     setTextSize: (size) => applyTextSize(size, { persist: true }),
-    sync: syncControls
+    sync: () => {
+      bindPreferenceControls();
+      syncControls();
+    }
   });
 })();

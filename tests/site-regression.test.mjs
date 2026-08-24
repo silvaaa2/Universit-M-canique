@@ -57,6 +57,18 @@ test("la page Modules reste visible avec animations réduites", () => {
   assert.match(html, /animation:\s*none\s*!important/);
 });
 
+test("le Mode Simplifié branche directement son interrupteur et sauvegarde le choix", () => {
+  const source = read("assets/js/prof-simplified-mode.js");
+  const dashboard = read("pages/espace-prof.html");
+
+  assert.match(source, /querySelectorAll\("\[data-simplified-toggle\]"\)[\s\S]*?control\.addEventListener\("click"/);
+  assert.match(source, /applyPreference\(!isEnabled\(\), \{ persist: true \}\)/);
+  assert.match(source, /localStorage\.setItem\(STORAGE_KEY, String\(safeEnabled\)\)/);
+  assert.match(source, /document\.readyState === "loading"/);
+  assert.match(dashboard, /id="simplifiedModeToggle"/);
+  assert.match(dashboard, /prof-simplified-mode\.js\?v=3/);
+});
+
 test("le zoom ne charge jamais une URL vide", () => {
   const source = read("assets/js/image-zoom.js");
   assert.doesNotMatch(source, /src=["']{2}/);
