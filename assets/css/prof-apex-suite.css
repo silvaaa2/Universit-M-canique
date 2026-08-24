@@ -1,0 +1,796 @@
+/* ===== Espace professeur V3 · système APEX partagé ===== */
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) {
+  --v2-radius: 18px;
+  --v2-panel: rgba(13, 15, 12, .92);
+  --v2-panel-soft: rgba(255, 255, 255, .025);
+  --v2-panel-strong: rgba(16, 18, 14, .97);
+  --v2-line: var(--apex-line, rgba(255, 255, 255, .085));
+  --v2-line-soft: rgba(255, 255, 255, .065);
+  --v2-text: var(--apex-text, #f7f3e9);
+  --v2-muted: var(--apex-muted, #97998f);
+  --v2-faint: #70736a;
+  --v2-gold: var(--apex-gold, #efce72);
+  --v2-gold-soft: rgba(239, 206, 114, .09);
+  --v2-green: var(--apex-green, #69e9a1);
+  --v2-blue: var(--apex-blue, #72ccf4);
+  --v2-red: var(--apex-red, #ff8290);
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-app {
+  gap: 12px;
+  padding: 12px;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-workspace {
+  gap: 10px;
+  overflow: hidden;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-topbar {
+  position: relative;
+  z-index: 25;
+  flex: 0 0 auto;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-topbar > div:first-child {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-topbar .v2-eyebrow {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid var(--apex-line-gold);
+  border-radius: 8px;
+  background: rgba(239, 206, 114, .055);
+  color: var(--apex-gold);
+  font-size: 7px;
+  letter-spacing: .1em;
+  white-space: nowrap;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-topbar h1 {
+  overflow: hidden;
+  color: var(--apex-text);
+  font-size: 19px;
+  line-height: 1;
+  letter-spacing: -.035em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-topbar-actions {
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-user-pill,
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-secondary-btn {
+  min-height: 40px;
+  border-color: var(--apex-line);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .022);
+  box-shadow: none;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-secondary-btn:hover {
+  border-color: var(--apex-line-gold);
+  background: rgba(239, 206, 114, .075);
+  color: var(--apex-gold);
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-eyebrow {
+  color: var(--apex-gold);
+  letter-spacing: .13em;
+}
+
+/* Héros et indicateurs des pages de correction */
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-content, .exam-v2-content) {
+  padding: 0 0 12px;
+  scrollbar-color: rgba(239, 206, 114, .32) transparent;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) {
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr);
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) > div {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--apex-line) !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at 75% 18%, rgba(105, 233, 161, .055), transparent 28%),
+    linear-gradient(125deg, rgba(239, 206, 114, .07), transparent 42%),
+    var(--apex-surface) !important;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, .022) !important;
+  backdrop-filter: blur(18px);
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) > div:first-child {
+  min-height: 190px;
+  align-content: center;
+  padding: 30px 34px;
+  border-color: var(--apex-line-gold) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) > div:first-child::after {
+  position: absolute;
+  right: -18px;
+  bottom: -66px;
+  color: rgba(255, 255, 255, .022);
+  font-size: 188px;
+  font-weight: 1000;
+  line-height: 1;
+  content: "03";
+  pointer-events: none;
+}
+
+.exam-v2-page .exam-v2-hero > div:first-child::after {
+  content: "50";
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) h2 {
+  position: relative;
+  z-index: 1;
+  max-width: 820px;
+  color: var(--apex-text);
+  font-size: clamp(42px, 4.3vw, 66px);
+  line-height: .94;
+  letter-spacing: -.06em;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) p:not(.v2-eyebrow) {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin-top: 11px;
+  color: var(--apex-muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) {
+  gap: 8px;
+  padding: 10px;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div {
+  position: relative;
+  min-height: 118px;
+  overflow: hidden;
+  padding: 14px;
+  border-color: var(--apex-line) !important;
+  border-radius: 15px !important;
+  background: rgba(255, 255, 255, .02) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div::after {
+  position: absolute;
+  inset: auto 12px 0;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, transparent, var(--apex-gold), transparent);
+  content: "";
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div:nth-child(2)::after {
+  background: linear-gradient(90deg, transparent, var(--apex-green), transparent);
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div:nth-child(3)::after {
+  background: linear-gradient(90deg, transparent, var(--apex-red), transparent);
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) span {
+  color: var(--apex-muted);
+  font-size: 8px;
+  letter-spacing: .1em;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) strong {
+  color: var(--apex-text);
+  font-size: clamp(13px, 1vw, 16px);
+  line-height: 1.05;
+  letter-spacing: -.05em;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div:first-child strong {
+  font-size: clamp(28px, 2.6vw, 39px);
+}
+
+/* Plateau de correction */
+
+:is(.rp-v2-page, .exam-v2-page) .inline-corrections-card {
+  border-color: var(--apex-line) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .02), transparent 38%), var(--apex-surface) !important;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, .02) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .inline-corrections-head {
+  min-height: 78px;
+  padding: 15px 18px !important;
+  border-bottom-color: var(--apex-line) !important;
+  background: rgba(255, 255, 255, .012) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .inline-corrections-head h2 {
+  font-size: clamp(25px, 2.5vw, 36px) !important;
+  letter-spacing: -.045em !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .inline-corrections-minimize {
+  border-color: var(--apex-line) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .025) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-panel {
+  padding: 14px !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-sheet-tabs {
+  gap: 8px !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-sheet-tab {
+  min-height: 46px !important;
+  border-color: var(--apex-line) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .018) !important;
+  color: var(--apex-muted) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-sheet-tab:is(:hover, .active) {
+  border-color: var(--apex-line-gold) !important;
+  background: rgba(239, 206, 114, .075) !important;
+  color: var(--apex-gold) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.student-results-head, .exam-dashboard-tools, .exam-toolbar) {
+  border-color: var(--apex-line) !important;
+  border-radius: 15px !important;
+  background: rgba(255, 255, 255, .018) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-answer-card {
+  border-color: var(--apex-line) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .025), transparent 48%),
+    var(--apex-surface-2) !important;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .2) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-answer-card.collapsed:hover {
+  border-color: var(--apex-line-gold) !important;
+  transform: translateY(-2px) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-answer-card.is-open {
+  border-color: rgba(239, 206, 114, .3) !important;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .3), 0 0 0 1px rgba(239, 206, 114, .045) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.student-section, .student-answer-field, .student-link-card, .exam-line, .exam-score-control) {
+  border-color: var(--apex-line) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, .018) !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) :is(.student-id-badge, .student-status-badge, .student-toggle-icon, .student-already-approved-badge) {
+  border-radius: 10px !important;
+}
+
+:is(.rp-v2-page, .exam-v2-page) .student-decision-btn,
+:is(.rp-v2-page, .exam-v2-page) .student-status-btn,
+.exam-v2-page .exam-filter-buttons button,
+.exam-v2-page .copy-all-results-btn {
+  border-radius: 11px !important;
+}
+
+.exam-v2-page .exam-stats-grid {
+  gap: 8px;
+}
+
+.exam-v2-page .exam-stat-card {
+  border-color: var(--apex-line) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, .02) !important;
+}
+
+.exam-v2-page .exam-search-box {
+  min-height: 46px;
+  border-color: var(--apex-line) !important;
+  border-radius: 12px !important;
+  background: rgba(0, 0, 0, .24) !important;
+}
+
+/* Modules élèves */
+
+.modules-page .modules-v2-content {
+  min-height: 0;
+  padding: 0 0 12px;
+  overflow: hidden;
+}
+
+.modules-page .modules-shell {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.modules-page .modules-summary {
+  gap: 10px;
+}
+
+.modules-page .modules-summary > * {
+  position: relative;
+  min-height: 84px;
+  overflow: hidden;
+  border: 1px solid var(--apex-line) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .025), transparent), var(--apex-surface) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .18) !important;
+}
+
+.modules-page .modules-summary > *::after {
+  position: absolute;
+  inset: auto 12px 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--apex-green), transparent);
+  content: "";
+  opacity: .72;
+}
+
+.modules-page .modules-toolbar {
+  min-height: 58px;
+  gap: 8px;
+  padding: 8px !important;
+  border: 1px solid var(--apex-line) !important;
+  border-radius: 16px !important;
+  background: var(--apex-surface) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .18) !important;
+}
+
+.modules-page :is(.modules-back-btn, .modules-reload-btn, .modules-scan-toggle, .modules-scan-select, .modules-search) {
+  min-height: 42px;
+  border-color: var(--apex-line) !important;
+  border-radius: 11px !important;
+  background: rgba(255, 255, 255, .022) !important;
+}
+
+.modules-page .modules-search:focus {
+  border-color: var(--apex-line-gold) !important;
+  box-shadow: 0 0 0 3px rgba(239, 206, 114, .08) !important;
+}
+
+.modules-page .modules-reload-btn {
+  color: var(--apex-gold) !important;
+}
+
+.modules-page .modules-table-wrap {
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--apex-line) !important;
+  border-radius: 18px !important;
+  background: var(--apex-surface) !important;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, .22) !important;
+  scrollbar-color: rgba(239, 206, 114, .34) transparent;
+}
+
+.modules-page .modules-table {
+  background: transparent !important;
+}
+
+.modules-page .modules-row {
+  border-bottom-color: var(--apex-line) !important;
+  transition: background .16s ease, transform .16s ease;
+}
+
+.modules-page .modules-row:not(.head):hover {
+  background: rgba(239, 206, 114, .025) !important;
+}
+
+.modules-page .modules-row.head {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .3);
+}
+
+.modules-page .modules-row.head > div {
+  background: #10120e !important;
+  color: var(--apex-gold) !important;
+}
+
+.modules-page .modules-row > .modules-cell,
+.modules-page .modules-row > div:not(.modules-cell) {
+  background: rgba(255, 255, 255, .008) !important;
+}
+
+.modules-page .modules-student {
+  background: rgba(255, 255, 255, .015) !important;
+}
+
+.modules-page .module-check {
+  border-radius: 11px !important;
+  background: rgba(239, 206, 114, .055) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03), 0 8px 20px rgba(0, 0, 0, .18) !important;
+}
+
+.modules-page .module-date {
+  border-color: var(--apex-line) !important;
+  border-radius: 10px !important;
+  background: rgba(0, 0, 0, .28) !important;
+}
+
+.modules-page :is(.modules-page-loader, .modules-loader-box) {
+  border-radius: 18px !important;
+  background: rgba(8, 9, 7, .88) !important;
+  backdrop-filter: blur(16px);
+}
+
+/* Gestion des customs */
+
+.customs-v2-page .customs-v2-content {
+  padding: 0 0 12px;
+  scrollbar-color: rgba(239, 206, 114, .32) transparent;
+}
+
+.customs-v2-page .customs-v2-overview {
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.customs-v2-page :is(.customs-v2-intro, .customs-v2-summary, .customs-v2-command, .customs-v2-card, .customs-v2-message) {
+  border-color: var(--apex-line) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, .025), transparent 48%), var(--apex-surface) !important;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .02) !important;
+}
+
+.customs-v2-page .customs-v2-intro {
+  position: relative;
+  min-height: 190px;
+  align-content: center;
+  padding: 30px 34px;
+  border-color: var(--apex-line-gold) !important;
+  background:
+    radial-gradient(circle at 78% 12%, rgba(105, 233, 161, .055), transparent 27%),
+    linear-gradient(125deg, rgba(239, 206, 114, .07), transparent 42%),
+    var(--apex-surface) !important;
+}
+
+.customs-v2-page .customs-v2-intro::after {
+  position: absolute;
+  right: -12px;
+  bottom: -66px;
+  color: rgba(255, 255, 255, .022);
+  font-size: 188px;
+  font-weight: 1000;
+  line-height: 1;
+  content: "03";
+  pointer-events: none;
+}
+
+.customs-v2-page .customs-v2-intro h2 {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(44px, 4.5vw, 68px);
+  letter-spacing: -.06em;
+}
+
+.customs-v2-page .customs-v2-intro p {
+  position: relative;
+  z-index: 1;
+}
+
+.customs-v2-page .customs-v2-summary {
+  gap: 8px;
+  padding: 10px;
+}
+
+.customs-v2-page .customs-v2-summary-item {
+  position: relative;
+  min-height: 118px;
+  overflow: hidden;
+  border-color: var(--apex-line) !important;
+  border-radius: 15px !important;
+  background: rgba(255, 255, 255, .02) !important;
+}
+
+.customs-v2-page .customs-v2-summary-item::after {
+  position: absolute;
+  inset: auto 12px 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--apex-gold), transparent);
+  content: "";
+}
+
+.customs-v2-page .customs-v2-summary-item.is-open::after {
+  background: linear-gradient(90deg, transparent, var(--apex-green), transparent);
+}
+
+.customs-v2-page .customs-v2-summary-item.is-closed::after {
+  background: linear-gradient(90deg, transparent, var(--apex-red), transparent);
+}
+
+.customs-v2-page .customs-v2-command {
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 16px !important;
+}
+
+.customs-v2-page .customs-v2-status {
+  min-height: 42px;
+  border-color: var(--apex-line);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .018);
+}
+
+.customs-v2-page .customs-v2-grid {
+  gap: 12px;
+}
+
+.customs-v2-page .customs-v2-card {
+  min-height: 316px;
+  padding: 18px;
+}
+
+.customs-v2-page .customs-v2-card:hover {
+  border-color: var(--apex-line-gold) !important;
+  box-shadow: 0 26px 66px rgba(0, 0, 0, .32), 0 0 0 1px rgba(239, 206, 114, .04) !important;
+}
+
+.customs-v2-page .customs-v2-mark,
+.customs-v2-page .customs-v2-state,
+.customs-v2-page .customs-v2-meta span,
+.customs-v2-page :is(.customs-toggle-btn, .customs-test-link, .customs-v2-refresh) {
+  border-radius: 11px;
+}
+
+.customs-v2-page .customs-v2-card h2 {
+  letter-spacing: -.045em;
+}
+
+/* Paramètres et centre de correction intégrés au tableau de bord */
+
+.prof-v2-page .v2-settings-card,
+.prof-v2-page .v2-corrections > .inline-corrections-card {
+  border: 1px solid var(--apex-line);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .022), transparent 42%), var(--apex-surface);
+  box-shadow: 0 24px 68px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, .02);
+}
+
+.prof-v2-page :is(.v2-settings-head, .v2-settings-categories, .v2-settings-panel, .v2-profile-form, .v2-profile-preview, .v2-preference-card, .v2-simplified-setting, .v2-settings-reset-zone) {
+  border-color: var(--apex-line) !important;
+}
+
+.prof-v2-page :is(.v2-settings-categories, .v2-settings-panel, .v2-profile-form, .v2-profile-preview, .v2-preference-card, .v2-simplified-setting, .v2-settings-reset-zone) {
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, .018) !important;
+}
+
+.prof-v2-page .v2-settings-categories button {
+  border-radius: 12px;
+}
+
+.prof-v2-page .v2-settings-categories button:is(:hover, .active) {
+  border-color: var(--apex-line-gold);
+  background: rgba(239, 206, 114, .07);
+}
+
+/* Thème clair */
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page)[data-theme="light"] {
+  --v2-panel: rgba(255, 253, 248, .94);
+  --v2-panel-soft: rgba(35, 31, 23, .025);
+  --v2-panel-strong: rgba(255, 253, 248, .98);
+  --v2-line-soft: rgba(35, 31, 23, .075);
+  --v2-faint: #817b70;
+  --v2-gold-soft: rgba(152, 112, 27, .08);
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page)[data-theme="light"] :is(
+  .rp-v2-hero > div,
+  .exam-v2-hero > div,
+  .inline-corrections-card,
+  .student-answer-card,
+  .modules-summary > *,
+  .modules-toolbar,
+  .modules-table-wrap,
+  .customs-v2-intro,
+  .customs-v2-summary,
+  .customs-v2-command,
+  .customs-v2-card
+) {
+  box-shadow: 0 18px 48px rgba(53, 43, 20, .08), inset 0 1px 0 rgba(255, 255, 255, .7) !important;
+}
+
+.modules-page[data-theme="light"] .modules-row.head > div {
+  background: #f3ede1 !important;
+}
+
+.modules-page[data-theme="light"] .module-date,
+.exam-v2-page[data-theme="light"] .exam-search-box {
+  background: rgba(35, 31, 23, .035) !important;
+}
+
+/* Transitions d'entrée communes */
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) :is(
+  .rp-v2-hero,
+  .exam-v2-hero,
+  .modules-summary,
+  .customs-v2-overview
+) {
+  animation: apexSuiteEnter .48s cubic-bezier(.2, .75, .2, 1) both;
+}
+
+:is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) :is(
+  .rp-v2-board,
+  .exam-v2-board,
+  .modules-toolbar,
+  .customs-v2-command
+) {
+  animation: apexSuiteEnter .48s .06s cubic-bezier(.2, .75, .2, 1) both;
+}
+
+:is(.modules-page, .customs-v2-page) :is(.modules-table-wrap, #customsAccessContent) {
+  animation: apexSuiteEnter .48s .11s cubic-bezier(.2, .75, .2, 1) both;
+}
+
+@keyframes apexSuiteEnter {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* Téléphone : on garde la navigation applicative et on unifie les surfaces. */
+
+@media (max-width: 900px) {
+  :is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) .v2-workspace {
+    overflow: visible;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-content, .exam-v2-content),
+  .customs-v2-page .customs-v2-content,
+  .modules-page .modules-v2-content {
+    padding: 8px 11px calc(126px + env(safe-area-inset-bottom));
+    overflow: visible;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero),
+  .customs-v2-page .customs-v2-overview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) > div:first-child,
+  .customs-v2-page .customs-v2-intro {
+    min-height: 0;
+    padding: 24px 20px;
+    border-radius: 26px !important;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-hero, .exam-v2-hero) h2,
+  .customs-v2-page .customs-v2-intro h2 {
+    font-size: clamp(38px, 11vw, 54px);
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis),
+  .customs-v2-page .customs-v2-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    padding: 8px;
+    border-radius: 24px !important;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div,
+  .customs-v2-page .customs-v2-summary-item {
+    min-height: 92px;
+    padding: 11px;
+    border-radius: 17px !important;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) strong,
+  .customs-v2-page .customs-v2-summary-item strong {
+    font-size: clamp(13px, 4.2vw, 17px);
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div:first-child strong,
+  .customs-v2-page .customs-v2-summary-item strong {
+    font-size: clamp(24px, 8vw, 35px);
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) .inline-corrections-card,
+  .modules-page .modules-table-wrap,
+  .customs-v2-page :is(.customs-v2-command, .customs-v2-card) {
+    border-radius: 24px !important;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) .student-answer-card {
+    border-radius: 22px !important;
+  }
+
+  .modules-page .modules-shell {
+    display: block;
+  }
+
+  .modules-page .modules-summary,
+  .modules-page .modules-toolbar,
+  .modules-page .modules-table-wrap {
+    margin-bottom: 10px;
+  }
+
+  .modules-page .modules-table-wrap {
+    overflow: visible;
+  }
+
+  .customs-v2-page .customs-v2-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .customs-v2-page .customs-v2-card {
+    min-height: 0;
+    border-radius: 24px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) span,
+  .customs-v2-page .customs-v2-summary-item span {
+    font-size: 7px;
+    letter-spacing: .04em;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) strong,
+  .customs-v2-page .customs-v2-summary-item strong {
+    font-size: 14px;
+  }
+
+  :is(.rp-v2-page, .exam-v2-page) :is(.rp-v2-kpis, .exam-v2-kpis) > div:first-child strong,
+  .customs-v2-page .customs-v2-summary-item strong {
+    font-size: 25px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.rp-v2-page, .exam-v2-page, .modules-page, .customs-v2-page) :is(
+    .rp-v2-hero,
+    .exam-v2-hero,
+    .modules-summary,
+    .customs-v2-overview,
+    .rp-v2-board,
+    .exam-v2-board,
+    .modules-toolbar,
+    .customs-v2-command,
+    .modules-table-wrap,
+    #customsAccessContent
+  ) {
+    animation: none !important;
+  }
+}
