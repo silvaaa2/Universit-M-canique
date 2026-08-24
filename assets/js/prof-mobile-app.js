@@ -283,6 +283,7 @@
 
   function openMenu() {
     lastFocusedElement = document.activeElement;
+    syncMobileUser();
     menu.hidden = false;
     body.classList.add("prof-mobile-menu-open");
     trigger?.setAttribute("aria-expanded", "true");
@@ -344,6 +345,7 @@
   syncMobileUser();
   window.setTimeout(syncMobileUser, 600);
   window.setTimeout(syncMobileUser, 1400);
+  window.addEventListener("profProfileChanged", syncMobileUser);
 
   const notificationButton = document.getElementById("v2NotificationsBtn");
   const settingsButton = document.getElementById("profSettingsBtn");

@@ -78,8 +78,18 @@ function getInitials(value) {
     .join("") || "PR";
 }
 
+function getLocalDisplayName() {
+  try {
+    const profile = JSON.parse(window.localStorage.getItem("profV2Profile") || "{}");
+    return String(profile.displayName || "").trim().replace(/\s+/g, " ").slice(0, 32);
+  } catch (error) {
+    console.warn("Profil local indisponible :", error);
+    return "";
+  }
+}
+
 function setUserPill(user, access = currentAccess) {
-  const displayName = getProfDisplayName(user);
+  const displayName = getLocalDisplayName() || getProfDisplayName(user);
   if (userInitials) userInitials.textContent = getInitials(displayName);
   if (userEmail) userEmail.textContent = displayName;
   if (userRole) userRole.textContent = access.admin ? "Admin privé" : "Compte professeur";
