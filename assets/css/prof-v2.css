@@ -1914,7 +1914,7 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
     height: min(90vh, 920px);
     min-height: 0;
     grid-template-columns: 260px minmax(0, 1fr);
-    gap: 56px;
+    gap: 40px;
     padding: 0;
     transform: translate(-50%, -50%);
   }

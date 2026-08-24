@@ -42,6 +42,7 @@ test("le centrage compact reste limité au tableau de bord ordinateur", () => {
   assert.match(styles, /@media \(min-width: 1121px\)[\s\S]*?\.v2-app\.v2-dashboard-centered/);
   assert.match(styles, /width: min\(92vw, 1760px\)/);
   assert.match(styles, /grid-template-columns: 260px minmax\(0, 1fr\)/);
+  assert.match(styles, /gap: 40px/);
   assert.match(dashboard, /function resetHomeState\(\) \{\s*profDashboard\?\.classList\.add\("v2-dashboard-centered"\)/);
   assert.match(dashboard, /openCorrectionsBtn[\s\S]*?classList\.remove\("v2-dashboard-centered"\)/);
   assert.match(dashboard, /settingsBtn[\s\S]*?classList\.remove\("v2-dashboard-centered"\)/);
