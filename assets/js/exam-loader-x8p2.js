@@ -1700,7 +1700,7 @@ function ensureExamListModal() {
           <span data-exam-list-status></span>
           <button type="button" class="btn secondary" data-exam-list-close>Fermer</button>
           <button type="button" class="btn primary" data-exam-list-copy>Copier message</button>
-          <button type="button" class="btn primary" data-exam-list-send>Envoyer Discord</button>
+          <button type="button" class="btn primary" data-exam-list-send>Envoyer avec le bot</button>
         </div>
       </section>
     </div>
@@ -1761,7 +1761,7 @@ function ensureExamListModal() {
     button.textContent = "Envoi...";
 
     if (status) {
-      status.textContent = "Envoi Discord en cours...";
+      status.textContent = "Envoi par le bot en cours...";
       status.dataset.tone = "";
     }
 
@@ -1776,7 +1776,7 @@ function ensureExamListModal() {
       await sendExamListDiscordMessage(approvedMessage, ["1169634939797524480"]);
 
       if (status) {
-        status.textContent = "Messages envoyés.";
+        status.textContent = "Messages envoyés par le bot.";
         status.dataset.tone = "ok";
       }
     } catch (error) {

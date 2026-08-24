@@ -1,11 +1,12 @@
-const FIREBASE_WEB_API_KEY = "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c";
-const FIREBASE_PROJECT_ID = "universit-4b11e";
+const DISCORD_API_BASE = "https://discord.com/api/v10";
+const MAX_MESSAGE_LENGTH = 2000;
 const ALLOWED_ROLE_IDS = new Set(["1199780299786158160", "1169634939797524480"]);
 const { verifyFirebaseProfAccess } = require("../lib/server/firebase-prof-access.js");
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
   res.end(JSON.stringify(payload));
 }
 
@@ -15,87 +16,32 @@ function getBearerToken(req) {
   return match ? match[1].trim() : "";
 }
 
-function decodeJwtPayload(idToken) {
-  try {
-    const payload = String(idToken || "").split(".")[1];
-    if (!payload) return {};
-
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
-    return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
-  } catch (error) {
-    console.warn("Décodage token Firebase impossible :", error);
-    return {};
-  }
-}
-
 async function readJsonBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
 
+  if (typeof req.body === "string") {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+
+  if (typeof req[Symbol.asyncIterator] !== "function") return {};
+
   const chunks = [];
   for await (const chunk of req) {
-    chunks.push(Buffer.from(chunk));
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
 
   const raw = Buffer.concat(chunks).toString("utf8").trim();
-  return raw ? JSON.parse(raw) : {};
-}
+  if (!raw) return {};
 
-async function getFirebaseUser(idToken) {
   try {
-    const response = await fetch(
-      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken })
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      const user = data.users?.[0];
-
-      if (user?.email) return user;
-    }
-
-    console.warn("Lookup Firebase refusé, fallback Firestore :", response.status);
-  } catch (error) {
-    console.warn("Lookup Firebase indisponible, fallback Firestore :", error);
+    return JSON.parse(raw);
+  } catch {
+    return {};
   }
-
-  const payload = decodeJwtPayload(idToken);
-  const email = payload.email || payload.firebase?.identities?.email?.[0] || "";
-
-  if (!email) {
-    throw new Error("Token Firebase illisible.");
-  }
-
-  return { email };
-}
-
-async function getUserAccess(email, idToken) {
-  const encodedEmail = encodeURIComponent(email);
-  const response = await fetch(
-    `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${encodedEmail}`,
-    {
-      headers: {
-        Authorization: `Bearer ${idToken}`
-      }
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error("Rôle utilisateur impossible à vérifier.");
-  }
-
-  const data = await response.json();
-  const fields = data.fields || {};
-
-  return {
-    role: fields.role?.stringValue || null,
-    admin: fields.admin?.booleanValue === true
-  };
 }
 
 function sanitizeAllowedMentions(value) {
@@ -109,6 +55,36 @@ function sanitizeAllowedMentions(value) {
   };
 }
 
+function isDiscordWebhookUrl(value) {
+  try {
+    const url = new URL(value);
+    const allowedHost = url.hostname === "discord.com" || url.hostname === "discordapp.com";
+    return url.protocol === "https:" && allowedHost && url.pathname.startsWith("/api/webhooks/");
+  } catch {
+    return false;
+  }
+}
+
+async function resolveExamResultsChannelId() {
+  const configuredChannelId = String(process.env.DISCORD_EXAM_RESULTS_CHANNEL_ID || "").trim();
+
+  if (/^\d{17,20}$/.test(configuredChannelId)) {
+    return configuredChannelId;
+  }
+
+  // Transition douce : l'ancien webhook ne sert plus à envoyer le message.
+  // Il permet seulement de retrouver le salon actuel tant que son ID n'est pas configuré.
+  const legacyWebhookUrl = String(process.env.DISCORD_EXAM_RESULTS_WEBHOOK_URL || "").trim();
+  if (!isDiscordWebhookUrl(legacyWebhookUrl)) return "";
+
+  const metadataResponse = await fetch(legacyWebhookUrl, { method: "GET" });
+  if (!metadataResponse.ok) return "";
+
+  const metadata = await metadataResponse.json().catch(() => ({}));
+  const channelId = String(metadata.channel_id || "").trim();
+  return /^\d{17,20}$/.test(channelId) ? channelId : "";
+}
+
 module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.statusCode = 204;
@@ -117,29 +93,37 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
     sendJson(res, 405, { error: "Méthode non autorisée." });
     return;
   }
 
-  const webhookUrl = process.env.DISCORD_EXAM_RESULTS_WEBHOOK_URL;
-
-  if (!webhookUrl) {
-    sendJson(res, 500, { error: "Webhook Discord non configuré côté serveur." });
+  const idToken = getBearerToken(req);
+  if (!idToken) {
+    sendJson(res, 401, { error: "Connexion professeur requise." });
     return;
   }
 
   try {
-    const idToken = getBearerToken(req);
-
-    if (!idToken) {
-      sendJson(res, 401, { error: "Connexion professeur requise." });
-      return;
-    }
-
     const access = await verifyFirebaseProfAccess(idToken);
 
     if (!access.allowed) {
       sendJson(res, 403, { error: "Accès réservé aux professeurs." });
+      return;
+    }
+
+    const botToken = String(process.env.DISCORD_BOT_TOKEN || "").trim();
+    if (!botToken) {
+      sendJson(res, 500, { error: "Bot Discord non configuré côté serveur." });
+      return;
+    }
+
+    const channelId = await resolveExamResultsChannelId();
+    if (!channelId) {
+      sendJson(res, 500, {
+        error: "Salon des résultats non configuré.",
+        details: "Ajoute DISCORD_EXAM_RESULTS_CHANNEL_ID dans les variables Vercel."
+      });
       return;
     }
 
@@ -151,9 +135,19 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const discordResponse = await fetch(webhookUrl, {
+    if (content.length > MAX_MESSAGE_LENGTH) {
+      sendJson(res, 400, {
+        error: `Message Discord trop long (${content.length}/${MAX_MESSAGE_LENGTH} caractères).`
+      });
+      return;
+    }
+
+    const discordResponse = await fetch(`${DISCORD_API_BASE}/channels/${channelId}/messages`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bot ${botToken}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         content,
         allowed_mentions: sanitizeAllowedMentions(body.allowed_mentions)
@@ -163,15 +157,23 @@ module.exports = async function handler(req, res) {
     if (!discordResponse.ok) {
       const details = await discordResponse.text().catch(() => "");
       sendJson(res, 502, {
-        error: `Discord a refusé l'envoi (${discordResponse.status}).`,
-        details
+        error: `Discord a refusé l'envoi du bot (${discordResponse.status}).`,
+        details: details.slice(0, 300)
       });
       return;
     }
 
-    sendJson(res, 200, { ok: true });
+    const sentMessage = await discordResponse.json().catch(() => ({}));
+    sendJson(res, 200, {
+      ok: true,
+      channelId,
+      messageId: String(sentMessage.id || "")
+    });
   } catch (error) {
-    console.error("Envoi Discord examens impossible :", error);
-    sendJson(res, 500, { error: error.message || "Envoi Discord impossible." });
+    console.error("Envoi des résultats par le bot impossible :", error);
+    sendJson(res, 502, {
+      error: "Envoi Discord impossible.",
+      details: String(error?.message || error).slice(0, 300)
+    });
   }
 };
