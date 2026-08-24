@@ -100,6 +100,31 @@ test("le Confort de lecture applique directement le thème et les tailles", () =
   assert.doesNotMatch(auth, /function initTheme\(/);
 });
 
+test("les paramètres sont classés et les nouvelles préférences restent locales", () => {
+  const dashboard = read("pages/espace-prof.html");
+  const preferences = read("assets/js/prof-local-preferences.js");
+  const styles = read("assets/css/prof-simplified-mode.css");
+
+  for (const category of ["profile", "display", "accessibility", "corrections"]) {
+    assert.match(dashboard, new RegExp(`data-settings-category="${category}"`));
+    assert.match(dashboard, new RegExp(`data-settings-panel="${category}"`));
+  }
+
+  assert.match(dashboard, /data-local-preference="highContrast"/);
+  assert.match(dashboard, /data-local-preference="reducedMotion"/);
+  assert.match(dashboard, /data-local-preference="keepAwake"/);
+  assert.match(dashboard, /data-local-preference="autoPaste"/);
+  assert.match(dashboard, /data-reset-local-preferences/);
+  assert.match(preferences, /profModulesAutoPasteEnabled/);
+  assert.match(preferences, /navigator\.wakeLock\.request\("screen"\)/);
+  assert.match(preferences, /window\.localStorage\.setItem/);
+  assert.match(preferences, /profHighContrast/);
+  assert.match(preferences, /profReducedMotion/);
+  assert.match(styles, /html\.prof-high-contrast/);
+  assert.match(styles, /html\.prof-reduced-motion/);
+  assert.doesNotMatch(preferences, /firebase|firestore/i);
+});
+
 test("le zoom ne charge jamais une URL vide", () => {
   const source = read("assets/js/image-zoom.js");
   assert.doesNotMatch(source, /src=["']{2}/);

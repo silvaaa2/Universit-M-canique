@@ -25,8 +25,9 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
   <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-2">
-  <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=4">
+  <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
   <script src="../assets/js/prof-simplified-mode.js?v=5"></script>
+  <script src="../assets/js/prof-local-preferences.js?v=1"></script>
 </head>
 
 <body class="prof-v2-page" data-theme="dark">
@@ -263,104 +264,239 @@
         <div class="v2-settings-card">
           <div class="v2-settings-head">
             <div>
-              <p class="v2-eyebrow">Compte local</p>
+              <p class="v2-eyebrow">Préférences locales</p>
               <h2>Paramètres</h2>
-              <p>Personnalisez l'affichage de votre espace prof sur ce navigateur.</p>
+              <p>Réglez votre profil, votre confort et vos outils de correction sur cet appareil.</p>
             </div>
 
             <button type="button" class="v2-secondary-btn" id="closeSettingsBtn">Retour</button>
           </div>
 
-          <div class="v2-settings-grid">
-            <form class="v2-profile-form" id="v2ProfileForm">
-              <label for="v2ProfileName">
-                Nom affiché
-                <input id="v2ProfileName" type="text" maxlength="32" placeholder="Ex : Marc" autocomplete="off">
-              </label>
-
-              <div class="v2-settings-actions">
-                <button type="button" class="v2-primary-btn" id="saveProfileBtn">Appliquer et enregistrer</button>
-                <button type="button" class="v2-secondary-btn" id="resetProfileBtn">Réinitialiser</button>
-              </div>
-
-              <p class="v2-profile-status" id="v2ProfileStatus"></p>
-            </form>
-
-            <aside class="v2-profile-preview" aria-label="Aperçu du profil">
-              <span id="v2ProfilePreviewInitials">PR</span>
-              <strong id="v2ProfilePreviewName">Professeur</strong>
-              <small id="v2ProfilePreviewMeta">Compte professeur</small>
-            </aside>
-          </div>
-
-          <section class="v2-display-setting" aria-labelledby="displaySettingsTitle">
-            <div class="v2-display-copy">
-              <p class="v2-eyebrow">Affichage</p>
-              <h3 id="displaySettingsTitle">Confort de lecture</h3>
-              <p>Choisissez ici l’apparence du site et la taille des textes du Mode Simplifié.</p>
-            </div>
-
-            <div class="v2-display-controls">
-              <div class="v2-display-control">
-                <span>Thème du site</span>
-                <div class="v2-display-options" role="group" aria-label="Thème du site">
-                  <button type="button" data-theme-choice="dark" class="active" aria-pressed="true">Sombre</button>
-                  <button type="button" data-theme-choice="light" aria-pressed="false">Clair</button>
-                </div>
-              </div>
-
-              <div class="v2-display-control">
-                <span>Taille du texte simplifié</span>
-                <div class="v2-display-options" data-text-size-options role="group" aria-label="Taille du texte en Mode Simplifié">
-                  <button type="button" data-simplified-text-size="standard" aria-pressed="true">Standard</button>
-                  <button type="button" data-simplified-text-size="large" aria-pressed="false">Grand</button>
-                  <button type="button" data-simplified-text-size="xlarge" aria-pressed="false">Très grand</button>
-                </div>
-                <small data-simplified-text-size-status aria-live="polite">Taille standard enregistrée pour le Mode Simplifié.</small>
-              </div>
-            </div>
-          </section>
-
-          <section class="v2-simplified-setting" aria-labelledby="simplifiedModeTitle">
-            <div class="v2-simplified-copy">
-              <p class="v2-eyebrow">Accessibilité</p>
-              <h3 id="simplifiedModeTitle">Mode Simplifié</h3>
-              <p>Un affichage plus calme et plus lisible, pensé pour réduire la charge visuelle pendant les corrections.</p>
-              <ul class="v2-simplified-benefits" aria-label="Effets du mode simplifié">
-                <li>Textes mieux espacés</li>
-                <li>Lecture à voix haute</li>
-                <li>Animations limitées</li>
-                <li>Corrections centrées sur l’essentiel</li>
-              </ul>
-            </div>
-
-            <div class="v2-simplified-control">
-              <button
-                type="button"
-                class="v2-simplified-switch"
-                id="simplifiedModeToggle"
-                data-simplified-toggle
-                role="switch"
-                aria-checked="false"
-                aria-labelledby="simplifiedModeTitle"
-                aria-describedby="simplifiedModeLocalNote"
-              >
-                <span data-simplified-label>Désactivé</span>
-                <i aria-hidden="true"></i>
+          <div class="v2-settings-layout">
+            <nav class="v2-settings-categories" aria-label="Catégories des paramètres">
+              <button type="button" class="active" data-settings-category="profile" aria-selected="true">
+                <span aria-hidden="true">PR</span>
+                <strong>Profil</strong>
+                <small>Nom affiché</small>
               </button>
-              <button
-                type="button"
-                class="v2-secondary-btn v2-simplified-voice-test"
-                id="simplifiedVoiceTest"
-                data-simplified-speak
-                data-simplified-idle-label="Tester la voix masculine"
-                data-simplified-speech-text="Bonjour. La lecture à voix haute est activée avec une voix française masculine."
-                aria-pressed="false"
-              ><span aria-hidden="true">▶</span> Tester la voix masculine</button>
-              <small id="simplifiedModeLocalNote">Enregistré uniquement sur cet appareil, jamais sur votre compte.</small>
-              <small data-simplified-status aria-live="polite">Mode simplifié désactivé.</small>
+              <button type="button" data-settings-category="display" aria-selected="false">
+                <span aria-hidden="true">AF</span>
+                <strong>Apparence</strong>
+                <small>Thème et taille</small>
+              </button>
+              <button type="button" data-settings-category="accessibility" aria-selected="false">
+                <span aria-hidden="true">AC</span>
+                <strong>Accessibilité</strong>
+                <small>Lecture et confort</small>
+              </button>
+              <button type="button" data-settings-category="corrections" aria-selected="false">
+                <span aria-hidden="true">CO</span>
+                <strong>Corrections</strong>
+                <small>Outils rapides</small>
+              </button>
+            </nav>
+
+            <div class="v2-settings-panels">
+              <section class="v2-settings-panel" data-settings-panel="profile" aria-labelledby="profileSettingsTitle">
+                <header class="v2-settings-panel-head">
+                  <div>
+                    <p class="v2-eyebrow">Identité locale</p>
+                    <h3 id="profileSettingsTitle">Votre profil</h3>
+                    <p>Ce nom est uniquement affiché sur cet appareil.</p>
+                  </div>
+                  <span class="v2-local-badge">Local</span>
+                </header>
+
+                <div class="v2-settings-grid">
+                  <form class="v2-profile-form" id="v2ProfileForm">
+                    <label for="v2ProfileName">
+                      Nom affiché
+                      <input id="v2ProfileName" type="text" maxlength="32" placeholder="Ex : Marc" autocomplete="off">
+                    </label>
+
+                    <div class="v2-settings-actions">
+                      <button type="button" class="v2-primary-btn" id="saveProfileBtn">Appliquer et enregistrer</button>
+                      <button type="button" class="v2-secondary-btn" id="resetProfileBtn">Réinitialiser</button>
+                    </div>
+
+                    <p class="v2-profile-status" id="v2ProfileStatus"></p>
+                  </form>
+
+                  <aside class="v2-profile-preview" aria-label="Aperçu du profil">
+                    <span id="v2ProfilePreviewInitials">PR</span>
+                    <strong id="v2ProfilePreviewName">Professeur</strong>
+                    <small id="v2ProfilePreviewMeta">Compte professeur</small>
+                  </aside>
+                </div>
+              </section>
+
+              <section class="v2-settings-panel" data-settings-panel="display" aria-labelledby="displaySettingsTitle" hidden>
+                <header class="v2-settings-panel-head">
+                  <div>
+                    <p class="v2-eyebrow">Affichage</p>
+                    <h3 id="displaySettingsTitle">Confort de lecture</h3>
+                    <p>Adaptez l’apparence du site à votre écran.</p>
+                  </div>
+                  <span class="v2-local-badge">2 réglages</span>
+                </header>
+
+                <div class="v2-display-setting">
+                  <div class="v2-display-copy">
+                    <h4>Présentation générale</h4>
+                    <p>Le thème s’applique à tout l’espace professeur. La taille choisie est utilisée dans le Mode Simplifié.</p>
+                  </div>
+
+                  <div class="v2-display-controls">
+                    <div class="v2-display-control">
+                      <span>Thème du site</span>
+                      <div class="v2-display-options" role="group" aria-label="Thème du site">
+                        <button type="button" data-theme-choice="dark" class="active" aria-pressed="true">Sombre</button>
+                        <button type="button" data-theme-choice="light" aria-pressed="false">Clair</button>
+                      </div>
+                    </div>
+
+                    <div class="v2-display-control">
+                      <span>Taille du texte simplifié</span>
+                      <div class="v2-display-options" data-text-size-options role="group" aria-label="Taille du texte en Mode Simplifié">
+                        <button type="button" data-simplified-text-size="standard" aria-pressed="true">Standard</button>
+                        <button type="button" data-simplified-text-size="large" aria-pressed="false">Grand</button>
+                        <button type="button" data-simplified-text-size="xlarge" aria-pressed="false">Très grand</button>
+                      </div>
+                      <small data-simplified-text-size-status aria-live="polite">Taille standard enregistrée pour le Mode Simplifié.</small>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="v2-settings-panel" data-settings-panel="accessibility" aria-labelledby="accessibilitySettingsTitle" hidden>
+                <header class="v2-settings-panel-head">
+                  <div>
+                    <p class="v2-eyebrow">Accessibilité</p>
+                    <h3 id="accessibilitySettingsTitle">Lecture et concentration</h3>
+                    <p>Réduisez la fatigue visuelle sans supprimer les fonctions de correction.</p>
+                  </div>
+                  <span class="v2-local-badge">3 aides</span>
+                </header>
+
+                <section class="v2-simplified-setting" aria-labelledby="simplifiedModeTitle">
+                  <div class="v2-simplified-copy">
+                    <h4 id="simplifiedModeTitle">Mode Simplifié</h4>
+                    <p>Un affichage plus calme et plus lisible, pensé pour réduire la charge visuelle pendant les corrections.</p>
+                    <ul class="v2-simplified-benefits" aria-label="Effets du mode simplifié">
+                      <li>Textes mieux espacés</li>
+                      <li>Lecture à voix haute</li>
+                      <li>Animations limitées</li>
+                      <li>Corrections centrées sur l’essentiel</li>
+                    </ul>
+                  </div>
+
+                  <div class="v2-simplified-control">
+                    <button
+                      type="button"
+                      class="v2-simplified-switch"
+                      id="simplifiedModeToggle"
+                      data-simplified-toggle
+                      role="switch"
+                      aria-checked="false"
+                      aria-labelledby="simplifiedModeTitle"
+                      aria-describedby="simplifiedModeLocalNote"
+                    >
+                      <span data-simplified-label>Désactivé</span>
+                      <i aria-hidden="true"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="v2-secondary-btn v2-simplified-voice-test"
+                      id="simplifiedVoiceTest"
+                      data-simplified-speak
+                      data-simplified-idle-label="Tester la voix masculine"
+                      data-simplified-speech-text="Bonjour. La lecture à voix haute est activée avec une voix française masculine."
+                      aria-pressed="false"
+                    ><span aria-hidden="true">▶</span> Tester la voix masculine</button>
+                    <small id="simplifiedModeLocalNote">Enregistré uniquement sur cet appareil.</small>
+                    <small data-simplified-status aria-live="polite">Mode simplifié désactivé.</small>
+                  </div>
+                </section>
+
+                <div class="v2-preference-grid">
+                  <article class="v2-preference-card">
+                    <div class="v2-preference-copy">
+                      <span class="v2-preference-icon" aria-hidden="true">CT</span>
+                      <div>
+                        <h4>Contraste renforcé</h4>
+                        <p>Rend les textes, bordures et boutons plus faciles à distinguer.</p>
+                      </div>
+                    </div>
+                    <button type="button" class="v2-preference-switch" data-local-preference="highContrast" role="switch" aria-checked="false">
+                      <span data-preference-label>Désactivé</span><i aria-hidden="true"></i>
+                    </button>
+                  </article>
+
+                  <article class="v2-preference-card">
+                    <div class="v2-preference-copy">
+                      <span class="v2-preference-icon" aria-hidden="true">AN</span>
+                      <div>
+                        <h4>Réduire les animations</h4>
+                        <p>Supprime les mouvements et transitions tout en gardant les changements instantanés.</p>
+                      </div>
+                    </div>
+                    <button type="button" class="v2-preference-switch" data-local-preference="reducedMotion" role="switch" aria-checked="false">
+                      <span data-preference-label>Désactivé</span><i aria-hidden="true"></i>
+                    </button>
+                  </article>
+                </div>
+              </section>
+
+              <section class="v2-settings-panel" data-settings-panel="corrections" aria-labelledby="correctionSettingsTitle" hidden>
+                <header class="v2-settings-panel-head">
+                  <div>
+                    <p class="v2-eyebrow">Productivité</p>
+                    <h3 id="correctionSettingsTitle">Outils de correction</h3>
+                    <p>Des raccourcis pratiques pour les cours et les corrections sur téléphone.</p>
+                  </div>
+                  <span class="v2-local-badge">2 outils</span>
+                </header>
+
+                <div class="v2-preference-grid">
+                  <article class="v2-preference-card">
+                    <div class="v2-preference-copy">
+                      <span class="v2-preference-icon" aria-hidden="true">ID</span>
+                      <div>
+                        <h4>Auto-collage des modules</h4>
+                        <p>Vérifie le presse-papiers toutes les 5 secondes dans Modules élèves. Ctrl+V reste toujours disponible.</p>
+                      </div>
+                    </div>
+                    <button type="button" class="v2-preference-switch" data-local-preference="autoPaste" role="switch" aria-checked="true">
+                      <span data-preference-label>Activé</span><i aria-hidden="true"></i>
+                    </button>
+                  </article>
+
+                  <article class="v2-preference-card">
+                    <div class="v2-preference-copy">
+                      <span class="v2-preference-icon" aria-hidden="true">ON</span>
+                      <div>
+                        <h4>Garder l’écran allumé</h4>
+                        <p>Évite la mise en veille pendant une correction lorsque le navigateur le permet.</p>
+                        <small data-preference-status="keepAwake" aria-live="polite"></small>
+                      </div>
+                    </div>
+                    <button type="button" class="v2-preference-switch" data-local-preference="keepAwake" role="switch" aria-checked="false">
+                      <span data-preference-label>Désactivé</span><i aria-hidden="true"></i>
+                    </button>
+                  </article>
+                </div>
+
+                <section class="v2-settings-reset-zone" aria-labelledby="resetPreferencesTitle">
+                  <div>
+                    <h4 id="resetPreferencesTitle">Réinitialiser les préférences</h4>
+                    <p>Remet le thème, l’accessibilité et les outils à leur valeur par défaut. Le nom et la connexion sont conservés.</p>
+                  </div>
+                  <button type="button" class="v2-secondary-btn" data-reset-local-preferences>Réinitialiser l’affichage</button>
+                  <small data-reset-preferences-status aria-live="polite"></small>
+                </section>
+              </section>
             </div>
-          </section>
+          </div>
         </div>
       </section>
 
