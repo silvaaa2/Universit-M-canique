@@ -13,7 +13,9 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
 
   assert.match(html, /class="v2-home apex-dashboard"/);
   assert.match(html, /id="v2ApexHealthRing"/);
-  assert.match(html, /id="v2WatchList"/);
+  assert.match(html, /id="v2ApexHistoryChart"/);
+  assert.match(html, /Effectif par cursus/);
+  assert.doesNotMatch(html, /Corrections prioritaires/);
   assert.match(html, /id="v2StatExamSent"/);
   assert.match(html, /id="v2StatModuleActive"/);
   assert.match(html, /id="v2StatCustomsOpen"/);
@@ -22,9 +24,14 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(html, /prof-modules-eleves\.html/);
   assert.doesNotMatch(html, /Accès direct|Actions rapides|apexSettingsShortcut/);
   assert.match(script, /function renderApexDashboard/);
+  assert.match(script, /function ensureCurrentCursusSnapshot/);
+  assert.match(script, /function renderCursusHistory/);
+  assert.match(script, /viewport\.scrollLeft = viewport\.scrollWidth/);
+  assert.match(script, /getCollectionSnapshot\("studentModuleArchives"\)/);
   assert.match(script, /modules\.moduleCounts/);
   assert.match(script, /renderApexDashboard\(\{ cursus, modules, exams, customAnswers, customAccess \}\)/);
   assert.match(styles, /\.apex-command-grid/);
+  assert.match(styles, /\.apex-history-chart/);
   assert.match(styles, /@media \(max-width: 900px\)/);
 });
 

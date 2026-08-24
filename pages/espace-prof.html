@@ -25,7 +25,7 @@
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
   <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-3">
-  <link rel="stylesheet" href="../assets/css/prof-dashboard-apex.css?v=3">
+  <link rel="stylesheet" href="../assets/css/prof-dashboard-apex.css?v=4">
   <link rel="stylesheet" href="../assets/css/prof-apex-suite.css?v=1">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
   <script src="../assets/js/prof-simplified-mode.js?v=5"></script>
@@ -260,13 +260,13 @@
         </div>
 
         <div class="apex-command-grid">
-          <article class="apex-panel apex-priority-panel">
+          <article class="apex-panel apex-history-panel">
             <header class="apex-panel-head">
-              <div><span>File de travail</span><h3>Corrections prioritaires</h3></div>
-              <strong><i id="v2ApexQueueCount">--</i> à traiter</strong>
+              <div><span>Historique</span><h3>Effectif par cursus</h3></div>
+              <strong><i id="v2ApexHistoryCount">--</i> cursus</strong>
             </header>
-            <div class="v2-watch-list apex-priority-list" id="v2WatchList">
-              <div class="v2-watch-skeleton" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="apex-history-chart" id="v2ApexHistoryChart" role="img" aria-label="Chargement de l’historique des effectifs">
+              <div class="apex-history-skeleton" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
             </div>
           </article>
 
@@ -585,7 +585,7 @@
 <script src="../assets/js/navigation.js?v=1007"></script>
 <script src="../assets/js/prof-ui.js?v=1003"></script>
 <script src="../assets/js/prof-local-profile.js?v=2"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=28"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=29"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=4"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=5"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260824-13"></script>

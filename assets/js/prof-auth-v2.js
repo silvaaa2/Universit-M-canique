@@ -14,6 +14,12 @@ import {
   renderProfAvatar
 } from "./prof-identity.js?v=2";
 import {
+  CURSUS_HISTORY_RECORD_TYPE,
+  buildCursusHistory,
+  createCursusSnapshot,
+  getCursusHistoryDocumentId
+} from "./cursus-history.js?v=1";
+import {
   getFirestore,
   doc,
   getDoc,
@@ -101,7 +107,7 @@ const v2CommandInput = document.getElementById("v2CommandInput");
 const v2DashboardUpdated = document.getElementById("v2DashboardUpdated");
 const v2DashboardHealth = document.getElementById("v2DashboardHealth");
 const v2WatchCount = document.getElementById("v2WatchCount");
-const v2WatchList = document.getElementById("v2WatchList");
+const v2ApexHistoryChart = document.getElementById("v2ApexHistoryChart");
 const adminBtn = document.getElementById("profAdminBtn");
 const settingsBtn = document.getElementById("profSettingsBtn");
 const settingsPanel = document.getElementById("v2SettingsPanel");
@@ -282,6 +288,15 @@ function setText(id, value) {
 
 function formatCount(value) {
   return Number.isFinite(Number(value)) ? String(Number(value)) : "--";
+}
+
+function escapeMarkup(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function isCheckedValue(value) {
@@ -531,8 +546,89 @@ async function loadCurrentCursus() {
     students,
     total: students.length,
     studentIds: new Set(students.map(student => student.normalizedIdUnique)),
-    studentNames: new Set(students.map(student => student.normalizedStudentName).filter(Boolean))
+    studentNames: new Set(students.map(student => student.normalizedStudentName).filter(Boolean)),
+    settings
   };
+}
+
+async function ensureCurrentCursusSnapshot(cursus, moduleRows) {
+  const existing = moduleRows.find(row => (
+    row.data?.recordType === CURSUS_HISTORY_RECORD_TYPE
+    && row.data?.cursusKey === cursus.key
+  ));
+  if (existing || Number(cursus.total || 0) <= 0) return moduleRows;
+
+  const snapshot = createCursusSnapshot(cursus);
+  const firebaseRecord = {
+    ...snapshot,
+    capturedAt: serverTimestamp(),
+    createdBy: window.currentProfUser?.profActorId || window.currentProfUser?.uid || "prof"
+  };
+
+  try {
+    const snapshotId = getCursusHistoryDocumentId(cursus.key);
+    await withTimeout(
+      setDoc(doc(db, "studentModules", snapshotId), firebaseRecord, { merge: true }),
+      DASHBOARD_TIMEOUT_MS,
+      "Sauvegarde de l’historique du cursus trop longue."
+    );
+    moduleRows.push({ id: snapshotId, data: firebaseRecord });
+  } catch (error) {
+    console.warn("Historique du cursus non sauvegardé :", error);
+  }
+
+  return moduleRows;
+}
+
+function renderCursusHistory(history = []) {
+  setText("v2ApexHistoryCount", formatCount(history.length));
+  if (!v2ApexHistoryChart) return;
+
+  if (!history.length) {
+    v2ApexHistoryChart.innerHTML = `<p class="apex-history-empty">Aucun cursus mémorisé pour le moment.</p>`;
+    v2ApexHistoryChart.setAttribute("aria-label", "Aucun historique d’effectif disponible");
+    return;
+  }
+
+  const maximum = Math.max(...history.map(entry => Number(entry.total || 0)), 1);
+  const bars = history.map((entry, index) => {
+    const total = Math.max(0, Number(entry.total || 0));
+    const percent = total > 0 ? Math.max(10, Math.round((total / maximum) * 100)) : 4;
+    const currentClass = entry.current ? " is-current" : "";
+    const accessibleLabel = `${entry.label}, ${total} élèves, semaine ${entry.weekNumber} de ${entry.weekYear}`;
+
+    return `
+      <div class="apex-history-item${currentClass}" title="${escapeMarkup(accessibleLabel)}">
+        <div class="apex-history-bar-track">
+          <i class="apex-history-bar" style="--apex-history-height:${percent}%">
+            <strong>${escapeMarkup(total)}</strong>
+          </i>
+        </div>
+        <span>${escapeMarkup(entry.weekLabel || `S${entry.weekNumber}`)}</span>
+        <small>${escapeMarkup(entry.weekYear)}</small>
+        ${entry.current ? '<em>Actuel</em>' : `<em>#${index + 1}</em>`}
+      </div>
+    `;
+  }).join("");
+
+  v2ApexHistoryChart.innerHTML = `
+    <div class="apex-history-scale" aria-hidden="true"><span>${escapeMarkup(maximum)}</span><span>${escapeMarkup(Math.round(maximum / 2))}</span><span>0</span></div>
+    <div class="apex-history-viewport">
+      <div class="apex-history-plot" style="--apex-history-count:${history.length}">${bars}</div>
+    </div>
+  `;
+  focusLatestCursusHistory();
+  v2ApexHistoryChart.setAttribute(
+    "aria-label",
+    `Historique de ${history.length} cursus. Dernier effectif : ${history.at(-1)?.total || 0} élèves en ${history.at(-1)?.weekLabel || "semaine inconnue"}.`
+  );
+}
+
+function focusLatestCursusHistory() {
+  requestAnimationFrame(() => {
+    const viewport = v2ApexHistoryChart?.querySelector(".apex-history-viewport");
+    if (viewport) viewport.scrollLeft = viewport.scrollWidth;
+  });
 }
 
 function matchesCurrentCursusStudent(cursus, idUnique, studentName) {
@@ -1011,22 +1107,6 @@ function renderWatchList({ modules, exams, customAccess, customAnswers }) {
   setText("v2ApexQueueCount", queueCount);
   setText("v2ApexQueueAction", queueCount);
 
-  if (!v2WatchList) return;
-
-  if (!items.length) {
-    v2WatchList.innerHTML = `<p class="v2-watch-empty">Rien d'urgent pour le moment.</p>`;
-    return;
-  }
-
-  v2WatchList.innerHTML = items.map(item => `
-    <a class="v2-watch-item" data-tone="${item.tone}" href="${item.href}">
-      <span class="v2-watch-copy">
-        <small>${item.eyebrow}</small>
-        <b>${item.label}</b>
-      </span>
-      <strong>${item.value}<i aria-hidden="true">›</i></strong>
-    </a>
-  `).join("");
 }
 
 function renderCursusStats(cursus, modules) {
@@ -1121,7 +1201,11 @@ function setDashboardFallback(message) {
     if (bar) bar.style.width = "0%";
   });
   if (v2WatchCount) v2WatchCount.textContent = "--";
-  if (v2WatchList) v2WatchList.innerHTML = `<p class="v2-watch-empty">${message}</p>`;
+  setText("v2ApexHistoryCount", "--");
+  if (v2ApexHistoryChart) {
+    v2ApexHistoryChart.innerHTML = `<p class="apex-history-empty">${escapeMarkup(message)}</p>`;
+    v2ApexHistoryChart.setAttribute("aria-label", message);
+  }
   if (v2DashboardUpdated) v2DashboardUpdated.textContent = "--";
 }
 
@@ -1130,16 +1214,24 @@ async function loadDashboardStats() {
 
   dashboardStatsLoading = true;
   try {
-    const [cursusResult, modulesResult, customAccessResult] = await Promise.allSettled([
+    const [cursusResult, modulesResult, customAccessResult, archivesResult] = await Promise.allSettled([
       loadCurrentCursus(),
       getCollectionSnapshot("studentModules"),
-      summarizeCustomAvailability()
+      summarizeCustomAvailability(),
+      getCollectionSnapshot("studentModuleArchives")
     ]);
 
     if (cursusResult.status !== "fulfilled") throw cursusResult.reason;
 
     const cursus = cursusResult.value;
     const allModuleRows = modulesResult.status === "fulfilled" ? modulesResult.value : [];
+    await ensureCurrentCursusSnapshot(cursus, allModuleRows);
+    const archiveRows = archivesResult.status === "fulfilled" ? archivesResult.value : [];
+    const cursusHistory = buildCursusHistory({
+      moduleRows: allModuleRows,
+      archiveRows,
+      currentCursus: cursus
+    });
     const moduleRows = getCurrentCursusModuleRows(allModuleRows, cursus);
     const modules = summarizeModules(moduleRows, cursus.total);
     const customAccess = customAccessResult.status === "fulfilled"
@@ -1185,6 +1277,7 @@ async function loadDashboardStats() {
     setText("v2StatCustomApproved", formatCount(customAnswers.approved));
     renderCursusStats(cursus, modules);
     renderApexDashboard({ cursus, modules, exams, customAnswers, customAccess });
+    renderCursusHistory(cursusHistory);
     if (v2DashboardUpdated) {
       v2DashboardUpdated.textContent = new Date().toLocaleTimeString("fr-FR", {
         hour: "2-digit",
@@ -1262,6 +1355,7 @@ async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
 
   profDashboard?.removeAttribute("hidden");
   if (profDashboard) profDashboard.style.display = "grid";
+  focusLatestCursusHistory();
   window.scrollTo(0, 0);
 
   await wait(180);

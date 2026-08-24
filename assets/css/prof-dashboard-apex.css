@@ -642,6 +642,180 @@ body.prof-v2-page .v2-home.apex-dashboard {
   scrollbar-width: thin;
 }
 
+/* Historique des effectifs par cursus */
+
+.apex-history-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.apex-history-chart {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.apex-history-scale {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4px 0 48px;
+  color: #656960;
+}
+
+.apex-history-scale span {
+  font-size: 8px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.apex-history-viewport {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-color: rgba(239, 206, 114, .32) transparent;
+  scrollbar-width: thin;
+}
+
+.apex-history-plot {
+  --apex-history-count: 1;
+  min-width: max(100%, calc(var(--apex-history-count) * 82px));
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--apex-history-count), minmax(64px, 1fr));
+  gap: 12px;
+  align-items: end;
+  padding: 3px 8px 0;
+  border-bottom: 1px solid var(--apex-line);
+  background:
+    linear-gradient(to bottom, var(--apex-line) 1px, transparent 1px) 0 0 / 100% 50%,
+    linear-gradient(90deg, rgba(255,255,255,.015), transparent 45%);
+}
+
+.apex-history-item {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  justify-items: center;
+  align-items: end;
+  gap: 2px;
+}
+
+.apex-history-bar-track {
+  width: min(46px, 72%);
+  height: 100%;
+  display: flex;
+  align-items: end;
+  padding-top: 20px;
+}
+
+.apex-history-bar {
+  position: relative;
+  width: 100%;
+  height: var(--apex-history-height);
+  min-height: 8px;
+  display: block;
+  border: 1px solid rgba(239, 206, 114, .38);
+  border-radius: 10px 10px 3px 3px;
+  background: linear-gradient(180deg, #f4d77e, #9d7426);
+  box-shadow: 0 0 22px rgba(239, 206, 114, .10), inset 0 1px 0 rgba(255,255,255,.34);
+  transform-origin: bottom;
+  animation: apexHistoryGrow .72s cubic-bezier(.2,.75,.2,1) both;
+}
+
+.apex-history-bar strong {
+  position: absolute;
+  top: -21px;
+  left: 50%;
+  color: var(--apex-text);
+  font-size: 12px;
+  line-height: 1;
+  transform: translateX(-50%);
+}
+
+.apex-history-item.is-current .apex-history-bar {
+  border-color: rgba(105, 233, 161, .5);
+  background: linear-gradient(180deg, #75efac, #238457);
+  box-shadow: 0 0 26px rgba(105, 233, 161, .16), inset 0 1px 0 rgba(255,255,255,.34);
+}
+
+.apex-history-item > span {
+  margin-top: 5px;
+  color: var(--apex-text);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.apex-history-item > small {
+  color: var(--apex-muted);
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.apex-history-item > em {
+  min-height: 17px;
+  color: #64685f;
+  font-size: 7px;
+  font-style: normal;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.apex-history-item.is-current > em {
+  color: var(--apex-green);
+}
+
+.apex-history-empty {
+  grid-column: 1 / -1;
+  align-self: center;
+  margin: 0;
+  color: var(--apex-muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.apex-history-skeleton {
+  grid-column: 1 / -1;
+  min-height: 220px;
+  display: flex;
+  align-items: end;
+  justify-content: space-around;
+  gap: 16px;
+  padding: 28px 18px 36px;
+}
+
+.apex-history-skeleton i {
+  width: 40px;
+  border-radius: 9px 9px 3px 3px;
+  background: rgba(255, 255, 255, .04);
+  animation: apexHistoryPulse 1.2s ease-in-out infinite alternate;
+}
+
+.apex-history-skeleton i:nth-child(1) { height: 42%; }
+.apex-history-skeleton i:nth-child(2) { height: 66%; }
+.apex-history-skeleton i:nth-child(3) { height: 52%; }
+.apex-history-skeleton i:nth-child(4) { height: 78%; }
+.apex-history-skeleton i:nth-child(5) { height: 60%; }
+
+@keyframes apexHistoryGrow {
+  from { opacity: 0; transform: scaleY(.06); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+@keyframes apexHistoryPulse {
+  to { background: rgba(239, 206, 114, .09); }
+}
+
 .apex-priority-list .v2-watch-item {
   min-height: 58px;
   padding: 10px 12px;
@@ -945,6 +1119,14 @@ body.prof-v2-page[data-theme="light"] .apex-primary-action {
     max-height: none;
   }
 
+  .apex-history-chart {
+    min-height: 245px;
+  }
+
+  .apex-history-plot {
+    min-width: max(100%, calc(var(--apex-history-count) * 76px));
+  }
+
   .apex-priority-list .v2-watch-item {
     min-height: 54px !important;
     padding: 10px 12px !important;
@@ -1018,7 +1200,9 @@ body.prof-v2-page[data-theme="light"] .apex-primary-action {
   body.prof-v2-page .v2-app.dashboard-visible .apex-hero,
   body.prof-v2-page .v2-app.dashboard-visible .apex-kpi,
   body.prof-v2-page .v2-app.dashboard-visible .apex-panel,
-  .apex-module-progress b {
+  .apex-module-progress b,
+  .apex-history-bar,
+  .apex-history-skeleton i {
     animation: none !important;
     transition: none !important;
   }
