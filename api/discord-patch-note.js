@@ -1,6 +1,8 @@
 const MAX_MESSAGE_LENGTH = 3800;
 const EMBED_COLOR = 0xd6b46a;
 const FIREBASE_PROJECT_ID = "universit-4b11e";
+const DISCORD_API_BASE = "https://discord.com/api/v10";
+const DEFAULT_PATCH_CHANNEL_ID = "1531769824085151764";
 const { verifyFirebaseProfAccess } = require("../lib/server/firebase-prof-access.js");
 
 function sendJson(response, statusCode, payload) {
@@ -122,9 +124,16 @@ module.exports = async function handler(request, response) {
     return;
   }
 
-  const webhook = process.env.DISCORD_PATCH_WEBHOOK || "";
-  if (!/^https:\/\/discord(?:app)?\.com\/api\/webhooks\//.test(webhook)) {
-    sendJson(response, 500, { error: "DISCORD_PATCH_WEBHOOK is not configured" });
+  const botToken = String(process.env.DISCORD_BOT_TOKEN || "").trim();
+  const channelId = String(process.env.DISCORD_PATCH_CHANNEL_ID || DEFAULT_PATCH_CHANNEL_ID).trim();
+
+  if (!botToken) {
+    sendJson(response, 500, { error: "DISCORD_BOT_TOKEN is not configured" });
+    return;
+  }
+
+  if (!/^\d{17,20}$/.test(channelId)) {
+    sendJson(response, 500, { error: "DISCORD_PATCH_CHANNEL_ID is invalid" });
     return;
   }
 
@@ -143,7 +152,6 @@ module.exports = async function handler(request, response) {
   }
 
   const discordPayload = {
-    username: "Universite Mecanique",
     allowed_mentions: { parse: [] },
     embeds: [
       {
@@ -151,15 +159,18 @@ module.exports = async function handler(request, response) {
         description: message,
         color: EMBED_COLOR,
         timestamp: new Date().toISOString(),
-        footer: { text: "Patch note admin" }
+        footer: { text: "Université Mécanique • Mise à jour" }
       }
     ]
   };
 
   try {
-    const discordResponse = await fetch(webhook, {
+    const discordResponse = await fetch(`${DISCORD_API_BASE}/channels/${channelId}/messages`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bot ${botToken}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(discordPayload)
     });
 
@@ -172,7 +183,12 @@ module.exports = async function handler(request, response) {
       return;
     }
 
-    sendJson(response, 200, { ok: true });
+    const sentMessage = await discordResponse.json().catch(() => ({}));
+    sendJson(response, 200, {
+      ok: true,
+      channelId,
+      messageId: String(sentMessage.id || "")
+    });
   } catch (error) {
     sendJson(response, 502, {
       error: "Discord request failed",

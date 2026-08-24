@@ -9,7 +9,7 @@ const ADMIN_MODULES = [
   "./prof-admin-drive-tools.js?v=1006",
   "./prof-admin-exam-settings.js?v=1012",
   "./prof-admin-exam-scale-wizard.js?v=1007",
-  "./prof-admin-patch-notes.js?v=1003"
+  "./prof-admin-patch-notes.js?v=1004"
 ];
 
 let adminBundlePromise = null;

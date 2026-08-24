@@ -110,11 +110,22 @@ function bindPatchNoteEvents() {
     bodyInput.value = getPatchNoteTemplate();
   }
 
+  const characterCount = document.getElementById("patchNoteCharacterCount");
+  const syncCharacterCount = () => {
+    if (!characterCount || !bodyInput) return;
+    characterCount.textContent = `${bodyInput.value.length} / 3800 caractères`;
+    characterCount.dataset.tone = bodyInput.value.length > 3800 ? "error" : "";
+  };
+
+  bodyInput?.addEventListener("input", syncCharacterCount);
+  syncCharacterCount();
+
   document.getElementById("fillPatchNoteTemplateBtn")?.addEventListener("click", async () => {
     const body = document.getElementById("patchNoteBodyInput");
     if (!body) return;
 
     body.value = getPatchNoteTemplate();
+    body.dispatchEvent(new Event("input", { bubbles: true }));
 
     try {
       await navigator.clipboard.writeText(body.value);
@@ -136,7 +147,7 @@ function ensurePatchNotePanel() {
 
   if (!tabs.querySelector(`[data-admin-tab="${PATCH_NOTE_TAB}"]`)) {
     tabs.insertAdjacentHTML("beforeend", `
-      <button type="button" class="prof-admin-tab" data-admin-tab="${PATCH_NOTE_TAB}">Annonce Discord</button>
+      <button type="button" class="prof-admin-tab" data-admin-tab="${PATCH_NOTE_TAB}">Patch notes</button>
     `);
   }
 
@@ -144,9 +155,16 @@ function ensurePatchNotePanel() {
     workspace.insertAdjacentHTML("beforeend", `
       <section id="profPatchNotesPanel" class="prof-admin-panel prof-admin-patch-panel" data-admin-panel="${PATCH_NOTE_TAB}" hidden>
         <div class="prof-admin-toolbar">
-          <button type="button" class="prof-admin-small-btn gold" id="sendPatchNoteBtn">Envoyer sur Discord</button>
+          <button type="button" class="prof-admin-small-btn gold" id="sendPatchNoteBtn">Publier avec le bot</button>
           <button type="button" class="prof-admin-small-btn" id="fillPatchNoteTemplateBtn">Préparer un message</button>
           <span class="prof-admin-status" id="patchNoteStatus"></span>
+        </div>
+
+        <div class="prof-admin-section-title">
+          <div>
+            <strong>Patch notes Discord</strong>
+            <small>Rédige et publie les mises à jour depuis l’espace Admin privé.</small>
+          </div>
         </div>
 
         <div class="prof-admin-field-grid">
@@ -157,13 +175,14 @@ function ensurePatchNotePanel() {
 
           <div class="prof-admin-field full">
             <label for="patchNoteBodyInput">Message à envoyer</label>
-            <textarea id="patchNoteBodyInput" class="prof-admin-textarea" spellcheck="true"></textarea>
+            <textarea id="patchNoteBodyInput" class="prof-admin-textarea" maxlength="3800" spellcheck="true"></textarea>
+            <small class="prof-admin-status" id="patchNoteCharacterCount">0 / 3800 caractères</small>
           </div>
         </div>
 
         <div class="prof-admin-patch-note-card">
           <strong>Envoi réservé aux administrateurs</strong>
-          <p>Le message sera publié sur le salon Discord configuré pour l’espace Prof.</p>
+          <p>Le bot Université Mécanique publiera le message dans le salon des mises à jour.</p>
         </div>
       </section>
     `);
@@ -179,6 +198,17 @@ async function sendPatchNote() {
 
   if (!message) {
     setPatchNoteStatus("Écris un message avant d'envoyer.", "error");
+    return;
+  }
+
+  if (message.length > 3800) {
+    setPatchNoteStatus("Le patch note dépasse 3800 caractères.", "error");
+    return;
+  }
+
+  const confirmed = window.confirm(`Publier « ${title} » avec le bot Discord ?`);
+  if (!confirmed) {
+    setPatchNoteStatus("Publication annulée.");
     return;
   }
 
@@ -211,7 +241,7 @@ async function sendPatchNote() {
       return;
     }
 
-    setPatchNoteStatus("Annonce envoyée sur Discord.", "ok");
+    setPatchNoteStatus("Annonce publiée par le bot Discord.", "ok");
   } catch (error) {
     console.error("Envoi Discord impossible :", error);
     setPatchNoteStatus("Envoi impossible. Réessaie dans quelques instants.", "error");
