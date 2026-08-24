@@ -8,6 +8,7 @@
 ];
 
 const SCAN_TARGET_STORAGE_KEY = "profModulesScanTarget";
+const SCAN_ENABLED_STORAGE_KEY = "profModulesAutoPasteEnabled";
 const CLIPBOARD_SCAN_DELAY_MS = 5000;
 const SCAN_FLASH_DURATION_MS = 5000;
 
@@ -59,6 +60,33 @@ function setScanStatus(message, tone = "info") {
 
   status.textContent = message;
   status.dataset.tone = tone;
+}
+
+function readScanEnabledPreference() {
+  try {
+    const savedValue = localStorage.getItem(SCAN_ENABLED_STORAGE_KEY);
+    return savedValue === null ? true : savedValue === "true";
+  } catch (error) {
+    return true;
+  }
+}
+
+function saveScanEnabledPreference(enabled) {
+  try {
+    localStorage.setItem(SCAN_ENABLED_STORAGE_KEY, String(Boolean(enabled)));
+  } catch (error) {
+    // L'auto-collage reste utilisable même si le stockage local est bloqué.
+  }
+}
+
+function syncScanToggle() {
+  const toggle = document.querySelector("[data-modules-scan-toggle]");
+  const label = toggle?.querySelector("[data-modules-scan-toggle-label]");
+  if (!toggle || !label) return;
+
+  toggle.classList.toggle("is-active", clipboardScanEnabled);
+  toggle.setAttribute("aria-pressed", String(clipboardScanEnabled));
+  label.textContent = clipboardScanEnabled ? "Auto activé" : "Auto désactivé";
 }
 
 function extractIdCandidates(text) {
@@ -198,16 +226,40 @@ async function readClipboardOnce() {
   }
 }
 
-function startClipboardScan() {
-  if (clipboardScanEnabled) return;
+function startClipboardScan({ persist = false } = {}) {
+  if (clipboardScanEnabled) {
+    syncScanToggle();
+    return;
+  }
 
   clipboardScanEnabled = true;
   clipboardReadUnavailable = false;
-  setScanStatus(`Auto ${getScanTargetLabel()} actif.`, "ok");
+  if (persist) saveScanEnabledPreference(true);
+  syncScanToggle();
+  setScanStatus(`Auto-collage actif · ${getScanTargetLabel()}.`, "ok");
 
   window.clearInterval(clipboardScanTimer);
   clipboardScanTimer = window.setInterval(readClipboardOnce, CLIPBOARD_SCAN_DELAY_MS);
   readClipboardOnce();
+}
+
+function stopClipboardScan({ persist = false } = {}) {
+  clipboardScanEnabled = false;
+  clipboardReadUnavailable = false;
+  window.clearInterval(clipboardScanTimer);
+  clipboardScanTimer = null;
+  if (persist) saveScanEnabledPreference(false);
+  syncScanToggle();
+  setScanStatus("Auto-collage désactivé · Ctrl+V disponible.", "info");
+}
+
+function toggleClipboardScan() {
+  if (clipboardScanEnabled) {
+    stopClipboardScan({ persist: true });
+    return;
+  }
+
+  startClipboardScan({ persist: true });
 }
 
 function createScanControls() {
@@ -226,16 +278,32 @@ function createScanControls() {
         <option value="${column.key}" ${column.key === savedTarget ? "selected" : ""}>${column.label}</option>
       `).join("")}
     </select>
-    <span class="modules-scan-status" data-modules-scan-status data-tone="ok">Auto actif</span>
+    <button
+      type="button"
+      class="modules-scan-toggle"
+      data-modules-scan-toggle
+      aria-pressed="false"
+      aria-label="Activer ou désactiver l’auto-collage"
+    >
+      <span class="modules-scan-toggle-dot" aria-hidden="true"></span>
+      <span data-modules-scan-toggle-label>Auto désactivé</span>
+    </button>
+    <span class="modules-scan-status" data-modules-scan-status data-tone="info">Préparation…</span>
   `;
 
   searchInput.insertAdjacentElement("afterend", controls);
 
   controls.querySelector("[data-modules-scan-target]")?.addEventListener("change", event => {
     localStorage.setItem(SCAN_TARGET_STORAGE_KEY, event.target.value);
-    setScanStatus(`Cible : ${getScanTargetLabel()}.`, "info");
+    setScanStatus(
+      clipboardScanEnabled
+        ? `Auto-collage actif · ${getScanTargetLabel()}.`
+        : `Cible : ${getScanTargetLabel()} · auto-collage désactivé.`,
+      clipboardScanEnabled ? "ok" : "info"
+    );
   });
 
+  controls.querySelector("[data-modules-scan-toggle]")?.addEventListener("click", toggleClipboardScan);
 }
 
 function bindPasteScan() {
@@ -258,16 +326,29 @@ function bindPasteScan() {
 function initClipboardModuleScan() {
   createScanControls();
   bindPasteScan();
-  startClipboardScan();
+  if (readScanEnabledPreference()) {
+    startClipboardScan();
+  } else {
+    stopClipboardScan();
+  }
 
   // Une interaction volontaire permet une nouvelle tentative immédiate dans
   // les navigateurs qui exigent un geste utilisateur pour le presse-papiers.
   document.addEventListener("pointerup", () => {
-    if (!clipboardReadUnavailable) return;
+    if (!clipboardScanEnabled || !clipboardReadUnavailable) return;
     readClipboardOnce();
   }, { capture: true });
 
   window.addEventListener("focus", readClipboardOnce);
+  window.addEventListener("storage", event => {
+    if (event.key !== SCAN_ENABLED_STORAGE_KEY) return;
+
+    if (readScanEnabledPreference()) {
+      startClipboardScan();
+    } else {
+      stopClipboardScan();
+    }
+  });
 }
 
 if (document.readyState === "loading") {

@@ -37,15 +37,20 @@ test("la clé de correction n'est plus publiée", () => {
   assert.equal(existsSync(join(root, "assets/js/update-corrections.js")), false);
 });
 
-test("le pointage automatique démarre par défaut avec Ctrl+V en secours", () => {
+test("le pointage automatique est activé par défaut, désactivable et garde Ctrl+V en secours", () => {
   const source = read("assets/js/prof-modules-clipboard.js");
   const init = source.match(/function initClipboardModuleScan\(\) \{([\s\S]*?)\n\}/)?.[1] || "";
-  assert.match(init, /startClipboardScan\s*\(/);
+  assert.match(init, /readScanEnabledPreference\(\)[\s\S]*?startClipboardScan\s*\(/);
   assert.match(source, /CLIPBOARD_SCAN_DELAY_MS = 5000/);
-  assert.match(source, /Auto actif/);
+  assert.match(source, /savedValue === null \? true/);
+  assert.match(source, /SCAN_ENABLED_STORAGE_KEY = "profModulesAutoPasteEnabled"/);
+  assert.match(source, /data-modules-scan-toggle/);
+  assert.match(source, /function toggleClipboardScan\(\)/);
+  assert.match(source, /function stopClipboardScan\(/);
+  assert.match(source, /saveScanEnabledPreference\(false\)/);
+  assert.match(source, /Auto-collage désactivé · Ctrl\+V disponible/);
   assert.match(source, /Ctrl\+V si le navigateur bloque/);
   assert.match(source, /ID \$\{candidate\} déjà noté pour \$\{moduleLabel\}/);
-  assert.doesNotMatch(source, /Activer l’auto|data-modules-scan-toggle|toggleClipboardScan/);
   assert.doesNotMatch(source, /if \(clipboardReadUnavailable\) return;\n  if \(document\.hidden/);
   assert.doesNotMatch(source, /firstCandidate === lastClipboardCandidate/);
   assert.doesNotMatch(source, /déjà validé, date mise à jour/);
