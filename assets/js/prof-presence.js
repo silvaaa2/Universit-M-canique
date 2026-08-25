@@ -136,8 +136,12 @@ function renderPresences(presences) {
 }
 
 async function sendHeartbeat() {
-  if (!currentUser || document.visibilityState === "hidden" || requestInFlight) return;
+  // Ne jamais couper la présence quand la fenêtre passe derrière une autre :
+  // c'est précisément le cas d'un professeur connecté dans un second navigateur.
+  if (!currentUser || requestInFlight) return;
   requestInFlight = true;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8000);
 
   try {
     const idToken = await currentUser.getIdToken();
@@ -148,7 +152,8 @@ async function sendHeartbeat() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ section: currentSection() }),
-      cache: "no-store"
+      cache: "no-store",
+      signal: controller.signal
     });
 
     if (!response.ok) throw new Error(`Présence indisponible (${response.status})`);
@@ -158,6 +163,7 @@ async function sendHeartbeat() {
   } catch (error) {
     console.warn("Présence des professeurs indisponible :", error);
   } finally {
+    window.clearTimeout(timeout);
     requestInFlight = false;
   }
 }
@@ -176,6 +182,7 @@ function startHeartbeat(user) {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") sendHeartbeat();
 });
+window.addEventListener("focus", sendHeartbeat);
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 onAuthStateChanged(getAuth(app), startHeartbeat);
