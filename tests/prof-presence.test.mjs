@@ -34,8 +34,9 @@ test("la présence utilise l'identité Discord vérifiée", () => {
 test("les présences anciennes et les avatars externes sont retirés", () => {
   const now = 100_000;
   const result = listActivePresences([
-    { actorId: "a", displayName: "Actif", avatarUrl: "https://example.com/a.png", section: "modules", updatedAtMs: now - 5000 },
-    { actorId: "b", displayName: "Ancien", section: "exams", updatedAtMs: now - PRESENCE_TTL_MS - 1 }
+    { recordType: "profPresence", actorId: "a", displayName: "Actif", avatarUrl: "https://example.com/a.png", section: "modules", updatedAtMs: now - 5000 },
+    { recordType: "profPresence", actorId: "b", displayName: "Ancien", section: "exams", updatedAtMs: now - PRESENCE_TTL_MS - 1 },
+    { recordType: "configuration", displayName: "Réglage", section: "exams", updatedAtMs: now }
   ], now);
 
   assert.equal(result.length, 1);

@@ -2,6 +2,7 @@ const { verifyFirebaseProfAccess } = require("../lib/server/firebase-prof-access
 const { listDocuments, upsertDocument } = require("../lib/server/firestore-service-account.js");
 const {
   PRESENCE_COLLECTION,
+  PRESENCE_DOCUMENT_PREFIX,
   buildPresence,
   listActivePresences,
   normalizeSection
@@ -68,7 +69,7 @@ module.exports = async function handler(req, res) {
 
     const now = Date.now();
     const presence = buildPresence(access, section, now);
-    await upsertDocument(PRESENCE_COLLECTION, access.user.localId, presence);
+    await upsertDocument(PRESENCE_COLLECTION, `${PRESENCE_DOCUMENT_PREFIX}${access.user.localId}`, presence);
     const documents = await listDocuments(PRESENCE_COLLECTION);
 
     sendJson(res, 200, {
