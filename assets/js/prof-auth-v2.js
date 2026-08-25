@@ -108,6 +108,7 @@ const v2DashboardUpdated = document.getElementById("v2DashboardUpdated");
 const v2DashboardHealth = document.getElementById("v2DashboardHealth");
 const v2WatchCount = document.getElementById("v2WatchCount");
 const v2ApexHistoryChart = document.getElementById("v2ApexHistoryChart");
+const v2ApexSyncChip = document.getElementById("v2ApexSyncChip");
 const adminBtn = document.getElementById("profAdminBtn");
 const settingsBtn = document.getElementById("profSettingsBtn");
 const settingsPanel = document.getElementById("v2SettingsPanel");
@@ -252,6 +253,7 @@ function updateProfile(user, access) {
     ? `${profile.roleLabel} • ${profile.secondaryLabel}`
     : profile.roleLabel;
   if (v2SessionChip) v2SessionChip.textContent = access.admin ? "Session admin" : "Session prof";
+  if (v2ApexSyncChip) v2ApexSyncChip.hidden = access.admin !== true;
   if (adminBtn) adminBtn.hidden = access.admin !== true;
   renderProfileForm(user, access);
 }
@@ -611,31 +613,76 @@ function renderCursusHistory(history = []) {
     return;
   }
 
-  const maximum = Math.max(...history.map(entry => Number(entry.total || 0)), 1);
-  const bars = history.map((entry, index) => {
-    const total = Math.max(0, Number(entry.total || 0));
-    const percent = total > 0 ? Math.max(10, Math.round((total / maximum) * 100)) : 4;
-    const currentClass = entry.current ? " is-current" : "";
-    const accessibleLabel = `${entry.label}, ${total} élèves, semaine ${entry.weekNumber} de ${entry.weekYear}`;
+  const totals = history.map(entry => Math.max(0, Number(entry.total || 0)));
+  const rawMaximum = Math.max(...totals, 1);
+  const scaleStep = rawMaximum <= 10 ? 2 : rawMaximum <= 50 ? 10 : Math.ceil(rawMaximum / 5 / 10) * 10;
+  const maximum = Math.max(scaleStep, Math.ceil(rawMaximum / scaleStep) * scaleStep);
+  const chartWidth = Math.max(540, history.length * 112);
+  const chartHeight = 260;
+  const plotLeft = 26;
+  const plotRight = chartWidth - 24;
+  const plotTop = 28;
+  const plotBottom = 205;
+  const plotHeight = plotBottom - plotTop;
+  const xStep = history.length > 1 ? (plotRight - plotLeft) / (history.length - 1) : 0;
+  const points = history.map((entry, index) => ({
+    entry,
+    total: totals[index],
+    x: history.length > 1 ? plotLeft + (xStep * index) : (plotLeft + plotRight) / 2,
+    y: plotBottom - ((totals[index] / maximum) * plotHeight)
+  }));
+  const linePath = buildSmoothHistoryPath(points);
+  const areaStartX = history.length === 1 ? points[0].x - 42 : points[0].x;
+  const areaEndX = history.length === 1 ? points[0].x + 42 : points.at(-1).x;
+  const areaPath = `${linePath} L ${areaEndX.toFixed(2)} ${plotBottom} L ${areaStartX.toFixed(2)} ${plotBottom} Z`;
+  const tickValues = Array.from({ length: 5 }, (_, index) => Math.round(maximum - ((maximum / 4) * index)));
+  const horizontalGrid = tickValues.map((_, index) => {
+    const y = plotTop + ((plotHeight / 4) * index);
+    return `<line class="apex-history-grid-line" x1="0" y1="${y}" x2="${chartWidth}" y2="${y}"></line>`;
+  }).join("");
+  const verticalPanels = points.map((point, index) => {
+    const width = history.length > 1 ? Math.max(68, xStep) : chartWidth - 30;
+    const x = Math.max(0, point.x - (width / 2));
+    return `<rect class="apex-history-column${index % 2 ? " is-alt" : ""}" x="${x.toFixed(2)}" y="${plotTop}" width="${Math.min(width, chartWidth - x).toFixed(2)}" height="${plotHeight}"></rect>`;
+  }).join("");
+  const markers = points.map((point, index) => {
+    const currentClass = point.entry.current ? " is-current" : "";
+    const weekLabel = point.entry.weekLabel || `S${point.entry.weekNumber}`;
+    const accessibleLabel = `${point.entry.label}, ${point.total} élèves, semaine ${point.entry.weekNumber} de ${point.entry.weekYear}`;
+    const valueY = Math.max(17, point.y - 15);
 
     return `
-      <div class="apex-history-item${currentClass}" title="${escapeMarkup(accessibleLabel)}">
-        <div class="apex-history-bar-track">
-          <i class="apex-history-bar" style="--apex-history-height:${percent}%">
-            <strong>${escapeMarkup(total)}</strong>
-          </i>
-        </div>
-        <span>${escapeMarkup(entry.weekLabel || `S${entry.weekNumber}`)}</span>
-        <small>${escapeMarkup(entry.weekYear)}</small>
-        ${entry.current ? '<em>Actuel</em>' : `<em>#${index + 1}</em>`}
-      </div>
+      <g class="apex-history-point${currentClass}" role="img" aria-label="${escapeMarkup(accessibleLabel)}">
+        <title>${escapeMarkup(accessibleLabel)}</title>
+        <circle class="apex-history-point-halo" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="11"></circle>
+        <circle class="apex-history-point-dot" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="5"></circle>
+        <text class="apex-history-value" x="${point.x.toFixed(2)}" y="${valueY.toFixed(2)}" text-anchor="middle">${escapeMarkup(point.total)}</text>
+        <text class="apex-history-week" x="${point.x.toFixed(2)}" y="230" text-anchor="middle">${escapeMarkup(weekLabel)}</text>
+        <text class="apex-history-year" x="${point.x.toFixed(2)}" y="247" text-anchor="middle">${escapeMarkup(point.entry.current ? "Actuel" : point.entry.weekYear)}</text>
+      </g>
     `;
   }).join("");
 
   v2ApexHistoryChart.innerHTML = `
-    <div class="apex-history-scale" aria-hidden="true"><span>${escapeMarkup(maximum)}</span><span>${escapeMarkup(Math.round(maximum / 2))}</span><span>0</span></div>
+    <div class="apex-history-scale" aria-hidden="true">${tickValues.map(value => `<span>${escapeMarkup(value)}</span>`).join("")}</div>
     <div class="apex-history-viewport">
-      <div class="apex-history-plot" style="--apex-history-count:${history.length}">${bars}</div>
+      <svg class="apex-history-svg" style="--apex-history-width:${chartWidth}px" viewBox="0 0 ${chartWidth} ${chartHeight}" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="apexHistoryArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f4d77e" stop-opacity=".28"></stop>
+            <stop offset="100%" stop-color="#f4d77e" stop-opacity="0"></stop>
+          </linearGradient>
+          <filter id="apexHistoryGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3.5" result="blur"></feGaussianBlur>
+            <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+          </filter>
+        </defs>
+        ${verticalPanels}
+        ${horizontalGrid}
+        <path class="apex-history-area" d="${areaPath}"></path>
+        <path class="apex-history-line" pathLength="1" d="${linePath}"></path>
+        ${markers}
+      </svg>
     </div>
   `;
   focusLatestCursusHistory();
@@ -643,6 +690,20 @@ function renderCursusHistory(history = []) {
     "aria-label",
     `Historique de ${history.length} cursus. Dernier effectif : ${history.at(-1)?.total || 0} élèves en ${history.at(-1)?.weekLabel || "semaine inconnue"}.`
   );
+}
+
+function buildSmoothHistoryPath(points = []) {
+  if (!points.length) return "";
+  if (points.length === 1) {
+    const point = points[0];
+    return `M ${(point.x - 42).toFixed(2)} ${point.y.toFixed(2)} L ${(point.x + 42).toFixed(2)} ${point.y.toFixed(2)}`;
+  }
+
+  return points.slice(1).reduce((path, point, index) => {
+    const previous = points[index];
+    const middleX = (previous.x + point.x) / 2;
+    return `${path} C ${middleX.toFixed(2)} ${previous.y.toFixed(2)}, ${middleX.toFixed(2)} ${point.y.toFixed(2)}, ${point.x.toFixed(2)} ${point.y.toFixed(2)}`;
+  }, `M ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)}`);
 }
 
 function focusLatestCursusHistory() {
@@ -1126,7 +1187,6 @@ function renderWatchList({ modules, exams, customAccess, customAnswers }) {
   }
   const queueCount = String(items.reduce((total, item) => total + Number(item.value || 0), 0));
   setText("v2ApexQueueCount", queueCount);
-  setText("v2ApexQueueAction", queueCount);
 
 }
 
@@ -1201,7 +1261,6 @@ function setDashboardFallback(message) {
     "v2ApexInactive",
     "v2ApexComplete",
     "v2ApexQueueCount",
-    "v2ApexQueueAction",
     "v2ApexModule1Value",
     "v2ApexModule2Value",
     "v2ApexModule3Value",

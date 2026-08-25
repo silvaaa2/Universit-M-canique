@@ -15,6 +15,9 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(html, /id="v2ApexHealthRing"/);
   assert.match(html, /id="v2ApexHistoryChart"/);
   assert.match(html, /Effectif par cursus/);
+  assert.match(html, /id="v2ApexSyncChip" hidden/);
+  assert.match(html, /class="apex-kicker">Université Mécanique<\/p>/);
+  assert.doesNotMatch(html, /Promotion actuelle|Ouvrir les priorités|Voir tous les élèves/);
   assert.doesNotMatch(html, /Corrections prioritaires/);
   assert.match(html, /id="v2StatExamSent"/);
   assert.match(html, /id="v2StatModuleActive"/);
@@ -27,6 +30,10 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(script, /function ensureCurrentCursusSnapshot/);
   assert.match(script, /function loadAndRenderCursusHistory/);
   assert.match(script, /function renderCursusHistory/);
+  assert.match(script, /function buildSmoothHistoryPath/);
+  assert.match(script, /class="apex-history-line"/);
+  assert.match(script, /v2ApexSyncChip\.hidden = access\.admin !== true/);
+  assert.doesNotMatch(script, /setText\("v2ApexQueueAction"/);
   assert.match(script, /viewport\.scrollLeft = viewport\.scrollWidth/);
   assert.match(script, /getCollectionSnapshot\("studentModuleArchives"\)/);
   assert.match(script, /void loadAndRenderCursusHistory\(cursus, allModuleRows\)/);
@@ -34,6 +41,8 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(script, /renderApexDashboard\(\{ cursus, modules, exams, customAnswers, customAccess \}\)/);
   assert.match(styles, /\.apex-command-grid/);
   assert.match(styles, /\.apex-history-chart/);
+  assert.match(styles, /\.apex-history-line/);
+  assert.match(styles, /\.apex-history-point-dot/);
   assert.match(styles, /@media \(max-width: 900px\)/);
 
   const dashboardLoader = script.slice(
