@@ -828,44 +828,28 @@ body[data-theme="light"].exam-v2-page .exam-v2-kpis div {
     background: var(--v2-panel-strong) !important;
   }
 
-  body.exam-v2-page .exam-score-choices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
+  body.exam-v2-page .exam-score-control input[data-score-input] {
+    position: static !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 36px !important;
+    padding: 0 8px !important;
+    border: 1px solid rgba(239, 206, 114, .34) !important;
+    border-radius: 9px !important;
+    background: var(--v2-bg) !important;
+    color: var(--v2-text) !important;
+    font-size: 14px !important;
+    font-weight: 1000 !important;
+    text-align: center !important;
+    clip: auto !important;
+    clip-path: none !important;
+    overflow: visible !important;
   }
 
-  body.exam-v2-page .exam-score-choice {
-    width: 31px;
-    height: 31px;
-    display: grid !important;
-    place-items: center;
-    border: 1px solid var(--v2-line-soft);
-    border-radius: 8px;
-    background: var(--v2-panel-soft);
-    color: var(--v2-muted);
-    font-size: 10px;
-    font-weight: 1000;
-    cursor: pointer !important;
-    pointer-events: auto !important;
-  }
-
-  body.exam-v2-page .exam-score-choice.active {
-    border-color: var(--v2-gold);
-    background: var(--v2-gold);
-    color: #171207;
-    box-shadow: 0 0 18px rgba(239, 206, 114, .16);
-  }
-
-  body.exam-v2-page .exam-score-control.has-quick-scores input[data-score-input] {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: 0;
-    clip: rect(0, 0, 0, 0);
-    clip-path: inset(50%);
-    overflow: hidden;
-    white-space: nowrap;
+  body.exam-v2-page .exam-score-control input[data-score-input]:focus {
+    border-color: var(--v2-gold) !important;
+    box-shadow: 0 0 0 3px rgba(239, 206, 114, .13) !important;
+    outline: none !important;
   }
 
   body.exam-v2-page .exam-score-control > strong {

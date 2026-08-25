@@ -942,35 +942,21 @@ function renderScoreControl(field, currentScore, answer) {
     }
   }
 
-  const quickScoreMax = Math.min(10, Math.max(0, Math.floor(maxPoints)));
-  const quickScores = Number.isInteger(maxPoints) && maxPoints <= 10
-    ? Array.from({ length: quickScoreMax + 1 }, (_, score) => `
-        <button
-          type="button"
-          class="exam-score-choice${safeCurrent === score ? " active" : ""}"
-          data-score-choice="${score}"
-          aria-label="Attribuer ${score} point${score > 1 ? "s" : ""}"
-        >${score}</button>
-      `).join("")
-    : "";
-
   return `
     <div
-      class="exam-score-control${quickScores ? " has-quick-scores" : ""}"
+      class="exam-score-control"
       data-score-control
       data-field-key="${escapeHtml(buildFieldScoreKey(field))}"
       data-max-points="${escapeHtml(maxPoints)}"
     >
-      <div class="exam-score-choices" role="group" aria-label="Notation rapide">
-        ${quickScores}
-      </div>
-
       <input
         type="number"
         min="0"
         max="${escapeHtml(maxPoints)}"
         step="1"
+        inputmode="numeric"
         value="${escapeHtml(safeCurrent)}"
+        aria-label="Note sur ${escapeHtml(maxPoints)}"
         data-score-input
       >
 
@@ -1552,23 +1538,6 @@ function getIdentityFromCard(card) {
 ========================================================= */
 
 function bindScoreControls() {
-  document.querySelectorAll("[data-score-choice]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const control = button.closest("[data-score-control]");
-      const input = control?.querySelector("[data-score-input]");
-      if (!control || !input) return;
-
-      input.value = String(button.dataset.scoreChoice || 0);
-      control.querySelectorAll("[data-score-choice]").forEach(choice => {
-        choice.classList.toggle("active", choice === button);
-      });
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-  });
-
   document.querySelectorAll("[data-score-input]").forEach((input) => {
     input.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1576,11 +1545,24 @@ function bindScoreControls() {
 
     input.addEventListener("keydown", (event) => {
       event.stopPropagation();
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        input.blur();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      if (input.value.trim() !== "") return;
+      input.value = "0";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
     });
 
     input.addEventListener("input", async (event) => {
       event.preventDefault();
       event.stopPropagation();
+
+      if (input.value.trim() === "") return;
 
       const control = input.closest("[data-score-control]");
       const card = input.closest("[data-answer-card]");
@@ -1603,10 +1585,6 @@ function bindScoreControls() {
       newScore = Math.max(0, Math.min(newScore, maxPoints));
 
       input.value = String(newScore);
-
-      control.querySelectorAll("[data-score-choice]").forEach(choice => {
-        choice.classList.toggle("active", Number(choice.dataset.scoreChoice) === newScore);
-      });
 
       const line = input.closest("[data-exam-line]");
       if (line) line.dataset.scored = "true";

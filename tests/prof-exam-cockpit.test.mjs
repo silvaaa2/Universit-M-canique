@@ -12,22 +12,23 @@ test("le Cockpit remplace uniquement la zone de correction des examens", () => {
   const css = read("assets/css/prof-exam-v2.css");
   const loader = read("assets/js/exam-loader-x8p2.js");
 
-  assert.match(page, /prof-exam-v2\.css\?v=4/);
-  assert.match(page, /prof-guard-exam\.js\?v=9055/);
+  assert.match(page, /prof-exam-v2\.css\?v=5/);
+  assert.match(page, /prof-guard-exam\.js\?v=9056/);
   assert.match(page, /<aside class="v2-sidebar exam-v2-sidebar">/);
 
   const cockpitCss = css.split("EXAMENS V3 — COCKPIT")[1] || "";
   assert.match(cockpitCss, /@media \(min-width: 921px\)/);
   assert.match(cockpitCss, /\.student-answer-grid/);
-  assert.match(cockpitCss, /\.exam-score-choice\.active/);
-  assert.match(cockpitCss, /\.exam-score-choice\s*\{[^}]*display:\s*grid\s*!important/s);
-  assert.match(cockpitCss, /\.exam-score-control\.has-quick-scores input\[data-score-input\]/);
+  assert.match(cockpitCss, /\.exam-score-control input\[data-score-input\]/);
+  assert.match(cockpitCss, /width:\s*64px\s*!important/);
   assert.doesNotMatch(cockpitCss, /\.v2-sidebar/);
 
   assert.match(loader, /let activeExamAnswerKey = ""/);
   assert.match(loader, /data-exam-question-previous/);
-  assert.match(loader, /data-score-choice/);
-  assert.match(loader, /has-quick-scores/);
+  assert.match(loader, /inputmode="numeric"/);
+  assert.match(loader, /max="\$\{escapeHtml\(maxPoints\)\}"/);
+  assert.match(loader, /Math\.max\(0, Math\.min\(newScore, maxPoints\)\)/);
+  assert.doesNotMatch(loader, /data-score-choice/);
   assert.match(loader, /saveExamRecordToFirebase\(answerKey, sheetId, record, identity\)/);
   assert.match(loader, /applyAutomaticIdUniqueBonuses/);
 });
@@ -51,7 +52,8 @@ test("le chargeur sécurisé livre aussi l'interface Cockpit", () => {
 
   assert.equal(statusCode, 200);
   assert.match(headers.get("Content-Type"), /application\/javascript/);
-  assert.match(body, /data-score-choice/);
+  assert.match(body, /data-score-input/);
+  assert.doesNotMatch(body, /data-score-choice/);
   assert.match(body, /activeExamAnswerKey/);
   assert.match(body, /\/api\/secure-sheet/);
   assert.doesNotMatch(body, /const SPREADSHEET_ID =/);
