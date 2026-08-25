@@ -1,0 +1,125 @@
+.v2-nav .v2-nav-item {
+  position: relative;
+}
+
+.prof-presence-stack {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+  padding-left: 7px;
+  isolation: isolate;
+}
+
+.prof-presence-avatar,
+.prof-presence-overflow {
+  position: relative;
+  display: inline-grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  overflow: visible;
+  border: 2px solid #11130f;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #44402c, #191a16);
+  color: #fff4d8;
+  box-shadow: 0 5px 13px rgba(0, 0, 0, .35);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: -.02em;
+  transition: transform 160ms ease, z-index 160ms ease;
+}
+
+.prof-presence-avatar + .prof-presence-avatar,
+.prof-presence-avatar + .prof-presence-overflow {
+  margin-left: -7px;
+}
+
+.prof-presence-avatar:hover {
+  z-index: 5;
+  transform: translateY(-2px) scale(1.12);
+}
+
+.prof-presence-avatar > img,
+.prof-presence-avatar > span {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.prof-presence-avatar > span {
+  display: grid;
+  place-items: center;
+}
+
+.prof-presence-avatar > i {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid #11130f;
+  border-radius: 50%;
+  background: #62eea1;
+  box-shadow: 0 0 8px rgba(98, 238, 161, .7);
+}
+
+.prof-presence-overflow {
+  background: #24251f;
+  color: #f5d66c;
+  font-size: 8px;
+}
+
+@media (max-width: 900px) {
+  .prof-mobile-tabbar .prof-presence-stack {
+    position: absolute;
+    z-index: 4;
+    top: 4px;
+    left: 7px;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+  }
+
+  .prof-mobile-tabbar .prof-presence-avatar,
+  .prof-mobile-tabbar .prof-presence-overflow {
+    width: 18px;
+    height: 18px;
+    border-width: 1.5px;
+    font-size: 6px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, .38);
+  }
+
+  .prof-mobile-tabbar .prof-presence-avatar + .prof-presence-avatar,
+  .prof-mobile-tabbar .prof-presence-avatar + .prof-presence-overflow {
+    margin-left: -6px;
+  }
+
+  .prof-mobile-tabbar .prof-presence-avatar > i {
+    width: 6px;
+    height: 6px;
+    border-width: 1px;
+  }
+
+  .prof-mobile-menu-grid .prof-presence-stack {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .prof-mobile-menu-grid .prof-presence-avatar,
+  .prof-mobile-menu-grid .prof-presence-overflow {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prof-presence-avatar {
+    transition: none;
+  }
+}
