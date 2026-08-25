@@ -32,6 +32,9 @@ let answerStatuses = {};
 let approvedCustomAnswers = [];
 let activeSheetId = SHEETS[0].id;
 let sheetLoadInFlight = false;
+let currentCustomSearch = "";
+let currentCustomFilter = "all";
+let activeCustomAnswerKey = "";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -465,8 +468,12 @@ function renderField(label, value) {
 }
 
 function renderSection(title, fieldsHtml) {
+  const sectionKey = normalizeHeader(title)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
   return `
-    <section class="student-section">
+    <section class="student-section custom-cockpit-section custom-cockpit-section-${escapeHtml(sectionKey)}">
       <div class="student-section-head">
         <h3>${escapeHtml(title)}</h3>
       </div>
@@ -577,6 +584,7 @@ function renderAnswerCard(answer, index, sheet) {
       data-answer-key="${escapeHtml(answerKey)}"
       data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
+      data-copy-number="${index + 1}"
       data-id-unique="${escapeHtml(idUnique)}"
       data-student-name="${escapeHtml(nom)}"
       data-custom-label="${escapeHtml(sheet.label)}"
@@ -694,6 +702,41 @@ async function renderAnswers(answers, sheet) {
 
   sheetContent.hidden = false;
   sheetContent.innerHTML = `
+    <div class="custom-cockpit-tools">
+      <div class="custom-cockpit-stats" aria-label="Statistiques des réponses customs">
+        <div class="custom-cockpit-stat">
+          <span>Total réponses</span>
+          <strong data-custom-stat="total">0</strong>
+        </div>
+        <div class="custom-cockpit-stat approved">
+          <span>Approuvées</span>
+          <strong data-custom-stat="approved">0</strong>
+        </div>
+        <div class="custom-cockpit-stat rejected">
+          <span>Refusées</span>
+          <strong data-custom-stat="rejected">0</strong>
+        </div>
+        <div class="custom-cockpit-stat pending">
+          <span>En attente</span>
+          <strong data-custom-stat="pending">0</strong>
+        </div>
+      </div>
+
+      <div class="custom-cockpit-toolbar">
+        <label class="custom-cockpit-search">
+          <span>Recherche</span>
+          <input type="search" value="${escapeHtml(currentCustomSearch)}" placeholder="Nom, prénom ou ID Unique…" data-custom-search>
+        </label>
+
+        <div class="custom-cockpit-filters" aria-label="Filtrer les réponses customs">
+          <button type="button" data-custom-filter="all">Toutes</button>
+          <button type="button" data-custom-filter="approved">Approuvées</button>
+          <button type="button" data-custom-filter="rejected">Refusées</button>
+          <button type="button" data-custom-filter="pending">En attente</button>
+        </div>
+      </div>
+    </div>
+
     <div class="student-results-head">
       <div>
         <p class="student-kicker">Feuille sélectionnée</p>
@@ -709,6 +752,7 @@ async function renderAnswers(answers, sheet) {
   `;
 
   bindCardToggles();
+  bindCustomDashboardTools();
   bindStatusButtons();
   bindExternalLinks();
 }
@@ -790,16 +834,117 @@ function renderTabs() {
    OPEN / CLOSE CARDS
 ========================================================= */
 
-function bindCardToggles() {
-  const cards = document.querySelectorAll("[data-answer-card]");
+function isMobileCustomViewport() {
+  return window.matchMedia("(max-width: 900px)").matches;
+}
 
-  cards.forEach((card) => {
-    card.classList.add("collapsed");
-    card.classList.remove("is-open");
+function getAllCustomCards() {
+  return Array.from(document.querySelectorAll("[data-answer-card]"));
+}
+
+function updateCustomCockpitStats() {
+  const cards = getAllCustomCards();
+  const counts = cards.reduce((result, card) => {
+    const status = card.dataset.status || "pending";
+    result.total += 1;
+    if (status === "approved") result.approved += 1;
+    else if (status === "rejected") result.rejected += 1;
+    else result.pending += 1;
+    return result;
+  }, { total: 0, approved: 0, rejected: 0, pending: 0 });
+
+  Object.entries(counts).forEach(([key, value]) => {
+    const target = document.querySelector(`[data-custom-stat="${key}"]`);
+    if (target) target.textContent = String(value);
+  });
+}
+
+function openCustomCard(cards, selectedCard, { scroll = false } = {}) {
+  cards.forEach(card => {
+    const isSelected = card === selectedCard;
+    card.classList.toggle("collapsed", !isSelected);
+    card.classList.toggle("is-open", isSelected);
 
     const icon = card.querySelector(".student-toggle-icon");
-    if (icon) icon.textContent = "+";
+    if (icon) icon.textContent = isSelected ? "−" : "+";
   });
+
+  activeCustomAnswerKey = selectedCard?.dataset.answerKey || "";
+
+  if (selectedCard && scroll && isMobileCustomViewport()) {
+    setTimeout(() => {
+      selectedCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+  }
+}
+
+function ensureActiveCustomCardVisible() {
+  if (isMobileCustomViewport()) return;
+
+  const cards = getAllCustomCards();
+  const visibleCards = cards.filter(card => card.style.display !== "none");
+  if (!visibleCards.length) {
+    openCustomCard(cards, null);
+    return;
+  }
+
+  const selectedCard = visibleCards.find(card => card.dataset.answerKey === activeCustomAnswerKey) || visibleCards[0];
+  if (!selectedCard.classList.contains("is-open")) {
+    openCustomCard(cards, selectedCard);
+  }
+}
+
+function applyCustomCockpitFilters() {
+  const normalizedSearch = normalizeHeader(currentCustomSearch);
+
+  getAllCustomCards().forEach(card => {
+    const searchableText = normalizeHeader(`${card.dataset.studentName || ""} ${card.dataset.idUnique || ""}`);
+    const status = card.dataset.status || "pending";
+    const matchesSearch = !normalizedSearch || searchableText.includes(normalizedSearch);
+    const matchesFilter = currentCustomFilter === "all" || status === currentCustomFilter;
+    card.style.display = matchesSearch && matchesFilter ? "" : "none";
+  });
+
+  ensureActiveCustomCardVisible();
+  updateCustomCockpitStats();
+}
+
+function bindCustomDashboardTools() {
+  const searchInput = document.querySelector("[data-custom-search]");
+  const filterButtons = Array.from(document.querySelectorAll("[data-custom-filter]"));
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      currentCustomSearch = searchInput.value || "";
+      applyCustomCockpitFilters();
+    });
+  }
+
+  filterButtons.forEach(button => {
+    const isActive = button.dataset.customFilter === currentCustomFilter;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+
+    button.addEventListener("click", () => {
+      currentCustomFilter = button.dataset.customFilter || "all";
+      filterButtons.forEach(candidate => {
+        const active = candidate === button;
+        candidate.classList.toggle("active", active);
+        candidate.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      applyCustomCockpitFilters();
+    });
+  });
+
+  applyCustomCockpitFilters();
+}
+
+function bindCardToggles() {
+  const cards = getAllCustomCards();
+  const storedCard = cards.find(card => card.dataset.answerKey === activeCustomAnswerKey);
+  const initialCard = storedCard || (!isMobileCustomViewport() ? cards[0] : null);
+
+  openCustomCard(cards, initialCard);
 
   document.querySelectorAll("[data-toggle-card]").forEach(button => {
     button.addEventListener("click", () => {
@@ -808,28 +953,12 @@ function bindCardToggles() {
 
       const isAlreadyOpen = selectedCard.classList.contains("is-open");
 
-      cards.forEach(card => {
-        card.classList.add("collapsed");
-        card.classList.remove("is-open");
-
-        const icon = card.querySelector(".student-toggle-icon");
-        if (icon) icon.textContent = "+";
-      });
-
-      if (!isAlreadyOpen) {
-        selectedCard.classList.remove("collapsed");
-        selectedCard.classList.add("is-open");
-
-        const icon = selectedCard.querySelector(".student-toggle-icon");
-        if (icon) icon.textContent = "−";
-
-        setTimeout(() => {
-          selectedCard.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-          });
-        }, 120);
+      if (isAlreadyOpen && isMobileCustomViewport()) {
+        openCustomCard(cards, null);
+        return;
       }
+
+      openCustomCard(cards, selectedCard, { scroll: true });
     });
   });
 }
@@ -885,6 +1014,8 @@ function updateCardStatus(card, status) {
   card.querySelectorAll("[data-set-status]").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.setStatus === meta.value);
   });
+
+  updateCustomCockpitStats();
 }
 
 function setAlreadyApprovedState(card, info) {
@@ -956,6 +1087,7 @@ function bindStatusButtons() {
       answerStatuses[answerKey] = newStatus;
       buildApprovedCustomAnswers();
       applyAlreadyApprovedStates();
+      applyCustomCockpitFilters();
 
       window.dispatchEvent(new CustomEvent("prof:correction-save", {
         detail: { state: "saving", card, advance: true }
@@ -973,6 +1105,7 @@ function bindStatusButtons() {
         answerStatuses[answerKey] = oldStatus;
         buildApprovedCustomAnswers();
         applyAlreadyApprovedStates();
+        applyCustomCockpitFilters();
 
         window.dispatchEvent(new CustomEvent("prof:correction-save", {
           detail: { state: "error", card, advance: false }
@@ -988,6 +1121,7 @@ function bindStatusButtons() {
   });
 
   applyAlreadyApprovedStates();
+  applyCustomCockpitFilters();
 }
 
 /* =========================================================

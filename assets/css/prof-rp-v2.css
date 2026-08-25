@@ -929,3 +929,414 @@ body[data-theme="light"].rp-v2-page .inline-empty-box {
   cursor: not-allowed !important;
 }
 
+/* =========================================================
+   CUSTOMS V3 — COCKPIT DE CORRECTION
+   La navigation mobile et la sidebar restent inchangées.
+========================================================= */
+
+.rp-v2-page .custom-cockpit-tools {
+  display: none;
+}
+
+@media (min-width: 921px) {
+  body.prof-v2-page.rp-v2-page .rp-v2-hero,
+  body.prof-v2-page.rp-v2-page .inline-corrections-head,
+  body.prof-v2-page.rp-v2-page .answers-mini-bar {
+    display: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .rp-v2-content {
+    height: calc(100vh - 82px) !important;
+    min-height: 0 !important;
+    padding: 10px !important;
+    overflow: hidden !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .rp-v2-board,
+  body.prof-v2-page.rp-v2-page .inline-corrections,
+  body.prof-v2-page.rp-v2-page .inline-corrections-card,
+  body.prof-v2-page.rp-v2-page #answersBody,
+  body.prof-v2-page.rp-v2-page .answers-body,
+  body.prof-v2-page.rp-v2-page .inline-correction-detail,
+  body.prof-v2-page.rp-v2-page .student-panel {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-panel {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-sheet-tabs {
+    min-height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    margin: 0 !important;
+    padding: 5px !important;
+    border: 1px solid var(--v2-line-soft) !important;
+    border-radius: 13px !important;
+    background: var(--v2-panel-strong) !important;
+    overflow-x: auto !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-sheet-tab {
+    min-height: 31px !important;
+    flex: 1 0 auto !important;
+    padding: 0 14px !important;
+    border: 1px solid transparent !important;
+    border-radius: 9px !important;
+    background: transparent !important;
+    color: var(--v2-muted) !important;
+    font-size: 9px !important;
+    font-weight: 1000 !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-sheet-tab.active {
+    border-color: rgba(239, 206, 114, .30) !important;
+    background: var(--v2-gold-soft) !important;
+    color: var(--v2-gold) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page #sheetStatus,
+  body.prof-v2-page.rp-v2-page #sheetContent.student-sheet-content {
+    min-height: 0 !important;
+    overflow: auto !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(239, 206, 114, .35) transparent !important;
+  }
+
+  body.prof-v2-page.rp-v2-page #sheetContent.student-sheet-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 0 2px 8px 0 !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-tools {
+    order: 1 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-stats {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-stat {
+    min-height: 72px !important;
+    display: grid !important;
+    align-content: space-between !important;
+    gap: 5px !important;
+    padding: 11px 13px !important;
+    border: 1px solid var(--v2-line-soft) !important;
+    border-radius: 13px !important;
+    background:
+      linear-gradient(145deg, rgba(239, 206, 114, .035), transparent 52%),
+      var(--v2-panel-strong) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-stat span {
+    color: var(--v2-muted) !important;
+    font-size: 8px !important;
+    font-weight: 1000 !important;
+    letter-spacing: .06em !important;
+    text-transform: uppercase !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-stat strong {
+    color: var(--v2-text) !important;
+    font-size: clamp(26px, 2.3vw, 36px) !important;
+    line-height: .9 !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-stat.approved strong {
+    color: var(--v2-green) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-stat.rejected strong {
+    color: var(--v2-red) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-stat.pending strong {
+    color: var(--v2-gold) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-toolbar {
+    min-height: 54px !important;
+    display: grid !important;
+    grid-template-columns: minmax(210px, 1fr) minmax(390px, auto) !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 6px !important;
+    border: 1px solid var(--v2-line-soft) !important;
+    border-radius: 13px !important;
+    background: var(--v2-panel-strong) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-search {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 0 10px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-search span {
+    color: var(--v2-muted) !important;
+    font-size: 8px !important;
+    font-weight: 1000 !important;
+    text-transform: uppercase !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-search input {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 36px !important;
+    padding: 0 12px !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: var(--v2-bg) !important;
+    color: var(--v2-text) !important;
+    font-size: 11px !important;
+    font-weight: 850 !important;
+    outline: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-search input:focus {
+    box-shadow: 0 0 0 2px rgba(239, 206, 114, .18) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-filters {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-filters button {
+    min-height: 36px !important;
+    padding: 0 10px !important;
+    border: 1px solid var(--v2-line-soft) !important;
+    border-radius: 9px !important;
+    background: var(--v2-panel-soft) !important;
+    color: var(--v2-muted) !important;
+    font-size: 8px !important;
+    font-weight: 1000 !important;
+    cursor: pointer !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .custom-cockpit-filters button.active {
+    border-color: rgba(239, 206, 114, .34) !important;
+    background: var(--v2-gold-soft) !important;
+    color: var(--v2-gold) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-results-head {
+    order: 2 !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    padding: 9px 13px !important;
+    border-radius: 13px !important;
+    background:
+      linear-gradient(100deg, rgba(239, 206, 114, .08), transparent 46%),
+      var(--v2-panel-strong) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-results-head h2 {
+    font-size: clamp(22px, 2vw, 30px) !important;
+    line-height: 1 !important;
+  }
+
+  body.prof-v2-page.rp-v2-page #sheetContent .student-answer-grid {
+    order: 3 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(270px, 310px) !important;
+    grid-auto-flow: row !important;
+    align-items: start !important;
+    gap: 8px 10px !important;
+    padding: 0 !important;
+    animation: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card {
+    grid-column: 2 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border-radius: 14px !important;
+    background: var(--v2-panel-strong) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed {
+    min-height: 98px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-card-top {
+    min-height: 98px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 7px !important;
+    padding: 10px 11px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-card-top h2 {
+    font-size: clamp(16px, 1.4vw, 21px) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-id-badge {
+    display: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-tags {
+    gap: 5px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-status-badge,
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-already-approved-badge {
+    min-height: 27px !important;
+    padding: 0 8px !important;
+    font-size: 8px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-decision-btn {
+    width: 29px !important;
+    min-width: 29px !important;
+    height: 29px !important;
+    min-height: 29px !important;
+    border-radius: 9px !important;
+    font-size: 15px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.collapsed .student-toggle-icon {
+    width: 29px !important;
+    min-height: 29px !important;
+    font-size: 12px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open {
+    position: sticky !important;
+    top: 0 !important;
+    grid-column: 1 !important;
+    grid-row: 1 / span 999 !important;
+    min-height: 420px !important;
+    max-height: calc(100vh - 326px) !important;
+    display: block !important;
+    padding: 0 !important;
+    border-color: rgba(239, 206, 114, .28) !important;
+    border-radius: 17px !important;
+    background:
+      linear-gradient(145deg, rgba(239, 206, 114, .055), transparent 42%),
+      var(--v2-panel-strong) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .30) !important;
+    overflow: auto !important;
+    animation: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-card-top {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    min-height: 84px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    padding: 13px 15px !important;
+    border-bottom: 1px solid var(--v2-line-soft) !important;
+    background: rgba(7, 9, 7, .94) !important;
+    backdrop-filter: blur(18px) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-card-main h2 {
+    margin: 0 !important;
+    overflow: hidden !important;
+    font-size: clamp(24px, 2.2vw, 34px) !important;
+    line-height: 1 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-card-body {
+    display: grid !important;
+    gap: 8px !important;
+    padding: 11px !important;
+    animation: none !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-section {
+    padding: 11px !important;
+    border-radius: 13px !important;
+    background: rgba(255, 255, 255, .018) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-section-head {
+    margin-bottom: 8px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-section-head h3 {
+    font-size: 15px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-section-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .custom-cockpit-section-couleurs .student-section-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-answer-field,
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-link-card,
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-empty {
+    min-height: 60px !important;
+    padding: 10px !important;
+    border-radius: 11px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-answer-field span,
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-link-card span {
+    margin-bottom: 4px !important;
+    font-size: 9px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-answer-field strong,
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .student-link-card strong {
+    font-size: 12px !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.already-approved-elsewhere {
+    filter: none !important;
+    opacity: .72 !important;
+  }
+}
+
+@media (min-width: 921px) and (max-width: 1240px) {
+  body.prof-v2-page.rp-v2-page .custom-cockpit-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.prof-v2-page.rp-v2-page #sheetContent .student-answer-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 280px) !important;
+  }
+
+  body.prof-v2-page.rp-v2-page .student-answer-card.is-open .custom-cockpit-section-couleurs .student-section-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
