@@ -231,9 +231,9 @@ body.prof-v2-page .v2-profile-trigger {
 }
 
 body.prof-v2-page .v2-home.apex-dashboard {
-  min-height: 918px;
+  min-height: 798px;
   display: grid;
-  grid-template-rows: 310px 142px minmax(430px, auto);
+  grid-template-rows: 310px 142px minmax(310px, auto);
   gap: 12px;
   padding: 0 0 12px;
   overflow: visible;
@@ -578,7 +578,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-command-grid {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(360px, .8fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
   gap: 12px;
 }
 
@@ -647,16 +647,17 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-history-panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  padding: 14px 16px;
 }
 
 .apex-history-chart {
   position: relative;
   min-width: 0;
-  min-height: 334px;
+  min-height: 222px;
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 8px;
   overflow: hidden;
 }
 
@@ -665,7 +666,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 25px 0 51px;
+  padding: 20px 0 39px;
   color: #72766d;
 }
 
@@ -677,7 +678,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 
 .apex-history-viewport {
   min-width: 0;
-  min-height: 334px;
+  min-height: 222px;
   height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -689,7 +690,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
   width: 100%;
   min-width: var(--apex-history-width, 540px);
   height: 100%;
-  min-height: 334px;
+  min-height: 222px;
   display: block;
   overflow: visible;
 }
@@ -717,7 +718,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-history-line {
   fill: none;
   stroke: #f4d77e;
-  stroke-width: 4.5;
+  stroke-width: 3.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1;
@@ -738,7 +739,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-history-point-dot {
   fill: #0b0d0a;
   stroke: #f4d77e;
-  stroke-width: 3.5;
+  stroke-width: 3;
   vector-effect: non-scaling-stroke;
   opacity: 0;
   transform-box: fill-box;
@@ -767,19 +768,19 @@ body.prof-v2-page .v2-home.apex-dashboard {
 
 .apex-history-value {
   fill: var(--apex-text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 1000;
 }
 
 .apex-history-week {
   fill: var(--apex-text);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 950;
 }
 
 .apex-history-year {
   fill: #74786f;
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 950;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -1162,12 +1163,12 @@ body.prof-v2-page[data-theme="light"] .apex-primary-action {
   }
 
   .apex-history-chart {
-    min-height: 274px;
+    min-height: 240px;
   }
 
   .apex-history-viewport,
   .apex-history-svg {
-    min-height: 274px;
+    min-height: 240px;
   }
 
   .apex-priority-list .v2-watch-item {

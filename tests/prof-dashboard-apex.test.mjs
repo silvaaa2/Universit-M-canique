@@ -30,10 +30,12 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(script, /function ensureCurrentCursusSnapshot/);
   assert.match(script, /function loadAndRenderCursusHistory/);
   assert.match(script, /function renderCursusHistory/);
-  assert.match(styles, /grid-template-rows:\s*310px 142px minmax\(430px, auto\)/);
-  assert.match(styles, /\.apex-history-chart\s*\{[^}]*min-height:\s*334px/s);
-  assert.match(styles, /\.apex-history-viewport\s*\{[^}]*min-height:\s*334px/s);
-  assert.match(styles, /\.apex-history-line\s*\{[^}]*stroke-width:\s*4\.5/s);
+  assert.match(styles, /grid-template-rows:\s*310px 142px minmax\(310px, auto\)/);
+  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1\.05fr\) minmax\(360px, \.95fr\)/);
+  assert.match(styles, /\.apex-history-chart\s*\{[^}]*min-height:\s*222px/s);
+  assert.match(styles, /\.apex-history-viewport\s*\{[^}]*min-height:\s*222px/s);
+  assert.match(styles, /\.apex-history-line\s*\{[^}]*stroke-width:\s*3\.2/s);
+  assert.match(script, /const chartHeight = 220/);
   assert.match(script, /function buildSmoothHistoryPath/);
   assert.match(script, /class="apex-history-line"/);
   assert.match(script, /v2ApexSyncChip\.hidden = access\.admin !== true/);

@@ -618,11 +618,11 @@ function renderCursusHistory(history = []) {
   const scaleStep = rawMaximum <= 10 ? 2 : rawMaximum <= 50 ? 10 : Math.ceil(rawMaximum / 5 / 10) * 10;
   const maximum = Math.max(scaleStep, Math.ceil(rawMaximum / scaleStep) * scaleStep);
   const chartWidth = Math.max(540, history.length * 112);
-  const chartHeight = 260;
+  const chartHeight = 220;
   const plotLeft = 26;
   const plotRight = chartWidth - 24;
-  const plotTop = 28;
-  const plotBottom = 205;
+  const plotTop = 24;
+  const plotBottom = 162;
   const plotHeight = plotBottom - plotTop;
   const xStep = history.length > 1 ? (plotRight - plotLeft) / (history.length - 1) : 0;
   const points = history.map((entry, index) => ({
@@ -654,11 +654,11 @@ function renderCursusHistory(history = []) {
     return `
       <g class="apex-history-point${currentClass}" role="img" aria-label="${escapeMarkup(accessibleLabel)}">
         <title>${escapeMarkup(accessibleLabel)}</title>
-        <circle class="apex-history-point-halo" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="13"></circle>
-        <circle class="apex-history-point-dot" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="6"></circle>
+        <circle class="apex-history-point-halo" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="11"></circle>
+        <circle class="apex-history-point-dot" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="5"></circle>
         <text class="apex-history-value" x="${point.x.toFixed(2)}" y="${valueY.toFixed(2)}" text-anchor="middle">${escapeMarkup(point.total)}</text>
-        <text class="apex-history-week" x="${point.x.toFixed(2)}" y="230" text-anchor="middle">${escapeMarkup(weekLabel)}</text>
-        <text class="apex-history-year" x="${point.x.toFixed(2)}" y="247" text-anchor="middle">${escapeMarkup(point.entry.current ? "Actuel" : point.entry.weekYear)}</text>
+        <text class="apex-history-week" x="${point.x.toFixed(2)}" y="185" text-anchor="middle">${escapeMarkup(weekLabel)}</text>
+        <text class="apex-history-year" x="${point.x.toFixed(2)}" y="203" text-anchor="middle">${escapeMarkup(point.entry.current ? "Actuel" : point.entry.weekYear)}</text>
       </g>
     `;
   }).join("");

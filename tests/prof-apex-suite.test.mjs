@@ -14,7 +14,7 @@ const pages = [
 test("la V3 APEX est partagée par tout l'espace professeur", async () => {
   for (const path of pages) {
     const html = await readFile(new URL(path, root), "utf8");
-    assert.match(html, /prof-dashboard-apex\.css\?v=(?:3|4|6|7|8)/);
+    assert.match(html, /prof-dashboard-apex\.css\?v=(?:3|4|6|7|8|9)/);
     assert.match(html, /prof-apex-suite\.css\?v=1/);
   }
 });
