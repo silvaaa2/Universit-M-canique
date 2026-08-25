@@ -956,7 +956,7 @@ function renderScoreControl(field, currentScore, answer) {
 
   return `
     <div
-      class="exam-score-control"
+      class="exam-score-control${quickScores ? " has-quick-scores" : ""}"
       data-score-control
       data-field-key="${escapeHtml(buildFieldScoreKey(field))}"
       data-max-points="${escapeHtml(maxPoints)}"
