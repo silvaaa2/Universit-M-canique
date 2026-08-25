@@ -714,6 +714,50 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
   transform: translateX(0);
 }
 
+.prof-notification-badge {
+  min-width: 21px;
+  height: 21px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 0 6px;
+  border: 2px solid color-mix(in srgb, var(--v2-panel-strong) 88%, #000);
+  border-radius: 999px;
+  background: #fb7185;
+  color: #140507;
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, .12), 0 6px 18px rgba(251, 113, 133, .32);
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1;
+  animation: profNotificationPop .34s cubic-bezier(.2, .9, .3, 1.35) both;
+}
+
+.prof-notification-badge[hidden] {
+  display: none !important;
+}
+
+.v2-nav-item > .prof-notification-badge {
+  margin-left: auto;
+}
+
+[data-prof-notification-target="custom"] > .prof-notification-badge {
+  background: #72ccf4;
+  color: #031118;
+  box-shadow: 0 0 0 3px rgba(114, 204, 244, .12), 0 6px 18px rgba(114, 204, 244, .28);
+}
+
+[data-prof-notification-target="settings"] > .prof-notification-badge {
+  background: var(--v2-gold);
+  color: #171105;
+  box-shadow: 0 0 0 3px rgba(232, 199, 110, .12), 0 6px 18px rgba(232, 199, 110, .28);
+}
+
+@keyframes profNotificationPop {
+  from { opacity: 0; transform: scale(.45); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .v2-nav-mark {
   width: 30px;
   height: 30px;
@@ -860,6 +904,53 @@ body[data-theme="light"] .v2-corrections .inline-back-btn {
   color: var(--v2-muted);
   font-size: 11px;
   font-weight: 900;
+}
+
+.v2-settings-news {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0 0 18px;
+  padding: 13px 15px;
+  border: 1px solid rgba(114, 204, 244, .24);
+  border-radius: var(--v2-radius);
+  background:
+    linear-gradient(120deg, rgba(114, 204, 244, .10), transparent 62%),
+    var(--v2-panel-soft);
+}
+
+.v2-settings-news > span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #72ccf4;
+  color: #031118;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.v2-settings-news strong {
+  display: block;
+  color: var(--v2-text);
+  font-size: 14px;
+}
+
+.v2-settings-news p {
+  margin: 3px 0 0;
+  color: var(--v2-muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prof-notification-badge {
+    animation: none;
+  }
 }
 
 .v2-profile-menu {

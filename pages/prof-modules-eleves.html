@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/loader.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=15">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=16">
   <link rel="stylesheet" href="../assets/css/prof-modules-eleves.css?v=1006" data-modules-table-colors>
   <style>
     body.modules-page {
@@ -491,7 +491,7 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
-  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-3">
+  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260825-1">
   <link rel="stylesheet" href="../assets/css/prof-dashboard-apex.css?v=3">
   <link rel="stylesheet" href="../assets/css/prof-apex-suite.css?v=1">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
@@ -524,11 +524,11 @@
             <span class="v2-nav-mark">CO</span>
             <span>Corrigés</span>
           </button>
-          <button type="button" class="v2-nav-item" onclick="goPage('prof-rp-7x92q.html')">
+          <button type="button" class="v2-nav-item" data-prof-notification-target="custom" onclick="goPage('prof-rp-7x92q.html')">
             <span class="v2-nav-mark">RE</span>
             <span>Réponses élèves</span>
           </button>
-          <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-4x91q.html')">
+          <button type="button" class="v2-nav-item" data-prof-notification-target="exam" onclick="goPage('prof-exam-4x91q.html')">
             <span class="v2-nav-mark">EX</span>
             <span>Examens</span>
           </button>
@@ -685,7 +685,8 @@
     <script type="module" src="../assets/js/prof-modules-sheets-sync-exact.js?v=1006"></script>
 <script type="module" src="../assets/js/prof-modules-archives.js?v=1003"></script>
 <script type="module" src="../assets/js/prof-modules-clipboard.js?v=8"></script>
-<script src="../assets/js/prof-mobile-app.js?v=20260824-13"></script>
+<script type="module" src="../assets/js/prof-notifications-v2.js?v=6"></script>
+<script src="../assets/js/prof-mobile-app.js?v=20260825-1"></script>
 
 </body>
 </html>

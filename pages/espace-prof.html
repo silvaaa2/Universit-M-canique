@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../assets/css/base.css?v=20260808-mobile2">
   <link rel="stylesheet" href="../assets/css/buttons.css?v=1001">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9037">
-  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=20">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=21">
   <link rel="stylesheet" href="../assets/css/prof-notifications-v2.css?v=3">
   <style>
     #profAdminBtn[hidden],
@@ -24,7 +24,7 @@
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
-  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260824-3">
+  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260825-1">
   <link rel="stylesheet" href="../assets/css/prof-dashboard-apex.css?v=10">
   <link rel="stylesheet" href="../assets/css/prof-apex-suite.css?v=1">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
@@ -112,11 +112,11 @@
           <span class="v2-nav-mark">CO</span>
           Corrigés
         </button>
-        <button type="button" class="v2-nav-item" onclick="goPage('prof-rp-7x92q.html')">
+        <button type="button" class="v2-nav-item" data-prof-notification-target="custom" onclick="goPage('prof-rp-7x92q.html')">
           <span class="v2-nav-mark">RE</span>
           Réponses élèves
         </button>
-        <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-4x91q.html')">
+        <button type="button" class="v2-nav-item" data-prof-notification-target="exam" onclick="goPage('prof-exam-4x91q.html')">
           <span class="v2-nav-mark">EX</span>
           Examens
         </button>
@@ -132,7 +132,7 @@
         </button>
 
         <p>Compte</p>
-        <button type="button" class="v2-nav-item" id="profSettingsBtn">
+        <button type="button" class="v2-nav-item" id="profSettingsBtn" data-prof-notification-target="settings">
           <span class="v2-nav-mark">PA</span>
           Paramètres
         </button>
@@ -298,6 +298,14 @@
 
             <button type="button" class="v2-secondary-btn" id="closeSettingsBtn">Retour</button>
           </div>
+
+          <aside class="v2-settings-news" data-site-news-id="2026-08-25-notification-badges" aria-label="Nouveauté du site">
+            <span>Nouveau</span>
+            <div>
+              <strong>Pastilles de notifications</strong>
+              <p>Les nouvelles copies et réponses affichent maintenant un compteur. Il disparaît dès que la rubrique est consultée.</p>
+            </div>
+          </aside>
 
           <div class="v2-settings-layout">
             <nav class="v2-settings-categories" aria-label="Catégories des paramètres">
@@ -499,7 +507,7 @@
                       <span class="v2-preference-icon" aria-hidden="true">NT</span>
                       <div>
                         <h4>Alertes du site</h4>
-                        <p>Surveille les nouvelles réponses d’examens et de customs toutes les 30 secondes.</p>
+                        <p>Surveille les nouvelles réponses d’examens et de customs toutes les 10 secondes.</p>
                         <small>Ce réglage est enregistré uniquement sur cet appareil.</small>
                       </div>
                     </div>
@@ -584,8 +592,8 @@
 <script src="../assets/js/prof-live-refresh.js?v=1"></script>
 <script type="module" src="../assets/js/prof-auth-v2.js?v=34"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=4"></script>
-<script type="module" src="../assets/js/prof-notifications-v2.js?v=5"></script>
-<script src="../assets/js/prof-mobile-app.js?v=20260824-13"></script>
+<script type="module" src="../assets/js/prof-notifications-v2.js?v=6"></script>
+<script src="../assets/js/prof-mobile-app.js?v=20260825-1"></script>
 
 </body>
 </html>

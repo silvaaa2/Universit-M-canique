@@ -1,8 +1,18 @@
 (() => {
   const ENABLED_KEY = "profV2NotificationsEnabled";
   const SNAPSHOT_KEY = "profV2NotificationsSnapshot";
+  const UNREAD_KEY = "profV2NotificationUnread";
+  const SEEN_NEWS_KEY = "profV2SeenSiteNews";
   const INTERVAL_MS = 30000;
   const AUTH_WAIT_MS = 45000;
+
+  const SITE_NEWS = [
+    {
+      id: "2026-08-25-notification-badges",
+      target: "settings",
+      label: "Pastilles de notifications"
+    }
+  ];
 
   const EXAM_SHEETS = [
     {
@@ -39,8 +49,6 @@
   let authWaitTimer = null;
   let authWaitStartedAt = 0;
 
-  if (!button) return;
-
   function notificationsEnabled() {
     const savedValue = localStorage.getItem(ENABLED_KEY);
     return savedValue === null ? true : savedValue === "true";
@@ -56,6 +64,8 @@
   }
 
   function updateButton() {
+    if (!button) return;
+
     const enabled = notificationsEnabled();
     const permission = browserNotificationPermission();
 
@@ -78,6 +88,113 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  function readLocalJson(key, fallback) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || "null");
+      return value ?? fallback;
+    } catch (error) {
+      console.warn(`État local ${key} illisible :`, error);
+      return fallback;
+    }
+  }
+
+  function readUnread() {
+    const saved = readLocalJson(UNREAD_KEY, {});
+    return {
+      exam: Math.max(0, Number(saved?.exam || 0)),
+      custom: Math.max(0, Number(saved?.custom || 0))
+    };
+  }
+
+  function saveUnread(unread) {
+    localStorage.setItem(UNREAD_KEY, JSON.stringify({
+      exam: Math.max(0, Number(unread?.exam || 0)),
+      custom: Math.max(0, Number(unread?.custom || 0)),
+      updatedAt: Date.now()
+    }));
+  }
+
+  function readSeenNews() {
+    const saved = readLocalJson(SEEN_NEWS_KEY, []);
+    return new Set(Array.isArray(saved) ? saved.map(String) : []);
+  }
+
+  function saveSeenNews(seenNews) {
+    localStorage.setItem(SEEN_NEWS_KEY, JSON.stringify(Array.from(seenNews)));
+  }
+
+  function currentPageTarget() {
+    const page = window.location.pathname.split("/").pop()?.toLowerCase() || "";
+    if (page === "prof-exam-4x91q.html") return "exam";
+    if (page === "prof-rp-7x92q.html") return "custom";
+    return "";
+  }
+
+  function newsCount(target) {
+    const seenNews = readSeenNews();
+    return SITE_NEWS.filter(item => item.target === target && !seenNews.has(item.id)).length;
+  }
+
+  function badgeCount(target) {
+    if (target === "settings") return newsCount(target);
+    return Math.max(0, Number(readUnread()[target] || 0));
+  }
+
+  function ensureBadge(target) {
+    let badge = Array.from(target.children).find(child => child.matches?.(".prof-notification-badge"));
+    if (badge) return badge;
+
+    badge = document.createElement("span");
+    badge.className = "prof-notification-badge";
+    badge.setAttribute("aria-hidden", "true");
+    badge.hidden = true;
+    target.appendChild(badge);
+    return badge;
+  }
+
+  function renderBadges() {
+    document.querySelectorAll("[data-prof-notification-target]").forEach(target => {
+      const type = target.dataset.profNotificationTarget || "";
+      const count = badgeCount(type);
+      const badge = ensureBadge(target);
+
+      badge.textContent = count > 99 ? "99+" : String(count);
+      badge.hidden = count < 1;
+      badge.title = count > 1 ? `${count} notifications non vues` : "1 notification non vue";
+      target.classList.toggle("has-prof-notification", count > 0);
+      target.dataset.profNotificationCount = String(count);
+    });
+  }
+
+  function markTargetSeen(target) {
+    if (!target) return;
+
+    if (target === "exam" || target === "custom") {
+      const unread = readUnread();
+      unread[target] = 0;
+      saveUnread(unread);
+    }
+
+    const seenNews = readSeenNews();
+    SITE_NEWS.filter(item => item.target === target).forEach(item => seenNews.add(item.id));
+    saveSeenNews(seenNews);
+    renderBadges();
+  }
+
+  function addUnread(target, count) {
+    if (!count || (target !== "exam" && target !== "custom")) return;
+
+    if (currentPageTarget() === target) {
+      markTargetSeen(target);
+      return;
+    }
+
+    const unread = readUnread();
+    unread[target] = Math.min(999, Math.max(0, Number(unread[target] || 0)) + Number(count));
+    saveUnread(unread);
+    renderBadges();
   }
 
   function ensureToastHost() {
@@ -263,7 +380,7 @@
       throw new Error("Connexion professeur requise.");
     }
 
-    const token = await user.getIdToken(true);
+    const token = await user.getIdToken();
     return {
       Authorization: `Bearer ${token}`
     };
@@ -422,8 +539,14 @@
 
       saveSnapshot(nextSnapshot);
 
-      if (examDiff > 0) notify("exam", examDiff, examDetails);
-      if (customDiff > 0) notify("custom", customDiff, customDetails);
+      if (examDiff > 0) {
+        addUnread("exam", examDiff);
+        notify("exam", examDiff, examDetails);
+      }
+      if (customDiff > 0) {
+        addUnread("custom", customDiff);
+        notify("custom", customDiff, customDetails);
+      }
     } catch (error) {
       console.warn("Vérification notifications prof impossible :", error);
     } finally {
@@ -440,7 +563,7 @@
     updateButton();
     checkNotifications(options);
 
-    if (!timer) {
+    if (!timer && !window.profLiveRefresh) {
       timer = window.setInterval(checkNotifications, INTERVAL_MS);
     }
   }
@@ -480,7 +603,7 @@
     }, 500);
   }
 
-  button.addEventListener("click", async () => {
+  button?.addEventListener("click", async () => {
     const shouldEnable = !notificationsEnabled();
 
     if (!shouldEnable) {
@@ -504,7 +627,7 @@
     startNotifications();
 
     if (permission === "granted") {
-      showToast("Notifications activées", "Le site vérifie les nouvelles réponses toutes les 30 secondes.", "ok");
+      showToast("Notifications activées", "Le site vérifie les nouvelles réponses toutes les 10 secondes.", "ok");
     } else {
       showToast("Notifications site activées", "Windows bloque les notifications, mais les alertes du site restent actives.", "info");
     }
@@ -517,6 +640,24 @@
   });
 
   window.addEventListener("focus", () => checkNotifications());
+  window.addEventListener("prof:live-refresh", () => checkNotifications());
+  window.addEventListener("profNavigationReady", renderBadges);
+  window.addEventListener("storage", event => {
+    if (event.key === UNREAD_KEY || event.key === SEEN_NEWS_KEY) renderBadges();
+  });
+
+  document.getElementById("profSettingsBtn")?.addEventListener("click", () => {
+    markTargetSeen("settings");
+  });
+
+  markTargetSeen(currentPageTarget());
+  renderBadges();
+
+  window.profNotificationBadges = Object.freeze({
+    render: renderBadges,
+    markSeen: markTargetSeen,
+    add: addUnread
+  });
 
   updateButton();
   waitForConnectedProf();

@@ -121,11 +121,11 @@
       <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("home")}</span>
       <small>Accueil</small>
     </a>
-    <a href="prof-rp-7x92q.html" data-mobile-section="customs">
+    <a href="prof-rp-7x92q.html" data-mobile-section="customs" data-prof-notification-target="custom">
       <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("responses")}</span>
       <small>Customs</small>
     </a>
-    <a href="prof-exam-4x91q.html" data-mobile-section="exams">
+    <a href="prof-exam-4x91q.html" data-mobile-section="exams" data-prof-notification-target="exam">
       <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("exams")}</span>
       <small>Examens</small>
     </a>
@@ -162,15 +162,15 @@
 
       <div class="prof-mobile-menu-grid">
         <a href="espace-prof.html"><span>${profNavIcon("home")}</span><strong>Tableau de bord</strong><small>Résumé du cursus</small></a>
-        <a href="prof-rp-7x92q.html"><span>${profNavIcon("responses")}</span><strong>Réponses customs</strong><small>Valider les customs</small></a>
-        <a href="prof-exam-4x91q.html"><span>${profNavIcon("exams")}</span><strong>Examens</strong><small>Corriger les copies</small></a>
+        <a href="prof-rp-7x92q.html" data-prof-notification-target="custom"><span>${profNavIcon("responses")}</span><strong>Réponses customs</strong><small>Valider les customs</small></a>
+        <a href="prof-exam-4x91q.html" data-prof-notification-target="exam"><span>${profNavIcon("exams")}</span><strong>Examens</strong><small>Corriger les copies</small></a>
         <a href="prof-modules-eleves.html"><span>${profNavIcon("modules")}</span><strong>Modules élèves</strong><small>Cocher et dater</small></a>
         <a href="prof-customs-eleves.html"><span>${profNavIcon("customs")}</span><strong>Accès customs</strong><small>Ouvrir ou fermer</small></a>
         <a href="../index.html"><span>${profNavIcon("university")}</span><strong>Site principal</strong><small>Voir l’université</small></a>
       </div>
 
       <div class="prof-mobile-menu-tools">
-        <button type="button" data-mobile-action="settings" hidden>Paramètres</button>
+        <button type="button" data-mobile-action="settings" data-prof-notification-target="settings" hidden>Paramètres</button>
         <button type="button" data-mobile-action="logout" hidden>Déconnexion</button>
       </div>
     </section>
@@ -190,6 +190,7 @@
 
   body.prepend(appbar);
   body.append(menu, tabbar, statusDock, correctionProgress);
+  window.dispatchEvent(new CustomEvent("profNavigationReady"));
   window.profSimplifiedMode?.sync();
 
   const tabLinks = Array.from(tabbar.querySelectorAll("[data-mobile-section]"));

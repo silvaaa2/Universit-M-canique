@@ -318,6 +318,11 @@ onAuthStateChanged(auth, async user => {
     return;
   }
 
+  window.currentProfUser = user;
+  window.dispatchEvent(new CustomEvent("profIdentityReady", {
+    detail: { user, identity: user.profIdentity || null }
+  }));
+
   try {
     setStatus("Chargement des réglages...");
     await loadStates();
