@@ -125,6 +125,9 @@ const homeButtons = document.querySelectorAll("[data-v2-home]");
 let isManualLoginTransition = false;
 let currentAccess = { role: null, admin: false };
 let dashboardStatsLoading = false;
+let lastCursusHistory = [];
+let renderedCursusChartWidth = 0;
+let cursusHistoryResizeFrame = 0;
 
 window.profFirebase = {
   app,
@@ -604,10 +607,12 @@ async function loadAndRenderCursusHistory(cursus, moduleRows = []) {
 }
 
 function renderCursusHistory(history = []) {
+  lastCursusHistory = history;
   setText("v2ApexHistoryCount", formatCount(history.length));
   if (!v2ApexHistoryChart) return;
 
   if (!history.length) {
+    renderedCursusChartWidth = 0;
     v2ApexHistoryChart.innerHTML = `<p class="apex-history-empty">Aucun cursus mémorisé pour le moment.</p>`;
     v2ApexHistoryChart.setAttribute("aria-label", "Aucun historique d’effectif disponible");
     return;
@@ -617,7 +622,9 @@ function renderCursusHistory(history = []) {
   const rawMaximum = Math.max(...totals, 1);
   const scaleStep = rawMaximum <= 10 ? 2 : rawMaximum <= 50 ? 10 : Math.ceil(rawMaximum / 5 / 10) * 10;
   const maximum = Math.max(scaleStep, Math.ceil(rawMaximum / scaleStep) * scaleStep);
-  const chartWidth = Math.max(540, history.length * 112);
+  const availableWidth = Math.max(0, Math.floor(v2ApexHistoryChart.clientWidth - 48));
+  const chartWidth = Math.max(540, availableWidth, history.length * 112);
+  renderedCursusChartWidth = chartWidth;
   const chartHeight = 220;
   const plotLeft = 26;
   const plotRight = chartWidth - 24;
@@ -666,7 +673,7 @@ function renderCursusHistory(history = []) {
   v2ApexHistoryChart.innerHTML = `
     <div class="apex-history-scale" aria-hidden="true">${tickValues.map(value => `<span>${escapeMarkup(value)}</span>`).join("")}</div>
     <div class="apex-history-viewport">
-      <svg class="apex-history-svg" style="--apex-history-width:${chartWidth}px" viewBox="0 0 ${chartWidth} ${chartHeight}" preserveAspectRatio="none" aria-hidden="true">
+      <svg class="apex-history-svg" style="--apex-history-width:${chartWidth}px" width="${chartWidth}" height="${chartHeight}" viewBox="0 0 ${chartWidth} ${chartHeight}" preserveAspectRatio="xMinYMin meet" aria-hidden="true">
         <defs>
           <linearGradient id="apexHistoryArea" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#f4d77e" stop-opacity=".28"></stop>
@@ -711,6 +718,22 @@ function focusLatestCursusHistory() {
     const viewport = v2ApexHistoryChart?.querySelector(".apex-history-viewport");
     if (viewport) viewport.scrollLeft = viewport.scrollWidth;
   });
+}
+
+function initCursusHistoryResize() {
+  if (!v2ApexHistoryChart || typeof ResizeObserver !== "function") return;
+
+  const observer = new ResizeObserver(entries => {
+    if (!lastCursusHistory.length) return;
+    const width = Math.floor(entries[0]?.contentRect?.width || 0);
+    const nextWidth = Math.max(540, width - 48, lastCursusHistory.length * 112);
+    if (Math.abs(nextWidth - renderedCursusChartWidth) < 8) return;
+
+    cancelAnimationFrame(cursusHistoryResizeFrame);
+    cursusHistoryResizeFrame = requestAnimationFrame(() => renderCursusHistory(lastCursusHistory));
+  });
+
+  observer.observe(v2ApexHistoryChart);
 }
 
 function matchesCurrentCursusStudent(cursus, idUnique, studentName) {
@@ -1811,4 +1834,5 @@ function initAuth() {
 initV2Actions();
 initCommandSearch();
 initProfileMenu();
+initCursusHistoryResize();
 initAuth();

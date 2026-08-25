@@ -36,6 +36,12 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(styles, /\.apex-history-viewport\s*\{[^}]*min-height:\s*222px/s);
   assert.match(styles, /\.apex-history-line\s*\{[^}]*stroke-width:\s*3\.2/s);
   assert.match(script, /const chartHeight = 220/);
+  assert.match(script, /preserveAspectRatio="xMinYMin meet"/);
+  assert.doesNotMatch(script, /preserveAspectRatio="none"/);
+  assert.match(script, /function initCursusHistoryResize/);
+  assert.match(script, /new ResizeObserver/);
+  assert.match(styles, /width:\s*var\(--apex-history-width, 540px\)/);
+  assert.match(styles, /height:\s*220px/);
   assert.match(script, /function buildSmoothHistoryPath/);
   assert.match(script, /class="apex-history-line"/);
   assert.match(script, /v2ApexSyncChip\.hidden = access\.admin !== true/);
