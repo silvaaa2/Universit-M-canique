@@ -30,6 +30,8 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(script, /function ensureCurrentCursusSnapshot/);
   assert.match(script, /function loadAndRenderCursusHistory/);
   assert.match(script, /function renderCursusHistory/);
+  assert.match(styles, /\.apex-history-chart\s*\{[^}]*min-height:\s*274px/s);
+  assert.match(styles, /\.apex-history-viewport\s*\{[^}]*min-height:\s*274px/s);
   assert.match(script, /function buildSmoothHistoryPath/);
   assert.match(script, /class="apex-history-line"/);
   assert.match(script, /v2ApexSyncChip\.hidden = access\.admin !== true/);
