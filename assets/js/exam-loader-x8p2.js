@@ -79,6 +79,8 @@ let currentExamSearch = "";
 let currentExamFilter = "all";
 let activeSheetId = SHEETS[0].id;
 let sheetLoadInFlight = false;
+let activeExamAnswerKey = "";
+const activeExamQuestionIndexes = new Map();
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -724,6 +726,7 @@ function applyExamDashboardTools() {
     card.style.display = matchSearch && matchFilter ? "" : "none";
   });
 
+  ensureActiveExamCardVisible();
   updateExamStats();
 }
 
@@ -939,6 +942,18 @@ function renderScoreControl(field, currentScore, answer) {
     }
   }
 
+  const quickScoreMax = Math.min(10, Math.max(0, Math.floor(maxPoints)));
+  const quickScores = Number.isInteger(maxPoints) && maxPoints <= 10
+    ? Array.from({ length: quickScoreMax + 1 }, (_, score) => `
+        <button
+          type="button"
+          class="exam-score-choice${safeCurrent === score ? " active" : ""}"
+          data-score-choice="${score}"
+          aria-label="Attribuer ${score} point${score > 1 ? "s" : ""}"
+        >${score}</button>
+      `).join("")
+    : "";
+
   return `
     <div
       class="exam-score-control"
@@ -946,6 +961,10 @@ function renderScoreControl(field, currentScore, answer) {
       data-field-key="${escapeHtml(buildFieldScoreKey(field))}"
       data-max-points="${escapeHtml(maxPoints)}"
     >
+      <div class="exam-score-choices" role="group" aria-label="Notation rapide">
+        ${quickScores}
+      </div>
+
       <input
         type="number"
         min="0"
@@ -965,13 +984,19 @@ function renderExamLine(field, displayIndex, record, answer) {
   const cleanValue = getValue(field.value);
   const fieldKey = buildFieldScoreKey(field);
   const currentScore = record.fieldScores?.[fieldKey] || 0;
+  const hasExplicitScore = Object.prototype.hasOwnProperty.call(record.fieldScores || {}, fieldKey);
 
   const valueHtml = isLink(cleanValue)
     ? `<a href="${escapeHtml(cleanValue)}" target="_blank" rel="noopener noreferrer">Ouvrir le lien</a>`
     : `<strong>${escapeHtml(cleanValue)}</strong>`;
 
   return `
-    <div class="exam-line">
+    <div
+      class="exam-line${displayIndex === 0 ? " is-current" : ""}"
+      data-exam-line
+      data-question-index="${displayIndex}"
+      data-scored="${hasExplicitScore ? "true" : "false"}"
+    >
       <div class="exam-line-number">${String(displayIndex + 1).padStart(2, "0")}</div>
 
       <div class="exam-line-content">
@@ -988,7 +1013,10 @@ function renderExamLine(field, displayIndex, record, answer) {
 
 function renderExamAnswersSection(answer, record) {
   const orderedFields = answer.__orderedFields || [];
-  const displayFields = orderedFields.filter(shouldDisplayExamField);
+  const displayFields = orderedFields.filter(field => {
+    if (!shouldDisplayExamField(field)) return false;
+    return getQuestionPoints(field.label) !== 0;
+  });
 
   const html = displayFields
     .map((field, index) => renderExamLine(field, index, record, answer))
@@ -996,13 +1024,28 @@ function renderExamAnswersSection(answer, record) {
 
   return `
     <section class="student-section exam-ordered-section">
-      <div class="student-section-head">
-        <h3>Correction de l’examen</h3>
+      <div class="student-section-head exam-cockpit-question-head">
+        <div>
+          <p>Correction guidée</p>
+          <h3>Question <span data-exam-current-question>1</span> sur ${displayFields.length}</h3>
+        </div>
+
+        <span data-exam-question-progress>${displayFields.length ? `1 / ${displayFields.length}` : "0 / 0"}</span>
+      </div>
+
+      <div class="exam-cockpit-progress" aria-hidden="true">
+        <span data-exam-question-meter style="width:${displayFields.length ? 100 / displayFields.length : 0}%"></span>
       </div>
 
       <div class="exam-lines-list">
         ${html || `<div class="student-empty">Aucune réponse trouvée.</div>`}
       </div>
+
+      <nav class="exam-cockpit-question-nav" aria-label="Navigation entre les questions">
+        <button type="button" data-exam-question-previous>← Précédente</button>
+        <span data-exam-question-state aria-live="polite">Sauvegarde automatique active</span>
+        <button type="button" data-exam-question-next>Suivante →</button>
+      </nav>
     </section>
   `;
 }
@@ -1030,6 +1073,7 @@ function renderAnswerCard(answer, index, sheet) {
       data-answer-key="${escapeHtml(answerKey)}"
       data-sheet-id="${escapeHtml(sheet.id)}"
       data-status="${escapeHtml(statusMeta.value)}"
+      data-copy-number="${index + 1}"
       data-student-name="${escapeHtml(name)}"
       data-id-unique="${escapeHtml(idUnique)}"
       data-normalized-id-unique="${escapeHtml(normalizedIdUnique)}"
@@ -1209,6 +1253,7 @@ async function renderAnswers(answers, sheet) {
     </div>
   `;
 
+  bindCardQuestionNavigation();
   bindCardToggles();
   bindStatusButtons();
   bindScoreControls();
@@ -1296,16 +1341,128 @@ function renderTabs() {
    CARD OPEN / CLOSE
 ========================================================= */
 
-function bindCardToggles() {
-  const cards = document.querySelectorAll("[data-answer-card]");
+function isMobileExamViewport() {
+  return window.matchMedia("(max-width: 900px)").matches;
+}
 
-  cards.forEach((card) => {
-    card.classList.add("collapsed");
-    card.classList.remove("is-open");
+function getCardQuestionLines(card) {
+  return Array.from(card?.querySelectorAll("[data-exam-line]") || []);
+}
+
+function getInitialQuestionIndex(card, lines) {
+  const answerKey = card?.dataset.answerKey || "";
+  const storedIndex = activeExamQuestionIndexes.get(answerKey);
+
+  if (Number.isInteger(storedIndex) && storedIndex >= 0 && storedIndex < lines.length) {
+    return storedIndex;
+  }
+
+  const firstUnscored = lines.findIndex(line => line.dataset.scored !== "true");
+  return firstUnscored >= 0 ? firstUnscored : 0;
+}
+
+function renderCardQuestion(card, requestedIndex) {
+  if (!card) return;
+
+  const lines = getCardQuestionLines(card);
+  if (!lines.length) return;
+
+  const answerKey = card.dataset.answerKey || "";
+  const fallbackIndex = getInitialQuestionIndex(card, lines);
+  const safeIndex = Math.max(0, Math.min(
+    Number.isInteger(requestedIndex) ? requestedIndex : fallbackIndex,
+    lines.length - 1
+  ));
+
+  activeExamQuestionIndexes.set(answerKey, safeIndex);
+
+  lines.forEach((line, index) => {
+    line.classList.toggle("is-current", index === safeIndex);
+  });
+
+  const current = card.querySelector("[data-exam-current-question]");
+  const progress = card.querySelector("[data-exam-question-progress]");
+  const meter = card.querySelector("[data-exam-question-meter]");
+  const previous = card.querySelector("[data-exam-question-previous]");
+  const next = card.querySelector("[data-exam-question-next]");
+
+  if (current) current.textContent = String(safeIndex + 1);
+  if (progress) progress.textContent = `${safeIndex + 1} / ${lines.length}`;
+  if (meter) meter.style.width = `${((safeIndex + 1) / lines.length) * 100}%`;
+  if (previous) previous.disabled = safeIndex === 0;
+  if (next) next.disabled = safeIndex === lines.length - 1;
+}
+
+function openExamCard(cards, selectedCard, { scroll = false } = {}) {
+  cards.forEach(card => {
+    const isSelected = card === selectedCard;
+    card.classList.toggle("collapsed", !isSelected);
+    card.classList.toggle("is-open", isSelected);
 
     const icon = card.querySelector(".student-toggle-icon");
-    if (icon) icon.textContent = "+";
+    if (icon) icon.textContent = isSelected ? "−" : "+";
   });
+
+  if (!selectedCard) {
+    activeExamAnswerKey = "";
+    return;
+  }
+
+  activeExamAnswerKey = selectedCard.dataset.answerKey || "";
+  renderCardQuestion(selectedCard);
+
+  if (scroll && isMobileExamViewport()) {
+    setTimeout(() => {
+      selectedCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+  }
+}
+
+function ensureActiveExamCardVisible() {
+  if (isMobileExamViewport()) return;
+
+  const cards = getAllExamCards();
+  const visibleCards = cards.filter(card => card.style.display !== "none");
+  if (!visibleCards.length) return;
+
+  const currentCard = visibleCards.find(card => card.dataset.answerKey === activeExamAnswerKey);
+  const selectedCard = currentCard || visibleCards[0];
+
+  if (!selectedCard.classList.contains("is-open")) {
+    openExamCard(cards, selectedCard);
+  }
+}
+
+function bindCardQuestionNavigation() {
+  document.querySelectorAll("[data-answer-card]").forEach(card => {
+    const answerKey = card.dataset.answerKey || "";
+    const lines = getCardQuestionLines(card);
+    if (!lines.length) return;
+
+    renderCardQuestion(card, activeExamQuestionIndexes.get(answerKey));
+
+    card.querySelector("[data-exam-question-previous]")?.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const currentIndex = activeExamQuestionIndexes.get(answerKey) || 0;
+      renderCardQuestion(card, currentIndex - 1);
+    });
+
+    card.querySelector("[data-exam-question-next]")?.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const currentIndex = activeExamQuestionIndexes.get(answerKey) || 0;
+      renderCardQuestion(card, currentIndex + 1);
+    });
+  });
+}
+
+function bindCardToggles() {
+  const cards = Array.from(document.querySelectorAll("[data-answer-card]"));
+  const storedCard = cards.find(card => card.dataset.answerKey === activeExamAnswerKey);
+  const initialCard = storedCard || (!isMobileExamViewport() ? cards[0] : null);
+
+  openExamCard(cards, initialCard);
 
   document.querySelectorAll("[data-toggle-card]").forEach(button => {
     button.addEventListener("click", () => {
@@ -1314,28 +1471,12 @@ function bindCardToggles() {
 
       const isAlreadyOpen = selectedCard.classList.contains("is-open");
 
-      cards.forEach(card => {
-        card.classList.add("collapsed");
-        card.classList.remove("is-open");
-
-        const icon = card.querySelector(".student-toggle-icon");
-        if (icon) icon.textContent = "+";
-      });
-
-      if (!isAlreadyOpen) {
-        selectedCard.classList.remove("collapsed");
-        selectedCard.classList.add("is-open");
-
-        const icon = selectedCard.querySelector(".student-toggle-icon");
-        if (icon) icon.textContent = "−";
-
-        setTimeout(() => {
-          selectedCard.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-          });
-        }, 120);
+      if (isAlreadyOpen && isMobileExamViewport()) {
+        openExamCard(cards, null);
+        return;
       }
+
+      openExamCard(cards, selectedCard, { scroll: true });
     });
   });
 }
@@ -1411,6 +1552,23 @@ function getIdentityFromCard(card) {
 ========================================================= */
 
 function bindScoreControls() {
+  document.querySelectorAll("[data-score-choice]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const control = button.closest("[data-score-control]");
+      const input = control?.querySelector("[data-score-input]");
+      if (!control || !input) return;
+
+      input.value = String(button.dataset.scoreChoice || 0);
+      control.querySelectorAll("[data-score-choice]").forEach(choice => {
+        choice.classList.toggle("active", choice === button);
+      });
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  });
+
   document.querySelectorAll("[data-score-input]").forEach((input) => {
     input.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -1446,6 +1604,13 @@ function bindScoreControls() {
 
       input.value = String(newScore);
 
+      control.querySelectorAll("[data-score-choice]").forEach(choice => {
+        choice.classList.toggle("active", Number(choice.dataset.scoreChoice) === newScore);
+      });
+
+      const line = input.closest("[data-exam-line]");
+      if (line) line.dataset.scored = "true";
+
       const record = answerRecords[answerKey] || getDefaultRecord();
       const identity = getIdentityFromCard(card);
 
@@ -1464,6 +1629,10 @@ function bindScoreControls() {
       answerRecords[answerKey] = record;
 
       updateScoreUi(card, record);
+      renderCardQuestion(card, activeExamQuestionIndexes.get(answerKey));
+
+      const questionState = card.querySelector("[data-exam-question-state]");
+      if (questionState) questionState.textContent = "Sauvegarde en cours…";
 
       window.dispatchEvent(new CustomEvent("prof:correction-save", {
         detail: { state: "saving", card, advance: false }
@@ -1471,6 +1640,7 @@ function bindScoreControls() {
 
       try {
         await saveExamRecordToFirebase(answerKey, sheetId, record, identity);
+        if (questionState) questionState.textContent = "✓ Note sauvegardée";
         window.dispatchEvent(new CustomEvent("prof:correction-save", {
           detail: { state: "saved", card, advance: false }
         }));
@@ -1480,6 +1650,7 @@ function bindScoreControls() {
           detail: { state: "error", card, advance: false }
         }));
         alert("Impossible de sauvegarder les points. Réessaie dans quelques instants.");
+        if (questionState) questionState.textContent = "Échec de la sauvegarde";
       }
     });
   });
