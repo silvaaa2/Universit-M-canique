@@ -55,6 +55,7 @@ let currentFilter = "";
 let currentCursusKey = "";
 let currentCursusSettings = null;
 const studentWriteQueues = new Map();
+let modulesRefreshLoading = false;
 
 function withTimeout(promise, ms, message) {
   let timer;
@@ -575,24 +576,34 @@ function renderError(message) {
   modulesTable.innerHTML = `<div class="modules-error">${escapeHtml(message)}</div>`;
 }
 
-async function loadAndRenderModules() {
+async function loadAndRenderModules({ silent = false } = {}) {
+  if (modulesRefreshLoading) return false;
+  modulesRefreshLoading = true;
+
   try {
-    showLoader("Chargement de l'effectif...");
-    setStatus("", "");
+    if (!silent) {
+      showLoader("Chargement de l'effectif...");
+      setStatus("", "");
+    }
     effectifRows = await loadEffectifRows();
 
-    showLoader("Chargement des coches et dates...");
+    if (!silent) showLoader("Chargement des coches et dates...");
     await loadStudentProgress();
     renderTable();
 
-    if (!modulesStatus?.textContent) setStatus("", "");
+    if (!silent && !modulesStatus?.textContent) setStatus("", "");
+    return true;
   } catch (error) {
     console.error("Chargement modules élèves impossible :", error);
-    renderSummary();
-    renderError(error.message || "Chargement impossible.");
-    setStatus("Chargement impossible.", "error");
+    if (!silent) {
+      renderSummary();
+      renderError(error.message || "Chargement impossible.");
+      setStatus("Chargement impossible.", "error");
+    }
+    return false;
   } finally {
-    hideLoader();
+    if (!silent) hideLoader();
+    modulesRefreshLoading = false;
   }
 }
 
@@ -750,7 +761,12 @@ modulesSearch?.addEventListener("input", event => {
 });
 
 reloadModulesBtn?.addEventListener("click", () => {
-  loadAndRenderModules();
+  void loadAndRenderModules();
+});
+
+window.addEventListener("prof:live-refresh", () => {
+  if (!currentUser || modulesRefreshLoading || studentWriteQueues.size > 0) return;
+  void loadAndRenderModules({ silent: true });
 });
 
 modulesTable?.addEventListener("change", event => {

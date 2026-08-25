@@ -44,6 +44,7 @@ let currentUser = null;
 let currentAccess = { role: null, admin: false };
 let states = {};
 let lastChangedId = "";
+let customRefreshLoading = false;
 
 function withTimeout(promise, ms, message) {
   let timer;
@@ -253,21 +254,27 @@ async function toggleCustom(button) {
   }
 }
 
-async function refreshCustomAccess() {
-  if (!canManageCustoms()) return;
+async function refreshCustomAccess({ silent = false } = {}) {
+  if (!canManageCustoms() || customRefreshLoading) return false;
+  customRefreshLoading = true;
 
   try {
-    if (reloadBtn) reloadBtn.disabled = true;
-    setStatus("Actualisation...");
+    if (!silent) {
+      if (reloadBtn) reloadBtn.disabled = true;
+      setStatus("Actualisation...");
+    }
     await loadStates();
     lastChangedId = "";
     renderRows();
-    setStatus("Réglages à jour.", "ok");
+    if (!silent) setStatus("Réglages à jour.", "ok");
+    return true;
   } catch (error) {
     console.warn("Actualisation customs impossible :", error);
-    setStatus("Actualisation impossible. Réessaie dans quelques instants.", "error");
+    if (!silent) setStatus("Actualisation impossible. Réessaie dans quelques instants.", "error");
+    return false;
   } finally {
-    if (reloadBtn) reloadBtn.disabled = false;
+    if (!silent && reloadBtn) reloadBtn.disabled = false;
+    customRefreshLoading = false;
   }
 }
 
@@ -276,7 +283,14 @@ content?.addEventListener("click", event => {
   if (button) toggleCustom(button);
 });
 
-reloadBtn?.addEventListener("click", refreshCustomAccess);
+reloadBtn?.addEventListener("click", () => {
+  void refreshCustomAccess();
+});
+
+window.addEventListener("prof:live-refresh", () => {
+  if (!currentUser || customRefreshLoading || !canManageCustoms()) return;
+  void refreshCustomAccess({ silent: true });
+});
 
 onAuthStateChanged(auth, async user => {
   currentUser = user || null;

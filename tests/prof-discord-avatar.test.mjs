@@ -29,6 +29,6 @@ test("la photo Discord remplace les initiales avec un repli sûr", async () => {
   assert.match(css, /\.prof-avatar-image/);
   assert.match(modulesPage, /profIdentityReady/);
   assert.match(examPage, /renderProfAvatar/);
-  assert.match(customsPage, /prof-customs-eleves-page\.js\?v=13/);
+  assert.match(customsPage, /prof-customs-eleves-page\.js\?v=14/);
   assert.match(discordAuth, /cdn\.discordapp\.com\/embed\/avatars/);
 });

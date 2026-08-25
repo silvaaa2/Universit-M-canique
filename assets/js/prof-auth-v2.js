@@ -1391,6 +1391,11 @@ async function loadDashboardStats() {
   }
 }
 
+window.addEventListener("prof:live-refresh", () => {
+  if (!window.currentProfUser || dashboardStatsLoading) return;
+  void loadDashboardStats();
+});
+
 function showLogin() {
   if (loginTransition) {
     loginTransition.hidden = true;

@@ -77,6 +77,8 @@ let customBonusDataReady = false;
 
 let currentExamSearch = "";
 let currentExamFilter = "all";
+let activeSheetId = SHEETS[0].id;
+let sheetLoadInFlight = false;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -112,7 +114,7 @@ async function buildSecureSheetHeaders() {
     throw new Error("Connexion professeur requise.");
   }
 
-  const idToken = await user.getIdToken(true);
+  const idToken = await user.getIdToken();
 
   return {
     Authorization: `Bearer ${idToken}`
@@ -1215,17 +1217,23 @@ async function renderAnswers(answers, sheet) {
   bindExamDashboardTools();
 }
 
-async function loadSheet(sheet) {
+async function loadSheet(sheet, { force = false, silent = false } = {}) {
   if (!window.currentProfUser) {
     window.location.href = "espace-prof.html";
-    return;
+    return false;
   }
 
+  if (sheetLoadInFlight) return false;
+  sheetLoadInFlight = true;
+  activeSheetId = sheet.id;
+
   setActiveTab(sheet.id);
-  setLoading(sheet.label);
+  if (!silent) setLoading(sheet.label);
 
   try {
     let answers;
+
+    if (force) cache.delete(sheet.id);
 
     if (cache.has(sheet.id)) {
       answers = cache.get(sheet.id);
@@ -1247,9 +1255,15 @@ async function loadSheet(sheet) {
     }
 
     await renderAnswers(answers, sheet);
+    return true;
   } catch (error) {
     console.error("Erreur chargement examens sécurisés :", error);
-    setError("Impossible de charger les réponses d'examen. Vérifie la connexion prof et le réglage Google Sheets.");
+    if (!silent) {
+      setError("Impossible de charger les réponses d'examen. Vérifie la connexion prof et le réglage Google Sheets.");
+    }
+    return false;
+  } finally {
+    sheetLoadInFlight = false;
   }
 }
 
@@ -1932,7 +1946,13 @@ function bindMinimize() {
 
 renderTabs();
 bindMinimize();
-loadSheet(SHEETS[0]);
+void loadSheet(SHEETS[0]);
+
+window.addEventListener("prof:live-refresh", () => {
+  if (!window.currentProfUser || sheetLoadInFlight) return;
+  const sheet = SHEETS.find(item => item.id === activeSheetId) || SHEETS[0];
+  void loadSheet(sheet, { force: true, silent: true });
+});
 
 
 

@@ -30,6 +30,8 @@ const answersBody = document.getElementById("answersBody");
 const cache = new Map();
 let answerStatuses = {};
 let approvedCustomAnswers = [];
+let activeSheetId = SHEETS[0].id;
+let sheetLoadInFlight = false;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -56,7 +58,7 @@ async function buildSecureSheetHeaders() {
   }
 
   return {
-    Authorization: `Bearer ${await user.getIdToken(true)}`
+    Authorization: `Bearer ${await user.getIdToken()}`
   };
 }
 
@@ -711,17 +713,23 @@ async function renderAnswers(answers, sheet) {
   bindExternalLinks();
 }
 
-async function loadSheet(sheet) {
+async function loadSheet(sheet, { force = false, silent = false } = {}) {
   if (!window.currentProfUser) {
     window.location.href = "espace-prof.html";
-    return;
+    return false;
   }
 
+  if (sheetLoadInFlight) return false;
+  sheetLoadInFlight = true;
+  activeSheetId = sheet.id;
+
   setActiveTab(sheet.id);
-  setLoading(sheet.label);
+  if (!silent) setLoading(sheet.label);
 
   try {
     let answers;
+
+    if (force) cache.delete(sheet.id);
 
     if (cache.has(sheet.id)) {
       answers = cache.get(sheet.id);
@@ -743,9 +751,13 @@ async function loadSheet(sheet) {
     }
 
     await renderAnswers(answers, sheet);
+    return true;
   } catch (error) {
     console.error("Erreur chargement des réponses customs :", error);
-    setError("Impossible de charger les réponses customs. Réessaie dans quelques instants.");
+    if (!silent) setError("Impossible de charger les réponses customs. Réessaie dans quelques instants.");
+    return false;
+  } finally {
+    sheetLoadInFlight = false;
   }
 }
 
@@ -1017,5 +1029,11 @@ function bindMinimize() {
 
 renderTabs();
 bindMinimize();
-loadSheet(SHEETS[0]);
+void loadSheet(SHEETS[0]);
+
+window.addEventListener("prof:live-refresh", () => {
+  if (!window.currentProfUser || sheetLoadInFlight) return;
+  const sheet = SHEETS.find(item => item.id === activeSheetId) || SHEETS[0];
+  void loadSheet(sheet, { force: true, silent: true });
+});
 
