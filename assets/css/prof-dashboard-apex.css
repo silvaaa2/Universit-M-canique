@@ -1237,4 +1237,18 @@ body.prof-v2-page[data-theme="light"] .apex-primary-action {
     animation: none !important;
     transition: none !important;
   }
+
+  .apex-history-line {
+    stroke-dashoffset: 0 !important;
+  }
+
+  .apex-history-area {
+    opacity: .82 !important;
+  }
+
+  .apex-history-point-halo,
+  .apex-history-point-dot {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

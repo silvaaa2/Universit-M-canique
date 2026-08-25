@@ -43,6 +43,8 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(styles, /\.apex-history-chart/);
   assert.match(styles, /\.apex-history-line/);
   assert.match(styles, /\.apex-history-point-dot/);
+  assert.match(styles, /stroke-dashoffset: 0 !important/);
+  assert.match(styles, /opacity: 1 !important/);
   assert.match(styles, /@media \(max-width: 900px\)/);
 
   const dashboardLoader = script.slice(
