@@ -89,6 +89,29 @@ const EFFECTIF_SOURCE = "effectif";
 const EFFECTIF_SHEET_KEY = "current";
 
 let googleAccessTokenCache = null;
+const GOOGLE_RETRY_DELAYS_MS = [0, 250, 800];
+const RETRYABLE_GOOGLE_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
+
+async function fetchGoogleWithRetry(url, options = {}) {
+  let response;
+  let lastError;
+
+  for (let attempt = 0; attempt < GOOGLE_RETRY_DELAYS_MS.length; attempt += 1) {
+    if (GOOGLE_RETRY_DELAYS_MS[attempt]) {
+      await new Promise(resolve => setTimeout(resolve, GOOGLE_RETRY_DELAYS_MS[attempt]));
+    }
+
+    try {
+      response = await fetch(url, options);
+      if (response.ok || !RETRYABLE_GOOGLE_STATUSES.has(response.status)) return response;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  if (response) return response;
+  throw lastError || new Error("Google Sheets est momentanément indisponible.");
+}
 
 function sendJson(res, status, payload) {
   res.statusCode = status;
@@ -178,7 +201,7 @@ async function getGoogleAccessToken() {
     .update(unsignedToken)
     .sign(serviceAccount.privateKey);
   const assertion = `${unsignedToken}.${encodeBase64Url(signature)}`;
-  const response = await fetch("https://oauth2.googleapis.com/token", {
+  const response = await fetchGoogleWithRetry("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -216,7 +239,7 @@ async function fetchPrivateGoogleCsv({ spreadsheetId, gid }) {
   if (!accessToken) return "";
 
   const headers = { Authorization: `Bearer ${accessToken}` };
-  const metadataResponse = await fetch(
+  const metadataResponse = await fetchGoogleWithRetry(
     `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=sheets.properties`,
     { headers, cache: "no-store" }
   );
@@ -234,7 +257,7 @@ async function fetchPrivateGoogleCsv({ spreadsheetId, gid }) {
   }
 
   const escapedTitle = `'${sheetTitle.replace(/'/g, "''")}'`;
-  const valuesResponse = await fetch(
+  const valuesResponse = await fetchGoogleWithRetry(
     `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(escapedTitle)}?majorDimension=ROWS`,
     { headers, cache: "no-store" }
   );
@@ -489,7 +512,7 @@ function buildGoogleCsvUrls({ spreadsheetId, gid }) {
 }
 
 async function fetchGoogleCsv(url) {
-  const response = await fetch(url, {
+  const response = await fetchGoogleWithRetry(url, {
     cache: "no-store",
     headers: {
       Accept: "text/csv,text/plain,*/*",
@@ -521,11 +544,19 @@ async function fetchCsv({ spreadsheetId, gid, publicOnly = false }) {
 
   // Le repli fourni par le navigateur ne doit jamais donner accès aux feuilles
   // privées du compte de service. Il est limité aux exports déjà publics.
-  if (!publicOnly && getGoogleServiceAccount()) {
-    return fetchPrivateGoogleCsv({ spreadsheetId, gid });
-  }
-
   const attempts = [];
+
+  if (!publicOnly && getGoogleServiceAccount()) {
+    try {
+      return await fetchPrivateGoogleCsv({ spreadsheetId, gid });
+    } catch (error) {
+      // Le compte de service sert aussi à la connexion Discord. Il peut donc
+      // être correctement configuré sans avoir été invité sur toutes les
+      // feuilles de réponses. Dans ce cas, on conserve le repli public qui
+      // faisait déjà fonctionner les formulaires partagés par lien.
+      attempts.push(`accès privé : ${error.message || "erreur Google"}`);
+    }
+  }
 
   for (const url of buildGoogleCsvUrls({ spreadsheetId, gid })) {
     try {

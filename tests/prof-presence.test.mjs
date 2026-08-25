@@ -29,12 +29,14 @@ test("la présence utilise l'identité Discord vérifiée", () => {
   assert.equal(presence.section, "exams");
   assert.equal(presence.avatarUrl, "https://cdn.discordapp.com/avatars/123/photo.webp");
   assert.equal(presence.admin, true);
+  assert.equal(presence.active, true);
 });
 
 test("les présences anciennes et les avatars externes sont retirés", () => {
   const now = 100_000;
   const result = listActivePresences([
     { recordType: "profPresence", actorId: "a", displayName: "Actif", avatarUrl: "https://example.com/a.png", section: "modules", updatedAtMs: now - 5000 },
+    { recordType: "profPresence", actorId: "d", displayName: "Déconnecté", active: false, section: "modules", updatedAtMs: now },
     { recordType: "profPresence", actorId: "b", displayName: "Ancien", section: "exams", updatedAtMs: now - PRESENCE_TTL_MS - 1 },
     { recordType: "configuration", displayName: "Réglage", section: "exams", updatedAtMs: now }
   ], now);
@@ -55,19 +57,24 @@ test("les cinq pages prof chargent l'interface de présence", () => {
 
   pages.forEach(page => {
     const html = readFileSync(new URL(`../pages/${page}`, import.meta.url), "utf8");
-    assert.match(html, /prof-presence\.css\?v=3/);
-    assert.match(html, /prof-presence\.js\?v=3/);
+    assert.match(html, /prof-presence\.css\?v=4/);
+    assert.match(html, /prof-presence\.js\?v=4/);
   });
 });
 
 test("le client actualise la présence toutes les dix secondes", () => {
   const source = readFileSync(new URL("../assets/js/prof-presence.js", import.meta.url), "utf8");
   assert.match(source, /const HEARTBEAT_MS = 10_000/);
+  assert.match(source, /const INITIAL_HEARTBEAT_DELAY_MS = 6_000/);
   assert.match(source, /const PRESENCE_COLLECTION = "stageComments"/);
   assert.match(source, /recordType: "profPresence"/);
   assert.match(source, /syncPresenceWithFirestore\(currentUser\)/);
+  assert.match(source, /window\.addEventListener\("pagehide", markPresenceOffline\)/);
+  assert.match(source, /method: "DELETE"/);
+  assert.match(source, /keepalive: true/);
+  assert.doesNotMatch(source, /setTimeout\(sendHeartbeat, (?:800|1800)\)/);
   assert.doesNotMatch(source, /document\.visibilityState === "hidden"/);
-  assert.match(source, /window\.addEventListener\("focus", sendHeartbeat\)/);
+  assert.match(source, /window\.addEventListener\("focus", sendHeartbeatWhenReady\)/);
   assert.match(source, /cdn\.discordapp\.com/);
   assert.match(source, /prof-mobile-tabbar/);
 });

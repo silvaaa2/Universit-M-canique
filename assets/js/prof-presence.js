@@ -19,6 +19,7 @@ const firebaseConfig = {
 
 const HEARTBEAT_MS = 10_000;
 const PRESENCE_TTL_MS = 150_000;
+const INITIAL_HEARTBEAT_DELAY_MS = 6_000;
 const PRESENCE_COLLECTION = "stageComments";
 const PRESENCE_DOCUMENT_PREFIX = "prof_presence_";
 const MAX_DESKTOP_AVATARS = 3;
@@ -33,9 +34,15 @@ const MOBILE_SECTION_MAP = {
 };
 
 let heartbeatTimer = 0;
+let heartbeatStartTimer = 0;
 let currentUser = null;
 let requestInFlight = false;
 let db = null;
+let cachedIdToken = "";
+let presenceReadyAt = Number.POSITIVE_INFINITY;
+let internalNavigation = false;
+let internalNavigationResetTimer = 0;
+let offlineRequestSent = false;
 
 function clean(value, maxLength = 160) {
   return String(value || "").trim().slice(0, maxLength);
@@ -132,6 +139,7 @@ async function syncPresenceWithFirestore(user) {
     avatarUrl: identity.avatarUrl,
     section: currentSection(),
     admin: identity.admin,
+    active: true,
     updatedAtMs: now
   }, { merge: false });
 
@@ -139,6 +147,7 @@ async function syncPresenceWithFirestore(user) {
   return snapshot.docs
     .map(item => item.data() || {})
     .filter(item => item.recordType === "profPresence")
+    .filter(item => item.active !== false)
     .filter(item => SECTIONS.has(item.section))
     .filter(item => Number.isFinite(Number(item.updatedAtMs)))
     .filter(item => now - Number(item.updatedAtMs) <= PRESENCE_TTL_MS)
@@ -216,16 +225,16 @@ async function sendHeartbeat() {
   const timeout = window.setTimeout(() => controller.abort(), 8000);
 
   try {
+    cachedIdToken = await currentUser.getIdToken();
     let presences;
     try {
       presences = await syncPresenceWithFirestore(currentUser);
     } catch (firestoreError) {
       console.warn("Présence Firebase directe indisponible, utilisation du repli serveur :", firestoreError);
-      const idToken = await currentUser.getIdToken();
       const response = await fetch("/api/prof-presence", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${idToken}`,
+          Authorization: `Bearer ${cachedIdToken}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ section: currentSection() }),
@@ -248,25 +257,79 @@ async function sendHeartbeat() {
   }
 }
 
+function markPresenceOffline() {
+  if (offlineRequestSent || internalNavigation || !cachedIdToken) return;
+  offlineRequestSent = true;
+  window.clearInterval(heartbeatTimer);
+  window.clearTimeout(heartbeatStartTimer);
+
+  if (currentUser?.uid && db) {
+    setDoc(doc(db, PRESENCE_COLLECTION, `${PRESENCE_DOCUMENT_PREFIX}${currentUser.uid}`), {
+      active: false,
+      updatedAtMs: Date.now()
+    }, { merge: true }).catch(() => {});
+  }
+
+  fetch("/api/prof-presence", {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${cachedIdToken}`
+    },
+    cache: "no-store",
+    keepalive: true
+  }).catch(() => {});
+}
+
+function sendHeartbeatWhenReady() {
+  if (Date.now() < presenceReadyAt) return;
+  sendHeartbeat();
+}
+
 function startHeartbeat(user) {
   window.clearInterval(heartbeatTimer);
+  window.clearTimeout(heartbeatStartTimer);
+  presenceReadyAt = Number.POSITIVE_INFINITY;
   currentUser = user;
   if (!user) {
+    markPresenceOffline();
     renderPresences([]);
     return;
   }
-  sendHeartbeat();
-  heartbeatTimer = window.setInterval(sendHeartbeat, HEARTBEAT_MS);
+
+  cachedIdToken = "";
+  offlineRequestSent = false;
+  presenceReadyAt = Date.now() + INITIAL_HEARTBEAT_DELAY_MS;
+  heartbeatStartTimer = window.setTimeout(() => {
+    sendHeartbeat();
+    heartbeatTimer = window.setInterval(sendHeartbeat, HEARTBEAT_MS);
+  }, INITIAL_HEARTBEAT_DELAY_MS);
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") sendHeartbeat();
+  if (document.visibilityState === "visible") sendHeartbeatWhenReady();
 });
-window.addEventListener("focus", sendHeartbeat);
+window.addEventListener("focus", sendHeartbeatWhenReady);
+
+document.addEventListener("click", event => {
+  const target = event.target instanceof Element
+    ? event.target.closest("a, button, [onclick], [data-mobile-section]")
+    : null;
+  if (!target || !sectionFromElement(target)) return;
+
+  internalNavigation = true;
+  window.clearTimeout(internalNavigationResetTimer);
+  internalNavigationResetTimer = window.setTimeout(() => {
+    internalNavigation = false;
+  }, 1500);
+}, true);
+
+window.addEventListener("pageshow", () => {
+  internalNavigation = false;
+  offlineRequestSent = false;
+  sendHeartbeatWhenReady();
+});
+window.addEventListener("pagehide", markPresenceOffline);
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 db = getFirestore(app);
 onAuthStateChanged(getAuth(app), startHeartbeat);
-
-window.setTimeout(sendHeartbeat, 800);
-window.setTimeout(sendHeartbeat, 1800);

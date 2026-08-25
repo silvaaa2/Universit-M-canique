@@ -192,3 +192,89 @@ test("l'effectif reste disponible quand Firestore limite temporairement le serve
     else process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = originalKey;
   }
 });
+
+test("les réponses restent lisibles si le compte de service n'a pas accès à leur feuille publique", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const originalKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+  let privateAttempts = 0;
+  let publicAttempts = 0;
+
+  process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = "service@example.iam.gserviceaccount.com";
+  process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = privateKey.export({ type: "pkcs8", format: "pem" });
+
+  globalThis.fetch = async url => {
+    const requestUrl = String(url);
+
+    if (requestUrl.includes("securetoken@system.gserviceaccount.com")) {
+      return new Response(JSON.stringify({ "effectif-test-key": publicKeyPem }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=3600"
+        }
+      });
+    }
+
+    if (requestUrl.includes("/documents/users/prof%40example.com")) {
+      return jsonResponse({ fields: { role: { stringValue: "prof" } } });
+    }
+
+    if (requestUrl.includes("/documents/profSettings/examResponses")) {
+      return jsonResponse({}, 404);
+    }
+
+    if (requestUrl.includes("oauth2.googleapis.com/token")) {
+      return jsonResponse({ access_token: "google-test-token", expires_in: 3600 });
+    }
+
+    if (requestUrl.includes("sheets.googleapis.com")) {
+      privateAttempts += 1;
+      return jsonResponse({ error: { message: "forbidden" } }, 403);
+    }
+
+    if (requestUrl.includes("docs.google.com/spreadsheets")) {
+      publicAttempts += 1;
+      return new Response("Horodateur,Prénom / Nom (RP)\n25/08/2026,Élève Test", { status: 200 });
+    }
+
+    throw new Error(`Requête inattendue : ${requestUrl}`);
+  };
+
+  const req = {
+    method: "GET",
+    url: "/api/secure-sheet?source=examResponses&sheet=exam-form-1",
+    headers: {
+      authorization: `Bearer ${createLegacyToken()}`,
+      host: "localhost"
+    }
+  };
+  const res = {
+    statusCode: 0,
+    headers: {},
+    body: "",
+    setHeader(name, value) {
+      this.headers[name] = value;
+    },
+    end(body = "") {
+      this.body = String(body);
+    }
+  };
+
+  try {
+    await secureSheetHandler(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.match(res.body, /Élève Test/);
+    assert.equal(privateAttempts, 1);
+    assert.equal(publicAttempts, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (originalEmail === undefined) delete process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    else process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = originalEmail;
+
+    if (originalKey === undefined) delete process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+    else process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = originalKey;
+  }
+});

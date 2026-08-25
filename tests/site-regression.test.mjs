@@ -20,6 +20,8 @@ test("le serveur est prêt pour des feuilles Google privées", () => {
   assert.match(endpoint, /GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY/);
   assert.match(endpoint, /spreadsheets\.readonly/);
   assert.match(endpoint, /fetchPrivateGoogleCsv/);
+  assert.match(endpoint, /fetchGoogleWithRetry/);
+  assert.match(endpoint, /accès privé/);
 });
 
 test("le tableau de bord charge l'effectif actif par l'API sécurisée", () => {

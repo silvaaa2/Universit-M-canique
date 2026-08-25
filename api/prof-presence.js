@@ -41,8 +41,8 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
+  if (req.method !== "POST" && req.method !== "DELETE") {
+    res.setHeader("Allow", "POST, DELETE");
     sendJson(res, 405, { error: "Méthode non autorisée." });
     return;
   }
@@ -60,16 +60,23 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const body = await readJsonBody(req);
-    const section = normalizeSection(body.section);
+    const now = Date.now();
+    const body = req.method === "POST" ? await readJsonBody(req) : {};
+    const section = req.method === "POST" ? normalizeSection(body.section) : "dashboard";
     if (!section) {
       sendJson(res, 400, { error: "Rubrique professeur inconnue." });
       return;
     }
 
-    const now = Date.now();
     const presence = buildPresence(access, section, now);
+    if (req.method === "DELETE") presence.active = false;
     await upsertDocument(PRESENCE_COLLECTION, `${PRESENCE_DOCUMENT_PREFIX}${access.user.localId}`, presence);
+
+    if (req.method === "DELETE") {
+      sendJson(res, 200, { ok: true, offline: true });
+      return;
+    }
+
     const documents = await listDocuments(PRESENCE_COLLECTION);
 
     sendJson(res, 200, {
