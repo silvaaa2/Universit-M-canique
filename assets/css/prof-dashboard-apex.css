@@ -231,9 +231,9 @@ body.prof-v2-page .v2-profile-trigger {
 }
 
 body.prof-v2-page .v2-home.apex-dashboard {
-  min-height: 858px;
+  min-height: 918px;
   display: grid;
-  grid-template-rows: 310px 142px minmax(370px, auto);
+  grid-template-rows: 310px 142px minmax(430px, auto);
   gap: 12px;
   padding: 0 0 12px;
   overflow: visible;
@@ -652,7 +652,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-history-chart {
   position: relative;
   min-width: 0;
-  min-height: 274px;
+  min-height: 334px;
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   gap: 10px;
@@ -677,7 +677,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 
 .apex-history-viewport {
   min-width: 0;
-  min-height: 274px;
+  min-height: 334px;
   height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -689,7 +689,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
   width: 100%;
   min-width: var(--apex-history-width, 540px);
   height: 100%;
-  min-height: 274px;
+  min-height: 334px;
   display: block;
   overflow: visible;
 }
@@ -717,7 +717,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-history-line {
   fill: none;
   stroke: #f4d77e;
-  stroke-width: 3;
+  stroke-width: 4.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1;
@@ -738,7 +738,7 @@ body.prof-v2-page .v2-home.apex-dashboard {
 .apex-history-point-dot {
   fill: #0b0d0a;
   stroke: #f4d77e;
-  stroke-width: 3;
+  stroke-width: 3.5;
   vector-effect: non-scaling-stroke;
   opacity: 0;
   transform-box: fill-box;
@@ -1162,7 +1162,12 @@ body.prof-v2-page[data-theme="light"] .apex-primary-action {
   }
 
   .apex-history-chart {
-    min-height: 245px;
+    min-height: 274px;
+  }
+
+  .apex-history-viewport,
+  .apex-history-svg {
+    min-height: 274px;
   }
 
   .apex-priority-list .v2-watch-item {

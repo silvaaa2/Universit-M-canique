@@ -654,8 +654,8 @@ function renderCursusHistory(history = []) {
     return `
       <g class="apex-history-point${currentClass}" role="img" aria-label="${escapeMarkup(accessibleLabel)}">
         <title>${escapeMarkup(accessibleLabel)}</title>
-        <circle class="apex-history-point-halo" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="11"></circle>
-        <circle class="apex-history-point-dot" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="5"></circle>
+        <circle class="apex-history-point-halo" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="13"></circle>
+        <circle class="apex-history-point-dot" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="6"></circle>
         <text class="apex-history-value" x="${point.x.toFixed(2)}" y="${valueY.toFixed(2)}" text-anchor="middle">${escapeMarkup(point.total)}</text>
         <text class="apex-history-week" x="${point.x.toFixed(2)}" y="230" text-anchor="middle">${escapeMarkup(weekLabel)}</text>
         <text class="apex-history-year" x="${point.x.toFixed(2)}" y="247" text-anchor="middle">${escapeMarkup(point.entry.current ? "Actuel" : point.entry.weekYear)}</text>
