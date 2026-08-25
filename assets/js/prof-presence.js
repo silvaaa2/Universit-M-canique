@@ -1,5 +1,12 @@
 import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  collection,
+  doc,
+  getDocs,
+  getFirestore,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -11,6 +18,9 @@ const firebaseConfig = {
 };
 
 const HEARTBEAT_MS = 10_000;
+const PRESENCE_TTL_MS = 150_000;
+const PRESENCE_COLLECTION = "stageComments";
+const PRESENCE_DOCUMENT_PREFIX = "prof_presence_";
 const MAX_DESKTOP_AVATARS = 3;
 const MAX_MOBILE_AVATARS = 2;
 const SECTIONS = new Set(["dashboard", "customResponses", "exams", "modules", "customAccess"]);
@@ -25,6 +35,11 @@ const MOBILE_SECTION_MAP = {
 let heartbeatTimer = 0;
 let currentUser = null;
 let requestInFlight = false;
+let db = null;
+
+function clean(value, maxLength = 160) {
+  return String(value || "").trim().slice(0, maxLength);
+}
 
 function currentSection() {
   const path = window.location.pathname.toLowerCase();
@@ -78,6 +93,63 @@ function trustedAvatar(value) {
   } catch {
     return "";
   }
+}
+
+async function getVerifiedIdentity(user) {
+  let claims = {};
+  try {
+    claims = (await user.getIdTokenResult())?.claims || {};
+  } catch (error) {
+    console.warn("Identité de présence indisponible :", error);
+  }
+
+  const knownIdentity = user.profIdentity || window.currentProfIdentity || {};
+  const displayName = clean(
+    claims.discordName
+      || knownIdentity.displayName
+      || user.profDisplayName
+      || user.displayName
+      || user.email
+      || "Professeur",
+    80
+  );
+  const avatarCandidate = clean(claims.discordAvatar || knownIdentity.avatarUrl || "", 500);
+
+  return {
+    displayName,
+    avatarUrl: trustedAvatar(avatarCandidate),
+    admin: claims.admin === true || knownIdentity.admin === true
+  };
+}
+
+async function syncPresenceWithFirestore(user) {
+  const now = Date.now();
+  const identity = await getVerifiedIdentity(user);
+  const documentId = `${PRESENCE_DOCUMENT_PREFIX}${user.uid}`;
+  await setDoc(doc(db, PRESENCE_COLLECTION, documentId), {
+    recordType: "profPresence",
+    displayName: identity.displayName,
+    avatarUrl: identity.avatarUrl,
+    section: currentSection(),
+    admin: identity.admin,
+    updatedAtMs: now
+  }, { merge: false });
+
+  const snapshot = await getDocs(collection(db, PRESENCE_COLLECTION));
+  return snapshot.docs
+    .map(item => item.data() || {})
+    .filter(item => item.recordType === "profPresence")
+    .filter(item => SECTIONS.has(item.section))
+    .filter(item => Number.isFinite(Number(item.updatedAtMs)))
+    .filter(item => now - Number(item.updatedAtMs) <= PRESENCE_TTL_MS)
+    .map(item => ({
+      displayName: clean(item.displayName, 80) || "Professeur",
+      avatarUrl: trustedAvatar(item.avatarUrl),
+      section: item.section,
+      admin: item.admin === true,
+      updatedAtMs: Number(item.updatedAtMs)
+    }))
+    .sort((left, right) => left.displayName.localeCompare(right.displayName, "fr"));
 }
 
 function buildAvatar(person) {
@@ -144,22 +216,30 @@ async function sendHeartbeat() {
   const timeout = window.setTimeout(() => controller.abort(), 8000);
 
   try {
-    const idToken = await currentUser.getIdToken();
-    const response = await fetch("/api/prof-presence", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ section: currentSection() }),
-      cache: "no-store",
-      signal: controller.signal
-    });
+    let presences;
+    try {
+      presences = await syncPresenceWithFirestore(currentUser);
+    } catch (firestoreError) {
+      console.warn("Présence Firebase directe indisponible, utilisation du repli serveur :", firestoreError);
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch("/api/prof-presence", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ section: currentSection() }),
+        cache: "no-store",
+        signal: controller.signal
+      });
 
-    if (!response.ok) throw new Error(`Présence indisponible (${response.status})`);
-    const payload = await response.json();
-    renderPresences(payload.presences);
-    window.dispatchEvent(new CustomEvent("profPresenceUpdated", { detail: payload.presences }));
+      if (!response.ok) throw new Error(`Présence indisponible (${response.status})`);
+      const payload = await response.json();
+      presences = payload.presences;
+    }
+
+    renderPresences(presences);
+    window.dispatchEvent(new CustomEvent("profPresenceUpdated", { detail: presences }));
   } catch (error) {
     console.warn("Présence des professeurs indisponible :", error);
   } finally {
@@ -185,6 +265,7 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("focus", sendHeartbeat);
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+db = getFirestore(app);
 onAuthStateChanged(getAuth(app), startHeartbeat);
 
 window.setTimeout(sendHeartbeat, 800);

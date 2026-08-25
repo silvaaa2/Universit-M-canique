@@ -55,14 +55,17 @@ test("les cinq pages prof chargent l'interface de présence", () => {
 
   pages.forEach(page => {
     const html = readFileSync(new URL(`../pages/${page}`, import.meta.url), "utf8");
-    assert.match(html, /prof-presence\.css\?v=2/);
-    assert.match(html, /prof-presence\.js\?v=2/);
+    assert.match(html, /prof-presence\.css\?v=3/);
+    assert.match(html, /prof-presence\.js\?v=3/);
   });
 });
 
 test("le client actualise la présence toutes les dix secondes", () => {
   const source = readFileSync(new URL("../assets/js/prof-presence.js", import.meta.url), "utf8");
   assert.match(source, /const HEARTBEAT_MS = 10_000/);
+  assert.match(source, /const PRESENCE_COLLECTION = "stageComments"/);
+  assert.match(source, /recordType: "profPresence"/);
+  assert.match(source, /syncPresenceWithFirestore\(currentUser\)/);
   assert.doesNotMatch(source, /document\.visibilityState === "hidden"/);
   assert.match(source, /window\.addEventListener\("focus", sendHeartbeat\)/);
   assert.match(source, /cdn\.discordapp\.com/);
