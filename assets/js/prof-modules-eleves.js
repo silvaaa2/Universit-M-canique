@@ -22,4 +22,4 @@ window.setInterval(keepModulesDashboardVisible, 250);
 requestAnimationFrame(keepModulesDashboardVisible);
 
 import "./prof-modules-eleves-safe.js?v=1013";
-import "./prof-modules-alerts.js?v=1011";
+import "./prof-modules-alerts.js?v=1012";

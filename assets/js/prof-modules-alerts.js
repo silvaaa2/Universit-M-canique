@@ -767,10 +767,13 @@ async function saveWarningModal() {
 }
 
 document.addEventListener("click", event => {
-  const closeButton = event.target.closest("[data-warning-close]");
-  const choiceButton = event.target.closest("[data-warning-choice]");
-  const saveButton = event.target.closest("[data-warning-save]");
-  const warningButton = event.target.closest("[data-warning-toggle]");
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target) return;
+
+  const closeButton = target.closest("[data-warning-close]");
+  const choiceButton = target.closest("[data-warning-choice]");
+  const saveButton = target.closest("[data-warning-save]");
+  const warningButton = target.closest("[data-warning-toggle]");
 
   if (!closeButton && !choiceButton && !saveButton && !warningButton) return;
 
@@ -796,7 +799,7 @@ document.addEventListener("click", event => {
   if (warningButton) {
     openWarningModal(warningButton);
   }
-});
+}, true);
 
 document.addEventListener("keydown", event => {
   if (event.key === "Escape" && !ensureWarningModal().hidden) {
