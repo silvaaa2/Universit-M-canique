@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-prof-admin="false">
 <head>
   <meta charset="UTF-8">
   <title>Espace Prof - Mécanique - Université</title>
@@ -16,6 +16,10 @@
     #profAdminBtn[hidden],
     .admin-only[hidden],
     .v2-nav-item[hidden] {
+      display: none !important;
+    }
+
+    html:not([data-prof-admin="true"]) .admin-only {
       display: none !important;
     }
 
@@ -590,7 +594,7 @@
 <script src="../assets/js/prof-ui.js?v=1003"></script>
 <script src="../assets/js/prof-local-profile.js?v=2"></script>
 <script src="../assets/js/prof-live-refresh.js?v=1"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=34"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=35"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=4"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=6"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260825-1"></script>

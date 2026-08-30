@@ -108,8 +108,7 @@ const v2DashboardUpdated = document.getElementById("v2DashboardUpdated");
 const v2DashboardHealth = document.getElementById("v2DashboardHealth");
 const v2WatchCount = document.getElementById("v2WatchCount");
 const v2ApexHistoryChart = document.getElementById("v2ApexHistoryChart");
-const v2ApexSyncChip = document.getElementById("v2ApexSyncChip");
-const adminBtn = document.getElementById("profAdminBtn");
+const adminOnlyElements = document.querySelectorAll(".admin-only");
 const settingsBtn = document.getElementById("profSettingsBtn");
 const settingsPanel = document.getElementById("v2SettingsPanel");
 const closeSettingsBtn = document.getElementById("closeSettingsBtn");
@@ -208,6 +207,16 @@ function getRoleLabel(access) {
   return access.admin ? "Admin privé" : "Compte professeur";
 }
 
+function applyAdminVisibility(access = {}) {
+  const isAdmin = access?.admin === true;
+  document.documentElement.dataset.profAdmin = String(isAdmin);
+
+  adminOnlyElements.forEach(element => {
+    element.hidden = !isAdmin;
+    element.setAttribute("aria-hidden", String(!isAdmin));
+  });
+}
+
 function getDisplayProfile(user, access) {
   const localProfile = loadLocalProfile();
   const displayName = localProfile.displayName || getProfDisplayName(user);
@@ -256,8 +265,7 @@ function updateProfile(user, access) {
     ? `${profile.roleLabel} • ${profile.secondaryLabel}`
     : profile.roleLabel;
   if (v2SessionChip) v2SessionChip.textContent = access.admin ? "Session admin" : "Session prof";
-  if (v2ApexSyncChip) v2ApexSyncChip.hidden = access.admin !== true;
-  if (adminBtn) adminBtn.hidden = access.admin !== true;
+  applyAdminVisibility(access);
   renderProfileForm(user, access);
 }
 
@@ -1397,6 +1405,8 @@ window.addEventListener("prof:live-refresh", () => {
 });
 
 function showLogin() {
+  applyAdminVisibility();
+
   if (loginTransition) {
     loginTransition.hidden = true;
     loginTransition.classList.remove("active");

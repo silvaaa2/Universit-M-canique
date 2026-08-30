@@ -16,6 +16,9 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(html, /id="v2ApexHistoryChart"/);
   assert.match(html, /Effectif par cursus/);
   assert.match(html, /id="v2ApexSyncChip" hidden/);
+  assert.match(html, /<html lang="fr" data-prof-admin="false">/);
+  assert.match(html, /html:not\(\[data-prof-admin="true"\]\) \.admin-only/);
+  assert.match(html, /prof-auth-v2\.js\?v=35/);
   assert.match(html, /class="apex-kicker">Université Mécanique<\/p>/);
   assert.doesNotMatch(html, /Promotion actuelle|Ouvrir les priorités|Voir tous les élèves/);
   assert.doesNotMatch(html, /Corrections prioritaires/);
@@ -44,7 +47,11 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(styles, /height:\s*220px/);
   assert.match(script, /function buildSmoothHistoryPath/);
   assert.match(script, /class="apex-history-line"/);
-  assert.match(script, /v2ApexSyncChip\.hidden = access\.admin !== true/);
+  assert.match(script, /function applyAdminVisibility\(access = \{\}\)/);
+  assert.match(script, /const isAdmin = access\?\.admin === true/);
+  assert.match(script, /document\.documentElement\.dataset\.profAdmin = String\(isAdmin\)/);
+  assert.match(script, /adminOnlyElements\.forEach/);
+  assert.match(script, /applyAdminVisibility\(access\)/);
   assert.doesNotMatch(script, /setText\("v2ApexQueueAction"/);
   assert.match(script, /viewport\.scrollLeft = viewport\.scrollWidth/);
   assert.match(script, /getCollectionSnapshot\("studentModuleArchives"\)/);
