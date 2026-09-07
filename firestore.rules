@@ -97,7 +97,13 @@ service cloud.firestore {
 
     match /stageArchives/{docId} {
       allow read: if isProf() || isStage() || isAdmin();
-      allow write: if isProf() || isAdmin();
+      allow create: if isProf() || isAdmin();
+      allow delete: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "title", "startDate", "endDate", "startDisplay", "endDisplay",
+          "datesUpdatedAt", "datesUpdatedBy"
+        ]);
     }
 
     match /stageHistory/{docId} {
