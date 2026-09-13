@@ -26,20 +26,20 @@
 </div>
 
 <header>
-  <div class="logo" onclick="goPage('../index.html')">
+  <div class="logo" onclick="goPage('../eleve.html')">
     <img src="../Images/logo.webp" width="507" height="512" alt="Logo Module 4">
     <span>Module 4 - Mécanique</span>
   </div>
 
   <nav>
-    <button onclick="goPage('../index.html')">Accueil</button>
+    <button onclick="goPage('../eleve.html')">Accueil</button>
     <button data-custom-link="sentinelClassic" onclick="goPage('custom-facile.html')">Custom Facile</button>
     <button data-custom-link="argento2f" onclick="goPage('custom-moyen.html')">Custom Moyen</button>
     <button data-custom-link="cypher" onclick="goPage('custom-difficile.html')">Custom Difficile</button>
 
-    <button class="prof-button" aria-label="Ouvrir l’espace professeur" onclick="goPage('espace-prof.html')">
-      <span class="prof-icon">👤</span>
-      <span class="prof-text">Espace Prof</span>
+    <button class="prof-button" aria-label="Changer d’espace" onclick="goPage('../index.html')">
+      <span class="prof-icon">↩</span>
+      <span class="prof-text">Changer d’espace</span>
     </button>
   </nav>
 </header>
@@ -49,7 +49,7 @@
   <section class="vehicle-page">
 
     <div class="page-top">
-      <button class="back-btn" onclick="goPage('../index.html')">← Retour</button>
+      <button class="back-btn" onclick="goPage('../eleve.html')">← Retour</button>
 
       <div>
         <p class="kicker">Module 4 - Mécanique</p>
@@ -133,5 +133,7 @@
 <script type="module" src="../assets/js/custom-availability-links.js?v=2"></script>
 <script type="module" src="../assets/js/custom-availability-guard.js?v=6"></script>
 
+<script src="../assets/js/unified-motion.js?v=1"></script>
+<script src="../assets/js/unified-access-context.js?v=1"></script>
 </body>
 </html>

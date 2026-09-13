@@ -237,7 +237,7 @@ function ensureOverlay(custom) {
   `;
 
   overlay.querySelector("[data-custom-go-home]")?.addEventListener("click", () => {
-    window.location.assign("../index.html");
+    window.location.assign("../eleve.html");
   });
 
   document.body.appendChild(overlay);

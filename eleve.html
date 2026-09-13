@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Espace élève - Mécanique - Université</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <link rel="icon" type="image/png" href="Images/favicon.png?v=23">
+  <link rel="shortcut icon" type="image/png" href="Images/favicon.png?v=23">
+
+<link rel="stylesheet" href="assets/css/base.css?v=20260808-mobile2">
+<link rel="stylesheet" href="assets/css/header.css?v=9030">
+<link rel="stylesheet" href="assets/css/home.css?v=9034">
+<link rel="stylesheet" href="assets/css/buttons.css?v=9030">
+<link rel="stylesheet" href="assets/css/loader.css?v=9031">
+<link rel="stylesheet" href="assets/css/mobile.css?v=20260818-audit2">
+</head>
+
+<body>
+
+<div id="loader">
+  <div class="loader-box">
+    <h2>Mécanique - Université</h2>
+    <p id="loaderText">Chargement...</p>
+    <div class="loader-bar"><span></span></div>
+  </div>
+</div>
+
+<header>
+  <div class="logo" onclick="goPage('eleve.html')">
+    <img src="Images/logo.webp" width="507" height="512" alt="Logo Module 4">
+    <span>Mécanique - Université</span>
+  </div>
+
+  <nav>
+    <button data-custom-link="sentinelClassic" onclick="goPage('pages/custom-facile.html')">Custom Facile</button>
+    <button data-custom-link="argento2f" onclick="goPage('pages/custom-moyen.html')">Custom Moyen</button>
+    <button data-custom-link="cypher" onclick="goPage('pages/custom-difficile.html')">Custom Difficile</button>
+
+    <button class="prof-button" aria-label="Changer d’espace" onclick="goPage('index.html')">
+      <span class="prof-icon">↩</span>
+      <span class="prof-text">Changer d’espace</span>
+    </button>
+  </nav>
+</header>
+
+<main class="showroom-page">
+
+<section class="showroom-hero" aria-labelledby="showroomTitle">
+  <div class="showroom-copy">
+    <p class="showroom-kicker">Mécanique - Université</p>
+    <h1 id="showroomTitle">Atelier Customs</h1>
+    <p>
+      Sélectionnez une baie d’atelier pour consulter la fiche technique du véhicule demandé.
+    </p>
+  </div>
+
+  <div class="showroom-status" aria-label="État des fiches">
+    <span>3</span>
+    <strong>fiches atelier</strong>
+  </div>
+</section>
+
+<section class="workshop-grid" aria-label="Choix des fiches custom">
+
+  <button type="button" class="workshop-bay bay-sentinel" data-custom-link="sentinelClassic" onclick="goPage('pages/custom-facile.html')">
+    <span class="bay-number">01</span>
+    <span class="bay-state"></span>
+
+    <span class="bay-visual">
+      <img src="Images/FINAL SENTINEL.webp" width="1200" height="676" loading="lazy" decoding="async" alt="Sentinel Classic">
+    </span>
+
+    <span class="bay-content">
+      <small>Sentinel Classic</small>
+      <strong>Custom Facile</strong>
+    </span>
+
+    <span class="bay-action">Ouvrir la fiche</span>
+  </button>
+
+  <button type="button" class="workshop-bay bay-argento" data-custom-link="argento2f" onclick="goPage('pages/custom-moyen.html')">
+    <span class="bay-number">02</span>
+    <span class="bay-state"></span>
+
+    <span class="bay-visual">
+      <img src="Images/FINAL RS2 (2).webp" width="1200" height="719" loading="lazy" decoding="async" alt="Argento 2F">
+    </span>
+
+    <span class="bay-content">
+      <small>Argento 2F</small>
+      <strong>Custom Moyen</strong>
+    </span>
+
+    <span class="bay-action">Ouvrir la fiche</span>
+  </button>
+
+  <button type="button" class="workshop-bay bay-cypher" data-custom-link="cypher" onclick="goPage('pages/custom-difficile.html')">
+    <span class="bay-number">03</span>
+    <span class="bay-state"></span>
+
+    <span class="bay-visual">
+      <img src="Images/FINAL CYPHER.webp" width="1200" height="751" loading="lazy" decoding="async" alt="Cypher">
+    </span>
+
+    <span class="bay-content">
+      <small>Cypher</small>
+      <strong>Custom Difficile</strong>
+    </span>
+
+    <span class="bay-action">Ouvrir la fiche</span>
+  </button>
+
+</section>
+
+</main>
+
+<script src="assets/js/loader.js?v=9031"></script>
+<script src="assets/js/navigation.js?v=9033"></script>
+<script src="assets/js/unified-motion.js?v=1"></script>
+<script src="assets/js/unified-access-context.js?v=1"></script>
+<script type="module" src="assets/js/custom-availability-links.js?v=3"></script>
+
+</body>
+</html>

@@ -137,7 +137,7 @@ test("le zoom ne charge jamais une URL vide", () => {
 });
 
 test("les images initiales utilisent les versions optimisées", () => {
-  const homepage = read("index.html");
+  const homepage = read("eleve.html");
   const expected = [
     "Images/logo.webp",
     "Images/FINAL SENTINEL.webp",
@@ -155,7 +155,7 @@ test("les images initiales utilisent les versions optimisées", () => {
 });
 
 test("les contrôles mobiles principaux ont un nom accessible", () => {
-  const pages = ["index.html", "pages/custom-facile.html", "pages/custom-moyen.html", "pages/custom-difficile.html"];
+  const pages = ["eleve.html", "pages/custom-facile.html", "pages/custom-moyen.html", "pages/custom-difficile.html"];
   pages.forEach(path => {
     const html = read(path);
     assert.doesNotMatch(html, /<button class="prof-button"(?![^>]*aria-label)/);

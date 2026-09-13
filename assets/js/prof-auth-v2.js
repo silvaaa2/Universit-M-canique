@@ -1500,8 +1500,27 @@ function showDashboardInstant() {
   setLoginLoading(false);
 }
 
-function showDashboardWithTransition(user) {
-  return prepareAndShowDashboard(user, { animateLogin: true });
+async function showDashboardWithTransition(user) {
+  const displayName = getDisplayProfile(user, currentAccess).displayName || "Professeur";
+  window.UniversityMotion?.beginAccess({
+    mode: "enter",
+    title: "Connexion validée",
+    detail: "Chargement de vos statistiques…"
+  });
+  await prepareAndShowDashboard(user, { animateLogin: true });
+  if (window.UniversityMotion) {
+    await window.UniversityMotion.completeAccess({
+      mode: "enter",
+      title: `Bienvenue, ${displayName}`,
+      detail: "Votre espace professeur est prêt.",
+      validatedTitle: "Données chargées",
+      validatedDetail: "Votre tableau de bord est à jour.",
+      minimum: 0,
+      validationHold: 360,
+      hold: 520
+    });
+    await window.UniversityMotion.hideAccess();
+  }
 }
 
 async function getUserAccess(user) {
@@ -1783,9 +1802,16 @@ function initAuth() {
     }
   });
 
-  discordLoginBtn?.addEventListener("click", () => {
+  discordLoginBtn?.addEventListener("click", async () => {
     if (loginError) loginError.textContent = "";
     setDiscordLoading(true);
+    window.UniversityMotion?.beginAccess({
+      mode: "enter",
+      title: "Connexion Discord",
+      detail: "Ouverture de la vérification sécurisée…"
+    });
+    await wait(650);
+    await window.UniversityMotion?.departAccess({ detail: "Redirection vers Discord…" });
     window.location.assign("/api/auth/discord/start");
   });
 
@@ -1840,9 +1866,13 @@ function initAuth() {
 
   logoutBtn?.addEventListener("click", async () => {
     setProfileMenuOpen(false);
+    await window.UniversityMotion?.showExit({
+      title: "À bientôt",
+      detail: "Fermeture de votre espace professeur…"
+    });
     await signOut(auth);
     window.currentProfUser = null;
-    showLogin();
+    window.location.replace("/");
   });
 }
 
