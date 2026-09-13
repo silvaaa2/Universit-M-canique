@@ -94,7 +94,7 @@ function renderCompanyCodeCards(companies) {
           ${company.customized ? "Code personnalisé" : "Code initial"}
         </span>
       </div>
-      <form class="prof-admin-company-form" data-company-code-form="${escapeCompanyCodeHtml(company.id)}">
+      <form class="prof-admin-company-form" data-company-code-form="${escapeCompanyCodeHtml(company.id)}" novalidate>
         <label>Nouveau code d’accès</label>
         <div class="prof-admin-company-password">
           <input class="prof-admin-input" name="newCode" type="password" minlength="8" maxlength="64" autocomplete="new-password" autocapitalize="characters" spellcheck="false" required placeholder="8 caractères minimum">
@@ -102,7 +102,7 @@ function renderCompanyCodeCards(companies) {
         </div>
         <label>Confirmer le nouveau code</label>
         <input class="prof-admin-input" name="confirmation" type="password" minlength="8" maxlength="64" autocomplete="new-password" autocapitalize="characters" spellcheck="false" required placeholder="Retapez le code">
-        <button type="submit" class="prof-admin-small-btn gold prof-admin-company-save">Enregistrer le nouveau code</button>
+        <button type="submit" class="prof-admin-small-btn gold prof-admin-company-save">Changer le code</button>
       </form>
       <small>${escapeCompanyCodeHtml(formatCompanyCodeDate(company.updatedAt))}</small>
     </article>
@@ -133,7 +133,13 @@ async function saveCompanyCode(form) {
   const companyName = card?.querySelector(".prof-admin-company-head strong")?.textContent?.trim() || "cette entreprise";
   const newCode = form.elements.newCode?.value || "";
   const confirmation = form.elements.confirmation?.value || "";
+  const normalizedCode = newCode.trim().replace(/\s+/g, "");
 
+  if (normalizedCode.length < 8 || normalizedCode.length > 64 || !/[a-z]/i.test(normalizedCode) || !/\d/.test(normalizedCode)) {
+    setCompanyCodeStatus("Le nouveau code doit contenir 8 à 64 caractères, avec au moins une lettre et un chiffre.", "error");
+    form.elements.newCode?.focus();
+    return;
+  }
   if (newCode !== confirmation) {
     setCompanyCodeStatus("Les deux codes ne correspondent pas.", "error");
     form.elements.confirmation?.focus();
@@ -169,26 +175,34 @@ async function saveCompanyCode(form) {
 
 function bindCompanyCodeEvents() {
   if (companyCodeEventsBound) return;
-  const panel = document.getElementById("profCompanyCodesPanel");
-  const tab = document.querySelector(`[data-admin-tab="${COMPANY_CODES_TAB}"]`);
-  if (!panel || !tab) return;
   companyCodeEventsBound = true;
 
-  tab.addEventListener("click", loadCompanyCodes);
-  panel.addEventListener("click", event => {
-    const toggle = event.target.closest("[data-company-code-toggle]");
+  document.addEventListener("click", event => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+    if (target.closest(`[data-admin-tab="${COMPANY_CODES_TAB}"]`)) {
+      window.setTimeout(loadCompanyCodes, 0);
+      return;
+    }
+    if (target.closest("#reloadCompanyCodesBtn")) {
+      loadCompanyCodes();
+      return;
+    }
+    const toggle = target.closest("[data-company-code-toggle]");
     if (!toggle) return;
     const input = toggle.closest(".prof-admin-company-password")?.querySelector("input");
     if (!input) return;
     input.type = input.type === "password" ? "text" : "password";
     toggle.textContent = input.type === "password" ? "Afficher" : "Masquer";
   });
-  panel.addEventListener("submit", event => {
-    const form = event.target.closest("[data-company-code-form]");
+  document.addEventListener("submit", event => {
+    const target = event.target instanceof Element ? event.target : null;
+    const form = target?.closest("[data-company-code-form]");
     if (!form) return;
     event.preventDefault();
+    event.stopPropagation();
     saveCompanyCode(form);
-  });
+  }, true);
 }
 
 function ensureCompanyCodePanel() {
@@ -216,7 +230,6 @@ function ensureCompanyCodePanel() {
         <div class="prof-admin-company-grid" id="companyCodesList"></div>
       </section>
     `);
-    document.getElementById("reloadCompanyCodesBtn")?.addEventListener("click", loadCompanyCodes);
   }
   bindCompanyCodeEvents();
 }

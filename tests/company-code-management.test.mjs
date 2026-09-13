@@ -35,6 +35,9 @@ test("Admin privé propose un formulaire par entreprise sans mémoriser les code
 
   assert.match(bundle, /prof-admin-company-codes\.js/);
   assert.match(ui, />Accès entreprises</);
+  assert.match(ui, />Changer le code</);
+  assert.match(ui, /document\.addEventListener\("submit"/);
+  assert.match(ui, /novalidate/);
   assert.match(ui, /autocomplete="new-password"/);
   assert.match(ui, /method: "PATCH"/);
   assert.match(ui, /L’ancien code et les sessions ouvertes seront désactivés/);
