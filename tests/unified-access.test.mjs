@@ -72,10 +72,11 @@ test("le déploiement reste dans la limite de fonctions du projet Vercel", async
   assert.ok(await countJavaScriptFiles(new URL("../api/", import.meta.url)) <= 12);
 });
 
-test("le proxy Firestore utilise le compte de service sans dépendre de la clé web", async () => {
+test("le proxy Firestore échange sa session Firebase depuis l’origine officielle", async () => {
   const serverClient = await readFile(new URL("../lib/server/firestore-service-account.js", import.meta.url), "utf8");
 
-  assert.match(serverClient, /https:\/\/www\.googleapis\.com\/auth\/datastore/);
-  assert.match(serverClient, /https:\/\/oauth2\.googleapis\.com\/token/);
-  assert.doesNotMatch(serverClient, /identitytoolkit|FIREBASE_WEB_API_KEY/);
+  assert.match(serverClient, /identitytoolkit\.googleapis\.com/);
+  assert.match(serverClient, /Origin: PUBLIC_ORIGIN/);
+  assert.match(serverClient, /Referer: `\$\{PUBLIC_ORIGIN\}\//);
+  assert.match(serverClient, /discordId: "stage-company-service"/);
 });
