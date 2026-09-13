@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 import { createRequire } from "node:module";
 
@@ -56,4 +56,18 @@ test("la session entreprise est signée et reste limitée à son périmètre ser
   assert.equal(restored.companyId, company.id);
   assert.equal(restored.companyName, company.name);
   assert.equal(restored.role, "company");
+});
+
+test("le déploiement reste dans la limite de fonctions du projet Vercel", async () => {
+  async function countJavaScriptFiles(directory) {
+    const entries = await readdir(directory, { withFileTypes: true });
+    const counts = await Promise.all(entries.map(entry => (
+      entry.isDirectory()
+        ? countJavaScriptFiles(new URL(`${entry.name}/`, directory))
+        : Number(entry.name.endsWith(".js"))
+    )));
+    return counts.reduce((sum, count) => sum + count, 0);
+  }
+
+  assert.ok(await countJavaScriptFiles(new URL("../api/", import.meta.url)) <= 12);
 });

@@ -22,8 +22,8 @@ function setBusy(controls, busy) {
 }
 
 async function clearCompanySession() {
-  await fetch("/api/access/logout", {
-    method: "POST",
+  await fetch("/api/access/session", {
+    method: "DELETE",
     credentials: "same-origin"
   }).catch(() => null);
 }
@@ -90,7 +90,7 @@ async function enterCompany(event) {
   });
 
   try {
-    const response = await fetch("/api/access/company-login", {
+    const response = await fetch("/api/access/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",

@@ -290,8 +290,8 @@ async function returnToUnifiedPortal() {
   hideStageSurfaceForExit();
 
   try {
-    await fetch("/api/access/logout", {
-      method: "POST",
+    await fetch("/api/access/session", {
+      method: "DELETE",
       credentials: "same-origin"
     });
   } catch (error) {
