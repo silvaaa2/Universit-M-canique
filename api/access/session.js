@@ -1,23 +1,60 @@
 const { ProfAuthError, sendJson } = require("../../lib/server/discord-prof-auth.js");
+const { verifyFirebaseProfAccess } = require("../../lib/server/firebase-prof-access.js");
 const {
+  authenticateCompanyCode,
   assertSameOrigin,
   clearCompanySession,
   createCompanySession,
-  findCompanyByCode,
+  getCompanyCodeStates,
   publicCompanySession,
-  readCompanySession
+  updateCompanyCode,
+  validateCompanySession
 } = require("../../lib/server/unified-access.js");
 
-module.exports = function handler(request, response) {
-  if (request.method === "GET") {
-    const session = readCompanySession(request);
-    if (!session) {
-      response.setHeader("Set-Cookie", clearCompanySession(request));
-      sendJson(response, 200, { authenticated: false });
-      return;
-    }
+function getRequestUrl(request) {
+  return new URL(request.url, `https://${request.headers?.host || "localhost"}`);
+}
 
-    sendJson(response, 200, publicCompanySession(session));
+function getBearerToken(request) {
+  const authorization = String(request.headers?.authorization || "");
+  return authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || "";
+}
+
+function readBody(request) {
+  if (typeof request.body === "string") return JSON.parse(request.body || "{}");
+  return request.body || {};
+}
+
+async function requireAdmin(request) {
+  const token = getBearerToken(request);
+  if (!token) throw new ProfAuthError("admin", "Connexion administrateur requise.", 401);
+  const access = await verifyFirebaseProfAccess(token);
+  if (!access.admin) throw new ProfAuthError("admin", "Accès administrateur requis.", 403);
+  return access;
+}
+
+module.exports = async function handler(request, response) {
+  const adminCompanyCodes = getRequestUrl(request).searchParams.get("admin") === "company-codes";
+
+  if (request.method === "GET") {
+    try {
+      if (adminCompanyCodes) {
+        await requireAdmin(request);
+        sendJson(response, 200, { companies: await getCompanyCodeStates() });
+        return;
+      }
+
+      const session = await validateCompanySession(request);
+      if (!session) {
+        response.setHeader("Set-Cookie", clearCompanySession(request));
+        sendJson(response, 200, { authenticated: false });
+        return;
+      }
+      sendJson(response, 200, publicCompanySession(session));
+    } catch (error) {
+      const status = Number(error?.status) || 500;
+      sendJson(response, status, { error: status >= 500 ? "Session temporairement indisponible." : error.message });
+    }
     return;
   }
 
@@ -35,16 +72,14 @@ module.exports = function handler(request, response) {
   if (request.method === "POST") {
     try {
       assertSameOrigin(request);
-      const body = typeof request.body === "string"
-        ? JSON.parse(request.body || "{}")
-        : (request.body || {});
-      const company = findCompanyByCode(String(body.code || ""));
-      if (!company) {
+      const access = await authenticateCompanyCode(String(readBody(request).code || ""));
+      if (!access) {
         sendJson(response, 401, { error: "Code entreprise incorrect." });
         return;
       }
 
-      response.setHeader("Set-Cookie", createCompanySession(request, company));
+      response.setHeader("Set-Cookie", createCompanySession(request, access));
+      const { company } = access;
       sendJson(response, 200, publicCompanySession({
         role: "company",
         label: company.name,
@@ -56,6 +91,27 @@ module.exports = function handler(request, response) {
       sendJson(response, status, {
         error: status === 500 ? "Connexion entreprise indisponible." : error.message
       });
+    }
+    return;
+  }
+
+  if (request.method === "PATCH" && adminCompanyCodes) {
+    try {
+      assertSameOrigin(request);
+      const admin = await requireAdmin(request);
+      const body = readBody(request);
+      if (String(body.newCode || "") !== String(body.confirmation || "")) {
+        throw new ProfAuthError("confirmation", "Les deux codes ne correspondent pas.", 400);
+      }
+      const result = await updateCompanyCode(body.companyId, body.newCode, admin.actorId);
+      sendJson(response, 200, {
+        updated: true,
+        company: { id: result.company.id, name: result.company.name },
+        updatedAt: result.updatedAt
+      });
+    } catch (error) {
+      const status = Number(error?.status) || 500;
+      sendJson(response, status, { error: status >= 500 ? "Modification temporairement indisponible." : error.message });
     }
     return;
   }

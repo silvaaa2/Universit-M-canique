@@ -1,7 +1,7 @@
 const { sendJson } = require("../../lib/server/discord-prof-auth.js");
 const {
   assertSameOrigin,
-  readCompanySession
+  validateCompanySession
 } = require("../../lib/server/unified-access.js");
 const {
   deleteDocument,
@@ -25,8 +25,8 @@ function getRequestUrl(request) {
   return new URL(request.url, `https://${request.headers?.host || "localhost"}`);
 }
 
-function requireCompany(request) {
-  const session = readCompanySession(request);
+async function requireCompany(request) {
+  const session = await validateCompanySession(request);
   if (!session) {
     const error = new Error("Session entreprise expirée.");
     error.status = 401;
@@ -113,7 +113,7 @@ async function deleteCompanyStage(session, request) {
 
 module.exports = async function handler(request, response) {
   try {
-    const session = requireCompany(request);
+    const session = await requireCompany(request);
     const url = getRequestUrl(request);
     const kind = String(url.searchParams.get("kind") || "stages");
 
