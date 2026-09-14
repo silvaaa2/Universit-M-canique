@@ -1612,6 +1612,22 @@ main {
   backdrop-filter: blur(18px);
 }
 
+.effectif-row.company-effectif-row {
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.effectif-row.company-effectif-row:hover,
+.effectif-row.company-effectif-row:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(214,180,106,.36);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(214,180,106,.12), transparent 34%),
+    linear-gradient(145deg, rgba(22,22,22,.90), rgba(8,8,8,.78));
+  box-shadow: 0 15px 34px rgba(0,0,0,.24);
+  outline: none;
+}
+
 .effectif-row strong {
   color: var(--gold2);
   font-size: 13px;
@@ -2102,6 +2118,247 @@ main {
 .effectif-row strong,
 .effectif-row span {
   cursor: help;
+}
+
+.effectif-row.company-effectif-row b,
+.effectif-row.company-effectif-row strong,
+.effectif-row.company-effectif-row span {
+  cursor: pointer;
+}
+
+/* Fiche parcours élève ouverte depuis l'effectif entreprise */
+.company-student-progress-card {
+  width: min(720px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+}
+
+.company-student-progress-card h2 {
+  max-width: calc(100% - 46px);
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: .96;
+}
+
+.company-student-progress-content {
+  display: grid;
+  gap: 14px;
+}
+
+.company-progress-loading,
+.company-progress-error {
+  min-height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px;
+  background: rgba(0,0,0,.24);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.company-progress-loading span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(214,180,106,.22);
+  border-top-color: var(--gold2);
+  border-radius: 50%;
+  animation: company-progress-spin .7s linear infinite;
+}
+
+@keyframes company-progress-spin {
+  to { transform: rotate(360deg); }
+}
+
+.company-progress-error {
+  color: var(--red);
+  border-color: rgba(248,113,113,.22);
+  background: rgba(248,113,113,.08);
+}
+
+.company-progress-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(214,180,106,.20);
+  background: rgba(214,180,106,.07);
+}
+
+.company-progress-summary > div:first-child {
+  display: grid;
+}
+
+.company-progress-summary strong {
+  color: var(--gold2);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.company-progress-summary span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.company-progress-bar,
+.company-exam-gauge {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+}
+
+.company-progress-bar i,
+.company-exam-gauge i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  box-shadow: 0 0 18px rgba(255,226,154,.28);
+}
+
+.company-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.company-progress-item {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.035);
+}
+
+.company-progress-item.is-complete {
+  border-color: rgba(74,222,128,.26);
+  background: rgba(74,222,128,.07);
+}
+
+.company-progress-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 1000;
+}
+
+.company-progress-item.is-complete .company-progress-icon {
+  color: var(--green);
+  border-color: rgba(74,222,128,.30);
+  background: var(--green-bg);
+}
+
+.company-progress-item strong,
+.company-progress-item small {
+  display: block;
+}
+
+.company-progress-item strong {
+  font-size: 14px;
+  font-weight: 1000;
+}
+
+.company-progress-item small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.company-verification-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.company-verification-badge {
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.04);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+.company-verification-badge.is-complete {
+  color: var(--green);
+  border-color: rgba(74,222,128,.28);
+  background: var(--green-bg);
+}
+
+.company-exam-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 46%);
+  gap: 18px;
+  align-items: center;
+  padding: 17px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.09);
+  background: rgba(255,255,255,.035);
+}
+
+.company-exam-card.has-exam {
+  border-color: rgba(96,199,255,.24);
+  background: rgba(96,199,255,.06);
+}
+
+.company-exam-card span,
+.company-exam-card strong,
+.company-exam-card small {
+  display: block;
+}
+
+.company-exam-card span {
+  color: var(--gold2);
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.company-exam-card strong {
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+.company-exam-card small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.company-exam-card.has-exam .company-exam-gauge i {
+  background: linear-gradient(90deg, #42b7ee, #78dcff);
+  box-shadow: 0 0 18px rgba(96,199,255,.28);
+}
+
+@media (max-width: 620px) {
+  .company-student-progress-modal { padding: 12px; }
+  .company-student-progress-card { padding: 23px; border-radius: 25px; }
+  .company-progress-grid { grid-template-columns: 1fr; }
+  .company-progress-summary,
+  .company-exam-card { grid-template-columns: 1fr; }
+  .company-exam-card { gap: 12px; }
 }
 
 @media (max-width: 850px) {

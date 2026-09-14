@@ -11,6 +11,7 @@ const {
 
 const STAGE_COLLECTION = "stageValidations";
 const EXAM_COLLECTION = "examAnswerStatuses";
+const STUDENT_MODULES_COLLECTION = "studentModules";
 
 function normalizeIdUnique(value) {
   return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
@@ -35,7 +36,42 @@ async function requireCompany(request) {
   return session;
 }
 
-async function readCompanyData(session, kind) {
+function isChecked(value) {
+  return value === true || value === 1 || value === "true" || value === "1";
+}
+
+function sanitizeStudentProgress(row) {
+  if (!row) return null;
+
+  const checks = row.checks && typeof row.checks === "object" ? row.checks : {};
+  const dates = row.dates && typeof row.dates === "object" ? row.dates : {};
+  const readCheck = key => isChecked(checks[key] ?? row[key]);
+  const readDate = key => String(dates[key] || "").trim();
+
+  return {
+    idUnique: String(row.idUnique || ""),
+    normalizedIdUnique: normalizeIdUnique(
+      row.normalizedIdUnique || row.studentId || row.idUnique || row.id
+    ),
+    studentName: String(row.studentName || ""),
+    checks: {
+      module1: readCheck("module1"),
+      module2: readCheck("module2"),
+      module3: readCheck("module3"),
+      module4: readCheck("module4"),
+      verif3: readCheck("verif3"),
+      verif4: readCheck("verif4")
+    },
+    dates: {
+      module1: readDate("module1"),
+      module2: readDate("module2"),
+      module3: readDate("module3"),
+      module4: readDate("module4")
+    }
+  };
+}
+
+async function readCompanyData(session, kind, request) {
   if (kind === "stages") {
     const rows = await listDocuments(STAGE_COLLECTION);
     return {
@@ -51,6 +87,23 @@ async function readCompanyData(session, kind) {
   if (kind === "exams") {
     const rows = await listDocuments(EXAM_COLLECTION);
     return rows.filter(row => row.archived !== true);
+  }
+  if (kind === "student-progress") {
+    const requestedId = normalizeIdUnique(getRequestUrl(request).searchParams.get("id"));
+    if (!requestedId) {
+      const error = new Error("Élève introuvable.");
+      error.status = 400;
+      throw error;
+    }
+
+    const rows = await listDocuments(STUDENT_MODULES_COLLECTION);
+    const matchingRow = rows.find(row => {
+      return normalizeIdUnique(
+        row.normalizedIdUnique || row.studentId || row.idUnique || row.id
+      ) === requestedId;
+    });
+
+    return { student: sanitizeStudentProgress(matchingRow) };
   }
   const error = new Error("Données demandées invalides.");
   error.status = 400;
@@ -126,8 +179,12 @@ module.exports = async function handler(request, response) {
     const kind = String(url.searchParams.get("kind") || "stages");
 
     if (request.method === "GET") {
-      const data = await readCompanyData(session, kind);
-      sendJson(response, 200, kind === "stages" ? data : { rows: data });
+      const data = await readCompanyData(session, kind, request);
+      sendJson(
+        response,
+        200,
+        kind === "stages" || kind === "student-progress" ? data : { rows: data }
+      );
       return;
     }
 

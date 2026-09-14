@@ -90,6 +90,8 @@ let stageDirectory = [];
 let examParticipants = [];
 let effectifRows = [];
 let stageArchives = [];
+const companyStudentProgressCache = new Map();
+const COMPANY_STUDENT_PROGRESS_CACHE_MS = 10000;
 
 let currentUserRole = null;
 let currentUserAdmin = false;
@@ -1343,6 +1345,23 @@ function getEffectifMatches() {
   });
 }
 
+function bindCompanyStudentProgressRows() {
+  if (!IS_COMPANY_ACCESS) return;
+
+  document.querySelectorAll("[data-company-student-id]").forEach(row => {
+    const openStudent = () => {
+      window.openCompanyStudentProgress(row.dataset.companyStudentId || "");
+    };
+
+    row.addEventListener("click", openStudent);
+    row.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      openStudent();
+    });
+  });
+}
+
 function renderEffectifRows() {
   const content = document.getElementById("rightPanelContent");
   if (!content) return;
@@ -1419,9 +1438,12 @@ function renderEffectifRows() {
           : "Stage : Aucun stage";
 
         const tooltipText = `${safeStudentName} · ID ${safeIdUnique} · ${safeExamText} · ${safeStageTooltip}`;
+        const companyRowAttributes = IS_COMPANY_ACCESS
+          ? `role="button" tabindex="0" data-company-student-id="${escapeHtml(item.normalizedIdUnique)}" aria-label="Voir le parcours de ${safeStudentName}"`
+          : "";
 
         return `
-          <div class="effectif-row has-effectif-tooltip" data-tooltip="${tooltipText}">
+          <div class="effectif-row has-effectif-tooltip ${IS_COMPANY_ACCESS ? "company-effectif-row" : ""}" data-tooltip="${tooltipText}" ${companyRowAttributes}>
             <strong title="${safeIdUnique}">${safeIdUnique}</strong>
 
             <div>
@@ -1443,6 +1465,7 @@ function renderEffectifRows() {
   `;
 
   bindEffectifSearch();
+  bindCompanyStudentProgressRows();
 }
 
 function bindEffectifSearch() {
@@ -2130,6 +2153,187 @@ window.closeBulkStageModal = function() {
     modal.hidden = true;
     modal.dataset.companyId = "";
     if (textarea) textarea.value = "";
+  }, 180);
+};
+
+/* =========================================================
+   FICHE PARCOURS ÉLÈVE - ENTREPRISE
+========================================================= */
+
+function ensureCompanyStudentProgressModal() {
+  if (!IS_COMPANY_ACCESS || document.getElementById("companyStudentProgressModal")) return;
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="companyStudentProgressModal" class="bulk-modal-overlay company-student-progress-modal" hidden>
+      <section class="bulk-modal-card company-student-progress-card" role="dialog" aria-modal="true" aria-labelledby="companyStudentProgressTitle">
+        <button id="companyStudentProgressCloseBtn" type="button" class="bulk-modal-close" aria-label="Fermer">×</button>
+        <p class="bulk-modal-kicker">Parcours élève</p>
+        <h2 id="companyStudentProgressTitle">Fiche élève</h2>
+        <p id="companyStudentProgressMeta" class="bulk-modal-text"></p>
+        <div id="companyStudentProgressContent" class="company-student-progress-content"></div>
+      </section>
+    </div>
+  `);
+
+  const modal = document.getElementById("companyStudentProgressModal");
+  document.getElementById("companyStudentProgressCloseBtn")?.addEventListener("click", () => {
+    window.closeCompanyStudentProgress();
+  });
+  modal?.addEventListener("click", event => {
+    if (event.target === modal) window.closeCompanyStudentProgress();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && modal && !modal.hidden) {
+      window.closeCompanyStudentProgress();
+    }
+  });
+}
+
+async function loadCompanyStudentProgress(normalizedIdUnique) {
+  const cached = companyStudentProgressCache.get(normalizedIdUnique);
+  if (cached && Date.now() - cached.loadedAt < COMPANY_STUDENT_PROGRESS_CACHE_MS) {
+    return cached.student;
+  }
+
+  const payload = await fetchCompanyRows("student-progress", {
+    documentId: normalizedIdUnique
+  });
+  const student = payload.student || null;
+  companyStudentProgressCache.set(normalizedIdUnique, {
+    loadedAt: Date.now(),
+    student
+  });
+  return student;
+}
+
+function renderCompanyStudentProgress(student, exam) {
+  const checks = student?.checks || {};
+  const dates = student?.dates || {};
+  const modules = [
+    { key: "module1", label: "Module 1" },
+    { key: "module2", label: "Module 2" },
+    { key: "module3", label: "Module 3" },
+    { key: "module4", label: "Module 4" }
+  ];
+  const completedModules = modules.filter(module => checks[module.key] === true).length;
+  const moduleCards = modules.map(module => {
+    const completed = checks[module.key] === true;
+    const date = String(dates[module.key] || "").trim();
+    return `
+      <article class="company-progress-item ${completed ? "is-complete" : "is-pending"}">
+        <span class="company-progress-icon" aria-hidden="true">${completed ? "✓" : "—"}</span>
+        <div>
+          <strong>${module.label}</strong>
+          <small>${completed ? escapeHtml(date ? `Validé · ${date}` : "Validé") : "Non validé"}</small>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  const verificationItems = [
+    { key: "verif3", label: "Vérif 3" },
+    { key: "verif4", label: "Vérif 4" }
+  ].map(item => {
+    const completed = checks[item.key] === true;
+    return `
+      <span class="company-verification-badge ${completed ? "is-complete" : "is-pending"}">
+        ${completed ? "✓" : "—"} ${item.label}
+      </span>
+    `;
+  }).join("");
+
+  const safeMaxScore = exam ? Math.max(1, Number(exam.maxScore || 50)) : 50;
+  const safeTotalScore = exam
+    ? Math.max(0, Math.min(safeMaxScore, Number(exam.totalScore || 0)))
+    : 0;
+  const examPercent = exam ? Math.round((safeTotalScore / safeMaxScore) * 100) : 0;
+  const examStatus = exam ? getStatusLabel(exam.status) : "Pas encore passé";
+
+  return `
+    <div class="company-progress-summary">
+      <div>
+        <strong>${completedModules} / 4</strong>
+        <span>modules validés</span>
+      </div>
+      <div class="company-progress-bar" aria-label="${completedModules} modules validés sur 4">
+        <i style="width:${completedModules * 25}%"></i>
+      </div>
+    </div>
+
+    <div class="company-progress-grid">${moduleCards}</div>
+
+    <div class="company-verification-row" aria-label="Vérifications de présence">
+      ${verificationItems}
+    </div>
+
+    <article class="company-exam-card ${exam ? "has-exam" : "no-exam"}">
+      <div>
+        <span>Examen</span>
+        <strong>${exam ? `${escapeHtml(safeTotalScore)} / ${escapeHtml(safeMaxScore)}` : "Aucun résultat"}</strong>
+        <small>${escapeHtml(examStatus)}</small>
+      </div>
+      <div class="company-exam-gauge" aria-label="${examPercent}% des points">
+        <i style="width:${examPercent}%"></i>
+      </div>
+    </article>
+  `;
+}
+
+window.openCompanyStudentProgress = async function(normalizedIdUnique) {
+  if (!IS_COMPANY_ACCESS) return;
+
+  const normalizedId = normalizeIdUnique(normalizedIdUnique);
+  const effectifStudent = effectifRows.find(item => item.normalizedIdUnique === normalizedId);
+  if (!effectifStudent) return;
+
+  ensureCompanyStudentProgressModal();
+  const modal = document.getElementById("companyStudentProgressModal");
+  const title = document.getElementById("companyStudentProgressTitle");
+  const meta = document.getElementById("companyStudentProgressMeta");
+  const content = document.getElementById("companyStudentProgressContent");
+  if (!modal || !title || !meta || !content) return;
+
+  modal.dataset.studentId = normalizedId;
+  title.textContent = effectifStudent.studentName || "Nom non renseigné";
+  meta.textContent = `ID Unique ${effectifStudent.idUnique || normalizedId} · Consultation uniquement`;
+  content.innerHTML = `<div class="company-progress-loading"><span></span> Chargement du parcours...</div>`;
+  modal.hidden = false;
+  requestAnimationFrame(() => {
+    modal.classList.add("active");
+    document.getElementById("companyStudentProgressCloseBtn")?.focus();
+  });
+
+  const exam = examParticipants.find(participant => {
+    return participant.normalizedIdUnique === normalizedId;
+  });
+
+  try {
+    const student = await loadCompanyStudentProgress(normalizedId);
+    if (modal.dataset.studentId !== normalizedId) return;
+    content.innerHTML = renderCompanyStudentProgress(student, exam);
+  } catch (error) {
+    console.error("Erreur chargement parcours élève :", error);
+    if (modal.dataset.studentId !== normalizedId) return;
+    content.innerHTML = `
+      <div class="company-progress-error">
+        Impossible de charger les modules pour le moment. Réessaie dans quelques secondes.
+      </div>
+    `;
+  }
+};
+
+window.closeCompanyStudentProgress = function() {
+  const modal = document.getElementById("companyStudentProgressModal");
+  if (!modal) return;
+
+  const studentId = modal.dataset.studentId || "";
+  modal.classList.remove("active");
+  setTimeout(() => {
+    modal.hidden = true;
+    modal.dataset.studentId = "";
+    [...document.querySelectorAll("[data-company-student-id]")]
+      .find(row => row.dataset.companyStudentId === studentId)
+      ?.focus();
   }, 180);
 };
 
