@@ -6,6 +6,7 @@ const apiUrl = new URL("../api/access/session.js", import.meta.url);
 const serverUrl = new URL("../lib/server/unified-access.js", import.meta.url);
 const uiUrl = new URL("../assets/js/prof-admin-company-codes.js", import.meta.url);
 const bundleUrl = new URL("../assets/js/prof-admin-v2.js", import.meta.url);
+const adminUrl = new URL("../assets/js/prof-admin.js", import.meta.url);
 
 test("la modification des codes entreprise reste réservée à l'admin", async () => {
   const api = await readFile(apiUrl, "utf8");
@@ -28,15 +29,19 @@ test("les nouveaux codes sont hachés avec le secret et invalident les anciennes
 });
 
 test("Admin privé propose un formulaire par entreprise sans mémoriser les codes", async () => {
-  const [ui, bundle] = await Promise.all([
+  const [ui, bundle, admin] = await Promise.all([
     readFile(uiUrl, "utf8"),
-    readFile(bundleUrl, "utf8")
+    readFile(bundleUrl, "utf8"),
+    readFile(adminUrl, "utf8")
   ]);
 
   assert.match(bundle, /prof-admin-company-codes\.js/);
   assert.match(ui, />Accès entreprises</);
   assert.match(ui, />Changer le code</);
-  assert.match(ui, /document\.addEventListener\("submit"/);
+  assert.match(ui, /COMPANY_CODE_PLACEHOLDERS/);
+  assert.match(ui, /form\.addEventListener\("submit"/);
+  assert.match(ui, /window\.loadProfAdminCompanyCodes = loadCompanyCodes/);
+  assert.match(admin, /tabName === "companyCodes"[\s\S]*window\.loadProfAdminCompanyCodes/);
   assert.match(ui, /novalidate/);
   assert.match(ui, /autocomplete="new-password"/);
   assert.match(ui, /method: "PATCH"/);

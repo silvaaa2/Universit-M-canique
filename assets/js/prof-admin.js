@@ -857,6 +857,9 @@ function activateAdminTab(tabName = "corrections") {
   if (tabName === "corrections" && !currentCorrectionData) loadCorrectionEditor(selectedCorrectionId);
   if (tabName === "pages" && !currentPageData) loadPageEditor(selectedPageId);
   if (tabName === "message" && !currentMessageData) loadMessageEditor();
+  if (tabName === "companyCodes" && typeof window.loadProfAdminCompanyCodes === "function") {
+    window.loadProfAdminCompanyCodes();
+  }
 }
 
 function renderCorrectionItemRow(label, value) {

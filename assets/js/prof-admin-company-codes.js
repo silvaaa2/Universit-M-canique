@@ -1,7 +1,16 @@
 const COMPANY_CODES_TAB = "companyCodes";
+const COMPANY_CODE_PLACEHOLDERS = [
+  { id: "bennys", name: "Benny's", loading: true },
+  { id: "lsc", name: "LSC", loading: true },
+  { id: "paleto", name: "Paleto Garage", loading: true },
+  { id: "harmony", name: "Harmony Repair", loading: true },
+  { id: "cayo", name: "Cayo Garage", loading: true },
+  { id: "portolina", name: "Portolina Mechanic", loading: true },
+  { id: "favelas", name: "Favelas Repair", loading: true }
+];
 
 let companyCodeToolStarted = false;
-let companyCodeEventsBound = false;
+let companyCodeLoadPromise = null;
 
 function escapeCompanyCodeHtml(value) {
   return String(value ?? "")
@@ -75,7 +84,8 @@ async function getCompanyCodeAdminToken() {
   return user?.getIdToken ? user.getIdToken() : "";
 }
 
-function formatCompanyCodeDate(value) {
+function formatCompanyCodeDate(value, loading = false) {
+  if (loading) return "Vérification de l’accès…";
   if (!value) return "Code initial actif";
   const date = new Date(value);
   return Number.isNaN(date.getTime())
@@ -91,7 +101,7 @@ function renderCompanyCodeCards(companies) {
       <div class="prof-admin-company-head">
         <strong>${escapeCompanyCodeHtml(company.name)}</strong>
         <span class="prof-admin-company-state ${company.customized ? "custom" : ""}">
-          ${company.customized ? "Code personnalisé" : "Code initial"}
+          ${company.loading ? "Vérification…" : company.customized ? "Code personnalisé" : "Code initial"}
         </span>
       </div>
       <form class="prof-admin-company-form" data-company-code-form="${escapeCompanyCodeHtml(company.id)}" novalidate>
@@ -104,27 +114,49 @@ function renderCompanyCodeCards(companies) {
         <input class="prof-admin-input" name="confirmation" type="password" minlength="8" maxlength="64" autocomplete="new-password" autocapitalize="characters" spellcheck="false" required placeholder="Retapez le code">
         <button type="submit" class="prof-admin-small-btn gold prof-admin-company-save">Changer le code</button>
       </form>
-      <small>${escapeCompanyCodeHtml(formatCompanyCodeDate(company.updatedAt))}</small>
+      <small>${escapeCompanyCodeHtml(formatCompanyCodeDate(company.updatedAt, company.loading))}</small>
     </article>
   `).join("");
+
+  container.querySelectorAll("[data-company-code-toggle]").forEach(toggle => {
+    toggle.addEventListener("click", () => {
+      const input = toggle.closest(".prof-admin-company-password")?.querySelector("input");
+      if (!input) return;
+      input.type = input.type === "password" ? "text" : "password";
+      toggle.textContent = input.type === "password" ? "Afficher" : "Masquer";
+    });
+  });
+  container.querySelectorAll("[data-company-code-form]").forEach(form => {
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      saveCompanyCode(form);
+    });
+  });
 }
 
 async function loadCompanyCodes() {
-  try {
-    setCompanyCodeStatus("Chargement des accès…");
-    const token = await getCompanyCodeAdminToken();
-    if (!token) throw new Error("Reconnecte-toi avec ton compte administrateur.");
-    const response = await fetch("/api/access/session?admin=company-codes", {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store"
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.error || "Chargement impossible.");
-    renderCompanyCodeCards(Array.isArray(payload.companies) ? payload.companies : []);
-    setCompanyCodeStatus("Accès à jour.", "ok");
-  } catch (error) {
-    setCompanyCodeStatus(error?.message || "Chargement impossible.", "error");
-  }
+  if (companyCodeLoadPromise) return companyCodeLoadPromise;
+  companyCodeLoadPromise = (async () => {
+    try {
+      setCompanyCodeStatus("Chargement des accès…");
+      const token = await getCompanyCodeAdminToken();
+      if (!token) throw new Error("Reconnecte-toi avec ton compte administrateur.");
+      const response = await fetch("/api/access/session?admin=company-codes", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store"
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "Chargement impossible.");
+      const companies = Array.isArray(payload.companies) ? payload.companies : [];
+      renderCompanyCodeCards(companies.length ? companies : COMPANY_CODE_PLACEHOLDERS);
+      setCompanyCodeStatus(companies.length ? "Accès à jour." : "Liste temporairement indisponible.", companies.length ? "ok" : "error");
+    } catch (error) {
+      setCompanyCodeStatus(error?.message || "Chargement impossible.", "error");
+    } finally {
+      companyCodeLoadPromise = null;
+    }
+  })();
+  return companyCodeLoadPromise;
 }
 
 async function saveCompanyCode(form) {
@@ -173,38 +205,6 @@ async function saveCompanyCode(form) {
   }
 }
 
-function bindCompanyCodeEvents() {
-  if (companyCodeEventsBound) return;
-  companyCodeEventsBound = true;
-
-  document.addEventListener("click", event => {
-    const target = event.target instanceof Element ? event.target : null;
-    if (!target) return;
-    if (target.closest(`[data-admin-tab="${COMPANY_CODES_TAB}"]`)) {
-      window.setTimeout(loadCompanyCodes, 0);
-      return;
-    }
-    if (target.closest("#reloadCompanyCodesBtn")) {
-      loadCompanyCodes();
-      return;
-    }
-    const toggle = target.closest("[data-company-code-toggle]");
-    if (!toggle) return;
-    const input = toggle.closest(".prof-admin-company-password")?.querySelector("input");
-    if (!input) return;
-    input.type = input.type === "password" ? "text" : "password";
-    toggle.textContent = input.type === "password" ? "Afficher" : "Masquer";
-  });
-  document.addEventListener("submit", event => {
-    const target = event.target instanceof Element ? event.target : null;
-    const form = target?.closest("[data-company-code-form]");
-    if (!form) return;
-    event.preventDefault();
-    event.stopPropagation();
-    saveCompanyCode(form);
-  }, true);
-}
-
 function ensureCompanyCodePanel() {
   const modal = document.getElementById("profAdminModal");
   const tabs = modal?.querySelector(".prof-admin-tabs");
@@ -231,7 +231,21 @@ function ensureCompanyCodePanel() {
       </section>
     `);
   }
-  bindCompanyCodeEvents();
+
+  const tab = tabs.querySelector(`[data-admin-tab="${COMPANY_CODES_TAB}"]`);
+  if (tab && tab.dataset.companyCodesBound !== "true") {
+    tab.dataset.companyCodesBound = "true";
+    tab.addEventListener("click", loadCompanyCodes);
+  }
+
+  const reloadButton = document.getElementById("reloadCompanyCodesBtn");
+  if (reloadButton && reloadButton.dataset.companyCodesBound !== "true") {
+    reloadButton.dataset.companyCodesBound = "true";
+    reloadButton.addEventListener("click", loadCompanyCodes);
+  }
+
+  const list = document.getElementById("companyCodesList");
+  if (list && !list.childElementCount) renderCompanyCodeCards(COMPANY_CODE_PLACEHOLDERS);
 }
 
 function startCompanyCodeTool() {
@@ -245,3 +259,5 @@ function startCompanyCodeTool() {
 
 if (document.body) startCompanyCodeTool();
 else document.addEventListener("DOMContentLoaded", startCompanyCodeTool, { once: true });
+
+window.loadProfAdminCompanyCodes = loadCompanyCodes;
