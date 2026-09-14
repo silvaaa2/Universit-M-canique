@@ -86,6 +86,7 @@ const dashboardTitle = dashboard?.querySelector(".dashboard-top h1");
 const dashboardIntro = dashboard?.querySelector(".dashboard-top .intro");
 
 let stageValidations = [];
+let stageDirectory = [];
 let examParticipants = [];
 let effectifRows = [];
 let stageArchives = [];
@@ -409,12 +410,19 @@ async function fetchCompanyRows(kind, options = {}) {
 
 async function loadStageValidations() {
   stageValidations = [];
+  stageDirectory = [];
 
   if (IS_COMPANY_ACCESS) {
     const payload = await fetchCompanyRows("stages");
     stageValidations = (payload.rows || []).map(row => ({
       firebaseId: row.id,
       ...row
+    }));
+    stageDirectory = (payload.directory || []).map(row => ({
+      idUnique: String(row.idUnique || ""),
+      normalizedIdUnique: normalizeIdUnique(row.normalizedIdUnique || row.idUnique),
+      companyId: String(row.companyId || ""),
+      companyName: String(row.companyName || "")
     }));
     return;
   }
@@ -428,6 +436,7 @@ async function loadStageValidations() {
       ...data
     });
   });
+  stageDirectory = stageValidations;
 }
 
 function getExamParticipantFirebaseIds(participant) {
@@ -593,16 +602,16 @@ function getStagesByCompany(companyId) {
 }
 
 function hasStageForId(normalizedIdUnique) {
-  return stageValidations.some(item => item.normalizedIdUnique === normalizedIdUnique);
+  return stageDirectory.some(item => item.normalizedIdUnique === normalizedIdUnique);
 }
 
 function getStageCompanyForId(normalizedIdUnique) {
-  const found = stageValidations.find(item => item.normalizedIdUnique === normalizedIdUnique);
+  const found = stageDirectory.find(item => item.normalizedIdUnique === normalizedIdUnique);
   return found?.companyName || "";
 }
 
 function getStageCompanyIdForId(normalizedIdUnique) {
-  const found = stageValidations.find(item => item.normalizedIdUnique === normalizedIdUnique);
+  const found = stageDirectory.find(item => item.normalizedIdUnique === normalizedIdUnique);
   return found?.companyId || "";
 }
 

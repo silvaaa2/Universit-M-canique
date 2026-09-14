@@ -38,10 +38,14 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
 
   assert.match(stageApp, /fetchCompanyRows\("stages"\)/);
   assert.match(stageApp, /fetchCompanyRows\("exams"\)/);
+  assert.match(stageApp, /stageDirectory = \(payload\.directory \|\| \[\]\)/);
+  assert.match(stageApp, /const found = stageDirectory\.find/);
   assert.match(stageApp, /IS_COMPANY_ACCESS[\s\S]*\/api\/secure-sheet\?source=effectif&sheet=current/);
   assert.match(stageApp, /currentUserRole = "company"/);
   assert.doesNotMatch(stageApp, /Vérifie que le Google Sheet est bien public en lecture/);
   assert.match(serverProxy, /row\.companyId === session\.companyId/);
+  assert.match(serverProxy, /directory: rows\.map\(row => \(\{/);
+  assert.match(serverProxy, /companyName: String\(row\.companyName \|\| ""\)/);
   assert.match(serverProxy, /documentId\.startsWith\(`\$\{session\.companyId\}__`\)/);
   assert.match(serverProxy, /if \(kind !== "stages"\)/);
 });

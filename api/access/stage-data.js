@@ -38,7 +38,15 @@ async function requireCompany(request) {
 async function readCompanyData(session, kind) {
   if (kind === "stages") {
     const rows = await listDocuments(STAGE_COLLECTION);
-    return rows.filter(row => row.companyId === session.companyId);
+    return {
+      rows: rows.filter(row => row.companyId === session.companyId),
+      directory: rows.map(row => ({
+        idUnique: String(row.idUnique || ""),
+        normalizedIdUnique: normalizeIdUnique(row.normalizedIdUnique || row.idUnique),
+        companyId: String(row.companyId || ""),
+        companyName: String(row.companyName || "")
+      })).filter(row => row.normalizedIdUnique && row.companyId)
+    };
   }
   if (kind === "exams") {
     const rows = await listDocuments(EXAM_COLLECTION);
@@ -101,7 +109,7 @@ async function deleteCompanyStage(session, request) {
     throw error;
   }
 
-  const ownedRows = await readCompanyData(session, "stages");
+  const { rows: ownedRows } = await readCompanyData(session, "stages");
   if (!ownedRows.some(row => row.id === documentId)) {
     const error = new Error("ID stagiaire introuvable.");
     error.status = 404;
@@ -118,8 +126,8 @@ module.exports = async function handler(request, response) {
     const kind = String(url.searchParams.get("kind") || "stages");
 
     if (request.method === "GET") {
-      const rows = await readCompanyData(session, kind);
-      sendJson(response, 200, { rows });
+      const data = await readCompanyData(session, kind);
+      sendJson(response, 200, kind === "stages" ? data : { rows: data });
       return;
     }
 
