@@ -123,12 +123,7 @@ function sanitizeCompanyArchive(archive, companyId) {
       companyName: String(row?.companyName || ""),
       status: String(row?.status || "approved")
     }));
-  const studentIds = new Set(stageRows.map(row => row.normalizedIdUnique).filter(Boolean));
   const examRows = (Array.isArray(archive.examParticipants) ? archive.examParticipants : [])
-    .filter(row => (
-      String(row?.companyId || "") === companyId ||
-      studentIds.has(normalizeIdUnique(row?.normalizedIdUnique || row?.idUnique))
-    ))
     .map(row => ({
       firebaseId: String(row?.firebaseId || ""),
       idUnique: String(row?.idUnique || ""),
@@ -137,7 +132,7 @@ function sanitizeCompanyArchive(archive, companyId) {
       totalScore: Number(row?.totalScore || 0),
       maxScore: Number(row?.maxScore || 50),
       status: String(row?.status || "pending"),
-      companyId,
+      companyId: String(row?.companyId || ""),
       companyName: String(row?.companyName || "")
     }));
 

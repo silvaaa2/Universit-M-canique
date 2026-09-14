@@ -43,16 +43,20 @@ test("les deux liens d’effectif sont indépendants et gardent le réglage hist
   assert.match(rules, /docId in \["effectif", "moduleEffectif"\]/);
 });
 
-test("les entreprises reçoivent uniquement leurs archives existantes", async () => {
+test("les entreprises voient leurs stagiaires archivés mais tous les examens et l’effectif", async () => {
   const endpoint = await read("api/access/stage-data.js");
   const stageApp = await read("stages/assets/js/stage-app.js");
 
   assert.match(endpoint, /function sanitizeCompanyArchive\(archive, companyId\)/);
   assert.match(endpoint, /String\(row\?\.companyId \|\| ""\) === companyId/);
+  assert.doesNotMatch(endpoint, /studentIds\.has\(normalizeIdUnique/);
+  assert.match(endpoint, /examParticipants\) \? archive\.examParticipants : \[\]\)\s*\.map/);
   assert.match(endpoint, /if \(kind === "archives"\)/);
   assert.match(stageApp, /fetchCompanyRows\("archives"\)/);
   assert.doesNotMatch(stageApp, /if \(IS_COMPANY_ACCESS && panel === "archives"\) return/);
   assert.doesNotMatch(stageApp, /const archivesButton = IS_COMPANY_ACCESS \? ""/);
+  assert.doesNotMatch(stageApp, /\$\{currentArchive \? "disabled" : ""\}/);
+  assert.doesNotMatch(stageApp, /if \(currentArchive\) \{\s*currentRightPanel = "examens"/);
 });
 
 test("l’ancien archivage du suivi de stage n’est plus exposé", async () => {

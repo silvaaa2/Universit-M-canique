@@ -1585,7 +1585,6 @@ function renderRightPanelTabs() {
         type="button"
         class="${currentRightPanel === "effectif" ? "active" : ""}"
         onclick="window.switchRightPanel('effectif')"
-        ${currentArchive ? "disabled" : ""}
       >
         Effectif
       </button>
@@ -1602,12 +1601,6 @@ window.switchRightPanel = function(panel) {
   updateCompanyWorkspaceNavigation(panel === "effectif" ? "effectif" : "examens");
 
   if (panel === "effectif") {
-    if (currentArchive) {
-      currentRightPanel = "examens";
-      renderExamParticipants();
-      return;
-    }
-
     renderExamParticipants();
     renderEffectifPanel();
     return;
