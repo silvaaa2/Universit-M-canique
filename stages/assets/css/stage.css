@@ -2127,10 +2127,40 @@ main {
 }
 
 /* Fiche parcours élève ouverte depuis l'effectif entreprise */
+.company-student-progress-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html.company-student-modal-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.company-student-modal-open {
+  position: fixed;
+  top: calc(-1 * var(--company-progress-scroll-y, 0px));
+  right: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
 .company-student-progress-card {
   width: min(720px, 100%);
   max-height: min(760px, calc(100vh - 40px));
+  max-height: min(760px, calc(100dvh - 40px));
+  margin: auto;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .company-student-progress-card h2 {

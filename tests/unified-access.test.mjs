@@ -36,6 +36,7 @@ test("le portail expose les trois parcours demandés", async () => {
 
 test("le suivi de stage applique le périmètre entreprise côté requête", async () => {
   const stageApp = await readFile(new URL("../stages/assets/js/stage-app.js", import.meta.url), "utf8");
+  const stageCss = await readFile(new URL("../stages/assets/css/stage.css", import.meta.url), "utf8");
   const serverProxy = await readFile(new URL("../api/access/stage-data.js", import.meta.url), "utf8");
 
   assert.match(stageApp, /fetchCompanyRows\("stages"\)/);
@@ -43,6 +44,12 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(stageApp, /fetchCompanyRows\("student-progress"/);
   assert.match(stageApp, /data-company-student-id/);
   assert.match(stageApp, /companyStudentProgressModal/);
+  assert.match(stageApp, /lockCompanyStudentProgressScroll\(\)/);
+  assert.match(stageApp, /unlockCompanyStudentProgressScroll\(\)/);
+  assert.match(stageApp, /document\.body\.classList\.add\("company-student-modal-open"\)/);
+  assert.match(stageApp, /window\.scrollTo\(0, companyStudentProgressScrollY\)/);
+  assert.match(stageCss, /\.company-student-progress-modal\s*\{[\s\S]*position: fixed !important;[\s\S]*align-items: center;[\s\S]*justify-content: center;/);
+  assert.match(stageCss, /body\.company-student-modal-open\s*\{[\s\S]*position: fixed;[\s\S]*overflow: hidden;/);
   assert.match(stageApp, /stageDirectory = \(payload\.directory \|\| \[\]\)/);
   assert.match(stageApp, /const found = stageDirectory\.find/);
   assert.match(stageApp, /IS_COMPANY_ACCESS[\s\S]*\/api\/secure-sheet\?source=effectif&sheet=current/);

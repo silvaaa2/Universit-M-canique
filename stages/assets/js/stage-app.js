@@ -93,6 +93,8 @@ let effectifRows = [];
 let stageArchives = [];
 const companyStudentProgressCache = new Map();
 const COMPANY_STUDENT_PROGRESS_CACHE_MS = 10000;
+let companyStudentProgressScrollY = 0;
+let companyStudentProgressScrollLocked = false;
 
 let currentUserRole = null;
 let currentUserAdmin = false;
@@ -2194,6 +2196,26 @@ window.closeBulkStageModal = function() {
    FICHE PARCOURS ÉLÈVE - ENTREPRISE
 ========================================================= */
 
+function lockCompanyStudentProgressScroll() {
+  if (companyStudentProgressScrollLocked) return;
+
+  companyStudentProgressScrollY = Math.max(0, window.scrollY || window.pageYOffset || 0);
+  document.documentElement.style.setProperty("--company-progress-scroll-y", `${companyStudentProgressScrollY}px`);
+  document.documentElement.classList.add("company-student-modal-open");
+  document.body.classList.add("company-student-modal-open");
+  companyStudentProgressScrollLocked = true;
+}
+
+function unlockCompanyStudentProgressScroll() {
+  if (!companyStudentProgressScrollLocked) return;
+
+  document.documentElement.classList.remove("company-student-modal-open");
+  document.body.classList.remove("company-student-modal-open");
+  document.documentElement.style.removeProperty("--company-progress-scroll-y");
+  window.scrollTo(0, companyStudentProgressScrollY);
+  companyStudentProgressScrollLocked = false;
+}
+
 function ensureCompanyStudentProgressModal() {
   if (!IS_COMPANY_ACCESS || document.getElementById("companyStudentProgressModal")) return;
 
@@ -2315,6 +2337,7 @@ window.openCompanyStudentProgress = async function(normalizedIdUnique) {
   title.textContent = effectifStudent.studentName || "Nom non renseigné";
   meta.textContent = `ID Unique ${effectifStudent.idUnique || normalizedId} · Consultation uniquement`;
   content.innerHTML = `<div class="company-progress-loading"><span></span> Chargement du parcours...</div>`;
+  lockCompanyStudentProgressScroll();
   modal.hidden = false;
   requestAnimationFrame(() => {
     modal.classList.add("active");
@@ -2349,6 +2372,7 @@ window.closeCompanyStudentProgress = function() {
   setTimeout(() => {
     modal.hidden = true;
     modal.dataset.studentId = "";
+    unlockCompanyStudentProgressScroll();
     [...document.querySelectorAll("[data-company-student-id]")]
       .find(row => row.dataset.companyStudentId === studentId)
       ?.focus();
