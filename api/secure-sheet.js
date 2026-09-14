@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { verifyFirebaseProfAccess } = require("../lib/server/firebase-prof-access.js");
+const { validateCompanySession } = require("../lib/server/unified-access.js");
 
 const FIREBASE_WEB_API_KEY = "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c";
 const FIREBASE_PROJECT_ID = "universit-4b11e";
@@ -351,11 +352,9 @@ async function getFirestoreDocument(pathParts, idToken) {
       await new Promise(resolve => setTimeout(resolve, retryDelays[attempt]));
     }
 
-    response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${idToken}`
-      }
-    });
+    response = await fetch(url, idToken ? {
+      headers: { Authorization: `Bearer ${idToken}` }
+    } : { cache: "no-store" });
 
     if (response.status !== 429 || attempt === retryDelays.length - 1) break;
   }
@@ -589,22 +588,25 @@ module.exports = async function handler(req, res) {
 
   try {
     const idToken = getBearerToken(req);
-
-    if (!idToken) {
-      sendJson(res, 401, { error: "Connexion professeur requise." });
-      return;
-    }
-
-    const access = await verifyFirebaseProfAccess(idToken);
-
-    if (!access.allowed) {
-      sendJson(res, 403, { error: "Accès réservé aux professeurs." });
-      return;
-    }
-
     const url = new URL(req.url, `https://${req.headers.host || "localhost"}`);
     const source = url.searchParams.get("source") || "";
     const sheet = url.searchParams.get("sheet") || "";
+
+    if (idToken) {
+      const access = await verifyFirebaseProfAccess(idToken);
+      if (!access.allowed) {
+        sendJson(res, 403, { error: "Accès réservé aux professeurs." });
+        return;
+      }
+    } else {
+      const companySession = await validateCompanySession(req);
+      const companyEffectifAccess = Boolean(companySession) && source === EFFECTIF_SOURCE && sheet === EFFECTIF_SHEET_KEY;
+      if (!companyEffectifAccess) {
+        sendJson(res, 401, { error: "Connexion requise." });
+        return;
+      }
+    }
+
     const resolvedSheet = await resolveSheet(source, sheet, idToken, {
       effectifFallback: {
         spreadsheetId: url.searchParams.get("spreadsheetId") || "",

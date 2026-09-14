@@ -38,10 +38,20 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
 
   assert.match(stageApp, /fetchCompanyRows\("stages"\)/);
   assert.match(stageApp, /fetchCompanyRows\("exams"\)/);
+  assert.match(stageApp, /IS_COMPANY_ACCESS[\s\S]*\/api\/secure-sheet\?source=effectif&sheet=current/);
   assert.match(stageApp, /currentUserRole = "company"/);
+  assert.doesNotMatch(stageApp, /Vérifie que le Google Sheet est bien public en lecture/);
   assert.match(serverProxy, /row\.companyId === session\.companyId/);
   assert.match(serverProxy, /documentId\.startsWith\(`\$\{session\.companyId\}__`\)/);
   assert.match(serverProxy, /if \(kind !== "stages"\)/);
+});
+
+test("l’effectif entreprise passe par la session serveur sans exposer les autres feuilles", async () => {
+  const secureSheet = await readFile(new URL("../api/secure-sheet.js", import.meta.url), "utf8");
+
+  assert.match(secureSheet, /validateCompanySession\(req\)/);
+  assert.match(secureSheet, /source === EFFECTIF_SOURCE && sheet === EFFECTIF_SHEET_KEY/);
+  assert.match(secureSheet, /idToken \? \{[\s\S]*Authorization: `Bearer \$\{idToken\}`[\s\S]*\} : \{ cache: "no-store" \}/);
 });
 
 test("la session entreprise est signée et reste limitée à son périmètre serveur", () => {

@@ -1299,10 +1299,17 @@ function normalizeEffectifRows(rows) {
 async function loadEffectifRows() {
   if (effectifRows.length) return effectifRows;
 
-  const response = await fetch(buildEffectifCsvUrl());
+  const effectifUrl = IS_COMPANY_ACCESS
+    ? `/api/secure-sheet?source=effectif&sheet=current&spreadsheetId=${encodeURIComponent(effectifSpreadsheetId)}&gid=${encodeURIComponent(effectifGid)}`
+    : buildEffectifCsvUrl();
+  const response = await fetch(effectifUrl, IS_COMPANY_ACCESS ? {
+    credentials: "same-origin",
+    cache: "no-store"
+  } : undefined);
 
   if (!response.ok) {
-    throw new Error(`Erreur Google Sheets : ${response.status}`);
+    const payload = IS_COMPANY_ACCESS ? await response.json().catch(() => ({})) : {};
+    throw new Error(payload.error || `Erreur de chargement de l’effectif : ${response.status}`);
   }
 
   const csvText = await response.text();
@@ -1463,7 +1470,7 @@ async function renderEffectifPanel() {
     content.innerHTML = `
       <div class="loading-box">
         Impossible de charger l’effectif.<br>
-        Vérifie que le Google Sheet est bien public en lecture.
+        ${IS_COMPANY_ACCESS ? "Réessaie dans quelques secondes." : "Vérifie le réglage Google Sheets de l’effectif."}
       </div>
     `;
   }
