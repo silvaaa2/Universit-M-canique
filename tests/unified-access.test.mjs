@@ -47,9 +47,10 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(stageApp, /lockCompanyStudentProgressScroll\(\)/);
   assert.match(stageApp, /unlockCompanyStudentProgressScroll\(\)/);
   assert.match(stageApp, /document\.body\.classList\.add\("company-student-modal-open"\)/);
-  assert.match(stageApp, /window\.scrollTo\(0, companyStudentProgressScrollY\)/);
+  assert.doesNotMatch(stageApp, /document\.body\.style\.top|window\.scrollTo\(0, companyStudentProgressScrollY\)/);
   assert.match(stageCss, /\.company-student-progress-modal\s*\{[\s\S]*position: fixed !important;[\s\S]*align-items: center;[\s\S]*justify-content: center;/);
-  assert.match(stageCss, /body\.company-student-modal-open\s*\{[\s\S]*position: fixed;[\s\S]*overflow: hidden;/);
+  assert.match(stageCss, /body\.company-student-modal-open\s*\{[^}]*overflow: hidden;/);
+  assert.doesNotMatch(stageCss, /body\.company-student-modal-open\s*\{[^}]*position: fixed;/);
   assert.match(stageApp, /stageDirectory = \(payload\.directory \|\| \[\]\)/);
   assert.match(stageApp, /const found = stageDirectory\.find/);
   assert.match(stageApp, /IS_COMPANY_ACCESS[\s\S]*\/api\/secure-sheet\?source=effectif&sheet=current/);

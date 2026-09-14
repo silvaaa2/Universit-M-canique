@@ -93,7 +93,6 @@ let effectifRows = [];
 let stageArchives = [];
 const companyStudentProgressCache = new Map();
 const COMPANY_STUDENT_PROGRESS_CACHE_MS = 10000;
-let companyStudentProgressScrollY = 0;
 let companyStudentProgressScrollLocked = false;
 
 let currentUserRole = null;
@@ -2199,8 +2198,6 @@ window.closeBulkStageModal = function() {
 function lockCompanyStudentProgressScroll() {
   if (companyStudentProgressScrollLocked) return;
 
-  companyStudentProgressScrollY = Math.max(0, window.scrollY || window.pageYOffset || 0);
-  document.documentElement.style.setProperty("--company-progress-scroll-y", `${companyStudentProgressScrollY}px`);
   document.documentElement.classList.add("company-student-modal-open");
   document.body.classList.add("company-student-modal-open");
   companyStudentProgressScrollLocked = true;
@@ -2211,8 +2208,6 @@ function unlockCompanyStudentProgressScroll() {
 
   document.documentElement.classList.remove("company-student-modal-open");
   document.body.classList.remove("company-student-modal-open");
-  document.documentElement.style.removeProperty("--company-progress-scroll-y");
-  window.scrollTo(0, companyStudentProgressScrollY);
   companyStudentProgressScrollLocked = false;
 }
 

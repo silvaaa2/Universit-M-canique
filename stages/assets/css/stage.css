@@ -2138,20 +2138,13 @@ main {
   justify-content: center;
   overflow: hidden;
   overscroll-behavior: none;
+  touch-action: none;
 }
 
-html.company-student-modal-open {
+html.company-student-modal-open,
+body.company-student-modal-open {
   overflow: hidden;
   overscroll-behavior: none;
-}
-
-body.company-student-modal-open {
-  position: fixed;
-  top: calc(-1 * var(--company-progress-scroll-y, 0px));
-  right: 0;
-  left: 0;
-  width: 100%;
-  overflow: hidden;
 }
 
 .company-student-progress-card {
@@ -2161,6 +2154,7 @@ body.company-student-modal-open {
   margin: auto;
   overflow: auto;
   overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .company-student-progress-card h2 {
