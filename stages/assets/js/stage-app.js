@@ -2264,18 +2264,6 @@ function renderCompanyStudentProgress(student, exam) {
     `;
   }).join("");
 
-  const verificationItems = [
-    { key: "verif3", label: "Vérif 3" },
-    { key: "verif4", label: "Vérif 4" }
-  ].map(item => {
-    const completed = checks[item.key] === true;
-    return `
-      <span class="company-verification-badge ${completed ? "is-complete" : "is-pending"}">
-        ${completed ? "✓" : "—"} ${item.label}
-      </span>
-    `;
-  }).join("");
-
   const safeMaxScore = exam ? Math.max(1, Number(exam.maxScore || 50)) : 50;
   const safeTotalScore = exam
     ? Math.max(0, Math.min(safeMaxScore, Number(exam.totalScore || 0)))
@@ -2295,10 +2283,6 @@ function renderCompanyStudentProgress(student, exam) {
     </div>
 
     <div class="company-progress-grid">${moduleCards}</div>
-
-    <div class="company-verification-row" aria-label="Vérifications de présence">
-      ${verificationItems}
-    </div>
 
     <article class="company-exam-card ${exam ? "has-exam" : "no-exam"}">
       <div>

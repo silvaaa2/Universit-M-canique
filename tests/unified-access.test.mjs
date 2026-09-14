@@ -54,7 +54,8 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(serverProxy, /STUDENT_MODULES_COLLECTION = "studentModules"/);
   assert.match(serverProxy, /kind === "student-progress"/);
   assert.match(serverProxy, /module1: readCheck\("module1"\)/);
-  assert.match(serverProxy, /verif4: readCheck\("verif4"\)/);
+  assert.doesNotMatch(serverProxy, /verif3: readCheck|verif4: readCheck/);
+  assert.doesNotMatch(stageApp, /Vérif 3|Vérif 4|company-verification-badge/);
   assert.match(serverProxy, /documentId\.startsWith\(`\$\{session\.companyId\}__`\)/);
   assert.match(serverProxy, /if \(kind !== "stages"\)/);
 });

@@ -58,9 +58,7 @@ function sanitizeStudentProgress(row) {
       module1: readCheck("module1"),
       module2: readCheck("module2"),
       module3: readCheck("module3"),
-      module4: readCheck("module4"),
-      verif3: readCheck("verif3"),
-      verif4: readCheck("verif4")
+      module4: readCheck("module4")
     },
     dates: {
       module1: readDate("module1"),
