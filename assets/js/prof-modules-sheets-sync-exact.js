@@ -15,6 +15,7 @@ const firebaseConfig = {
 
 const STAGE_SETTINGS_COLLECTION = "stageSettings";
 const EFFECTIF_SETTINGS_DOC_ID = "effectif";
+const MODULE_EFFECTIF_SETTINGS_DOC_ID = "moduleEffectif";
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const GOOGLE_CLIENT_ID_STORAGE_KEY = "prof_modules_google_client_id";
 const DEFAULT_GOOGLE_CLIENT_ID = "156801758179-0v4oqbhm3pa6fcpd18kqqqu6k8dst3i3.apps.googleusercontent.com";
@@ -213,7 +214,11 @@ async function getUserAccess(user) {
 }
 
 async function loadEffectifSettings() {
-  const snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID));
+  let snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID));
+
+  if (!snap.exists()) {
+    snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID));
+  }
 
   if (!snap.exists()) {
     throw new Error("Aucun effectif n'est configuré.");

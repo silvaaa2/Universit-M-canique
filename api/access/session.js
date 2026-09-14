@@ -1,5 +1,6 @@
 const { ProfAuthError, sendJson } = require("../../lib/server/discord-prof-auth.js");
 const { verifyFirebaseProfAccess } = require("../../lib/server/firebase-prof-access.js");
+const handleCursusManagement = require("../../lib/server/cursus-management.js");
 const {
   COMPANIES,
   authenticateCompanyCode,
@@ -42,7 +43,13 @@ module.exports = async function handler(request, response) {
   const adminAction = requestUrl.searchParams.get("admin") || "";
   const adminCompanyCodes = adminAction === "company-codes";
   const adminCompanyPreview = adminAction === "company-preview";
+  const adminCursusManagement = adminAction === "cursus-management";
   const stageContext = requestUrl.searchParams.get("context") === "stages";
+
+  if (adminCursusManagement) {
+    await handleCursusManagement(request, response);
+    return;
+  }
 
   if (request.method === "GET") {
     try {

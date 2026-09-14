@@ -355,16 +355,6 @@ function showDashboard() {
   logoutBtn.hidden = false;
   ensureCompanyWorkspaceChrome();
 
-  const resetWeekBtn = document.getElementById("resetWeekBtn");
-  if (resetWeekBtn) {
-    resetWeekBtn.hidden = currentUserRole !== "prof";
-  }
-
-  const changeEffectifBtn = document.getElementById("changeEffectifBtn");
-  if (changeEffectifBtn) {
-    changeEffectifBtn.hidden = currentUserRole !== "prof";
-  }
-
   ensureEffectifLinkModal();
 }
 
@@ -753,20 +743,23 @@ function setDashboardArchiveTitle(archive) {
 
 async function loadStageArchives() {
   if (IS_COMPANY_ACCESS) {
+    const payload = await fetchCompanyRows("archives");
+    stageArchives = (payload.rows || []).map(row => ({
+      firebaseId: row.firebaseId || row.id,
+      ...row
+    }));
+  } else {
+    const snap = await getDocs(collection(db, STAGE_ARCHIVE_COLLECTION));
+
     stageArchives = [];
-    currentArchive = null;
-    return;
-  }
-  const snap = await getDocs(collection(db, STAGE_ARCHIVE_COLLECTION));
 
-  stageArchives = [];
-
-  snap.forEach(docSnap => {
-    stageArchives.push({
-      firebaseId: docSnap.id,
-      ...docSnap.data()
+    snap.forEach(docSnap => {
+      stageArchives.push({
+        firebaseId: docSnap.id,
+        ...docSnap.data()
+      });
     });
-  });
+  }
 
   stageArchives.sort((a, b) => {
     return String(b.startDate || "").localeCompare(String(a.startDate || ""));
@@ -1570,7 +1563,7 @@ async function renderEffectifPanel() {
 ========================================================= */
 
 function renderRightPanelTabs() {
-  const archivesButton = IS_COMPANY_ACCESS ? "" : `
+  const archivesButton = `
       <button
         type="button"
         class="${currentRightPanel === "archives" ? "active" : ""}"
@@ -1605,7 +1598,6 @@ function renderRightPanelTabs() {
 }
 
 window.switchRightPanel = function(panel) {
-  if (IS_COMPANY_ACCESS && panel === "archives") return;
   currentRightPanel = panel;
   updateCompanyWorkspaceNavigation(panel === "effectif" ? "effectif" : "examens");
 
@@ -2955,9 +2947,8 @@ async function refreshAll() {
       console.warn("Effectif indisponible dans le résumé entreprise :", error);
       return [];
     }));
-  } else {
-    loaders.push(loadStageArchives());
   }
+  loaders.push(loadStageArchives());
 
   await Promise.all(loaders);
 

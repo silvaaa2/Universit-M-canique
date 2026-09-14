@@ -47,6 +47,7 @@ const DASHBOARD_TIMEOUT_MS = 7000;
 const EFFECTIF_TIMEOUT_MS = 12000;
 const STAGE_SETTINGS_COLLECTION = "stageSettings";
 const EFFECTIF_SETTINGS_DOC_ID = "effectif";
+const MODULE_EFFECTIF_SETTINGS_DOC_ID = "moduleEffectif";
 const MODULE_KEYS = ["module1", "module2", "module3", "module4"];
 const MODULE_EXAM_KEY = "exam";
 const MODULE_RETAKE_KEY = "retakeExam";
@@ -496,11 +497,19 @@ function normalizeEffectifRows(rows) {
 }
 
 async function loadCurrentCursus() {
-  const settingsSnap = await withTimeout(
-    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
+  let settingsSnap = await withTimeout(
+    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID)),
     DASHBOARD_TIMEOUT_MS,
     "Lecture du cursus actif trop longue."
   );
+
+  if (!settingsSnap.exists()) {
+    settingsSnap = await withTimeout(
+      getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
+      DASHBOARD_TIMEOUT_MS,
+      "Lecture du cursus actif trop longue."
+    );
+  }
 
   if (!settingsSnap.exists()) {
     throw new Error("Aucun cursus actif n'est configuré.");
@@ -527,7 +536,7 @@ async function loadCurrentCursus() {
     DASHBOARD_TIMEOUT_MS,
     "Vérification de la session trop longue."
   );
-  const csvUrl = `/api/secure-sheet?source=effectif&sheet=current&spreadsheetId=${encodeURIComponent(spreadsheetId)}&gid=${encodeURIComponent(gid)}`;
+  const csvUrl = `/api/secure-sheet?source=module-effectif&sheet=current&spreadsheetId=${encodeURIComponent(spreadsheetId)}&gid=${encodeURIComponent(gid)}`;
   const response = await withTimeout(
     fetch(csvUrl, {
       cache: "no-store",

@@ -97,7 +97,7 @@ service cloud.firestore {
 
     match /stageArchives/{docId} {
       allow read: if isProf() || isStage() || isAdmin();
-      allow create: if isProf() || isAdmin();
+      allow create: if isAdmin();
       allow delete: if isAdmin();
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -113,8 +113,8 @@ service cloud.firestore {
     }
 
     match /stageSettings/{docId} {
-      allow read: if docId == "effectif";
-      allow write: if docId == "effectif" && isAdmin();
+      allow read: if docId in ["effectif", "moduleEffectif"];
+      allow write: if docId in ["effectif", "moduleEffectif"] && isAdmin();
     }
 
     match /stageComments/{docId} {

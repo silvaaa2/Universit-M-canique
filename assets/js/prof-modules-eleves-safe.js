@@ -20,6 +20,7 @@ const firebaseConfig = {
 
 const STAGE_SETTINGS_COLLECTION = "stageSettings";
 const EFFECTIF_SETTINGS_DOC_ID = "effectif";
+const MODULE_EFFECTIF_SETTINGS_DOC_ID = "moduleEffectif";
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
 const EFFECTIF_TIMEOUT_MS = 12000;
@@ -278,11 +279,19 @@ async function getUserAccess(user) {
 }
 
 async function loadEffectifSettings() {
-  const snap = await withTimeout(
-    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
+  let snap = await withTimeout(
+    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID)),
     FIRESTORE_TIMEOUT_MS,
     "Lecture du réglage effectif trop longue."
   );
+
+  if (!snap.exists()) {
+    snap = await withTimeout(
+      getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
+      FIRESTORE_TIMEOUT_MS,
+      "Lecture du réglage effectif trop longue."
+    );
+  }
 
   if (!snap.exists()) {
     throw new Error("Aucun effectif n'est configuré.");

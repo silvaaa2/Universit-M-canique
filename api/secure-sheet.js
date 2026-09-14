@@ -87,6 +87,7 @@ const SOURCE_DOCS = {
 };
 
 const EFFECTIF_SOURCE = "effectif";
+const MODULE_EFFECTIF_SOURCE = "module-effectif";
 const EFFECTIF_SHEET_KEY = "current";
 
 let googleAccessTokenCache = null;
@@ -415,11 +416,38 @@ async function resolveEffectifSheet(idToken, clientFallback = {}) {
   return { spreadsheetId, gid };
 }
 
+async function resolveModuleEffectifSheet(idToken, clientFallback = {}) {
+  let settings = {};
+  try {
+    settings = await getFirestoreDocument(["stageSettings", "moduleEffectif"], idToken);
+  } catch (error) {
+    console.warn("Réglage effectif modules indisponible, fallback stage utilisé :", error);
+  }
+
+  const spreadsheetId =
+    extractSpreadsheetId(settings.spreadsheetId) ||
+    extractSpreadsheetId(settings.spreadsheetUrl) ||
+    extractSpreadsheetId(settings.link) ||
+    extractSpreadsheetId(settings.url);
+  const gid =
+    extractGid(settings.gid) ||
+    extractGid(settings.spreadsheetId) ||
+    extractGid(settings.spreadsheetUrl) ||
+    extractGid(settings.link) ||
+    extractGid(settings.url);
+
+  if (spreadsheetId && gid) return { spreadsheetId, gid };
+  return resolveEffectifSheet(idToken, clientFallback);
+}
+
 async function resolveSheet(source, sheetKey, idToken, options = {}) {
   const safeSheetKey = normalizeSheetKey(sheetKey);
 
   if (source === EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY) {
     return resolveEffectifSheet(idToken, options.effectifFallback);
+  }
+  if (source === MODULE_EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY) {
+    return resolveModuleEffectifSheet(idToken, options.effectifFallback);
   }
 
   const safeSource = SOURCE_DOCS[source] ? source : "";

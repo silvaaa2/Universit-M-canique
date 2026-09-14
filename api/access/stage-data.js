@@ -12,9 +12,11 @@ const {
 
 const STAGE_COLLECTION = "stageValidations";
 const EXAM_COLLECTION = "examAnswerStatuses";
+const STAGE_ARCHIVE_COLLECTION = "stageArchives";
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const STAGE_SETTINGS_COLLECTION = "stageSettings";
 const EFFECTIF_SETTINGS_DOCUMENT = "effectif";
+const MODULE_EFFECTIF_SETTINGS_DOCUMENT = "moduleEffectif";
 const COMPANY_WARNING_LEVELS = new Set(["warning1", "warning2", "warning3", "refused"]);
 
 function normalizeIdUnique(value) {
@@ -76,6 +78,13 @@ function sanitizeCompanyWarning(row) {
   };
 }
 
+async function readModuleEffectifSettings() {
+  return (
+    await getDocument(STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOCUMENT) ||
+    await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT)
+  );
+}
+
 async function readCompanyWarnings(companyRows) {
   const companyStudentIds = new Set(companyRows
     .map(row => normalizeIdUnique(row.normalizedIdUnique || row.idUnique))
@@ -83,7 +92,7 @@ async function readCompanyWarnings(companyRows) {
   if (!companyStudentIds.size) return [];
 
   try {
-    const settings = await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT);
+    const settings = await readModuleEffectifSettings();
     const cursusKey = buildCursusKey(settings || {});
     if (!cursusKey) return [];
 
@@ -101,6 +110,64 @@ async function readCompanyWarnings(companyRows) {
     console.warn("Lecture des avertissements entreprise impossible :", error?.message || error);
     return [];
   }
+}
+
+function sanitizeCompanyArchive(archive, companyId) {
+  const stageRows = (Array.isArray(archive.stageValidations) ? archive.stageValidations : [])
+    .filter(row => String(row?.companyId || "") === companyId)
+    .map(row => ({
+      firebaseId: String(row?.firebaseId || ""),
+      idUnique: String(row?.idUnique || ""),
+      normalizedIdUnique: normalizeIdUnique(row?.normalizedIdUnique || row?.idUnique),
+      companyId,
+      companyName: String(row?.companyName || ""),
+      status: String(row?.status || "approved")
+    }));
+  const studentIds = new Set(stageRows.map(row => row.normalizedIdUnique).filter(Boolean));
+  const examRows = (Array.isArray(archive.examParticipants) ? archive.examParticipants : [])
+    .filter(row => (
+      String(row?.companyId || "") === companyId ||
+      studentIds.has(normalizeIdUnique(row?.normalizedIdUnique || row?.idUnique))
+    ))
+    .map(row => ({
+      firebaseId: String(row?.firebaseId || ""),
+      idUnique: String(row?.idUnique || ""),
+      normalizedIdUnique: normalizeIdUnique(row?.normalizedIdUnique || row?.idUnique),
+      studentName: String(row?.studentName || "Nom non renseigné"),
+      totalScore: Number(row?.totalScore || 0),
+      maxScore: Number(row?.maxScore || 50),
+      status: String(row?.status || "pending"),
+      companyId,
+      companyName: String(row?.companyName || "")
+    }));
+
+  if (!stageRows.length && !examRows.length) return null;
+  return {
+    firebaseId: String(archive.id || ""),
+    title: String(archive.title || ""),
+    startDate: String(archive.startDate || ""),
+    endDate: String(archive.endDate || ""),
+    startDisplay: String(archive.startDisplay || ""),
+    endDisplay: String(archive.endDisplay || ""),
+    stageValidations: stageRows,
+    examParticipants: examRows,
+    summary: {
+      totalStages: stageRows.length,
+      totalExams: examRows.length,
+      approved: examRows.filter(row => row.status === "approved").length,
+      rejected: examRows.filter(row => row.status === "rejected").length,
+      pending: examRows.filter(row => row.status !== "approved" && row.status !== "rejected").length
+    },
+    createdAt: archive.createdAt || null
+  };
+}
+
+async function readCompanyArchives(session) {
+  const rows = await listDocuments(STAGE_ARCHIVE_COLLECTION);
+  return rows
+    .map(row => sanitizeCompanyArchive(row, session.companyId))
+    .filter(Boolean)
+    .sort((a, b) => String(b.startDate || "").localeCompare(String(a.startDate || "")));
 }
 
 function sanitizeStudentProgress(row) {
@@ -151,6 +218,9 @@ async function readCompanyData(session, kind, request) {
     const rows = await listDocuments(EXAM_COLLECTION);
     return rows.filter(row => row.archived !== true);
   }
+  if (kind === "archives") {
+    return readCompanyArchives(session);
+  }
   if (kind === "student-progress") {
     const requestedId = normalizeIdUnique(getRequestUrl(request).searchParams.get("id"));
     if (!requestedId) {
@@ -159,7 +229,7 @@ async function readCompanyData(session, kind, request) {
       throw error;
     }
 
-    const settings = await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT);
+    const settings = await readModuleEffectifSettings();
     const cursusKey = buildCursusKey(settings || {});
     const matchingRow = cursusKey
       ? await getDocument(STUDENT_MODULES_COLLECTION, `${cursusKey}__${requestedId}`)
