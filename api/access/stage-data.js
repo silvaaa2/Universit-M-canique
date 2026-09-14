@@ -71,6 +71,7 @@ function sanitizeCompanyWarning(row) {
 
   return {
     level,
+    studentName: String(row?.studentName || "").trim().slice(0, 160),
     comment: String(row?.warningComment || row?.warning?.comment || "").trim().slice(0, 1200)
   };
 }

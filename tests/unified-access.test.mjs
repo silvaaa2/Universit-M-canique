@@ -79,6 +79,14 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
 test("les entreprises voient uniquement les avertissements de leurs stagiaires en lecture seule", async () => {
   const stageApp = await readFile(new URL("../stages/assets/js/stage-app.js", import.meta.url), "utf8");
   const stageCss = await readFile(new URL("../stages/assets/css/stage.css", import.meta.url), "utf8");
+  const effectifRenderer = stageApp.slice(
+    stageApp.indexOf("function renderEffectifRows"),
+    stageApp.indexOf("function renderRightPanelTabs")
+  );
+  const companyRenderer = stageApp.slice(
+    stageApp.indexOf("function renderCompanies"),
+    stageApp.indexOf("function renderExamParticipants")
+  );
   const warningPopup = stageApp.slice(
     stageApp.indexOf("function ensureCompanyWarningModal"),
     stageApp.indexOf("function ensureCompanyStudentProgressModal")
@@ -88,6 +96,9 @@ test("les entreprises voient uniquement les avertissements de leurs stagiaires e
   assert.match(warningPopup, /Raison indiquée par le professeur/);
   assert.match(warningPopup, /lecture seule/);
   assert.doesNotMatch(warningPopup, /setDoc|data-warning-save|method:\s*"POST"/);
+  assert.doesNotMatch(effectifRenderer, /data-company-warning-student/);
+  assert.match(companyRenderer, /stage-student-id-line/);
+  assert.match(companyRenderer, /data-company-warning-student/);
   assert.match(stageCss, /\.company-warning-triangle/);
   assert.match(stageCss, /\.company-warning-modal/);
 });

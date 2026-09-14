@@ -463,6 +463,7 @@ async function loadStageValidations() {
       normalizeIdUnique(warning.studentId),
       {
         level: String(warning.level || "none"),
+        studentName: String(warning.studentName || "").trim(),
         comment: String(warning.comment || "").trim()
       }
     ]).filter(([studentId, warning]) => studentId && COMPANY_WARNING_META[warning.level]));
@@ -1385,7 +1386,7 @@ function getEffectifMatches() {
   });
 }
 
-function bindCompanyStudentProgressRows() {
+function bindCompanyWarningButtons() {
   if (!IS_COMPANY_ACCESS) return;
 
   document.querySelectorAll("[data-company-warning-student]").forEach(button => {
@@ -1401,10 +1402,13 @@ function bindCompanyStudentProgressRows() {
       openWarning(event);
     });
   });
+}
+
+function bindCompanyStudentProgressRows() {
+  if (!IS_COMPANY_ACCESS) return;
 
   document.querySelectorAll("[data-company-student-id]").forEach(row => {
-    const openStudent = event => {
-      if (event?.target?.closest?.("[data-company-warning-student]")) return;
+    const openStudent = () => {
       window.openCompanyStudentProgress(row.dataset.companyStudentId || "");
     };
 
@@ -1412,7 +1416,7 @@ function bindCompanyStudentProgressRows() {
     row.addEventListener("keydown", event => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
-      openStudent(event);
+      openStudent();
     });
   });
 }
@@ -1491,13 +1495,6 @@ function renderEffectifRows() {
         const safeStageTooltip = stageCompany
           ? `Stage : ${escapeHtml(stageCompany)}`
           : "Stage : Aucun stage";
-        const companyWarning = IS_COMPANY_ACCESS
-          ? companyWarningByStudentId.get(item.normalizedIdUnique)
-          : null;
-        const warningMeta = companyWarning ? COMPANY_WARNING_META[companyWarning.level] : null;
-        const warningButton = warningMeta
-          ? `<button type="button" class="company-warning-triangle ${escapeHtml(warningMeta.tone)}" data-company-warning-student="${escapeHtml(item.normalizedIdUnique)}" aria-label="Voir ${escapeHtml(warningMeta.label)} de ${safeStudentName}" title="${escapeHtml(warningMeta.label)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.7 1.8 18.4A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.6L13.7 3.7a2 2 0 0 0-3.4 0Z"/><path d="M12 8v5"/><circle cx="12" cy="17" r="1"/></svg></button>`
-          : "";
 
         const tooltipText = `${safeStudentName} · ID ${safeIdUnique} · ${safeExamText} · ${safeStageTooltip}`;
         const companyRowAttributes = IS_COMPANY_ACCESS
@@ -1506,10 +1503,7 @@ function renderEffectifRows() {
 
         return `
           <div class="effectif-row has-effectif-tooltip ${IS_COMPANY_ACCESS ? "company-effectif-row" : ""}" data-tooltip="${tooltipText}" ${companyRowAttributes}>
-            <div class="effectif-student-id">
-              <strong title="${safeIdUnique}">${safeIdUnique}</strong>
-              ${warningButton}
-            </div>
+            <strong title="${safeIdUnique}">${safeIdUnique}</strong>
 
             <div>
               <b title="${safeStudentName}">${safeStudentName}</b>
@@ -1680,10 +1674,18 @@ function renderCompanies() {
       ? entries.map(entry => {
           const safeDocIdJs = escapeJsString(entry.firebaseId);
           const safeIdUniqueJs = escapeJsString(entry.idUnique);
+          const normalizedStudentId = normalizeIdUnique(entry.normalizedIdUnique || entry.idUnique);
           const effectifStudent = IS_COMPANY_ACCESS
-            ? effectifRows.find(item => item.normalizedIdUnique === entry.normalizedIdUnique)
+            ? effectifRows.find(item => item.normalizedIdUnique === normalizedStudentId)
             : null;
-          const studentName = effectifStudent?.studentName || "";
+          const companyWarning = IS_COMPANY_ACCESS
+            ? companyWarningByStudentId.get(normalizedStudentId)
+            : null;
+          const warningMeta = companyWarning ? COMPANY_WARNING_META[companyWarning.level] : null;
+          const studentName = effectifStudent?.studentName || companyWarning?.studentName || "";
+          const warningButton = warningMeta
+            ? `<button type="button" class="company-warning-triangle ${escapeHtml(warningMeta.tone)}" data-company-warning-student="${escapeHtml(normalizedStudentId)}" aria-label="Voir ${escapeHtml(warningMeta.label)} de ${escapeHtml(studentName || entry.idUnique)}" title="${escapeHtml(warningMeta.label)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.7 1.8 18.4A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.6L13.7 3.7a2 2 0 0 0-3.4 0Z"/><path d="M12 8v5"/><circle cx="12" cy="17" r="1"/></svg></button>`
+            : "";
           const deleteButton = IS_ADMIN_COMPANY_PREVIEW ? "" : `
               <button
                 type="button"
@@ -1696,7 +1698,10 @@ function renderCompanies() {
           return `
             <div class="stage-id-row" data-stage-row-id="${escapeHtml(entry.firebaseId)}">
               <div class="stage-student-identity">
-                <strong>${escapeHtml(entry.idUnique)}</strong>
+                <div class="stage-student-id-line">
+                  <strong>${escapeHtml(entry.idUnique)}</strong>
+                  ${warningButton}
+                </div>
                 ${studentName ? `<span>${escapeHtml(studentName)}</span>` : ""}
               </div>
               ${deleteButton}
@@ -1743,6 +1748,7 @@ function renderCompanies() {
   companyGrid.innerHTML = companiesHtml;
 
   ensureBulkModal();
+  bindCompanyWarningButtons();
   updateCompanyWorkspaceStats();
 }
 
@@ -2287,7 +2293,10 @@ window.openCompanyStudentWarning = function(normalizedIdUnique) {
   const warning = companyWarningByStudentId.get(normalizedId);
   const warningMeta = warning ? COMPANY_WARNING_META[warning.level] : null;
   const effectifStudent = effectifRows.find(item => item.normalizedIdUnique === normalizedId);
-  if (!warning || !warningMeta || !effectifStudent) return;
+  const stageStudent = stageValidations.find(item => (
+    normalizeIdUnique(item.normalizedIdUnique || item.idUnique) === normalizedId
+  ));
+  if (!warning || !warningMeta || !stageStudent) return;
 
   ensureCompanyWarningModal();
   const modal = document.getElementById("companyWarningModal");
@@ -2296,8 +2305,8 @@ window.openCompanyStudentWarning = function(normalizedIdUnique) {
   const content = document.getElementById("companyWarningContent");
   if (!modal || !title || !meta || !content) return;
 
-  title.textContent = effectifStudent.studentName || "Nom non renseigné";
-  meta.textContent = `ID Unique ${effectifStudent.idUnique || normalizedId} · Consultation uniquement`;
+  title.textContent = effectifStudent?.studentName || warning.studentName || "Nom non renseigné";
+  meta.textContent = `ID Unique ${effectifStudent?.idUnique || stageStudent.idUnique || normalizedId} · Consultation uniquement`;
   content.innerHTML = `
     <div class="company-warning-status ${escapeHtml(warningMeta.tone)}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.7 1.8 18.4A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.6L13.7 3.7a2 2 0 0 0-3.4 0Z"/><path d="M12 8v5"/><circle cx="12" cy="17" r="1"/></svg>

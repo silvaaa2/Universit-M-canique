@@ -1637,19 +1637,7 @@ main {
   text-overflow: ellipsis;
 }
 
-.effectif-student-id {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.effectif-student-id > strong {
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.company-warning-triangle {
+.stage-id-row .company-warning-triangle {
   width: 29px;
   min-width: 29px;
   height: 29px;
@@ -1666,27 +1654,27 @@ main {
   animation: company-warning-pulse 2.4s ease-in-out infinite;
 }
 
-.company-warning-triangle:hover,
-.company-warning-triangle:focus-visible {
+.stage-id-row .company-warning-triangle:hover,
+.stage-id-row .company-warning-triangle:focus-visible {
   transform: translateY(-1px) scale(1.06);
   filter: brightness(1.14);
   box-shadow: 0 0 0 4px rgba(253,186,116,.13), 0 7px 20px rgba(0,0,0,.30);
   outline: none;
 }
 
-.company-warning-triangle.warning-2 { color: #fde68a; }
-.company-warning-triangle.warning-3,
-.company-warning-triangle.refused { color: #fca5a5; }
+.stage-id-row .company-warning-triangle.warning-2 { color: #fde68a; }
+.stage-id-row .company-warning-triangle.warning-3,
+.stage-id-row .company-warning-triangle.refused { color: #fca5a5; }
 
-.company-warning-triangle svg {
+.stage-id-row .company-warning-triangle svg {
   width: 18px;
   height: 18px;
 }
 
-.company-warning-triangle svg path:first-child,
+.stage-id-row .company-warning-triangle svg path:first-child,
 .company-warning-status svg path:first-child { fill: currentColor; }
 
-.company-warning-triangle svg path:nth-child(2),
+.stage-id-row .company-warning-triangle svg path:nth-child(2),
 .company-warning-status svg path:nth-child(2) {
   fill: none;
   stroke: #17120a;
@@ -1694,7 +1682,7 @@ main {
   stroke-linecap: round;
 }
 
-.company-warning-triangle svg circle,
+.stage-id-row .company-warning-triangle svg circle,
 .company-warning-status svg circle { fill: #17120a; }
 
 @keyframes company-warning-pulse {
@@ -3164,6 +3152,19 @@ body.company-workspace .stage-id-list { padding: 0 13px 16px; }
 
 .stage-student-identity {
   min-width: 0;
+}
+
+.stage-student-id-line {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.stage-student-id-line > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stage-student-identity strong,
