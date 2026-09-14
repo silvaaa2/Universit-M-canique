@@ -9,7 +9,7 @@ const ADMIN_MODULES = [
   "./prof-admin-drive-tools.js?v=1006",
   "./prof-admin-exam-settings.js?v=1012",
   "./prof-admin-exam-scale-wizard.js?v=1007",
-  "./prof-admin-company-codes.js?v=3",
+  "./prof-admin-company-codes.js?v=4",
   "./prof-admin-patch-notes.js?v=1004"
 ];
 
@@ -21,7 +21,7 @@ function wait(ms) {
 
 function getFreshModuleUrl(path) {
   const url = new URL(path, import.meta.url);
-  url.searchParams.set("_admin", "20260914-company-codes-list-fix");
+  url.searchParams.set("_admin", "20260914-company-preview");
   return url;
 }
 

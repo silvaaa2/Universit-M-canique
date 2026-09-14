@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const { verifyFirebaseProfAccess } = require("../lib/server/firebase-prof-access.js");
-const { validateCompanySession } = require("../lib/server/unified-access.js");
+const { validateStageCompanySession } = require("../lib/server/unified-access.js");
 
 const FIREBASE_WEB_API_KEY = "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c";
 const FIREBASE_PROJECT_ID = "universit-4b11e";
@@ -599,7 +599,7 @@ module.exports = async function handler(req, res) {
         return;
       }
     } else {
-      const companySession = await validateCompanySession(req);
+      const companySession = await validateStageCompanySession(req);
       const companyEffectifAccess = Boolean(companySession) && source === EFFECTIF_SOURCE && sheet === EFFECTIF_SHEET_KEY;
       if (!companyEffectifAccess) {
         sendJson(res, 401, { error: "Connexion requise." });

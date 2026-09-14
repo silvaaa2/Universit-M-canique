@@ -4,7 +4,10 @@
     ? { authenticated: true, role: "student", label: "Élève" }
     : null;
 
-  const serverSession = fetch("/api/access/session", {
+  const sessionContext = window.location.pathname.startsWith("/stages")
+    ? "?context=stages"
+    : "";
+  const serverSession = fetch(`/api/access/session${sessionContext}`, {
     credentials: "same-origin",
     cache: "no-store"
   })
@@ -50,6 +53,7 @@
   Promise.all([ready, window.__UNIVERSITY_ACCESS_PROMISE__]).then(([, session]) => {
     if (session?.role) document.documentElement.dataset.universityRole = session.role;
     if (session?.companyId) document.documentElement.dataset.companyScope = session.companyId;
+    if (session?.adminPreview) document.documentElement.dataset.adminCompanyPreview = "true";
     installStageLinks(session);
 
     if (session?.role === "student") {

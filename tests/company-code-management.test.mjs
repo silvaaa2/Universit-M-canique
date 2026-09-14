@@ -7,6 +7,8 @@ const serverUrl = new URL("../lib/server/unified-access.js", import.meta.url);
 const uiUrl = new URL("../assets/js/prof-admin-company-codes.js", import.meta.url);
 const bundleUrl = new URL("../assets/js/prof-admin-v2.js", import.meta.url);
 const adminUrl = new URL("../assets/js/prof-admin.js", import.meta.url);
+const stageUrl = new URL("../stages/assets/js/stage-app.js", import.meta.url);
+const stageApiUrl = new URL("../api/access/stage-data.js", import.meta.url);
 
 test("la modification des codes entreprise reste réservée à l'admin", async () => {
   const api = await readFile(apiUrl, "utf8");
@@ -16,6 +18,24 @@ test("la modification des codes entreprise reste réservée à l'admin", async (
   assert.match(api, /if \(!access\.admin\)/);
   assert.match(api, /assertSameOrigin\(request\)/);
   assert.match(api, /body\.newCode[\s\S]*body\.confirmation/);
+});
+
+test("l’admin peut ouvrir un aperçu entreprise strictement en lecture seule", async () => {
+  const [api, ui, stage, stageApi] = await Promise.all([
+    readFile(apiUrl, "utf8"),
+    readFile(uiUrl, "utf8"),
+    readFile(stageUrl, "utf8"),
+    readFile(stageApiUrl, "utf8")
+  ]);
+
+  assert.match(api, /adminAction === "company-preview"/);
+  assert.match(api, /createCompanyPreviewSession\(request, company\.id, admin\.actorId\)/);
+  assert.match(ui, />\s*Voir l’interface entreprise/);
+  assert.match(ui, /\/api\/access\/session\?admin=company-preview/);
+  assert.match(stage, /IS_ADMIN_COMPANY_PREVIEW/);
+  assert.match(stage, /Aperçu administrateur en lecture seule/);
+  assert.match(stage, /Retour à l’espace admin/);
+  assert.match(stageApi, /if \(session\.adminPreview\)[\s\S]*status: 403/);
 });
 
 test("les nouveaux codes sont hachés avec le secret et invalident les anciennes sessions", async () => {

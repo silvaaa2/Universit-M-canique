@@ -45,6 +45,8 @@ function injectCompanyCodeStyles() {
     .prof-admin-company-head strong { font-size: 15px; color: var(--text); }
     .prof-admin-company-state { padding: 5px 8px; border-radius: 999px; background: rgba(255,255,255,.06); color: var(--muted); font-size: 11px; font-weight: 900; }
     .prof-admin-company-state.custom { background: rgba(74,222,128,.10); color: #86efac; }
+    .prof-admin-company-preview { width: 100%; margin-bottom: 13px; border-color: rgba(96,199,255,.26) !important; background: rgba(96,199,255,.08) !important; color: #8bdcff !important; }
+    .prof-admin-company-preview:hover { border-color: rgba(96,199,255,.46) !important; background: rgba(96,199,255,.14) !important; }
     .prof-admin-company-form { display: grid; gap: 9px; }
     .prof-admin-company-form label { color: var(--muted); font-size: 12px; font-weight: 900; }
     .prof-admin-company-password { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
@@ -104,6 +106,9 @@ function renderCompanyCodeCards(companies) {
           ${company.loading ? "Vérification…" : company.customized ? "Code personnalisé" : "Code initial"}
         </span>
       </div>
+      <button type="button" class="prof-admin-small-btn prof-admin-company-preview" data-company-preview="${escapeCompanyCodeHtml(company.id)}">
+        Voir l’interface entreprise
+      </button>
       <form class="prof-admin-company-form" data-company-code-form="${escapeCompanyCodeHtml(company.id)}" novalidate>
         <label>Nouveau code d’accès</label>
         <div class="prof-admin-company-password">
@@ -126,12 +131,50 @@ function renderCompanyCodeCards(companies) {
       toggle.textContent = input.type === "password" ? "Afficher" : "Masquer";
     });
   });
+  container.querySelectorAll("[data-company-preview]").forEach(button => {
+    button.addEventListener("click", () => openCompanyPreview(button));
+  });
   container.querySelectorAll("[data-company-code-form]").forEach(form => {
     form.addEventListener("submit", event => {
       event.preventDefault();
       saveCompanyCode(form);
     });
   });
+}
+
+async function openCompanyPreview(button) {
+  const companyId = button.dataset.companyPreview || "";
+  const card = button.closest("[data-company-code-card]");
+  const companyName = card?.querySelector(".prof-admin-company-head strong")?.textContent?.trim() || "Entreprise";
+
+  try {
+    button.disabled = true;
+    setCompanyCodeStatus(`Préparation de l’aperçu ${companyName}…`);
+    const token = await getCompanyCodeAdminToken();
+    if (!token) throw new Error("Reconnecte-toi avec ton compte administrateur.");
+
+    const response = await fetch("/api/access/session?admin=company-preview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({ companyId })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.adminPreview) {
+      throw new Error(payload.error || "Aperçu indisponible.");
+    }
+
+    const target = `/stages/?admin-preview=${encodeURIComponent(companyId)}`;
+    setCompanyCodeStatus(`Ouverture de l’aperçu ${companyName}…`, "ok");
+    window.location.assign(target);
+  } catch (error) {
+    setCompanyCodeStatus(error?.message || "Aperçu indisponible.", "error");
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function loadCompanyCodes() {

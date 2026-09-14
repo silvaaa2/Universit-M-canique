@@ -2773,6 +2773,78 @@ body.company-workspace .stage-header {
   border-bottom-color: rgba(214,180,106,.18);
 }
 
+.admin-company-preview-banner {
+  position: sticky;
+  top: 76px;
+  z-index: 19;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px clamp(18px, 4vw, 64px);
+  border-bottom: 1px solid rgba(96,199,255,.24);
+  background: rgba(6,18,25,.92);
+  box-shadow: 0 14px 34px rgba(0,0,0,.26);
+  backdrop-filter: blur(18px);
+}
+
+.admin-company-preview-banner div {
+  min-width: 0;
+}
+
+.admin-company-preview-banner strong,
+.admin-company-preview-banner span {
+  display: block;
+}
+
+.admin-company-preview-banner strong {
+  color: #8bdcff;
+  font-size: 13px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.admin-company-preview-banner span {
+  margin-top: 3px;
+  overflow: hidden;
+  color: rgba(232,247,255,.68);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-company-preview-banner button,
+.company-preview-readonly {
+  border: 1px solid rgba(96,199,255,.26);
+  border-radius: 999px;
+  background: rgba(96,199,255,.09);
+  color: #8bdcff;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+.admin-company-preview-banner button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 14px;
+  cursor: pointer;
+}
+
+.admin-company-preview-banner button:hover {
+  border-color: rgba(96,199,255,.46);
+  background: rgba(96,199,255,.15);
+}
+
+.company-preview-readonly {
+  margin: 13px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
 body.company-workspace .brand-logo {
   width: 46px;
   height: 46px;
@@ -2994,6 +3066,17 @@ body.company-workspace .exam-row > strong { color: var(--gold2); }
     display: grid;
     grid-template-columns: minmax(96px, 1fr) minmax(0, 190px);
     gap: 8px;
+  }
+
+  .admin-company-preview-banner {
+    top: 68px;
+    align-items: stretch;
+    flex-direction: column;
+    padding: 10px 12px;
+  }
+
+  .admin-company-preview-banner button {
+    width: 100%;
   }
   .stage-header .brand { min-width: 0; gap: 8px; }
   .stage-header .brand-logo { width: 38px; height: 38px; flex: 0 0 38px; }

@@ -1,7 +1,7 @@
 const { sendJson } = require("../../lib/server/discord-prof-auth.js");
 const {
   assertSameOrigin,
-  validateCompanySession
+  validateStageCompanySession
 } = require("../../lib/server/unified-access.js");
 const {
   deleteDocument,
@@ -27,7 +27,7 @@ function getRequestUrl(request) {
 }
 
 async function requireCompany(request) {
-  const session = await validateCompanySession(request);
+  const session = await validateStageCompanySession(request);
   if (!session) {
     const error = new Error("Session entreprise expirée.");
     error.status = 401;
@@ -190,6 +190,7 @@ module.exports = async function handler(request, response) {
 
     if (request.method === "POST") {
       assertSameOrigin(request);
+      if (session.adminPreview) throw Object.assign(new Error("Aperçu administrateur en lecture seule."), { status: 403 });
       if (kind !== "stages") throw Object.assign(new Error("Action refusée."), { status: 403 });
       sendJson(response, 200, await addCompanyStages(session, readBody(request)));
       return;
@@ -197,6 +198,7 @@ module.exports = async function handler(request, response) {
 
     if (request.method === "DELETE") {
       assertSameOrigin(request);
+      if (session.adminPreview) throw Object.assign(new Error("Aperçu administrateur en lecture seule."), { status: 403 });
       if (kind !== "stages") throw Object.assign(new Error("Action refusée."), { status: 403 });
       sendJson(response, 200, await deleteCompanyStage(session, request));
       return;

@@ -1,14 +1,18 @@
 const { ProfAuthError, sendJson } = require("../../lib/server/discord-prof-auth.js");
 const { verifyFirebaseProfAccess } = require("../../lib/server/firebase-prof-access.js");
 const {
+  COMPANIES,
   authenticateCompanyCode,
   assertSameOrigin,
+  clearCompanyPreviewSession,
   clearCompanySession,
+  createCompanyPreviewSession,
   createCompanySession,
   getCompanyCodeStates,
   publicCompanySession,
   updateCompanyCode,
-  validateCompanySession
+  validateCompanySession,
+  validateStageCompanySession
 } = require("../../lib/server/unified-access.js");
 
 function getRequestUrl(request) {
@@ -34,7 +38,11 @@ async function requireAdmin(request) {
 }
 
 module.exports = async function handler(request, response) {
-  const adminCompanyCodes = getRequestUrl(request).searchParams.get("admin") === "company-codes";
+  const requestUrl = getRequestUrl(request);
+  const adminAction = requestUrl.searchParams.get("admin") || "";
+  const adminCompanyCodes = adminAction === "company-codes";
+  const adminCompanyPreview = adminAction === "company-preview";
+  const stageContext = requestUrl.searchParams.get("context") === "stages";
 
   if (request.method === "GET") {
     try {
@@ -44,9 +52,13 @@ module.exports = async function handler(request, response) {
         return;
       }
 
-      const session = await validateCompanySession(request);
+      const session = stageContext
+        ? await validateStageCompanySession(request)
+        : await validateCompanySession(request);
       if (!session) {
-        response.setHeader("Set-Cookie", clearCompanySession(request));
+        response.setHeader("Set-Cookie", stageContext
+          ? [clearCompanySession(request), clearCompanyPreviewSession(request)]
+          : clearCompanySession(request));
         sendJson(response, 200, { authenticated: false });
         return;
       }
@@ -61,7 +73,9 @@ module.exports = async function handler(request, response) {
   if (request.method === "DELETE") {
     try {
       assertSameOrigin(request);
-      response.setHeader("Set-Cookie", clearCompanySession(request));
+      response.setHeader("Set-Cookie", adminCompanyPreview
+        ? clearCompanyPreviewSession(request)
+        : [clearCompanySession(request), clearCompanyPreviewSession(request)]);
       sendJson(response, 200, { loggedOut: true });
     } catch (error) {
       sendJson(response, Number(error?.status) || 403, { error: error.message || "Déconnexion refusée." });
@@ -72,13 +86,36 @@ module.exports = async function handler(request, response) {
   if (request.method === "POST") {
     try {
       assertSameOrigin(request);
+      if (adminCompanyPreview) {
+        const admin = await requireAdmin(request);
+        const companyId = String(readBody(request).companyId || "");
+        const company = COMPANIES.find(item => item.id === companyId);
+        if (!company) throw new ProfAuthError("company", "Entreprise inconnue.", 404);
+
+        response.setHeader("Set-Cookie", [
+          createCompanyPreviewSession(request, company.id, admin.actorId),
+          clearCompanySession(request)
+        ]);
+        sendJson(response, 200, publicCompanySession({
+          role: "company",
+          label: company.name,
+          companyId: company.id,
+          companyName: company.name,
+          adminPreview: true
+        }));
+        return;
+      }
+
       const access = await authenticateCompanyCode(String(readBody(request).code || ""));
       if (!access) {
         sendJson(response, 401, { error: "Code entreprise incorrect." });
         return;
       }
 
-      response.setHeader("Set-Cookie", createCompanySession(request, access));
+      response.setHeader("Set-Cookie", [
+        createCompanySession(request, access),
+        clearCompanyPreviewSession(request)
+      ]);
       const { company } = access;
       sendJson(response, 200, publicCompanySession({
         role: "company",

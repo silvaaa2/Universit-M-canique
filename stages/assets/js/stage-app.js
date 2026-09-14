@@ -37,6 +37,7 @@ const unifiedAccess = await (window.__UNIVERSITY_ACCESS_PROMISE__ || Promise.res
 const COMPANY_SCOPE_ID = unifiedAccess?.role === "company" ? String(unifiedAccess.companyId || "") : "";
 const COMPANY_SCOPE_NAME = unifiedAccess?.role === "company" ? String(unifiedAccess.companyName || "") : "";
 const IS_COMPANY_ACCESS = Boolean(COMPANY_SCOPE_ID);
+const IS_ADMIN_COMPANY_PREVIEW = IS_COMPANY_ACCESS && unifiedAccess?.adminPreview === true;
 
 const STAGE_COLLECTION = "stageValidations";
 const EXAM_COLLECTION = "examAnswerStatuses";
@@ -109,6 +110,23 @@ function ensureCompanyWorkspaceChrome() {
 
   companyWorkspaceReady = true;
   document.body.classList.add("company-workspace");
+  document.body.classList.toggle("admin-company-preview", IS_ADMIN_COMPANY_PREVIEW);
+
+  if (IS_ADMIN_COMPANY_PREVIEW) {
+    const header = document.querySelector(".stage-header");
+    if (header && !document.getElementById("adminCompanyPreviewBanner")) {
+      header.insertAdjacentHTML("afterend", `
+        <aside id="adminCompanyPreviewBanner" class="admin-company-preview-banner">
+          <div>
+            <strong>Aperçu administrateur</strong>
+            <span>Interface de ${escapeHtml(COMPANY_SCOPE_NAME || "l’entreprise")} · lecture seule</span>
+          </div>
+          <button type="button" onclick="window.exitAdminCompanyPreview()">Retour à l’espace admin</button>
+        </aside>
+      `);
+    }
+    logoutBtn.textContent = "Quitter l’aperçu";
+  }
 
   const brandSubtitle = document.querySelector(".stage-header .brand span");
   if (brandSubtitle) brandSubtitle.textContent = COMPANY_SCOPE_NAME || "Espace entreprise";
@@ -117,10 +135,10 @@ function ensureCompanyWorkspaceChrome() {
     dashboardTitle.closest(".dashboard-top").innerHTML = `
       <div class="company-hero">
         <div class="company-hero-copy">
-          <div class="company-access-badge"><span></span> Espace entreprise</div>
+          <div class="company-access-badge"><span></span> ${IS_ADMIN_COMPANY_PREVIEW ? "Aperçu admin" : "Espace entreprise"}</div>
           <p class="kicker">Mécanique · Université</p>
           <h1>Bienvenue, <span>${escapeHtml(COMPANY_SCOPE_NAME || "Entreprise")}</span>.</h1>
-          <p class="intro">Suivez vos stagiaires et consultez les résultats du cursus.</p>
+          <p class="intro">${IS_ADMIN_COMPANY_PREVIEW ? "Visualisation de l’espace entreprise sans modification possible." : "Suivez vos stagiaires et consultez les résultats du cursus."}</p>
         </div>
 
         <nav class="company-workspace-tabs" aria-label="Sections de l’espace entreprise">
@@ -155,7 +173,7 @@ function ensureCompanyWorkspaceChrome() {
     companyCard.innerHTML = `
       <p class="kicker">Stage</p>
       <h2>Mes stagiaires</h2>
-      <p>Ajoutez ou retirez les ID Unique rattachés à votre entreprise.</p>
+      <p>${IS_ADMIN_COMPANY_PREVIEW ? "Liste affichée comme pour l’entreprise, en lecture seule." : "Ajoutez ou retirez les ID Unique rattachés à votre entreprise."}</p>
     `;
   }
 
@@ -283,8 +301,8 @@ async function returnToUnifiedPortal() {
   try {
     if (typeof window.UniversityMotion?.showExit === "function") {
       await window.UniversityMotion.showExit({
-        title:"À bientôt",
-        detail:"Fermeture de votre espace stage…"
+        title: IS_ADMIN_COMPANY_PREVIEW ? "Retour administrateur" : "À bientôt",
+        detail: IS_ADMIN_COMPANY_PREVIEW ? "Fermeture de l’aperçu entreprise…" : "Fermeture de votre espace stage…"
       });
     }
   } catch (error) {
@@ -293,7 +311,9 @@ async function returnToUnifiedPortal() {
   hideStageSurfaceForExit();
 
   try {
-    await fetch("/api/access/session", {
+    await fetch(IS_ADMIN_COMPANY_PREVIEW
+      ? "/api/access/session?admin=company-preview"
+      : "/api/access/session", {
       method: "DELETE",
       credentials: "same-origin"
     });
@@ -301,15 +321,19 @@ async function returnToUnifiedPortal() {
     console.warn("Session locale déjà fermée :", error);
   }
 
-  try {
-    if (auth.currentUser) await signOut(auth);
-  } catch (error) {
-    console.warn("Session Firebase déjà fermée :", error);
+  if (!IS_ADMIN_COMPANY_PREVIEW) {
+    try {
+      if (auth.currentUser) await signOut(auth);
+    } catch (error) {
+      console.warn("Session Firebase déjà fermée :", error);
+    }
   }
 
-  window.location.replace("/");
+  window.location.replace(IS_ADMIN_COMPANY_PREVIEW ? "/pages/espace-prof.html" : "/");
   return true;
 }
+
+window.exitAdminCompanyPreview = returnToUnifiedPortal;
 
 function showLogin() {
   hideStageSurfaceForExit();
@@ -1619,6 +1643,14 @@ function renderCompanies() {
             ? effectifRows.find(item => item.normalizedIdUnique === entry.normalizedIdUnique)
             : null;
           const studentName = effectifStudent?.studentName || "";
+          const deleteButton = IS_ADMIN_COMPANY_PREVIEW ? "" : `
+              <button
+                type="button"
+                onclick="window.deleteStageIdFromStage('${safeDocIdJs}', '${safeIdUniqueJs}')"
+                title="Supprimer"
+              >
+                ×
+              </button>`;
 
           return `
             <div class="stage-id-row" data-stage-row-id="${escapeHtml(entry.firebaseId)}">
@@ -1626,13 +1658,7 @@ function renderCompanies() {
                 <strong>${escapeHtml(entry.idUnique)}</strong>
                 ${studentName ? `<span>${escapeHtml(studentName)}</span>` : ""}
               </div>
-              <button
-                type="button"
-                onclick="window.deleteStageIdFromStage('${safeDocIdJs}', '${safeIdUniqueJs}')"
-                title="Supprimer"
-              >
-                ×
-              </button>
+              ${deleteButton}
             </div>
           `;
         }).join("")
@@ -1643,24 +1669,28 @@ function renderCompanies() {
         <div class="company-head">${escapeHtml(company.name)}</div>
         <div class="company-subhead">ID Unique</div>
 
-        <div class="company-actions">
-          <button
-            type="button"
-            class="open-bulk-modal-btn"
-            onclick="window.openBulkStageModal('${escapeJsString(company.id)}')"
-          >
-            Ajouter une liste
-          </button>
+        ${IS_ADMIN_COMPANY_PREVIEW ? `
+          <div class="company-preview-readonly">Aperçu en lecture seule</div>
+        ` : `
+          <div class="company-actions">
+            <button
+              type="button"
+              class="open-bulk-modal-btn"
+              onclick="window.openBulkStageModal('${escapeJsString(company.id)}')"
+            >
+              Ajouter une liste
+            </button>
 
-          <button
-            type="button"
-            class="delete-company-list-btn"
-            onclick="window.deleteCompanyStageList('${escapeJsString(company.id)}')"
-            ${entries.length ? "" : "disabled"}
-          >
-            Supprimer liste
-          </button>
-        </div>
+            <button
+              type="button"
+              class="delete-company-list-btn"
+              onclick="window.deleteCompanyStageList('${escapeJsString(company.id)}')"
+              ${entries.length ? "" : "disabled"}
+            >
+              Supprimer liste
+            </button>
+          </div>
+        `}
 
         <div class="stage-id-list">
           ${rowsHtml}
@@ -1979,6 +2009,9 @@ function renderArchivesPanel() {
 ========================================================= */
 
 async function addStageValidationsBulk(companyId, ids) {
+  if (IS_ADMIN_COMPANY_PREVIEW) {
+    throw new Error("Aperçu administrateur en lecture seule.");
+  }
   const company = COMPANIES.find(item => item.id === companyId);
   if (!company) return { added: 0, skipped: 0 };
 
@@ -2117,6 +2150,7 @@ function ensureBulkModal() {
 }
 
 window.openBulkStageModal = function(companyId) {
+  if (IS_ADMIN_COMPANY_PREVIEW) return;
   if (currentArchive) {
     alert("Impossible de modifier une archive.");
     return;
@@ -2457,6 +2491,10 @@ window.resetEffectifLink = resetEffectifLink;
 ========================================================= */
 
 window.deleteStageIdFromStage = async function(docId, idUnique) {
+  if (IS_ADMIN_COMPANY_PREVIEW) {
+    alert("L’aperçu administrateur est en lecture seule.");
+    return;
+  }
   if (currentArchive) {
     alert("Impossible de modifier une archive.");
     return;
@@ -2495,6 +2533,10 @@ window.deleteStageIdFromStage = async function(docId, idUnique) {
 };
 
 window.deleteCompanyStageList = async function(companyId) {
+  if (IS_ADMIN_COMPANY_PREVIEW) {
+    alert("L’aperçu administrateur est en lecture seule.");
+    return;
+  }
   if (currentArchive) {
     alert("Impossible de modifier une archive.");
     return;
@@ -2874,6 +2916,10 @@ refreshBtn.addEventListener("click", async () => {
 
 onAuthStateChanged(auth, async user => {
   if (!user) {
+    if (IS_ADMIN_COMPANY_PREVIEW) {
+      await returnToUnifiedPortal();
+      return;
+    }
     if (IS_COMPANY_ACCESS) {
       currentUserRole = "company";
       currentUserAdmin = false;
@@ -2891,6 +2937,26 @@ onAuthStateChanged(auth, async user => {
     currentUserAdmin = false;
     document.getElementById("archiveDateDialog")?.close();
     showLogin();
+    return;
+  }
+
+  if (IS_ADMIN_COMPANY_PREVIEW) {
+    const adminRole = await getUserRole(user);
+    if (adminRole !== "prof" || !currentUserAdmin) {
+      await returnToUnifiedPortal();
+      return;
+    }
+
+    currentUserRole = "company";
+    currentUserAdmin = false;
+    showDashboard();
+    try {
+      await refreshAll();
+    } catch (error) {
+      console.error("Erreur chargement aperçu entreprise :", error);
+      companyGrid.innerHTML = `<div class="loading-box">Impossible de charger cet aperçu.</div>`;
+      examList.innerHTML = `<div class="loading-box">Impossible de charger les examens.</div>`;
+    }
     return;
   }
 

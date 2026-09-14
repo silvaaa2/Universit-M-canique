@@ -6,9 +6,11 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const {
   COMPANIES,
+  createCompanyPreviewSession,
   createCompanySession,
   findCompanyByCode,
   normalizeCompanyCode,
+  readCompanyPreviewSession,
   readCompanySession
 } = require("../lib/server/unified-access.js");
 
@@ -60,9 +62,26 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
 test("l’effectif entreprise passe par la session serveur sans exposer les autres feuilles", async () => {
   const secureSheet = await readFile(new URL("../api/secure-sheet.js", import.meta.url), "utf8");
 
-  assert.match(secureSheet, /validateCompanySession\(req\)/);
+  assert.match(secureSheet, /validateStageCompanySession\(req\)/);
   assert.match(secureSheet, /source === EFFECTIF_SOURCE && sheet === EFFECTIF_SHEET_KEY/);
   assert.match(secureSheet, /idToken \? \{[\s\S]*Authorization: `Bearer \$\{idToken\}`[\s\S]*\} : \{ cache: "no-store" \}/);
+});
+
+test("l’aperçu entreprise admin utilise une session séparée et limitée", () => {
+  process.env.DISCORD_SESSION_SECRET = "test-session-secret-long-de-plus-de-trente-deux-caracteres";
+
+  const company = COMPANIES[1];
+  const request = { headers: { host: "localhost", "x-forwarded-proto": "http" } };
+  const cookie = createCompanyPreviewSession(request, company.id, "admin-test");
+  const cookieValue = cookie.match(/university_admin_company_preview=([^;]+)/)?.[1];
+  const restored = readCompanyPreviewSession({
+    headers: { cookie: `university_admin_company_preview=${cookieValue}` }
+  });
+
+  assert.equal(restored.companyId, company.id);
+  assert.equal(restored.role, "company");
+  assert.equal(restored.adminPreview, true);
+  assert.equal(restored.actorId, "admin-test");
 });
 
 test("la session entreprise est signée et reste limitée à son périmètre serveur", () => {
