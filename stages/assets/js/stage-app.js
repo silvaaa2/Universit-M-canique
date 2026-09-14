@@ -42,6 +42,12 @@ const IS_ADMIN_COMPANY_PREVIEW = IS_COMPANY_ACCESS && unifiedAccess?.adminPrevie
 const STAGE_COLLECTION = "stageValidations";
 const EXAM_COLLECTION = "examAnswerStatuses";
 const STAGE_ARCHIVE_COLLECTION = "stageArchives";
+const COMPANY_WARNING_META = {
+  warning1: { label: "Averto 1", tone: "warning-1" },
+  warning2: { label: "Averto 2", tone: "warning-2" },
+  warning3: { label: "Averto 3", tone: "warning-3" },
+  refused: { label: "Refusé", tone: "refused" }
+};
 
 const DEFAULT_EFFECTIF_SPREADSHEET_ID = "1DRZwLrNXK_kkxpSsaPn_m7XDJ5v0_5iGq-8FoWTQRYU";
 const DEFAULT_EFFECTIF_GID = "460642936"; // Feuille Mécanique
@@ -91,6 +97,7 @@ let stageDirectory = [];
 let examParticipants = [];
 let effectifRows = [];
 let stageArchives = [];
+let companyWarningByStudentId = new Map();
 const companyStudentProgressCache = new Map();
 const COMPANY_STUDENT_PROGRESS_CACHE_MS = 10000;
 let companyStudentProgressScrollLocked = false;
@@ -438,6 +445,7 @@ async function fetchCompanyRows(kind, options = {}) {
 async function loadStageValidations() {
   stageValidations = [];
   stageDirectory = [];
+  companyWarningByStudentId = new Map();
 
   if (IS_COMPANY_ACCESS) {
     const payload = await fetchCompanyRows("stages");
@@ -451,6 +459,13 @@ async function loadStageValidations() {
       companyId: String(row.companyId || ""),
       companyName: String(row.companyName || "")
     }));
+    companyWarningByStudentId = new Map((payload.warnings || []).map(warning => [
+      normalizeIdUnique(warning.studentId),
+      {
+        level: String(warning.level || "none"),
+        comment: String(warning.comment || "").trim()
+      }
+    ]).filter(([studentId, warning]) => studentId && COMPANY_WARNING_META[warning.level]));
     return;
   }
 
@@ -1373,8 +1388,23 @@ function getEffectifMatches() {
 function bindCompanyStudentProgressRows() {
   if (!IS_COMPANY_ACCESS) return;
 
+  document.querySelectorAll("[data-company-warning-student]").forEach(button => {
+    const openWarning = event => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.openCompanyStudentWarning(button.dataset.companyWarningStudent || "");
+    };
+
+    button.addEventListener("click", openWarning);
+    button.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      openWarning(event);
+    });
+  });
+
   document.querySelectorAll("[data-company-student-id]").forEach(row => {
-    const openStudent = () => {
+    const openStudent = event => {
+      if (event?.target?.closest?.("[data-company-warning-student]")) return;
       window.openCompanyStudentProgress(row.dataset.companyStudentId || "");
     };
 
@@ -1382,7 +1412,7 @@ function bindCompanyStudentProgressRows() {
     row.addEventListener("keydown", event => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
-      openStudent();
+      openStudent(event);
     });
   });
 }
@@ -1461,6 +1491,13 @@ function renderEffectifRows() {
         const safeStageTooltip = stageCompany
           ? `Stage : ${escapeHtml(stageCompany)}`
           : "Stage : Aucun stage";
+        const companyWarning = IS_COMPANY_ACCESS
+          ? companyWarningByStudentId.get(item.normalizedIdUnique)
+          : null;
+        const warningMeta = companyWarning ? COMPANY_WARNING_META[companyWarning.level] : null;
+        const warningButton = warningMeta
+          ? `<button type="button" class="company-warning-triangle ${escapeHtml(warningMeta.tone)}" data-company-warning-student="${escapeHtml(item.normalizedIdUnique)}" aria-label="Voir ${escapeHtml(warningMeta.label)} de ${safeStudentName}" title="${escapeHtml(warningMeta.label)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.7 1.8 18.4A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.6L13.7 3.7a2 2 0 0 0-3.4 0Z"/><path d="M12 8v5"/><circle cx="12" cy="17" r="1"/></svg></button>`
+          : "";
 
         const tooltipText = `${safeStudentName} · ID ${safeIdUnique} · ${safeExamText} · ${safeStageTooltip}`;
         const companyRowAttributes = IS_COMPANY_ACCESS
@@ -1469,7 +1506,10 @@ function renderEffectifRows() {
 
         return `
           <div class="effectif-row has-effectif-tooltip ${IS_COMPANY_ACCESS ? "company-effectif-row" : ""}" data-tooltip="${tooltipText}" ${companyRowAttributes}>
-            <strong title="${safeIdUnique}">${safeIdUnique}</strong>
+            <div class="effectif-student-id">
+              <strong title="${safeIdUnique}">${safeIdUnique}</strong>
+              ${warningButton}
+            </div>
 
             <div>
               <b title="${safeStudentName}">${safeStudentName}</b>
@@ -2210,6 +2250,84 @@ function unlockCompanyStudentProgressScroll() {
   document.body.classList.remove("company-student-modal-open");
   companyStudentProgressScrollLocked = false;
 }
+
+function ensureCompanyWarningModal() {
+  if (!IS_COMPANY_ACCESS || document.getElementById("companyWarningModal")) return;
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="companyWarningModal" class="bulk-modal-overlay company-warning-modal" hidden>
+      <section class="bulk-modal-card company-warning-card" role="dialog" aria-modal="true" aria-labelledby="companyWarningTitle">
+        <button id="companyWarningCloseBtn" type="button" class="bulk-modal-close" aria-label="Fermer">×</button>
+        <p class="bulk-modal-kicker">Suivi modules</p>
+        <h2 id="companyWarningTitle">Avertissement</h2>
+        <p id="companyWarningMeta" class="bulk-modal-text"></p>
+        <div id="companyWarningContent"></div>
+      </section>
+    </div>
+  `);
+
+  const modal = document.getElementById("companyWarningModal");
+  document.getElementById("companyWarningCloseBtn")?.addEventListener("click", () => {
+    window.closeCompanyStudentWarning();
+  });
+  modal?.addEventListener("click", event => {
+    if (event.target === modal) window.closeCompanyStudentWarning();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && modal && !modal.hidden) {
+      window.closeCompanyStudentWarning();
+    }
+  });
+}
+
+window.openCompanyStudentWarning = function(normalizedIdUnique) {
+  if (!IS_COMPANY_ACCESS) return;
+
+  const normalizedId = normalizeIdUnique(normalizedIdUnique);
+  const warning = companyWarningByStudentId.get(normalizedId);
+  const warningMeta = warning ? COMPANY_WARNING_META[warning.level] : null;
+  const effectifStudent = effectifRows.find(item => item.normalizedIdUnique === normalizedId);
+  if (!warning || !warningMeta || !effectifStudent) return;
+
+  ensureCompanyWarningModal();
+  const modal = document.getElementById("companyWarningModal");
+  const title = document.getElementById("companyWarningTitle");
+  const meta = document.getElementById("companyWarningMeta");
+  const content = document.getElementById("companyWarningContent");
+  if (!modal || !title || !meta || !content) return;
+
+  title.textContent = effectifStudent.studentName || "Nom non renseigné";
+  meta.textContent = `ID Unique ${effectifStudent.idUnique || normalizedId} · Consultation uniquement`;
+  content.innerHTML = `
+    <div class="company-warning-status ${escapeHtml(warningMeta.tone)}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.7 1.8 18.4A2 2 0 0 0 3.5 21h17a2 2 0 0 0 1.7-2.6L13.7 3.7a2 2 0 0 0-3.4 0Z"/><path d="M12 8v5"/><circle cx="12" cy="17" r="1"/></svg>
+      <div><span>Avertissement actuel</span><strong>${escapeHtml(warningMeta.label)}</strong></div>
+    </div>
+    <div class="company-warning-reason">
+      <span>Raison indiquée par le professeur</span>
+      <p>${escapeHtml(warning.comment || "Aucune raison n’a été renseignée.")}</p>
+    </div>
+    <p class="company-warning-readonly">Cette information est affichée en lecture seule.</p>
+  `;
+
+  lockCompanyStudentProgressScroll();
+  modal.hidden = false;
+  requestAnimationFrame(() => {
+    modal.classList.add("active");
+    document.getElementById("companyWarningCloseBtn")?.focus();
+  });
+};
+
+window.closeCompanyStudentWarning = function() {
+  const modal = document.getElementById("companyWarningModal");
+  if (!modal) return;
+
+  modal.classList.remove("active");
+  setTimeout(() => {
+    modal.hidden = true;
+    unlockCompanyStudentProgressScroll();
+  }, 180);
+};
 
 function ensureCompanyStudentProgressModal() {
   if (!IS_COMPANY_ACCESS || document.getElementById("companyStudentProgressModal")) return;

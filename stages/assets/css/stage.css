@@ -1637,6 +1637,71 @@ main {
   text-overflow: ellipsis;
 }
 
+.effectif-student-id {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.effectif-student-id > strong {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.company-warning-triangle {
+  width: 29px;
+  min-width: 29px;
+  height: 29px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 9px;
+  background: rgba(0,0,0,.30);
+  color: #fdba74;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(253,186,116,.07);
+  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+  animation: company-warning-pulse 2.4s ease-in-out infinite;
+}
+
+.company-warning-triangle:hover,
+.company-warning-triangle:focus-visible {
+  transform: translateY(-1px) scale(1.06);
+  filter: brightness(1.14);
+  box-shadow: 0 0 0 4px rgba(253,186,116,.13), 0 7px 20px rgba(0,0,0,.30);
+  outline: none;
+}
+
+.company-warning-triangle.warning-2 { color: #fde68a; }
+.company-warning-triangle.warning-3,
+.company-warning-triangle.refused { color: #fca5a5; }
+
+.company-warning-triangle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.company-warning-triangle svg path:first-child,
+.company-warning-status svg path:first-child { fill: currentColor; }
+
+.company-warning-triangle svg path:nth-child(2),
+.company-warning-status svg path:nth-child(2) {
+  fill: none;
+  stroke: #17120a;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.company-warning-triangle svg circle,
+.company-warning-status svg circle { fill: #17120a; }
+
+@keyframes company-warning-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+
 .effectif-row b {
   display: block;
   font-size: 14px;
@@ -2126,8 +2191,9 @@ main {
   cursor: pointer;
 }
 
-/* Fiche parcours élève ouverte depuis l'effectif entreprise */
-.company-student-progress-modal {
+/* Fiches élève ouvertes depuis l'effectif entreprise */
+.company-student-progress-modal,
+.company-warning-modal {
   position: fixed !important;
   inset: 0 !important;
   width: 100vw;
@@ -2155,6 +2221,94 @@ body.company-student-modal-open {
   overflow: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
+}
+
+.company-warning-card {
+  width: min(540px, 100%);
+  max-height: min(680px, calc(100dvh - 40px));
+  margin: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.company-warning-card h2 {
+  max-width: calc(100% - 46px);
+  margin-bottom: 7px;
+  font-size: clamp(30px, 5vw, 46px);
+  line-height: 1;
+}
+
+.company-warning-status {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 17px;
+  border: 1px solid currentColor;
+  border-radius: 20px;
+  background: rgba(253,186,116,.08);
+  color: #fdba74;
+}
+
+.company-warning-status.warning-2 {
+  color: #fde68a;
+  background: rgba(253,230,138,.08);
+}
+
+.company-warning-status.warning-3,
+.company-warning-status.refused {
+  color: #fca5a5;
+  background: rgba(252,165,165,.08);
+}
+
+.company-warning-status svg {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+}
+
+.company-warning-status span,
+.company-warning-reason > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.company-warning-status strong {
+  color: currentColor;
+  font-size: 22px;
+  font-weight: 1000;
+}
+
+.company-warning-reason {
+  margin-top: 13px;
+  padding: 17px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 20px;
+  background: rgba(255,255,255,.035);
+}
+
+.company-warning-reason p {
+  margin: 8px 0 0;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 850;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.company-warning-readonly {
+  margin: 13px 2px 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  text-align: center;
 }
 
 .company-student-progress-card h2 {
@@ -2355,8 +2509,10 @@ body.company-student-modal-open {
 }
 
 @media (max-width: 620px) {
-  .company-student-progress-modal { padding: 12px; }
-  .company-student-progress-card { padding: 23px; border-radius: 25px; }
+  .company-student-progress-modal,
+  .company-warning-modal { padding: 12px; }
+  .company-student-progress-card,
+  .company-warning-card { padding: 23px; border-radius: 25px; }
   .company-progress-grid { grid-template-columns: 1fr; }
   .company-progress-summary,
   .company-exam-card { grid-template-columns: 1fr; }

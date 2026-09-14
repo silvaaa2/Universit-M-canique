@@ -5,6 +5,7 @@ const {
 } = require("../../lib/server/unified-access.js");
 const {
   deleteDocument,
+  getDocument,
   listDocuments,
   upsertDocument
 } = require("../../lib/server/firestore-service-account.js");
@@ -12,6 +13,9 @@ const {
 const STAGE_COLLECTION = "stageValidations";
 const EXAM_COLLECTION = "examAnswerStatuses";
 const STUDENT_MODULES_COLLECTION = "studentModules";
+const STAGE_SETTINGS_COLLECTION = "stageSettings";
+const EFFECTIF_SETTINGS_DOCUMENT = "effectif";
+const COMPANY_WARNING_LEVELS = new Set(["warning1", "warning2", "warning3", "refused"]);
 
 function normalizeIdUnique(value) {
   return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
@@ -38,6 +42,64 @@ async function requireCompany(request) {
 
 function isChecked(value) {
   return value === true || value === 1 || value === "true" || value === "1";
+}
+
+function extractSpreadsheetId(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  return match?.[1] || (/^[a-zA-Z0-9_-]{20,}$/.test(text) ? text : "");
+}
+
+function extractGid(value) {
+  const text = String(value || "");
+  return text.match(/[?#&]gid=([0-9]+)/)?.[1] || "";
+}
+
+function buildCursusKey(settings = {}) {
+  const spreadsheetId = extractSpreadsheetId(settings.spreadsheetId || settings.link || settings.url);
+  const gid = String(settings.gid || extractGid(settings.link) || extractGid(settings.url) || "").trim();
+  const safeKey = `${spreadsheetId}_${gid}`
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return safeKey ? `cursus_${safeKey}` : "";
+}
+
+function sanitizeCompanyWarning(row) {
+  const level = String(row?.warningLevel || row?.warning?.level || row?.warning || "none");
+  if (!COMPANY_WARNING_LEVELS.has(level)) return null;
+
+  return {
+    level,
+    comment: String(row?.warningComment || row?.warning?.comment || "").trim().slice(0, 1200)
+  };
+}
+
+async function readCompanyWarnings(companyRows) {
+  const companyStudentIds = new Set(companyRows
+    .map(row => normalizeIdUnique(row.normalizedIdUnique || row.idUnique))
+    .filter(Boolean));
+  if (!companyStudentIds.size) return [];
+
+  try {
+    const settings = await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT);
+    const cursusKey = buildCursusKey(settings || {});
+    if (!cursusKey) return [];
+
+    const warningRows = await Promise.all([...companyStudentIds].map(async studentId => ({
+      studentId,
+      row: await getDocument(STUDENT_MODULES_COLLECTION, `${cursusKey}__${studentId}`)
+    })));
+
+    return warningRows.reduce((warnings, { studentId, row }) => {
+      const warning = sanitizeCompanyWarning(row);
+      if (warning) warnings.push({ studentId, ...warning });
+      return warnings;
+    }, []);
+  } catch (error) {
+    console.warn("Lecture des avertissements entreprise impossible :", error?.message || error);
+    return [];
+  }
 }
 
 function sanitizeStudentProgress(row) {
@@ -72,14 +134,16 @@ function sanitizeStudentProgress(row) {
 async function readCompanyData(session, kind, request) {
   if (kind === "stages") {
     const rows = await listDocuments(STAGE_COLLECTION);
+    const companyRows = rows.filter(row => row.companyId === session.companyId);
     return {
-      rows: rows.filter(row => row.companyId === session.companyId),
+      rows: companyRows,
       directory: rows.map(row => ({
         idUnique: String(row.idUnique || ""),
         normalizedIdUnique: normalizeIdUnique(row.normalizedIdUnique || row.idUnique),
         companyId: String(row.companyId || ""),
         companyName: String(row.companyName || "")
-      })).filter(row => row.normalizedIdUnique && row.companyId)
+      })).filter(row => row.normalizedIdUnique && row.companyId),
+      warnings: await readCompanyWarnings(companyRows)
     };
   }
   if (kind === "exams") {
@@ -94,12 +158,11 @@ async function readCompanyData(session, kind, request) {
       throw error;
     }
 
-    const rows = await listDocuments(STUDENT_MODULES_COLLECTION);
-    const matchingRow = rows.find(row => {
-      return normalizeIdUnique(
-        row.normalizedIdUnique || row.studentId || row.idUnique || row.id
-      ) === requestedId;
-    });
+    const settings = await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT);
+    const cursusKey = buildCursusKey(settings || {});
+    const matchingRow = cursusKey
+      ? await getDocument(STUDENT_MODULES_COLLECTION, `${cursusKey}__${requestedId}`)
+      : null;
 
     return { student: sanitizeStudentProgress(matchingRow) };
   }

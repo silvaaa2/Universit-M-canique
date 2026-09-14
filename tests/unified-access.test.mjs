@@ -43,12 +43,15 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(stageApp, /fetchCompanyRows\("exams"\)/);
   assert.match(stageApp, /fetchCompanyRows\("student-progress"/);
   assert.match(stageApp, /data-company-student-id/);
+  assert.match(stageApp, /data-company-warning-student/);
+  assert.match(stageApp, /companyWarningByStudentId/);
+  assert.match(stageApp, /openCompanyStudentWarning/);
   assert.match(stageApp, /companyStudentProgressModal/);
   assert.match(stageApp, /lockCompanyStudentProgressScroll\(\)/);
   assert.match(stageApp, /unlockCompanyStudentProgressScroll\(\)/);
   assert.match(stageApp, /document\.body\.classList\.add\("company-student-modal-open"\)/);
   assert.doesNotMatch(stageApp, /document\.body\.style\.top|window\.scrollTo\(0, companyStudentProgressScrollY\)/);
-  assert.match(stageCss, /\.company-student-progress-modal\s*\{[\s\S]*position: fixed !important;[\s\S]*align-items: center;[\s\S]*justify-content: center;/);
+  assert.match(stageCss, /\.company-student-progress-modal,[\s\S]*\.company-warning-modal\s*\{[^}]*position: fixed !important;[^}]*align-items: center;[^}]*justify-content: center;/);
   assert.match(stageCss, /body\.company-student-modal-open\s*\{[^}]*overflow: hidden;/);
   assert.doesNotMatch(stageCss, /body\.company-student-modal-open\s*\{[^}]*position: fixed;/);
   assert.match(stageApp, /stageDirectory = \(payload\.directory \|\| \[\]\)/);
@@ -60,12 +63,33 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(serverProxy, /directory: rows\.map\(row => \(\{/);
   assert.match(serverProxy, /companyName: String\(row\.companyName \|\| ""\)/);
   assert.match(serverProxy, /STUDENT_MODULES_COLLECTION = "studentModules"/);
+  assert.match(serverProxy, /warnings: await readCompanyWarnings\(companyRows\)/);
+  assert.match(serverProxy, /companyStudentIds = new Set\(companyRows/);
+  assert.match(serverProxy, /getDocument\(STUDENT_MODULES_COLLECTION, `\$\{cursusKey\}__\$\{studentId\}`\)/);
+  assert.match(serverProxy, /getDocument\(STUDENT_MODULES_COLLECTION, `\$\{cursusKey\}__\$\{requestedId\}`\)/);
+  assert.match(serverProxy, /warningComment[\s\S]*slice\(0, 1200\)/);
   assert.match(serverProxy, /kind === "student-progress"/);
   assert.match(serverProxy, /module1: readCheck\("module1"\)/);
   assert.doesNotMatch(serverProxy, /verif3: readCheck|verif4: readCheck/);
   assert.doesNotMatch(stageApp, /Vérif 3|Vérif 4|company-verification-badge/);
   assert.match(serverProxy, /documentId\.startsWith\(`\$\{session\.companyId\}__`\)/);
   assert.match(serverProxy, /if \(kind !== "stages"\)/);
+});
+
+test("les entreprises voient uniquement les avertissements de leurs stagiaires en lecture seule", async () => {
+  const stageApp = await readFile(new URL("../stages/assets/js/stage-app.js", import.meta.url), "utf8");
+  const stageCss = await readFile(new URL("../stages/assets/css/stage.css", import.meta.url), "utf8");
+  const warningPopup = stageApp.slice(
+    stageApp.indexOf("function ensureCompanyWarningModal"),
+    stageApp.indexOf("function ensureCompanyStudentProgressModal")
+  );
+
+  assert.match(warningPopup, /Avertissement actuel/);
+  assert.match(warningPopup, /Raison indiquée par le professeur/);
+  assert.match(warningPopup, /lecture seule/);
+  assert.doesNotMatch(warningPopup, /setDoc|data-warning-save|method:\s*"POST"/);
+  assert.match(stageCss, /\.company-warning-triangle/);
+  assert.match(stageCss, /\.company-warning-modal/);
 });
 
 test("l’effectif entreprise passe par la session serveur sans exposer les autres feuilles", async () => {
