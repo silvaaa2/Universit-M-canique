@@ -1368,10 +1368,13 @@ async function loadEffectifRows() {
 function getEffectifMatches() {
   const search = normalizeSearchText(currentEffectifSearch);
   const searchId = normalizeIdUnique(currentEffectifSearch);
+  const displayedRows = currentArchive?.effectifStudents?.length
+    ? currentArchive.effectifStudents
+    : effectifRows;
 
-  if (!search && !searchId) return effectifRows;
+  if (!search && !searchId) return displayedRows;
 
-  return effectifRows.filter(item => {
+  return displayedRows.filter(item => {
     const name = normalizeSearchText(item.studentName);
     const id = normalizeIdUnique(item.idUnique);
 
@@ -1419,12 +1422,15 @@ function renderEffectifRows() {
   if (!content) return;
 
   const rows = getEffectifMatches();
+  const historicalEffectif = Boolean(currentArchive?.effectifStudents?.length);
+  const effectifLabel = historicalEffectif ? "Effectif archivé" : "Effectif actuel";
+  const displayedExams = currentArchive?.examParticipants || examParticipants;
 
   if (!rows.length) {
     content.innerHTML = `
       <div class="effectif-tools">
         <div>
-          <p class="kicker">Effectif</p>
+          <p class="kicker">${effectifLabel}</p>
           <h3>0 personne</h3>
         </div>
 
@@ -1449,7 +1455,7 @@ function renderEffectifRows() {
   content.innerHTML = `
     <div class="effectif-tools">
       <div>
-        <p class="kicker">Effectif</p>
+        <p class="kicker">${effectifLabel}</p>
         <h3>${rows.length} personne(s)</h3>
       </div>
 
@@ -1464,11 +1470,13 @@ function renderEffectifRows() {
 
     <div class="effectif-list">
       ${rows.map(item => {
-        const exam = examParticipants.find(participant => {
+        const exam = displayedExams.find(participant => {
           return participant.normalizedIdUnique === item.normalizedIdUnique;
         });
 
-        const stageCompany = getStageCompanyForId(item.normalizedIdUnique);
+        const stageCompany = currentArchive
+          ? getArchiveStageCompanyForId(currentArchive, item.normalizedIdUnique)
+          : getStageCompanyForId(item.normalizedIdUnique);
 
         const examText = exam
           ? `${escapeHtml(exam.totalScore)} / ${escapeHtml(exam.maxScore)} · ${escapeHtml(getStatusLabel(exam.status))}`
@@ -1490,7 +1498,7 @@ function renderEffectifRows() {
           : "Stage : Aucun stage";
 
         const tooltipText = `${safeStudentName} · ID ${safeIdUnique} · ${safeExamText} · ${safeStageTooltip}`;
-        const companyRowAttributes = IS_COMPANY_ACCESS
+        const companyRowAttributes = IS_COMPANY_ACCESS && !currentArchive
           ? `role="button" tabindex="0" data-company-student-id="${escapeHtml(item.normalizedIdUnique)}" aria-label="Voir le parcours de ${safeStudentName}"`
           : "";
 
@@ -1546,7 +1554,7 @@ async function renderEffectifPanel() {
   `;
 
   try {
-    await loadEffectifRows();
+    if (!currentArchive?.effectifStudents?.length) await loadEffectifRows();
     renderEffectifRows();
   } catch (error) {
     console.error("Erreur chargement effectif :", error);

@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const cursusManagement = require("../lib/server/cursus-management.js");
 
 async function read(relativePath) {
   return readFile(new URL(`../${relativePath}`, import.meta.url), "utf8");
@@ -23,6 +27,32 @@ test("l’admin privé archive le cursus dans l’ordre stages puis modules", as
   assert.match(client, /Stages et entreprises/);
   assert.match(client, /Modules élèves/);
   assert.match(client, /data-workflow-disabled="true"/);
+  assert.match(client, /effectif Google Sheets complet/);
+});
+
+test("l’archive modules contient tout l’effectif même sans progression", () => {
+  const csv = [
+    'ID Unique,Nom de l’élève',
+    '100,Élève avec module',
+    '200,Élève sans module'
+  ].join("\n");
+  const effectif = cursusManagement.__test.normalizeEffectifStudents(
+    cursusManagement.__test.parseCsv(csv)
+  );
+  const archived = cursusManagement.__test.buildCompleteModuleArchiveRows(effectif, [{
+    id: "cursus_test__100",
+    idUnique: "100",
+    normalizedIdUnique: "100",
+    studentName: "Ancien nom",
+    checks: { module1: true },
+    dates: { module1: "2026-09-01" }
+  }]);
+
+  assert.equal(archived.length, 2);
+  assert.equal(archived[0].studentName, "Élève avec module");
+  assert.equal(archived[0].checks.module1, true);
+  assert.equal(archived[1].studentName, "Élève sans module");
+  assert.deepEqual(Object.values(archived[1].checks), [false, false, false, false, false, false]);
 });
 
 test("les deux liens d’effectif sont indépendants et gardent le réglage historique en repli", async () => {

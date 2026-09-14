@@ -113,6 +113,13 @@ async function readCompanyWarnings(companyRows) {
 }
 
 function sanitizeCompanyArchive(archive, companyId) {
+  const effectifStudents = (Array.isArray(archive.effectifStudents) ? archive.effectifStudents : [])
+    .map(row => ({
+      idUnique: String(row?.idUnique || ""),
+      normalizedIdUnique: normalizeIdUnique(row?.normalizedIdUnique || row?.idUnique),
+      studentName: String(row?.studentName || "Nom non renseigné")
+    }))
+    .filter(row => row.normalizedIdUnique || row.studentName !== "Nom non renseigné");
   const stageRows = (Array.isArray(archive.stageValidations) ? archive.stageValidations : [])
     .filter(row => String(row?.companyId || "") === companyId)
     .map(row => ({
@@ -144,11 +151,13 @@ function sanitizeCompanyArchive(archive, companyId) {
     endDate: String(archive.endDate || ""),
     startDisplay: String(archive.startDisplay || ""),
     endDisplay: String(archive.endDisplay || ""),
+    effectifStudents,
     stageValidations: stageRows,
     examParticipants: examRows,
     summary: {
       totalStages: stageRows.length,
       totalExams: examRows.length,
+      totalEffectif: effectifStudents.length,
       approved: examRows.filter(row => row.status === "approved").length,
       rejected: examRows.filter(row => row.status === "rejected").length,
       pending: examRows.filter(row => row.status !== "approved" && row.status !== "rejected").length

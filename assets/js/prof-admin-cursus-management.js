@@ -56,7 +56,7 @@ function injectCursusAdminStyles() {
     .cursus-admin-card-head h3, .cursus-admin-card-head p { margin: 0; }
     .cursus-admin-card-head h3 { color: var(--text); font-size: 18px; }
     .cursus-admin-card-head p { margin-top: 5px; color: var(--muted); font-size: 12px; line-height: 1.45; }
-    .cursus-admin-counts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .cursus-admin-counts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
     .cursus-admin-count { padding: 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 9px; background: rgba(0,0,0,.22); }
     .cursus-admin-count span, .cursus-admin-count strong { display: block; }
     .cursus-admin-count span { color: var(--muted); font-size: 10px; font-weight: 950; text-transform: uppercase; letter-spacing: .08em; }
@@ -138,12 +138,13 @@ function ensureCursusAdminPanel() {
         <div class="cursus-admin-layout" id="cursusAdminLayout">
           <article class="cursus-admin-card">
             <div class="cursus-admin-card-head">
-              <div><h3>Archiver le cursus en deux étapes</h3><p>L’étape 1 sauvegarde les entreprises, les stagiaires et les examens. L’étape 2 sauvegarde ensuite les modules élèves.</p></div>
+              <div><h3>Archiver le cursus en deux étapes</h3><p>Les deux étapes archivent l’effectif Google Sheets complet, même pour les élèves sans stage, examen ou module.</p></div>
             </div>
             <div class="cursus-admin-counts">
-              <div class="cursus-admin-count"><span>Stagiaires</span><strong id="cursusStageCount">—</strong></div>
+              <div class="cursus-admin-count"><span>Effectif stage</span><strong id="cursusEffectifCount">—</strong></div>
+              <div class="cursus-admin-count"><span>Stages attribués</span><strong id="cursusStageCount">—</strong></div>
               <div class="cursus-admin-count"><span>Examens</span><strong id="cursusExamCount">—</strong></div>
-              <div class="cursus-admin-count"><span>Élèves modules</span><strong id="cursusModuleCount">—</strong></div>
+              <div class="cursus-admin-count"><span>Effectif modules</span><strong id="cursusModuleCount">—</strong></div>
             </div>
             <div class="cursus-admin-period">
               <label>Date de début<input id="cursusArchiveStart" type="date" value="${dates.start}"></label>
@@ -152,12 +153,12 @@ function ensureCursusAdminPanel() {
             <div class="cursus-admin-steps">
               <div class="cursus-admin-step" id="cursusStageStep">
                 <span class="cursus-admin-step-number">1</span>
-                <div><strong>Stages et entreprises</strong><small>Crée l’archive puis vide le cursus stage actif.</small></div>
+                <div><strong>Stages et entreprises</strong><small>Archive tout l’effectif, les attributions et les examens, puis vide le cursus stage actif.</small></div>
                 <button type="button" class="prof-admin-small-btn gold" id="archiveStagesStepBtn">Archiver les stages</button>
               </div>
               <div class="cursus-admin-step" id="cursusModuleStep">
                 <span class="cursus-admin-step-number">2</span>
-                <div><strong>Modules élèves</strong><small>Disponible uniquement après la réussite de l’étape 1.</small></div>
+                <div><strong>Modules élèves</strong><small>Archive chaque élève de l’effectif ; les modules non réalisés restent décochés.</small></div>
                 <button type="button" class="prof-admin-small-btn gold" id="archiveModulesStepBtn" data-workflow-disabled="true" disabled>Archiver les modules</button>
               </div>
             </div>
@@ -211,6 +212,7 @@ function fillEffectifForm(target, settings) {
 
 function renderCursusAdminState(state) {
   const counts = state.counts || {};
+  document.getElementById("cursusEffectifCount").textContent = String(counts.effectif ?? 0);
   document.getElementById("cursusStageCount").textContent = String(counts.stages ?? 0);
   document.getElementById("cursusExamCount").textContent = String(counts.exams ?? 0);
   document.getElementById("cursusModuleCount").textContent = String(counts.modules ?? 0);

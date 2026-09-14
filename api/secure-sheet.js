@@ -654,3 +654,7 @@ module.exports = async function handler(req, res) {
     });
   }
 };
+
+// Réutilisé côté serveur lors de l’archivage d’un cursus afin de figer
+// l’effectif complet, y compris les élèves sans progression enregistrée.
+module.exports.fetchCsv = fetchCsv;
