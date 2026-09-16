@@ -40,7 +40,9 @@ test("le rendu adapte les effets coûteux aux navigateurs et appareils modestes"
   assert.match(motion, /navigator\.hardwareConcurrency/);
   assert.match(motion, /navigator\.deviceMemory/);
   assert.match(motion, /firefox/i);
-  assert.match(motion, /prefers-reduced-motion: reduce/);
+  assert.match(motion, /const reduceMotion = false/);
+  assert.match(motion, /classList\.remove\("university-motion-reduced"\)/);
+  assert.doesNotMatch(styles, /university-performance-lite \.university-motion-item/);
   assert.match(styles, /html\.university-performance-lite \*/);
   assert.match(styles, /content-visibility: auto/);
 });

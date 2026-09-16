@@ -1,14 +1,12 @@
 (() => {
   const root = document.documentElement;
   const ARRIVAL_STORAGE_KEY = "universityLoginArrival";
-  const motionPreference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
   const compactViewport = window.matchMedia?.("(max-width: 900px)")?.matches === true;
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   const lowCpu = Number(navigator.hardwareConcurrency || 8) <= 4;
   const lowMemory = Number(navigator.deviceMemory || 8) <= 4;
   const firefox = /firefox/i.test(navigator.userAgent || "");
-  const performanceLite = motionPreference?.matches === true
-    || compactViewport
+  const performanceLite = compactViewport
     || lowCpu
     || lowMemory
     || connection?.saveData === true
@@ -16,8 +14,10 @@
   root.classList.add("university-motion");
   root.classList.toggle("university-performance-lite", performanceLite);
 
-  const reduceMotion = motionPreference?.matches === true;
-  root.classList.toggle("university-motion-reduced", reduceMotion);
+  // Les animations font partie intégrante de l'interface Université.
+  // Elles restent actives même si le système demande moins de mouvement.
+  const reduceMotion = false;
+  root.classList.remove("university-motion-reduced");
 
   const wait = duration => new Promise(resolve => {
     const safeDuration = Math.max(0, Number(duration) || 0);
