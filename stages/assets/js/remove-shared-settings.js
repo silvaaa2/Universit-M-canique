@@ -49,6 +49,10 @@ function installSharedSettingsRemoval() {
   window.setTimeout(removeSharedSettingsUi, 250);
   window.setTimeout(removeSharedSettingsUi, 1000);
   window.setTimeout(removeSharedSettingsUi, 2500);
+  window.setTimeout(() => {
+    removeSharedSettingsUi();
+    observer.disconnect();
+  }, 5000);
 }
 
 if (document.body) {

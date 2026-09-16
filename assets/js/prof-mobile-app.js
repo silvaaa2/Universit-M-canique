@@ -545,6 +545,7 @@
   });
 
   let interfaceSyncQueued = false;
+  const mobileViewport = window.matchMedia("(max-width: 900px)");
   const observer = new MutationObserver(() => {
     if (interfaceSyncQueued) return;
     interfaceSyncQueued = true;
@@ -556,10 +557,24 @@
     });
   });
 
-  observer.observe(body, {
-    attributes: true,
-    attributeFilter: ["class", "hidden", "disabled"],
-    childList: true,
-    subtree: true
-  });
+  function syncMobileObserver() {
+    observer.disconnect();
+    if (!mobileViewport.matches) return;
+
+    syncSessionVisibility();
+    syncOverlayState();
+    observer.observe(body, {
+      attributes: true,
+      attributeFilter: ["class", "hidden", "disabled"],
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (typeof mobileViewport.addEventListener === "function") {
+    mobileViewport.addEventListener("change", syncMobileObserver);
+  } else {
+    mobileViewport.addListener(syncMobileObserver);
+  }
+  syncMobileObserver();
 })();

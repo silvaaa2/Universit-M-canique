@@ -48,6 +48,7 @@
   let audioContext = null;
   let authWaitTimer = null;
   let authWaitStartedAt = 0;
+  let lastCheckAt = 0;
 
   function notificationsEnabled() {
     const savedValue = localStorage.getItem(ENABLED_KEY);
@@ -504,10 +505,12 @@
     playSound();
   }
 
-  async function checkNotifications({ baselineOnly = false } = {}) {
+  async function checkNotifications({ baselineOnly = false, force = false } = {}) {
     if (!notificationsEnabled() || !window.currentProfUser || checkRunning) return;
+    if (!force && Date.now() - lastCheckAt < INTERVAL_MS) return;
 
     checkRunning = true;
+    lastCheckAt = Date.now();
 
     try {
       const current = await loadSnapshot();
@@ -600,7 +603,16 @@
         window.clearInterval(authWaitTimer);
         authWaitTimer = null;
       }
-    }, 500);
+    }, 1500);
+  }
+
+  function handleConnectedProf() {
+    if (!window.currentProfUser) return;
+    if (authWaitTimer) {
+      window.clearInterval(authWaitTimer);
+      authWaitTimer = null;
+    }
+    startNotifications();
   }
 
   button?.addEventListener("click", async () => {
@@ -623,11 +635,11 @@
 
     setNotificationsEnabled(true);
     updateButton();
-    await checkNotifications({ baselineOnly: true });
+    await checkNotifications({ baselineOnly: true, force: true });
     startNotifications();
 
     if (permission === "granted") {
-      showToast("Notifications activées", "Le site vérifie les nouvelles réponses toutes les 10 secondes.", "ok");
+      showToast("Notifications activées", "Le site vérifie régulièrement les nouvelles réponses.", "ok");
     } else {
       showToast("Notifications site activées", "Windows bloque les notifications, mais les alertes du site restent actives.", "info");
     }
@@ -641,6 +653,7 @@
 
   window.addEventListener("focus", () => checkNotifications());
   window.addEventListener("prof:live-refresh", () => checkNotifications());
+  window.addEventListener("profIdentityReady", handleConnectedProf);
   window.addEventListener("profNavigationReady", renderBadges);
   window.addEventListener("storage", event => {
     if (event.key === UNREAD_KEY || event.key === SEEN_NEWS_KEY) renderBadges();

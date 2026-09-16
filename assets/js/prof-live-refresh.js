@@ -8,6 +8,8 @@
   const SAVING_SELECTOR = ".saving, [data-module-saving='true'], [aria-busy='true']";
   const OPEN_CORRECTION_SELECTOR = "[data-answer-card].is-open";
   let lastRefreshAt = Date.now();
+  let refreshTimer = 0;
+  let stopped = false;
 
   const clockFormatter = new Intl.DateTimeFormat("fr-FR", {
     weekday: "short",
@@ -58,15 +60,33 @@
     return true;
   }
 
+  function scheduleRefresh(delay = REFRESH_INTERVAL_MS) {
+    window.clearTimeout(refreshTimer);
+    refreshTimer = 0;
+    if (stopped || document.visibilityState !== "visible") return;
+
+    refreshTimer = window.setTimeout(() => {
+      refreshTimer = 0;
+      dispatchRefresh("interval");
+      scheduleRefresh();
+    }, delay);
+  }
+
   function handleVisibilityChange() {
     updateClock();
-    if (document.visibilityState !== "visible") return;
-    if (Date.now() - lastRefreshAt < RESUME_REFRESH_DELAY_MS) return;
-    dispatchRefresh("visibility");
+    if (document.visibilityState !== "visible") {
+      window.clearTimeout(refreshTimer);
+      refreshTimer = 0;
+      return;
+    }
+    if (Date.now() - lastRefreshAt >= RESUME_REFRESH_DELAY_MS) {
+      dispatchRefresh("visibility");
+    }
+    scheduleRefresh();
   }
 
   updateClock();
-  const intervalId = window.setInterval(() => dispatchRefresh("interval"), REFRESH_INTERVAL_MS);
+  scheduleRefresh();
   document.addEventListener("visibilitychange", handleVisibilityChange);
 
   window.profLiveRefresh = Object.freeze({
@@ -75,7 +95,8 @@
     updateClock,
     isUserBusy,
     stop() {
-      window.clearInterval(intervalId);
+      stopped = true;
+      window.clearTimeout(refreshTimer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     }
   });

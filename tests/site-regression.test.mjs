@@ -216,7 +216,7 @@ test("les ressources locales référencées par les pages existent", () => {
 
 test("Vercel applique les protections de navigateur non bloquantes", () => {
   const config = JSON.parse(read("vercel.json"));
-  const headers = config.headers?.[0]?.headers || [];
+  const headers = config.headers?.find(rule => rule.source === "/(.*)")?.headers || [];
   const byName = new Map(headers.map(header => [header.key.toLowerCase(), header.value]));
   assert.equal(byName.get("x-frame-options"), "DENY");
   assert.equal(byName.get("x-content-type-options"), "nosniff");

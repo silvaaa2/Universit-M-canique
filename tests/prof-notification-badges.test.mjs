@@ -30,7 +30,7 @@ test("les nouvelles copies et customs alimentent des compteurs non lus locaux", 
 test("les pastilles sont présentes sur la navigation PC et téléphone de tout l'espace prof", async () => {
   for (const page of professorPages) {
     const html = await read(page);
-    assert.match(html, /prof-notifications-v2\.js\?v=6/);
+    assert.match(html, /prof-notifications-v2\.js\?v=7/);
     assert.match(html, /data-prof-notification-target="custom"/);
     assert.match(html, /data-prof-notification-target="exam"/);
   }

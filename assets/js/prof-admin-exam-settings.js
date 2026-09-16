@@ -390,16 +390,9 @@ async function refreshAdminAccess() {
 
 function startExamSettingsPanel() {
   injectExamSettingsStyles();
-
-  const observer = new MutationObserver(() => {
-    ensureExamSettingsPanel();
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
   refreshAdminAccess();
   window.addEventListener("profFirebaseReady", refreshAdminAccess);
-  window.setInterval(refreshAdminAccess, 1200);
+  window.addEventListener("profIdentityReady", refreshAdminAccess);
 }
 
 if (document.body) {

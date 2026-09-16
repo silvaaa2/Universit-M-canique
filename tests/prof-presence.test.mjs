@@ -58,13 +58,14 @@ test("les cinq pages prof chargent l'interface de présence", () => {
   pages.forEach(page => {
     const html = readFileSync(new URL(`../pages/${page}`, import.meta.url), "utf8");
     assert.match(html, /prof-presence\.css\?v=4/);
-    assert.match(html, /prof-presence\.js\?v=4/);
+    assert.match(html, /prof-presence\.js\?v=5/);
   });
 });
 
-test("le client actualise la présence toutes les dix secondes", () => {
+test("le client actualise la présence sans surcharger les onglets", () => {
   const source = readFileSync(new URL("../assets/js/prof-presence.js", import.meta.url), "utf8");
-  assert.match(source, /const HEARTBEAT_MS = 10_000/);
+  assert.match(source, /const HEARTBEAT_MS = 30_000/);
+  assert.match(source, /const HIDDEN_HEARTBEAT_MS = 60_000/);
   assert.match(source, /const INITIAL_HEARTBEAT_DELAY_MS = 6_000/);
   assert.match(source, /const PRESENCE_COLLECTION = "stageComments"/);
   assert.match(source, /recordType: "profPresence"/);
@@ -73,7 +74,8 @@ test("le client actualise la présence toutes les dix secondes", () => {
   assert.match(source, /method: "DELETE"/);
   assert.match(source, /keepalive: true/);
   assert.doesNotMatch(source, /setTimeout\(sendHeartbeat, (?:800|1800)\)/);
-  assert.doesNotMatch(source, /document\.visibilityState === "hidden"/);
+  assert.match(source, /document\.visibilityState === "visible"/);
+  assert.match(source, /orderBy\(documentId\(\)\)/);
   assert.match(source, /window\.addEventListener\("focus", sendHeartbeatWhenReady\)/);
   assert.match(source, /cdn\.discordapp\.com/);
   assert.match(source, /prof-mobile-tabbar/);

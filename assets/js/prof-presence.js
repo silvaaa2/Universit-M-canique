@@ -3,8 +3,13 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import {
   collection,
   doc,
+  documentId,
+  endAt,
   getDocs,
   getFirestore,
+  orderBy,
+  query,
+  startAt,
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -17,7 +22,8 @@ const firebaseConfig = {
   appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58"
 };
 
-const HEARTBEAT_MS = 10_000;
+const HEARTBEAT_MS = 30_000;
+const HIDDEN_HEARTBEAT_MS = 60_000;
 const PRESENCE_TTL_MS = 150_000;
 const INITIAL_HEARTBEAT_DELAY_MS = 6_000;
 const PRESENCE_COLLECTION = "stageComments";
@@ -132,8 +138,8 @@ async function getVerifiedIdentity(user) {
 async function syncPresenceWithFirestore(user) {
   const now = Date.now();
   const identity = await getVerifiedIdentity(user);
-  const documentId = `${PRESENCE_DOCUMENT_PREFIX}${user.uid}`;
-  await setDoc(doc(db, PRESENCE_COLLECTION, documentId), {
+  const presenceDocumentId = `${PRESENCE_DOCUMENT_PREFIX}${user.uid}`;
+  await setDoc(doc(db, PRESENCE_COLLECTION, presenceDocumentId), {
     recordType: "profPresence",
     displayName: identity.displayName,
     avatarUrl: identity.avatarUrl,
@@ -143,7 +149,13 @@ async function syncPresenceWithFirestore(user) {
     updatedAtMs: now
   }, { merge: false });
 
-  const snapshot = await getDocs(collection(db, PRESENCE_COLLECTION));
+  const presenceQuery = query(
+    collection(db, PRESENCE_COLLECTION),
+    orderBy(documentId()),
+    startAt(PRESENCE_DOCUMENT_PREFIX),
+    endAt(`${PRESENCE_DOCUMENT_PREFIX}\uf8ff`)
+  );
+  const snapshot = await getDocs(presenceQuery);
   return snapshot.docs
     .map(item => item.data() || {})
     .filter(item => item.recordType === "profPresence")
@@ -260,7 +272,7 @@ async function sendHeartbeat() {
 function markPresenceOffline() {
   if (offlineRequestSent || internalNavigation || !cachedIdToken) return;
   offlineRequestSent = true;
-  window.clearInterval(heartbeatTimer);
+  window.clearTimeout(heartbeatTimer);
   window.clearTimeout(heartbeatStartTimer);
 
   if (currentUser?.uid && db) {
@@ -285,8 +297,21 @@ function sendHeartbeatWhenReady() {
   sendHeartbeat();
 }
 
+function scheduleHeartbeat(delay) {
+  window.clearTimeout(heartbeatTimer);
+  if (!currentUser) return;
+
+  const nextDelay = delay ?? (
+    document.visibilityState === "visible" ? HEARTBEAT_MS : HIDDEN_HEARTBEAT_MS
+  );
+  heartbeatTimer = window.setTimeout(async () => {
+    await sendHeartbeat();
+    scheduleHeartbeat();
+  }, nextDelay);
+}
+
 function startHeartbeat(user) {
-  window.clearInterval(heartbeatTimer);
+  window.clearTimeout(heartbeatTimer);
   window.clearTimeout(heartbeatStartTimer);
   presenceReadyAt = Number.POSITIVE_INFINITY;
   currentUser = user;
@@ -301,12 +326,17 @@ function startHeartbeat(user) {
   presenceReadyAt = Date.now() + INITIAL_HEARTBEAT_DELAY_MS;
   heartbeatStartTimer = window.setTimeout(() => {
     sendHeartbeat();
-    heartbeatTimer = window.setInterval(sendHeartbeat, HEARTBEAT_MS);
+    scheduleHeartbeat();
   }, INITIAL_HEARTBEAT_DELAY_MS);
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") sendHeartbeatWhenReady();
+  if (document.visibilityState === "visible") {
+    sendHeartbeatWhenReady();
+    scheduleHeartbeat();
+    return;
+  }
+  scheduleHeartbeat(HIDDEN_HEARTBEAT_MS);
 });
 window.addEventListener("focus", sendHeartbeatWhenReady);
 

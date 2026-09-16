@@ -14,12 +14,30 @@ function keepModulesDashboardVisible() {
   const protectedContent = document.getElementById("protectedContent");
   if (!protectedContent || protectedContent.hidden) return;
 
-  protectedContent.style.display = "block";
+  if (protectedContent.style.display !== "block") {
+    protectedContent.style.display = "block";
+  }
   protectedContent.classList.add("dashboard-visible");
 }
 
-window.setInterval(keepModulesDashboardVisible, 250);
-requestAnimationFrame(keepModulesDashboardVisible);
+function installModulesDashboardVisibilityGuard() {
+  const protectedContent = document.getElementById("protectedContent");
+  if (!protectedContent) return;
+
+  keepModulesDashboardVisible();
+  const observer = new MutationObserver(keepModulesDashboardVisible);
+  observer.observe(protectedContent, {
+    attributes: true,
+    attributeFilter: ["hidden", "class", "style"]
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", installModulesDashboardVisibilityGuard, { once: true });
+} else {
+  installModulesDashboardVisibilityGuard();
+}
+window.addEventListener("profIdentityReady", keepModulesDashboardVisible);
 
 import "./prof-modules-eleves-safe.js?v=1014";
 import "./prof-modules-alerts.js?v=1012";

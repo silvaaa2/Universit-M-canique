@@ -2,6 +2,32 @@
   navigation: auto;
 }
 
+/* Profil de rendu allégé : conserve l'identité visuelle sans les flous GPU
+   coûteux sur mobile, Firefox et les appareils aux ressources limitées. */
+html.university-performance-lite *,
+html.university-performance-lite *::before,
+html.university-performance-lite *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.university-performance-lite :is(
+  .stage-id-row,
+  .exam-row,
+  .effectif-row,
+  .archive-list-item,
+  .modules-row:not(.head),
+  [data-student-row],
+  .student-answer-card
+) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 72px;
+}
+
+html.university-performance-lite .university-motion-item {
+  animation-name: university-item-in-lite !important;
+}
+
 ::view-transition-old(root) {
   animation: university-view-out 180ms cubic-bezier(.4, 0, 1, 1) both;
 }
@@ -576,6 +602,11 @@ html.university-motion .motion-feedback {
 @keyframes university-item-in {
   from { opacity: 0; transform: translateY(18px) scale(.985); filter: blur(4px); }
   to { opacity: 1; transform: none; filter: blur(0); }
+}
+
+@keyframes university-item-in-lite {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
 }
 
 @keyframes university-panel-in {

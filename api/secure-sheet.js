@@ -91,6 +91,11 @@ const MODULE_EFFECTIF_SOURCE = "module-effectif";
 const EFFECTIF_SHEET_KEY = "current";
 
 let googleAccessTokenCache = null;
+const GOOGLE_SHEET_TITLE_TTL_MS = 10 * 60_000;
+const SHEET_CSV_CACHE_TTL_MS = 8_000;
+const googleSheetTitleCache = new Map();
+const sheetCsvCache = new Map();
+const sheetCsvRequests = new Map();
 const GOOGLE_RETRY_DELAYS_MS = [0, 250, 800];
 const RETRYABLE_GOOGLE_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
 
@@ -241,18 +246,30 @@ async function fetchPrivateGoogleCsv({ spreadsheetId, gid }) {
   if (!accessToken) return "";
 
   const headers = { Authorization: `Bearer ${accessToken}` };
-  const metadataResponse = await fetchGoogleWithRetry(
-    `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=sheets.properties`,
-    { headers, cache: "no-store" }
-  );
+  const titleCacheKey = `${spreadsheetId}:${gid}`;
+  const cachedTitle = googleSheetTitleCache.get(titleCacheKey);
+  let sheetTitle = cachedTitle?.expiresAt > Date.now() ? cachedTitle.value : "";
 
-  if (!metadataResponse.ok) {
-    throw new Error(`Feuille Google privée inaccessible (${metadataResponse.status}).`);
+  if (!sheetTitle) {
+    const metadataResponse = await fetchGoogleWithRetry(
+      `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=sheets.properties`,
+      { headers, cache: "no-store" }
+    );
+
+    if (!metadataResponse.ok) {
+      throw new Error(`Feuille Google privée inaccessible (${metadataResponse.status}).`);
+    }
+
+    const metadata = await metadataResponse.json();
+    const sheet = (metadata.sheets || []).find(item => String(item.properties?.sheetId) === String(gid));
+    sheetTitle = String(sheet?.properties?.title || "").trim();
+    if (sheetTitle) {
+      googleSheetTitleCache.set(titleCacheKey, {
+        value: sheetTitle,
+        expiresAt: Date.now() + GOOGLE_SHEET_TITLE_TTL_MS
+      });
+    }
   }
-
-  const metadata = await metadataResponse.json();
-  const sheet = (metadata.sheets || []).find(item => String(item.properties?.sheetId) === String(gid));
-  const sheetTitle = String(sheet?.properties?.title || "").trim();
 
   if (!sheetTitle) {
     throw new Error("Onglet Google Sheets introuvable côté serveur.");
@@ -564,7 +581,7 @@ async function fetchGoogleCsv(url) {
   };
 }
 
-async function fetchCsv({ spreadsheetId, gid, publicOnly = false }) {
+async function fetchCsvUncached({ spreadsheetId, gid, publicOnly = false }) {
   if (!spreadsheetId || !gid) {
     throw new Error("Réglage Google Sheets incomplet côté serveur.");
   }
@@ -600,6 +617,29 @@ async function fetchCsv({ spreadsheetId, gid, publicOnly = false }) {
   }
 
   throw new Error(`Google Sheets a refusé la lecture (${attempts.join(" puis ")}).`);
+}
+
+async function fetchCsv(options) {
+  const spreadsheetId = String(options?.spreadsheetId || "");
+  const gid = String(options?.gid || "");
+  const cacheKey = `${spreadsheetId}:${gid}:${options?.publicOnly === true ? "public" : "private"}`;
+  const cached = sheetCsvCache.get(cacheKey);
+
+  if (cached?.expiresAt > Date.now()) return cached.value;
+  if (sheetCsvRequests.has(cacheKey)) return sheetCsvRequests.get(cacheKey);
+
+  const request = fetchCsvUncached(options)
+    .then(value => {
+      sheetCsvCache.set(cacheKey, {
+        value,
+        expiresAt: Date.now() + SHEET_CSV_CACHE_TTL_MS
+      });
+      return value;
+    })
+    .finally(() => sheetCsvRequests.delete(cacheKey));
+
+  sheetCsvRequests.set(cacheKey, request);
+  return request;
 }
 
 module.exports = async function handler(req, res) {

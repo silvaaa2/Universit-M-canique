@@ -1,10 +1,23 @@
 (() => {
   const root = document.documentElement;
   const ARRIVAL_STORAGE_KEY = "universityLoginArrival";
+  const motionPreference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  const compactViewport = window.matchMedia?.("(max-width: 900px)")?.matches === true;
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const lowCpu = Number(navigator.hardwareConcurrency || 8) <= 4;
+  const lowMemory = Number(navigator.deviceMemory || 8) <= 4;
+  const firefox = /firefox/i.test(navigator.userAgent || "");
+  const performanceLite = motionPreference?.matches === true
+    || compactViewport
+    || lowCpu
+    || lowMemory
+    || connection?.saveData === true
+    || firefox;
   root.classList.add("university-motion");
+  root.classList.toggle("university-performance-lite", performanceLite);
 
-  const reduceMotion = false;
-  root.classList.remove("university-motion-reduced");
+  const reduceMotion = motionPreference?.matches === true;
+  root.classList.toggle("university-motion-reduced", reduceMotion);
 
   const wait = duration => new Promise(resolve => {
     const safeDuration = Math.max(0, Number(duration) || 0);
@@ -202,10 +215,6 @@
     ".company-hero",
     ".stage-card",
     ".company-column",
-    ".stage-id-row",
-    ".exam-row",
-    ".effectif-row",
-    ".archive-list-item",
     ".admin-summary-card",
     ".v2-nav-item",
     ".apex-hero",
@@ -221,7 +230,6 @@
     ".exam-stat-card",
     ".rp-v2-hero",
     ".custom-cockpit-stat",
-    ".student-answer-card",
     ".custom-card",
     ".vehicle-card",
     ".home-card",
@@ -230,9 +238,7 @@
     ".vehicle-page .page-top",
     ".vehicle-page .media-column",
     ".vehicle-page .info-card",
-    ".modules-summary > *",
-    ".modules-row:not(.head)",
-    "[data-student-row]"
+    ".modules-summary > *"
   ].join(",");
 
   let sequence = 0;
@@ -255,13 +261,20 @@
   }
 
   async function start() {
+    const pendingNodes = new Set();
+    let decorationFrame = 0;
     const observer = new MutationObserver(records => {
-      window.requestAnimationFrame(() => {
-        records.forEach(record => {
-          record.addedNodes.forEach(node => {
-            if (node instanceof Element) decorate(node);
-          });
+      records.forEach(record => {
+        record.addedNodes.forEach(node => {
+          if (node instanceof Element) pendingNodes.add(node);
         });
+      });
+
+      if (decorationFrame) return;
+      decorationFrame = window.requestAnimationFrame(() => {
+        decorationFrame = 0;
+        pendingNodes.forEach(decorate);
+        pendingNodes.clear();
       });
     });
 

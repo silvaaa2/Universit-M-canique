@@ -17,7 +17,8 @@ test("l'espace professeur actualise ses données toutes les dix secondes", async
   const source = await read("assets/js/prof-live-refresh.js");
 
   assert.match(source, /const REFRESH_INTERVAL_MS = 10_000/);
-  assert.match(source, /setInterval\(\(\) => dispatchRefresh\("interval"\), REFRESH_INTERVAL_MS\)/);
+  assert.match(source, /setTimeout\(\(\) => \{[\s\S]*?dispatchRefresh\("interval"\);[\s\S]*?scheduleRefresh\(\)/);
+  assert.match(source, /document\.visibilityState !== "visible"[\s\S]*?return/);
   assert.match(source, /new CustomEvent\("prof:live-refresh"/);
   assert.match(source, /document\.visibilityState !== "visible"/);
   assert.match(source, /\[data-answer-card\]\.is-open/);
@@ -34,7 +35,7 @@ test("la date et l'heure restent visibles et actualisées sur chaque page profes
   for (const page of professorPages) {
     const html = await read(page);
     assert.match(html, /data-prof-live-clock/);
-    assert.match(html, /prof-live-refresh\.js\?v=1/);
+    assert.match(html, /prof-live-refresh\.js\?v=2/);
   }
 });
 
