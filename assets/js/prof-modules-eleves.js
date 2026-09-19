@@ -12,8 +12,9 @@ if (modulesStyle) {
 
 function keepModulesDashboardVisible() {
   const protectedContent = document.getElementById("protectedContent");
-  if (!protectedContent || protectedContent.hidden) return;
+  if (!protectedContent) return;
 
+  protectedContent.hidden = false;
   if (protectedContent.style.display !== "block") {
     protectedContent.style.display = "block";
   }
@@ -100,4 +101,4 @@ function scheduleModulesExtras() {
 window.addEventListener("profModulesReady", scheduleModulesExtras, { once: true });
 if (window.profModulesCriticalReady) scheduleModulesExtras();
 
-import "./prof-modules-eleves-safe.js?v=1019";
+import "./prof-modules-eleves-safe.js?v=1020";

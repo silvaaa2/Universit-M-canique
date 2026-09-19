@@ -54,7 +54,10 @@ test("la page Modules charge le tableau avant ses fonctions secondaires", async 
 });
 
 test("le garde Modules ne peut plus cacher son propre message", async () => {
-  const loader = await read("assets/js/prof-modules-eleves-safe.js");
+  const [entry, loader] = await Promise.all([
+    read("assets/js/prof-modules-eleves.js"),
+    read("assets/js/prof-modules-eleves-safe.js")
+  ]);
   const guard = loader.slice(
     loader.indexOf("function showGuardMessage"),
     loader.indexOf("async function getUserAccess")
@@ -64,6 +67,8 @@ test("le garde Modules ne peut plus cacher son propre message", async () => {
   assert.match(guard, /protectedContent\.hidden = false/);
   assert.match(guard, /modulesMainContent\.hidden = true/);
   assert.doesNotMatch(guard, /protectedContent\.hidden = true/);
+  assert.match(entry, /protectedContent\.hidden = false/);
+  assert.doesNotMatch(entry, /!protectedContent \|\| protectedContent\.hidden/);
 });
 
 test("les onglets masqués suspendent les rafraîchissements lourds", async () => {
