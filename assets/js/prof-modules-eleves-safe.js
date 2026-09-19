@@ -390,11 +390,34 @@ async function loadEffectifRows() {
     detail: { cursusKey: currentCursusKey }
   }));
 
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(settings.spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(settings.gid)}&cacheBust=${Date.now()}`;
-  const response = await fetchWithTimeout(csvUrl, EFFECTIF_TIMEOUT_MS, { cache: "no-store" });
+  const token = await withTimeout(
+    currentUser?.getIdToken?.(),
+    FIRESTORE_TIMEOUT_MS,
+    "La session professeur met trop de temps à répondre."
+  );
+  if (!token) throw new Error("Session professeur indisponible. Reconnecte-toi puis réessaie.");
+
+  const params = new URLSearchParams({
+    source: "module-effectif",
+    sheet: "current",
+    spreadsheetId: settings.spreadsheetId,
+    gid: settings.gid
+  });
+  const response = await fetchWithTimeout(`/api/secure-sheet?${params.toString()}`, EFFECTIF_TIMEOUT_MS, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${token}` }
+  });
 
   if (!response.ok) {
-    throw new Error(`Effectif Google Sheets impossible à lire (${response.status}).`);
+    let detail = "";
+    try {
+      const payload = await response.json();
+      detail = String(payload?.error || "").trim();
+    } catch (error) {
+      // La route peut renvoyer du texte brut lorsqu'un intermédiaire échoue.
+    }
+
+    throw new Error(detail || `Effectif Google Sheets impossible à lire (${response.status}).`);
   }
 
   const csv = await response.text();

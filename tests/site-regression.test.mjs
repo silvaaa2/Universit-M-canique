@@ -41,6 +41,16 @@ test("le tableau de bord charge l'effectif actif par l'API sécurisée", () => {
   assert.match(secureSheet, /utilisation publique du réglage déjà vérifié côté professeur/);
 });
 
+test("la page Modules charge aussi l'effectif par l'API sécurisée", () => {
+  const modules = read("assets/js/prof-modules-eleves-safe.js");
+
+  assert.match(modules, /source:\s*"module-effectif"/);
+  assert.match(modules, /sheet:\s*"current"/);
+  assert.match(modules, /Authorization:\s*`Bearer \$\{token\}`/);
+  assert.match(modules, /currentUser\?\.getIdToken\?\.\(\)/);
+  assert.doesNotMatch(modules, /const csvUrl = `https:\/\/docs\.google\.com\/spreadsheets/);
+});
+
 test("la clé de correction n'est plus publiée", () => {
   assert.equal(existsSync(join(root, "assets/js/update-corrections.js")), false);
 });
