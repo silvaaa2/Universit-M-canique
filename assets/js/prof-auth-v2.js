@@ -42,6 +42,8 @@ const firebaseConfig = {
 };
 
 const AUTH_TIMEOUT_MS = 8500;
+const DISCORD_SIGNIN_TIMEOUT_MS = 12000;
+const DASHBOARD_GATE_TIMEOUT_MS = 3500;
 const PROFILE_STORAGE_KEY = "profV2Profile";
 const DASHBOARD_TIMEOUT_MS = 7000;
 const EFFECTIF_TIMEOUT_MS = 12000;
@@ -1486,7 +1488,13 @@ async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
   if (profDashboard) profDashboard.style.display = "none";
 
   const preparationStartedAt = Date.now();
-  const statsReady = await loadDashboardStats();
+  const statsPromise = loadDashboardStats();
+  const statsResult = await Promise.race([
+    statsPromise,
+    wait(DASHBOARD_GATE_TIMEOUT_MS).then(() => "loading")
+  ]);
+  const statsReady = statsResult === true;
+  const statsStillLoading = statsResult === "loading";
   const minimumDisplayMs = 720;
   const remainingDisplayMs = Math.max(0, minimumDisplayMs - (Date.now() - preparationStartedAt));
   if (remainingDisplayMs) await wait(remainingDisplayMs);
@@ -1494,7 +1502,9 @@ async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
   if (loginTransitionStatus) {
     loginTransitionStatus.textContent = statsReady
       ? "Vos statistiques sont prêtes."
-      : "Espace prêt, certaines données restent indisponibles.";
+      : statsStillLoading
+        ? "Espace prêt, finalisation des données en arrière-plan."
+        : "Espace prêt, certaines données restent indisponibles.";
   }
   if (loginTransition) loginTransition.dataset.ready = "true";
 
@@ -1515,6 +1525,12 @@ async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
   if (loginTransition) loginTransition.hidden = true;
   loginSection?.classList.remove("leaving");
   setLoginLoading(false);
+
+  if (statsStillLoading) {
+    void statsPromise.catch(error => {
+      console.warn("Finalisation différée du tableau de bord impossible :", error);
+    });
+  }
 }
 
 function showDashboardInstant() {
@@ -1862,19 +1878,32 @@ function initAuth() {
       isManualLoginTransition = true;
 
       try {
-        const response = await fetch("/api/auth/discord/complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          cache: "no-store"
-        });
+        const controller = new AbortController();
+        const requestTimer = window.setTimeout(() => controller.abort(), DISCORD_SIGNIN_TIMEOUT_MS);
+        let response;
+        try {
+          response = await fetch("/api/auth/discord/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            cache: "no-store",
+            signal: controller.signal
+          });
+        } finally {
+          window.clearTimeout(requestTimer);
+        }
         const payload = await response.json().catch(() => ({}));
 
         if (!response.ok || !payload.customToken) {
           throw new Error(payload.error || "Connexion Discord impossible.");
         }
 
-        const credential = await signInWithCustomToken(auth, payload.customToken);
+        if (loginTransitionStatus) loginTransitionStatus.textContent = "Ouverture de votre espace...";
+        const credential = await withTimeout(
+          signInWithCustomToken(auth, payload.customToken),
+          DISCORD_SIGNIN_TIMEOUT_MS,
+          "La connexion Discord prend trop de temps. Réessaie."
+        );
         const user = credential.user;
         currentAccess = await getUserAccess(user);
 

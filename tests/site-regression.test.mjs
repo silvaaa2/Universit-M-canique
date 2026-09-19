@@ -210,6 +210,18 @@ test("le retour Discord masque l'ancienne connexion avant le premier rendu", () 
   assert.doesNotMatch(auth, /loginError\.textContent = "Connexion Discord en cours\.\.\."/);
 });
 
+test("la connexion Discord et la préparation du tableau ont une limite de temps", () => {
+  const html = read("pages/espace-prof.html");
+  const auth = read("assets/js/prof-auth-v2.js");
+
+  assert.match(html, /prof-auth-v2\.js\?v=38/);
+  assert.match(auth, /const DISCORD_SIGNIN_TIMEOUT_MS = 12000/);
+  assert.match(auth, /const DASHBOARD_GATE_TIMEOUT_MS = 3500/);
+  assert.match(auth, /signal: controller\.signal/);
+  assert.match(auth, /withTimeout\(\s*signInWithCustomToken/);
+  assert.match(auth, /finalisation des données en arrière-plan/);
+});
+
 test("les ressources locales référencées par les pages existent", () => {
   const pages = [
     "index.html",
