@@ -23,7 +23,7 @@ const EFFECTIF_SETTINGS_DOC_ID = "effectif";
 const MODULE_EFFECTIF_SETTINGS_DOC_ID = "moduleEffectif";
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
-const EFFECTIF_TIMEOUT_MS = 12000;
+const EFFECTIF_TIMEOUT_MS = 25000;
 
 const MODULE_COLUMNS = [
   { key: "module1", label: "Module 1" },
@@ -279,13 +279,19 @@ async function getUserAccess(user) {
 }
 
 async function loadEffectifSettings() {
-  let snap = await withTimeout(
-    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID)),
-    FIRESTORE_TIMEOUT_MS,
-    "Lecture du réglage effectif trop longue."
-  );
+  let snap = null;
 
-  if (!snap.exists()) {
+  try {
+    snap = await withTimeout(
+      getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID)),
+      FIRESTORE_TIMEOUT_MS,
+      "Lecture du réglage effectif trop longue."
+    );
+  } catch (error) {
+    console.warn("Réglage effectif modules indisponible, repli sur l'effectif principal :", error);
+  }
+
+  if (!snap?.exists()) {
     snap = await withTimeout(
       getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
       FIRESTORE_TIMEOUT_MS,
@@ -390,23 +396,34 @@ async function loadEffectifRows() {
     detail: { cursusKey: currentCursusKey }
   }));
 
-  const token = await withTimeout(
-    currentUser?.getIdToken?.(),
-    FIRESTORE_TIMEOUT_MS,
-    "La session professeur met trop de temps à répondre."
-  );
-  if (!token) throw new Error("Session professeur indisponible. Reconnecte-toi puis réessaie.");
-
   const params = new URLSearchParams({
     source: "module-effectif",
     sheet: "current",
     spreadsheetId: settings.spreadsheetId,
     gid: settings.gid
   });
-  const response = await fetchWithTimeout(`/api/secure-sheet?${params.toString()}`, EFFECTIF_TIMEOUT_MS, {
-    cache: "no-store",
-    headers: { Authorization: `Bearer ${token}` }
-  });
+
+  const requestEffectif = async forceRefresh => {
+    const token = await withTimeout(
+      currentUser?.getIdToken?.(forceRefresh),
+      FIRESTORE_TIMEOUT_MS,
+      "La session professeur met trop de temps à répondre."
+    );
+    if (!token) throw new Error("Session professeur indisponible. Reconnecte-toi puis réessaie.");
+
+    return fetchWithTimeout(`/api/secure-sheet?${params.toString()}`, EFFECTIF_TIMEOUT_MS, {
+      cache: "no-store",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+  };
+
+  let response = await requestEffectif(false);
+
+  // Les navigateurs mobiles peuvent restaurer un ancien jeton après avoir
+  // remis l'onglet en mémoire. On le renouvelle une fois avant d'abandonner.
+  if (response.status === 401 || response.status === 403) {
+    response = await requestEffectif(true);
+  }
 
   if (!response.ok) {
     let detail = "";

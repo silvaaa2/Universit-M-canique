@@ -47,7 +47,10 @@ test("la page Modules charge aussi l'effectif par l'API sécurisée", () => {
   assert.match(modules, /source:\s*"module-effectif"/);
   assert.match(modules, /sheet:\s*"current"/);
   assert.match(modules, /Authorization:\s*`Bearer \$\{token\}`/);
-  assert.match(modules, /currentUser\?\.getIdToken\?\.\(\)/);
+  assert.match(modules, /currentUser\?\.getIdToken\?\.\(forceRefresh\)/);
+  assert.match(modules, /response\.status === 401 \|\| response\.status === 403/);
+  assert.match(modules, /requestEffectif\(true\)/);
+  assert.match(modules, /repli sur l'effectif principal/);
   assert.doesNotMatch(modules, /const csvUrl = `https:\/\/docs\.google\.com\/spreadsheets/);
 });
 
