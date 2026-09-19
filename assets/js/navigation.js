@@ -353,12 +353,4 @@
     link.dataset.modulesTableColors = "true";
     document.head.appendChild(link);
   }
-
-  import("./prof-modules-archives.js?v=1003").catch(error => {
-    console.warn("Archives modules indisponibles :", error);
-  });
-
-  import("./prof-modules-alerts.js?v=1013").catch(error => {
-    console.warn("Avertos modules indisponibles :", error);
-  });
 })();

@@ -34,6 +34,25 @@ test("les modules mobiles ne chargent que le cursus actif et évitent les rendus
   assert.match(modules, /if \(!silent \|\| nextSignature !== lastRenderedSignature\)/);
 });
 
+test("la page Modules charge le tableau avant ses fonctions secondaires", async () => {
+  const [entry, loader, page, navigation] = await Promise.all([
+    read("assets/js/prof-modules-eleves.js"),
+    read("assets/js/prof-modules-eleves-safe.js"),
+    read("pages/prof-modules-eleves.html"),
+    read("assets/js/navigation.js")
+  ]);
+
+  assert.match(loader, /window\.profModulesCriticalReady = true/);
+  assert.match(loader, /new CustomEvent\("profModulesReady"/);
+  assert.match(entry, /addEventListener\("profModulesReady", scheduleModulesExtras/);
+  assert.match(entry, /requestIdleCallback/);
+  assert.match(entry, /setTimeout\(run, 180\)/);
+  assert.match(entry, /prof-notifications-v2\.js\?v=7/);
+  assert.match(entry, /prof-presence\.js\?v=5/);
+  assert.doesNotMatch(page, /<script type="module" src="\.\.\/assets\/js\/prof-(?:modules-sheets|modules-archives|modules-clipboard|notifications|presence)/);
+  assert.doesNotMatch(navigation, /import\("\.\/prof-modules-(?:archives|alerts)\.js/);
+});
+
 test("les onglets masqués suspendent les rafraîchissements lourds", async () => {
   const [liveRefresh, notifications, presence] = await Promise.all([
     read("assets/js/prof-live-refresh.js"),

@@ -30,7 +30,12 @@ test("les nouvelles copies et customs alimentent des compteurs non lus locaux", 
 test("les pastilles sont présentes sur la navigation PC et téléphone de tout l'espace prof", async () => {
   for (const page of professorPages) {
     const html = await read(page);
-    assert.match(html, /prof-notifications-v2\.js\?v=7/);
+    if (page.endsWith("prof-modules-eleves.html")) {
+      const modulesEntry = await read("assets/js/prof-modules-eleves.js");
+      assert.match(modulesEntry, /prof-notifications-v2\.js\?v=7/);
+    } else {
+      assert.match(html, /prof-notifications-v2\.js\?v=7/);
+    }
     assert.match(html, /data-prof-notification-target="custom"/);
     assert.match(html, /data-prof-notification-target="exam"/);
   }

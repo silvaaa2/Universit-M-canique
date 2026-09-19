@@ -58,7 +58,12 @@ test("les cinq pages prof chargent l'interface de présence", () => {
   pages.forEach(page => {
     const html = readFileSync(new URL(`../pages/${page}`, import.meta.url), "utf8");
     assert.match(html, /prof-presence\.css\?v=4/);
-    assert.match(html, /prof-presence\.js\?v=5/);
+    if (page === "prof-modules-eleves.html") {
+      const modulesEntry = readFileSync(new URL("../assets/js/prof-modules-eleves.js", import.meta.url), "utf8");
+      assert.match(modulesEntry, /prof-presence\.js\?v=5/);
+    } else {
+      assert.match(html, /prof-presence\.js\?v=5/);
+    }
   });
 });
 

@@ -58,6 +58,19 @@ let currentCursusSettings = null;
 const studentWriteQueues = new Map();
 let modulesRefreshLoading = false;
 let lastRenderedSignature = "";
+let criticalReadyAnnounced = false;
+
+function announceModulesReady() {
+  if (criticalReadyAnnounced) return;
+  criticalReadyAnnounced = true;
+  window.profModulesCriticalReady = true;
+  window.dispatchEvent(new CustomEvent("profModulesReady", {
+    detail: {
+      cursusKey: currentCursusKey,
+      studentCount: effectifRows.length
+    }
+  }));
+}
 
 function withTimeout(promise, ms, message) {
   let timer;
@@ -661,6 +674,7 @@ async function loadAndRenderModules({ silent = false } = {}) {
     }
 
     if (!silent && !modulesStatus?.textContent) setStatus("", "");
+    announceModulesReady();
     return true;
   } catch (error) {
     console.error("Chargement modules élèves impossible :", error);
