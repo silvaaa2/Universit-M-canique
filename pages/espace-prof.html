@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <title>Espace Prof - Mécanique - Université</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>
+    (() => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("discord") === "complete") {
+          document.documentElement.dataset.profDiscordReturn = "true";
+        }
+      } catch (error) {
+        // Le script principal reprendra la connexion si l'URL ne peut pas être lue ici.
+      }
+    })();
+  </script>
 
   <link rel="icon" type="image/png" href="../Images/favicon.png?v=23">
   <link rel="shortcut icon" type="image/png" href="../Images/favicon.png?v=23">
@@ -25,6 +37,18 @@
 
     .v2-nav p:has(+ #profAdminBtn[hidden]) {
       display: none !important;
+    }
+
+    html[data-prof-discord-return="true"] #loginSection {
+      display: none !important;
+    }
+
+    html[data-prof-discord-return="true"] #loginTransition[hidden] {
+      display: grid !important;
+    }
+
+    html[data-prof-discord-return="true"] #loginTransition {
+      opacity: 1 !important;
     }
   </style>
   <link rel="stylesheet" href="../assets/css/mobile.css?v=20260818-audit2">
@@ -600,7 +624,7 @@
 <script src="../assets/js/prof-ui.js?v=1003"></script>
 <script src="../assets/js/prof-local-profile.js?v=2"></script>
 <script src="../assets/js/prof-live-refresh.js?v=2"></script>
-<script type="module" src="../assets/js/prof-auth-v2.js?v=36"></script>
+<script type="module" src="../assets/js/prof-auth-v2.js?v=37"></script>
 <script type="module" src="../assets/js/prof-admin-v2.js?v=10"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=7"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260916-perf"></script>

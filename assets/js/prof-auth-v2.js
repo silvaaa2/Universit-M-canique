@@ -1415,6 +1415,7 @@ window.addEventListener("prof:live-refresh", () => {
 
 function showLogin() {
   applyAdminVisibility();
+  delete document.documentElement.dataset.profDiscordReturn;
 
   if (loginTransition) {
     loginTransition.hidden = true;
@@ -1431,6 +1432,25 @@ function showLogin() {
   setLoginLoading(false);
 }
 
+function showDiscordReturnTransition() {
+  applyAdminVisibility();
+
+  profDashboard?.classList.remove("dashboard-visible");
+  loginSection?.setAttribute("hidden", "");
+  profDashboard?.setAttribute("hidden", "");
+
+  if (loginSection) loginSection.style.display = "none";
+  if (profDashboard) profDashboard.style.display = "none";
+  if (loginTransitionTitle) loginTransitionTitle.textContent = "Connexion Discord";
+  if (loginTransitionStatus) loginTransitionStatus.textContent = "Vérification de votre accès...";
+
+  if (loginTransition) {
+    loginTransition.dataset.ready = "false";
+    loginTransition.hidden = false;
+    loginTransition.classList.add("active");
+  }
+}
+
 function setDashboardTransition(user, status = "Chargement de vos statistiques...") {
   const displayName = getDisplayProfile(user, currentAccess).displayName || "Professeur";
   if (loginTransitionTitle) loginTransitionTitle.textContent = `Bienvenue, ${displayName}`;
@@ -1439,7 +1459,13 @@ function setDashboardTransition(user, status = "Chargement de vos statistiques..
 }
 
 async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
-  if (animateLogin) {
+  const loginWasVisible = Boolean(
+    loginSection
+    && !loginSection.hidden
+    && loginSection.style.display !== "none"
+  );
+
+  if (animateLogin && loginWasVisible) {
     loginSection?.classList.add("leaving");
     await wait(220);
   }
@@ -1678,7 +1704,16 @@ function initCommandSearch() {
 }
 
 function initAuth() {
-  showLogin();
+  const authParams = new URLSearchParams(window.location.search);
+  const discordError = authParams.get("discord_error");
+  const discordComplete = authParams.get("discord") === "complete";
+  const discordWarning = authParams.get("discord_warning");
+
+  if (discordComplete) {
+    showDiscordReturnTransition();
+  } else {
+    showLogin();
+  }
   setLoginLoading(false);
   setDiscordLoading(false);
 
@@ -1694,11 +1729,6 @@ function initAuth() {
       requestAnimationFrame(() => document.getElementById("email")?.focus({ preventScroll: true }));
     }
   });
-
-  const authParams = new URLSearchParams(window.location.search);
-  const discordError = authParams.get("discord_error");
-  const discordComplete = authParams.get("discord") === "complete";
-  const discordWarning = authParams.get("discord_warning");
 
   const discordErrorMessages = {
     discord_cancelled: "Connexion Discord annulée.",
@@ -1721,6 +1751,7 @@ function initAuth() {
     const url = new URL(window.location.href);
     ["discord", "discord_error", "discord_warning"].forEach(key => url.searchParams.delete(key));
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    delete document.documentElement.dataset.profDiscordReturn;
   }
 
   onAuthStateChanged(auth, async user => {
@@ -1826,7 +1857,7 @@ function initAuth() {
 
   if (discordComplete) {
     (async () => {
-      if (loginError) loginError.textContent = "Connexion Discord en cours...";
+      if (loginTransitionStatus) loginTransitionStatus.textContent = "Validation de votre session...";
       setDiscordLoading(true);
       isManualLoginTransition = true;
 

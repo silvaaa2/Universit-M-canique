@@ -197,6 +197,19 @@ test("la connexion Discord utilise le logo officiel et garde l'e-mail fonctionne
   assert.equal(existsSync(join(root, "Images/discord-symbol.svg")), true);
 });
 
+test("le retour Discord masque l'ancienne connexion avant le premier rendu", () => {
+  const html = read("pages/espace-prof.html");
+  const auth = read("assets/js/prof-auth-v2.js");
+
+  assert.match(html, /dataset\.profDiscordReturn = "true"/);
+  assert.match(html, /html\[data-prof-discord-return="true"\] #loginSection/);
+  assert.match(html, /html\[data-prof-discord-return="true"\] #loginTransition\[hidden\]/);
+  assert.match(auth, /function showDiscordReturnTransition\(\)/);
+  assert.match(auth, /if \(discordComplete\) \{\s*showDiscordReturnTransition\(\)/);
+  assert.match(auth, /delete document\.documentElement\.dataset\.profDiscordReturn/);
+  assert.doesNotMatch(auth, /loginError\.textContent = "Connexion Discord en cours\.\.\."/);
+});
+
 test("les ressources locales référencées par les pages existent", () => {
   const pages = [
     "index.html",
