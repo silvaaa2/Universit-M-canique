@@ -39,5 +39,5 @@ if (document.readyState === "loading") {
 }
 window.addEventListener("profIdentityReady", keepModulesDashboardVisible);
 
-import "./prof-modules-eleves-safe.js?v=1016";
-import "./prof-modules-alerts.js?v=1012";
+import "./prof-modules-eleves-safe.js?v=1017";
+import "./prof-modules-alerts.js?v=1013";

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, documentId, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { getProfAccess, getProfActorId } from "./prof-identity.js?v=2";
 
 const firebaseConfig = {
@@ -442,8 +442,14 @@ async function loadWarnings() {
 
     if (!cursusKey) return;
 
+    const cursusPrefix = `${cursusKey}__`;
+    const currentCursusQuery = query(
+      collection(db, STUDENT_MODULES_COLLECTION),
+      where(documentId(), ">=", cursusPrefix),
+      where(documentId(), "<", `${cursusPrefix}\uf8ff`)
+    );
     const snap = await withTimeout(
-      getDocs(collection(db, STUDENT_MODULES_COLLECTION)),
+      getDocs(currentCursusQuery),
       FIRESTORE_TIMEOUT_MS,
       "Lecture avertos modules trop longue."
     );

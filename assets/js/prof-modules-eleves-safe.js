@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, query, where, documentId, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { getProfAccess, getProfActorId } from "./prof-identity.js?v=2";
 import {
   ALL_PROGRESS_CHECK_KEYS,
@@ -57,6 +57,7 @@ let currentCursusKey = "";
 let currentCursusSettings = null;
 const studentWriteQueues = new Map();
 let modulesRefreshLoading = false;
+let lastRenderedSignature = "";
 
 function withTimeout(promise, ms, message) {
   let timer;
@@ -451,8 +452,14 @@ async function loadStudentProgress() {
   progressById = new Map();
 
   try {
+    const cursusPrefix = `${currentCursusKey}__`;
+    const currentCursusQuery = query(
+      collection(db, STUDENT_MODULES_COLLECTION),
+      where(documentId(), ">=", cursusPrefix),
+      where(documentId(), "<", `${cursusPrefix}\uf8ff`)
+    );
     const snap = await withTimeout(
-      getDocs(collection(db, STUDENT_MODULES_COLLECTION)),
+      getDocs(currentCursusQuery),
       FIRESTORE_TIMEOUT_MS,
       "Le chargement de la progression prend trop de temps."
     );
@@ -470,6 +477,15 @@ async function loadStudentProgress() {
     console.warn("Lecture des modules élèves impossible :", error);
     setStatus("Progression non chargée. Les nouvelles validations restent disponibles.", "error");
   }
+}
+
+function getModulesStateSignature() {
+  return effectifRows.map(row => {
+    const progress = progressById.get(row.normalizedIdUnique) || normalizeProgress({});
+    const checks = ALL_PROGRESS_CHECK_KEYS.map(key => progress.checks[key] === true ? "1" : "0").join("");
+    const dates = MODULE_COLUMNS.map(column => progress.dates[column.key] || "").join(",");
+    return `${row.normalizedIdUnique}:${row.studentName}:${checks}:${dates}`;
+  }).join("|");
 }
 
 function getProgress(studentId) {
@@ -638,7 +654,11 @@ async function loadAndRenderModules({ silent = false } = {}) {
 
     if (!silent) showLoader("Chargement des coches et dates...");
     await loadStudentProgress();
-    renderTable();
+    const nextSignature = getModulesStateSignature();
+    if (!silent || nextSignature !== lastRenderedSignature) {
+      renderTable();
+      lastRenderedSignature = nextSignature;
+    }
 
     if (!silent && !modulesStatus?.textContent) setStatus("", "");
     return true;

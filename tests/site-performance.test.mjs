@@ -18,6 +18,22 @@ test("les boucles permanentes inutiles sont retirées des pages professeur", asy
   assert.match(mobile, /observer\.disconnect\(\)/);
 });
 
+test("les modules mobiles ne chargent que le cursus actif et évitent les rendus identiques", async () => {
+  const [modules, alerts] = await Promise.all([
+    read("assets/js/prof-modules-eleves-safe.js"),
+    read("assets/js/prof-modules-alerts.js")
+  ]);
+
+  for (const source of [modules, alerts]) {
+    assert.match(source, /where\(documentId\(\), ">=", cursusPrefix\)/);
+    assert.match(source, /where\(documentId\(\), "<", `\$\{cursusPrefix\}\\uf8ff`\)/);
+    assert.doesNotMatch(source, /getDocs\(collection\(db, STUDENT_MODULES_COLLECTION\)\)/);
+  }
+
+  assert.match(modules, /getModulesStateSignature\(\)/);
+  assert.match(modules, /if \(!silent \|\| nextSignature !== lastRenderedSignature\)/);
+});
+
 test("les onglets masqués suspendent les rafraîchissements lourds", async () => {
   const [liveRefresh, notifications, presence] = await Promise.all([
     read("assets/js/prof-live-refresh.js"),
