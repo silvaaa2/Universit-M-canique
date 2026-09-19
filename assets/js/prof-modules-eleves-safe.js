@@ -47,6 +47,7 @@ const modulesStatus = document.getElementById("modulesStatus");
 const modulesLoader = document.getElementById("modulesLoader");
 const modulesLoaderText = document.getElementById("modulesLoaderText");
 const modulesTable = document.getElementById("modulesTable");
+const modulesMainContent = document.querySelector(".modules-v2-content");
 
 let currentUser = null;
 let currentAccess = { role: null, admin: false };
@@ -261,10 +262,14 @@ function hideLoader() {
 function showProtectedContent() {
   if (guardLoader) guardLoader.hidden = true;
   if (protectedContent) protectedContent.hidden = false;
+  if (modulesMainContent) modulesMainContent.hidden = false;
 }
 
 function showGuardMessage(title, message) {
-  if (protectedContent) protectedContent.hidden = true;
+  // Le garde est dans protectedContent : cacher le parent produisait un écran
+  // noir quand Firebase restaurait la session plus lentement sur mobile.
+  if (protectedContent) protectedContent.hidden = false;
+  if (modulesMainContent) modulesMainContent.hidden = true;
   if (!guardLoader) return;
 
   guardLoader.hidden = false;

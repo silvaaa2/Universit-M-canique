@@ -53,6 +53,19 @@ test("la page Modules charge le tableau avant ses fonctions secondaires", async 
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-(?:archives|alerts)\.js/);
 });
 
+test("le garde Modules ne peut plus cacher son propre message", async () => {
+  const loader = await read("assets/js/prof-modules-eleves-safe.js");
+  const guard = loader.slice(
+    loader.indexOf("function showGuardMessage"),
+    loader.indexOf("async function getUserAccess")
+  );
+
+  assert.match(loader, /const modulesMainContent = document\.querySelector\("\.modules-v2-content"\)/);
+  assert.match(guard, /protectedContent\.hidden = false/);
+  assert.match(guard, /modulesMainContent\.hidden = true/);
+  assert.doesNotMatch(guard, /protectedContent\.hidden = true/);
+});
+
 test("les onglets masqués suspendent les rafraîchissements lourds", async () => {
   const [liveRefresh, notifications, presence] = await Promise.all([
     read("assets/js/prof-live-refresh.js"),
