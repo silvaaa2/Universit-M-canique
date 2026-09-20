@@ -18,6 +18,8 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
+const STAGE_SETTINGS_COLLECTION = "stageSettings";
+const EFFECTIF_SETTINGS_DOC_IDS = ["moduleEffectif", "effectif"];
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
 const EFFECTIF_TIMEOUT_MS = 15000;
@@ -294,6 +296,42 @@ async function getUserAccess(user) {
   });
 }
 
+async function loadEffectifSettings() {
+  for (const docId of EFFECTIF_SETTINGS_DOC_IDS) {
+    try {
+      const snap = await withTimeout(
+        getDoc(doc(db, STAGE_SETTINGS_COLLECTION, docId)),
+        FIRESTORE_TIMEOUT_MS,
+        "Lecture du réglage effectif trop longue."
+      );
+      if (!snap.exists()) continue;
+
+      const data = snap.data() || {};
+      const spreadsheetId =
+        extractSpreadsheetId(data.spreadsheetId)
+        || extractSpreadsheetId(data.spreadsheetUrl)
+        || extractSpreadsheetId(data.link)
+        || extractSpreadsheetId(data.url);
+      const gid = String(
+        data.gid
+        || extractGid(data.spreadsheetId)
+        || extractGid(data.spreadsheetUrl)
+        || extractGid(data.link)
+        || extractGid(data.url)
+        || ""
+      ).trim();
+
+      if (spreadsheetId && gid) {
+        return { spreadsheetId, gid, cursusKey: buildCursusKey({ spreadsheetId, gid }) };
+      }
+    } catch (error) {
+      console.warn(`Réglage ${docId} indisponible, essai du chemin de secours :`, error);
+    }
+  }
+
+  return null;
+}
+
 function parseCsv(text) {
   const rows = [];
   let row = [];
@@ -368,10 +406,13 @@ function normalizeEffectifRows(rows) {
 }
 
 async function loadEffectifRows() {
+  const settings = await loadEffectifSettings();
   const params = new URLSearchParams({
     source: "module-effectif",
     sheet: "current"
   });
+  if (settings?.spreadsheetId) params.set("spreadsheetId", settings.spreadsheetId);
+  if (settings?.gid) params.set("gid", settings.gid);
 
   const requestEffectif = async forceRefresh => {
     const token = await withTimeout(
@@ -387,11 +428,29 @@ async function loadEffectifRows() {
     });
   };
 
-  let response = await requestEffectif(false);
+  let response = null;
+  let usedSecureApi = false;
+
+  // Chemin historique connu comme stable lorsque la feuille est publique.
+  if (settings?.spreadsheetId && settings?.gid) {
+    const directUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(settings.spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(settings.gid)}&cacheBust=${Date.now()}`;
+    try {
+      const directResponse = await fetchWithTimeout(directUrl, 6000, { cache: "no-store" });
+      if (directResponse.ok) response = directResponse;
+    } catch (error) {
+      console.warn("Lecture directe de l'effectif indisponible, passage par le serveur :", error);
+    }
+  }
+
+  // Chemin sécurisé : utilisé pour les feuilles privées et comme secours.
+  if (!response) {
+    usedSecureApi = true;
+    response = await requestEffectif(false);
+  }
 
   // Les navigateurs mobiles peuvent restaurer un ancien jeton après avoir
   // remis l'onglet en mémoire. On le renouvelle une fois avant d'abandonner.
-  if (response.status === 401 || response.status === 403) {
+  if (usedSecureApi && (response.status === 401 || response.status === 403)) {
     response = await requestEffectif(true);
   }
 
@@ -407,10 +466,10 @@ async function loadEffectifRows() {
     throw new Error(detail || `Effectif Google Sheets impossible à lire (${response.status}).`);
   }
 
-  const spreadsheetId = extractSpreadsheetId(
+  const spreadsheetId = settings?.spreadsheetId || extractSpreadsheetId(
     response.headers.get("X-University-Spreadsheet-Id") || ""
   );
-  const gid = String(response.headers.get("X-University-Sheet-Gid") || "").trim();
+  const gid = settings?.gid || String(response.headers.get("X-University-Sheet-Gid") || "").trim();
   const cursusKey = buildCursusKey({ spreadsheetId, gid });
 
   if (!spreadsheetId || !gid || !cursusKey) {

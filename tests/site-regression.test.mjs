@@ -53,10 +53,11 @@ test("la page Modules charge aussi l'effectif par l'API sécurisée", () => {
   assert.match(modules, /currentUser\?\.getIdToken\?\.\(forceRefresh\)/);
   assert.match(modules, /response\.status === 401 \|\| response\.status === 403/);
   assert.match(modules, /requestEffectif\(true\)/);
-  assert.doesNotMatch(modules, /async function loadEffectifSettings/);
+  assert.match(modules, /async function loadEffectifSettings/);
+  assert.match(modules, /Lecture directe de l'effectif indisponible, passage par le serveur/);
   assert.match(endpoint, /X-University-Spreadsheet-Id/);
   assert.match(endpoint, /X-University-Sheet-Gid/);
-  assert.doesNotMatch(modules, /const csvUrl = `https:\/\/docs\.google\.com\/spreadsheets/);
+  assert.match(modules, /https:\/\/docs\.google\.com\/spreadsheets/);
 });
 
 test("la clé de correction n'est plus publiée", () => {

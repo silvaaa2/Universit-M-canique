@@ -33,7 +33,7 @@ test("les modules privilégient une lecture Firestore compatible et évitent les
   assert.match(modules, /if \(!silent \|\| nextSignature !== lastRenderedSignature\)/);
 });
 
-test("la page Modules charge le tableau avant ses fonctions secondaires", async () => {
+test("la page Modules restaure l'ordre de chargement stable de ses fonctions", async () => {
   const [entry, loader, page, navigation] = await Promise.all([
     read("assets/js/prof-modules-eleves.js"),
     read("assets/js/prof-modules-eleves-safe.js"),
@@ -43,14 +43,14 @@ test("la page Modules charge le tableau avant ses fonctions secondaires", async 
 
   assert.match(loader, /window\.profModulesCriticalReady = true/);
   assert.match(loader, /new CustomEvent\("profModulesReady"/);
-  assert.match(entry, /addEventListener\("profModulesReady", scheduleModulesExtras/);
-  assert.match(entry, /requestIdleCallback/);
-  assert.match(entry, /setTimeout\(run, 180\)/);
-  assert.match(entry, /async function importOptionalModule/);
-  assert.doesNotMatch(entry, /Promise\.allSettled\(\[\s*import\("\.\/prof-modules-alerts/);
-  assert.match(entry, /prof-notifications-v2\.js\?v=7/);
-  assert.match(entry, /prof-presence\.js\?v=5/);
-  assert.doesNotMatch(page, /<script type="module" src="\.\.\/assets\/js\/prof-(?:modules-sheets|modules-archives|modules-clipboard|notifications|presence)/);
+  assert.match(entry, /prof-modules-eleves-safe\.js\?v=1023/);
+  assert.match(entry, /prof-modules-alerts\.js\?v=1015/);
+  assert.doesNotMatch(entry, /scheduleModulesExtras/);
+  assert.match(page, /prof-modules-sheets-sync\.js\?v=1008/);
+  assert.match(page, /prof-modules-archives\.js\?v=1004/);
+  assert.match(page, /prof-modules-clipboard\.js\?v=9/);
+  assert.match(page, /prof-notifications-v2\.js\?v=8/);
+  assert.match(page, /prof-presence\.js\?v=6/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-(?:archives|alerts)\.js/);
 });
 

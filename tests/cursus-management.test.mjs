@@ -68,7 +68,8 @@ test("les deux liens d’effectif sont indépendants et gardent le réglage hist
   assert.match(server, /target === "modules"/);
   assert.match(server, /target === "stages"/);
   assert.match(modules, /source:\s*"module-effectif"/);
-  assert.doesNotMatch(modules, /loadEffectifSettings/);
+  assert.match(modules, /EFFECTIF_SETTINGS_DOC_IDS = \["moduleEffectif", "effectif"\]/);
+  assert.match(modules, /async function loadEffectifSettings/);
   assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "moduleEffectif"\], idToken\)/);
   assert.match(secureSheet, /return resolveEffectifSheet\(idToken, clientFallback\)/);
   assert.match(exactSync, /MODULE_EFFECTIF_SETTINGS_DOC_ID/);

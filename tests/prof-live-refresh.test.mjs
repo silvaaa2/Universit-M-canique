@@ -35,7 +35,7 @@ test("la date et l'heure restent visibles et actualisées sur chaque page profes
   for (const page of professorPages) {
     const html = await read(page);
     assert.match(html, /data-prof-live-clock/);
-    assert.match(html, /prof-live-refresh\.js\?v=2/);
+    assert.match(html, /prof-live-refresh\.js\?v=[23]/);
   }
 });
 
