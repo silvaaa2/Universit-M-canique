@@ -90,4 +90,4 @@ function scheduleModulesExtras() {
 window.addEventListener("profModulesReady", scheduleModulesExtras, { once: true });
 if (window.profModulesCriticalReady) scheduleModulesExtras();
 
-import "./prof-modules-eleves-safe.js?v=1021";
+import "./prof-modules-eleves-safe.js?v=1022";

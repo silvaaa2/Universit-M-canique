@@ -18,17 +18,16 @@ test("les boucles permanentes inutiles sont retirées des pages professeur", asy
   assert.match(mobile, /observer\.disconnect\(\)/);
 });
 
-test("les modules mobiles ne chargent que le cursus actif et évitent les rendus identiques", async () => {
+test("les modules privilégient une lecture Firestore compatible et évitent les rendus identiques", async () => {
   const [modules, alerts] = await Promise.all([
     read("assets/js/prof-modules-eleves-safe.js"),
     read("assets/js/prof-modules-alerts.js")
   ]);
 
-  for (const source of [modules, alerts]) {
-    assert.match(source, /where\(documentId\(\), ">=", cursusPrefix\)/);
-    assert.match(source, /where\(documentId\(\), "<", `\$\{cursusPrefix\}\\uf8ff`\)/);
-    assert.doesNotMatch(source, /getDocs\(collection\(db, STUDENT_MODULES_COLLECTION\)\)/);
-  }
+  assert.match(modules, /getDocs\(collection\(db, STUDENT_MODULES_COLLECTION\)\)/);
+  assert.doesNotMatch(modules, /where\(documentId\(\), ">=", cursusPrefix\)/);
+  assert.match(alerts, /where\(documentId\(\), ">=", cursusPrefix\)/);
+  assert.match(alerts, /where\(documentId\(\), "<", `\$\{cursusPrefix\}\\uf8ff`\)/);
 
   assert.match(modules, /getModulesStateSignature\(\)/);
   assert.match(modules, /if \(!silent \|\| nextSignature !== lastRenderedSignature\)/);
@@ -100,6 +99,8 @@ test("le rendu adapte les effets coûteux aux navigateurs et appareils modestes"
   assert.doesNotMatch(styles, /university-performance-lite \.university-motion-item/);
   assert.match(styles, /html\.university-performance-lite \*/);
   assert.match(styles, /content-visibility: auto/);
+  assert.doesNotMatch(styles, /\.modules-row:not\(\.head\)/);
+  assert.doesNotMatch(styles, /\[data-student-row\]/);
 });
 
 test("les feuilles et ressources statiques utilisent des caches courts et sûrs", async () => {
@@ -112,7 +113,11 @@ test("les feuilles et ressources statiques utilisent des caches courts et sûrs"
   assert.match(secureSheet, /const SHEET_CSV_CACHE_TTL_MS = 8_000/);
   assert.match(secureSheet, /const googleSheetTitleCache = new Map\(\)/);
   assert.match(secureSheet, /const sheetCsvRequests = new Map\(\)/);
-  assert.ok(config.headers.some(rule => rule.source === "/assets/(.*)"));
+  const assetsRule = config.headers.find(rule => rule.source === "/assets/(.*)");
+  assert.ok(assetsRule);
+  assert.ok(assetsRule.headers.some(header => (
+    header.key === "Cache-Control" && header.value === "public, max-age=0, must-revalidate"
+  )));
   assert.ok(config.headers.some(rule => rule.source === "/Images/(.*)"));
 });
 

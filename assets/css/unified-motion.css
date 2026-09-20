@@ -16,8 +16,6 @@ html.university-performance-lite :is(
   .exam-row,
   .effectif-row,
   .archive-list-item,
-  .modules-row:not(.head),
-  [data-student-row],
   .student-answer-card
 ) {
   content-visibility: auto;
