@@ -58,6 +58,7 @@ test("l’archive modules contient tout l’effectif même sans progression", ()
 test("les deux liens d’effectif sont indépendants et gardent le réglage historique en repli", async () => {
   const server = await read("lib/server/cursus-management.js");
   const modules = await read("assets/js/prof-modules-eleves-safe.js");
+  const secureSheet = await read("api/secure-sheet.js");
   const exactSync = await read("assets/js/prof-modules-sheets-sync-exact.js");
   const stageApp = await read("stages/assets/js/stage-app.js");
   const rules = await read("firestore.rules");
@@ -66,8 +67,10 @@ test("les deux liens d’effectif sont indépendants et gardent le réglage hist
   assert.match(server, /STAGE_EFFECTIF_DOCUMENT = "effectif"/);
   assert.match(server, /target === "modules"/);
   assert.match(server, /target === "stages"/);
-  assert.match(modules, /MODULE_EFFECTIF_SETTINGS_DOC_ID/);
-  assert.match(modules, /if \(!snap\.exists\(\)\)[\s\S]*EFFECTIF_SETTINGS_DOC_ID/);
+  assert.match(modules, /source:\s*"module-effectif"/);
+  assert.doesNotMatch(modules, /loadEffectifSettings/);
+  assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "moduleEffectif"\], idToken\)/);
+  assert.match(secureSheet, /return resolveEffectifSheet\(idToken, clientFallback\)/);
   assert.match(exactSync, /MODULE_EFFECTIF_SETTINGS_DOC_ID/);
   assert.doesNotMatch(stageApp, /id="changeEffectifBtn"/);
   assert.match(rules, /docId in \["effectif", "moduleEffectif"\]/);

@@ -686,6 +686,13 @@ module.exports = async function handler(req, res) {
     res.statusCode = 200;
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
+    if (
+      (source === EFFECTIF_SOURCE || source === MODULE_EFFECTIF_SOURCE)
+      && sheet === EFFECTIF_SHEET_KEY
+    ) {
+      res.setHeader("X-University-Spreadsheet-Id", resolvedSheet.spreadsheetId);
+      res.setHeader("X-University-Sheet-Gid", resolvedSheet.gid);
+    }
     res.end(csv);
   } catch (error) {
     console.error("Lecture sécurisée Google Sheets impossible :", error);

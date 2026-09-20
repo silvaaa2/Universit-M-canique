@@ -104,6 +104,8 @@ test("l'API sécurisée résout et renvoie l'effectif actif", async () => {
 
     assert.equal(res.statusCode, 200);
     assert.match(res.body, /123456,Élève Test/);
+    assert.equal(res.headers["X-University-Spreadsheet-Id"], "1TestSpreadsheetId1234567890");
+    assert.equal(res.headers["X-University-Sheet-Gid"], "42");
     assert.ok(calls.some(call => call.url.includes("export?format=csv&gid=42")));
   } finally {
     globalThis.fetch = originalFetch;

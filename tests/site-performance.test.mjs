@@ -47,6 +47,8 @@ test("la page Modules charge le tableau avant ses fonctions secondaires", async 
   assert.match(entry, /addEventListener\("profModulesReady", scheduleModulesExtras/);
   assert.match(entry, /requestIdleCallback/);
   assert.match(entry, /setTimeout\(run, 180\)/);
+  assert.match(entry, /async function importOptionalModule/);
+  assert.doesNotMatch(entry, /Promise\.allSettled\(\[\s*import\("\.\/prof-modules-alerts/);
   assert.match(entry, /prof-notifications-v2\.js\?v=7/);
   assert.match(entry, /prof-presence\.js\?v=5/);
   assert.doesNotMatch(page, /<script type="module" src="\.\.\/assets\/js\/prof-(?:modules-sheets|modules-archives|modules-clipboard|notifications|presence)/);

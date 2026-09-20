@@ -18,12 +18,9 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
-const STAGE_SETTINGS_COLLECTION = "stageSettings";
-const EFFECTIF_SETTINGS_DOC_ID = "effectif";
-const MODULE_EFFECTIF_SETTINGS_DOC_ID = "moduleEffectif";
 const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
-const EFFECTIF_TIMEOUT_MS = 25000;
+const EFFECTIF_TIMEOUT_MS = 15000;
 
 const MODULE_COLUMNS = [
   { key: "module1", label: "Module 1" },
@@ -297,42 +294,6 @@ async function getUserAccess(user) {
   });
 }
 
-async function loadEffectifSettings() {
-  let snap = null;
-
-  try {
-    snap = await withTimeout(
-      getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID)),
-      FIRESTORE_TIMEOUT_MS,
-      "Lecture du réglage effectif trop longue."
-    );
-  } catch (error) {
-    console.warn("Réglage effectif modules indisponible, repli sur l'effectif principal :", error);
-  }
-
-  if (!snap?.exists()) {
-    snap = await withTimeout(
-      getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
-      FIRESTORE_TIMEOUT_MS,
-      "Lecture du réglage effectif trop longue."
-    );
-  }
-
-  if (!snap.exists()) {
-    throw new Error("Aucun effectif n'est configuré.");
-  }
-
-  const data = snap.data();
-  const spreadsheetId = extractSpreadsheetId(data.spreadsheetId) || extractSpreadsheetId(data.link) || extractSpreadsheetId(data.url);
-  const gid = String(data.gid || extractGid(data.link) || extractGid(data.url) || "").trim();
-
-  if (!spreadsheetId || !gid) {
-    throw new Error("Le lien effectif ou le GID est incomplet dans le panneau admin.");
-  }
-
-  return { spreadsheetId, gid, cursusKey: buildCursusKey({ spreadsheetId, gid }) };
-}
-
 function parseCsv(text) {
   const rows = [];
   let row = [];
@@ -407,19 +368,9 @@ function normalizeEffectifRows(rows) {
 }
 
 async function loadEffectifRows() {
-  const settings = await loadEffectifSettings();
-  currentCursusSettings = settings;
-  currentCursusKey = settings.cursusKey;
-  window.profModulesCurrentCursusKey = currentCursusKey;
-  window.dispatchEvent(new CustomEvent("profModulesCursusReady", {
-    detail: { cursusKey: currentCursusKey }
-  }));
-
   const params = new URLSearchParams({
     source: "module-effectif",
-    sheet: "current",
-    spreadsheetId: settings.spreadsheetId,
-    gid: settings.gid
+    sheet: "current"
   });
 
   const requestEffectif = async forceRefresh => {
@@ -455,6 +406,23 @@ async function loadEffectifRows() {
 
     throw new Error(detail || `Effectif Google Sheets impossible à lire (${response.status}).`);
   }
+
+  const spreadsheetId = extractSpreadsheetId(
+    response.headers.get("X-University-Spreadsheet-Id") || ""
+  );
+  const gid = String(response.headers.get("X-University-Sheet-Gid") || "").trim();
+  const cursusKey = buildCursusKey({ spreadsheetId, gid });
+
+  if (!spreadsheetId || !gid || !cursusKey) {
+    throw new Error("Le serveur n'a pas pu identifier le cursus actif.");
+  }
+
+  currentCursusSettings = { spreadsheetId, gid, cursusKey };
+  currentCursusKey = cursusKey;
+  window.profModulesCurrentCursusKey = currentCursusKey;
+  window.dispatchEvent(new CustomEvent("profModulesCursusReady", {
+    detail: { cursusKey: currentCursusKey }
+  }));
 
   const csv = await response.text();
   const rows = normalizeEffectifRows(parseCsv(csv));
