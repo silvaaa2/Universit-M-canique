@@ -109,6 +109,7 @@ test("Paleto Garage utilise son vrai logo dans son espace entreprise", async () 
   assert.match(css, /\.company-brand-logo\.has-image\s*\{[^}]*background:\s*transparent;/);
   assert.match(css, /\.company-brand-logo\.has-image\s*\{[^}]*filter:\s*none;/);
   assert.doesNotMatch(css, /\.company-brand-logo\.has-image\s*\{[^}]*border-radius:\s*50%/);
+  assert.match(css, /body\.company-workspace \.brand-logo\s*\{[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/);
   assert.ok(logo.length > 1_000, "le fichier du logo Paleto ne doit pas être vide");
 });
 

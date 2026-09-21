@@ -2999,6 +2999,15 @@ body.company-workspace .stage-header {
 body.company-workspace .brand-logo {
   width: 46px;
   height: 46px;
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.company-workspace .stage-header .brand-logo .company-brand-logo {
+  width: 100%;
+  height: 100%;
 }
 
 .company-brand-logo {
