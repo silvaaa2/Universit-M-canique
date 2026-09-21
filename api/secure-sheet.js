@@ -88,7 +88,13 @@ const SOURCE_DOCS = {
 
 const EFFECTIF_SOURCE = "effectif";
 const MODULE_EFFECTIF_SOURCE = "module-effectif";
+const MODULE_WORKSPACE_SOURCE = "module-workspace";
 const EFFECTIF_SHEET_KEY = "current";
+const STUDENT_MODULES_COLLECTION = "studentModules";
+const MODULE_CHECK_KEYS = new Set([
+  "module1", "module2", "module3", "verif3", "module4", "verif4", "exam", "retakeExam"
+]);
+const MODULE_DATE_KEYS = new Set(["module1", "module2", "module3", "module4", "exam", "retakeExam"]);
 
 let googleAccessTokenCache = null;
 const GOOGLE_SHEET_TITLE_TTL_MS = 10 * 60_000;
@@ -309,6 +315,7 @@ function decodeFirestoreValue(value) {
   if ("integerValue" in value) return Number(value.integerValue);
   if ("doubleValue" in value) return Number(value.doubleValue);
   if ("booleanValue" in value) return Boolean(value.booleanValue);
+  if ("timestampValue" in value) return value.timestampValue;
   if ("nullValue" in value) return null;
   if ("arrayValue" in value) {
     return (value.arrayValue.values || []).map(decodeFirestoreValue);
@@ -396,6 +403,146 @@ async function getUserAccess(email, idToken) {
     role: data.role || null,
     admin: data.admin === true
   };
+}
+
+function encodeFirestoreValue(value, key = "") {
+  if (key === "updatedAt" && typeof value === "string") {
+    return { timestampValue: value };
+  }
+  if (value === null || value === undefined) return { nullValue: null };
+  if (typeof value === "boolean") return { booleanValue: value };
+  if (Number.isInteger(value)) return { integerValue: String(value) };
+  if (typeof value === "number") return { doubleValue: value };
+  if (Array.isArray(value)) {
+    return { arrayValue: { values: value.map(item => encodeFirestoreValue(item)) } };
+  }
+  if (typeof value === "object") {
+    return { mapValue: { fields: encodeFirestoreFields(value) } };
+  }
+  return { stringValue: String(value ?? "") };
+}
+
+function encodeFirestoreFields(data) {
+  return Object.fromEntries(
+    Object.entries(data || {}).map(([key, value]) => [key, encodeFirestoreValue(value, key)])
+  );
+}
+
+function firestoreCollectionUrl(collectionName, documentId = "") {
+  const base = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/${encodeURIComponent(collectionName)}`;
+  return documentId ? `${base}/${encodeURIComponent(documentId)}` : base;
+}
+
+async function listFirestoreDocuments(collectionName, idToken) {
+  const documents = [];
+  let pageToken = "";
+
+  do {
+    const url = new URL(firestoreCollectionUrl(collectionName));
+    url.searchParams.set("pageSize", "1000");
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${idToken}` },
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      const error = new Error(`Lecture Firebase impossible (${response.status}).`);
+      error.status = response.status;
+      throw error;
+    }
+
+    const payload = await response.json().catch(() => ({}));
+    documents.push(...(payload.documents || []).map(document => ({
+      id: String(document.name || "").split("/").pop() || "",
+      data: decodeFirestoreFields(document.fields || {})
+    })));
+    pageToken = String(payload.nextPageToken || "");
+  } while (pageToken);
+
+  return documents;
+}
+
+function cleanModuleText(value, maxLength = 240) {
+  return String(value || "").trim().slice(0, maxLength);
+}
+
+function cleanModuleMap(value, allowedKeys, normalizer) {
+  return Object.fromEntries(
+    Object.entries(value && typeof value === "object" ? value : {})
+      .filter(([key]) => allowedKeys.has(key))
+      .map(([key, item]) => [key, normalizer(item)])
+  );
+}
+
+function normalizeModuleWrite(payload = {}, actorId = "professeur inconnu") {
+  const documentId = cleanModuleText(payload.documentId, 500);
+  const cursusKey = cleanModuleText(payload.cursusKey, 300);
+  const studentId = cleanModuleText(payload.studentId || payload.normalizedIdUnique, 120).toLowerCase().replace(/\s+/g, "");
+
+  if (!documentId || documentId.includes("/") || !documentId.startsWith("cursus_") || !documentId.includes("__")) {
+    const error = new Error("Identifiant de progression invalide.");
+    error.status = 400;
+    throw error;
+  }
+  if (!cursusKey || !studentId || documentId !== `${cursusKey}__${studentId}`) {
+    const error = new Error("Progression incohérente avec le cursus actif.");
+    error.status = 400;
+    throw error;
+  }
+
+  const checks = cleanModuleMap(payload.checks, MODULE_CHECK_KEYS, value => value === true);
+  const dates = cleanModuleMap(payload.dates, MODULE_DATE_KEYS, value => {
+    const date = cleanModuleText(value, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : "";
+  });
+
+  return {
+    documentId,
+    data: {
+      idUnique: cleanModuleText(payload.idUnique, 120),
+      studentId,
+      normalizedIdUnique: studentId,
+      studentName: cleanModuleText(payload.studentName, 160),
+      searchText: cleanModuleText(payload.searchText, 320),
+      cursusKey,
+      cursusSpreadsheetId: cleanModuleText(payload.cursusSpreadsheetId, 160),
+      cursusGid: cleanModuleText(payload.cursusGid, 40),
+      checks,
+      dates,
+      updatedAt: new Date().toISOString(),
+      updatedBy: cleanModuleText(actorId, 180)
+    }
+  };
+}
+
+async function writeFirestoreDocument(collectionName, documentId, data, idToken) {
+  const url = new URL(firestoreCollectionUrl(collectionName, documentId));
+  Object.keys(data).forEach(field => url.searchParams.append("updateMask.fieldPaths", field));
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ fields: encodeFirestoreFields(data) })
+  });
+
+  if (!response.ok) {
+    const error = new Error(`Sauvegarde Firebase impossible (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
+}
+
+async function readJsonBody(req) {
+  if (req.body && typeof req.body === "object") return req.body;
+  if (typeof req.body === "string") return JSON.parse(req.body || "{}");
+
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const raw = Buffer.concat(chunks).toString("utf8");
+  return raw ? JSON.parse(raw) : {};
 }
 
 async function resolveEffectifSheet(idToken, clientFallback = {}) {
@@ -649,7 +796,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (req.method !== "GET") {
+  if (req.method !== "GET" && req.method !== "POST") {
     sendJson(res, 405, { error: "Méthode non autorisée." });
     return;
   }
@@ -660,9 +807,10 @@ module.exports = async function handler(req, res) {
     const source = url.searchParams.get("source") || "";
     const sheet = url.searchParams.get("sheet") || "";
 
+    let profAccess = null;
     if (idToken) {
-      const access = await verifyFirebaseProfAccess(idToken);
-      if (!access.allowed) {
+      profAccess = await verifyFirebaseProfAccess(idToken);
+      if (!profAccess.allowed) {
         sendJson(res, 403, { error: "Accès réservé aux professeurs." });
         return;
       }
@@ -673,6 +821,47 @@ module.exports = async function handler(req, res) {
         sendJson(res, 401, { error: "Connexion requise." });
         return;
       }
+    }
+
+    if (source === MODULE_WORKSPACE_SOURCE) {
+      if (!idToken || !profAccess?.allowed) {
+        sendJson(res, 401, { error: "Connexion professeur requise." });
+        return;
+      }
+
+      if (req.method === "POST") {
+        const body = await readJsonBody(req);
+        const normalized = normalizeModuleWrite(body, profAccess.actorId);
+        await writeFirestoreDocument(
+          STUDENT_MODULES_COLLECTION,
+          normalized.documentId,
+          normalized.data,
+          idToken
+        );
+        sendJson(res, 200, { ok: true });
+        return;
+      }
+
+      const resolvedSheet = await resolveModuleEffectifSheet(idToken, {
+        spreadsheetId: url.searchParams.get("spreadsheetId") || "",
+        gid: url.searchParams.get("gid") || ""
+      });
+      const [csv, progressDocuments] = await Promise.all([
+        fetchCsv(resolvedSheet),
+        listFirestoreDocuments(STUDENT_MODULES_COLLECTION, idToken)
+      ]);
+      sendJson(res, 200, {
+        spreadsheetId: resolvedSheet.spreadsheetId,
+        gid: resolvedSheet.gid,
+        csv,
+        progressDocuments
+      });
+      return;
+    }
+
+    if (req.method !== "GET") {
+      sendJson(res, 405, { error: "Méthode non autorisée pour cette feuille." });
+      return;
     }
 
     const resolvedSheet = await resolveSheet(source, sheet, idToken, {
@@ -696,7 +885,7 @@ module.exports = async function handler(req, res) {
     res.end(csv);
   } catch (error) {
     console.error("Lecture sécurisée Google Sheets impossible :", error);
-    sendJson(res, 500, {
+    sendJson(res, Number(error?.status) || 500, {
       error: error.message || "Lecture Google Sheets impossible."
     });
   }

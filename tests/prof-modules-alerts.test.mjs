@@ -14,8 +14,8 @@ test("le triangle averto intercepte le clic avant les contrôles de la table", (
   assert.match(alerts, /target\.closest\("\[data-warning-toggle\]"\)/);
   assert.match(alerts, /openWarningModal\(warningButton\)/);
   assert.match(alerts, /\}, true\);/);
-  assert.match(modules, /prof-modules-alerts\.js\?v=1015/);
+  assert.match(modules, /prof-modules-alerts\.js\?v=1016/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-alerts\.js/);
   assert.match(page, /navigation\.js\?v=1012/);
-  assert.match(page, /prof-modules-eleves\.js\?v=1028/);
+  assert.match(page, /prof-modules-eleves\.js\?v=1030/);
 });

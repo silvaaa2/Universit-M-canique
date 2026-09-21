@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 import { getProfAccess, getProfActorId } from "./prof-identity.js?v=2";
 import {
   ALL_PROGRESS_CHECK_KEYS,
@@ -18,11 +18,9 @@ const firebaseConfig = {
   measurementId: "G-Z5B51BQCNL"
 };
 
-const STAGE_SETTINGS_COLLECTION = "stageSettings";
-const EFFECTIF_SETTINGS_DOC_IDS = ["moduleEffectif", "effectif"];
-const STUDENT_MODULES_COLLECTION = "studentModules";
 const FIRESTORE_TIMEOUT_MS = 8500;
-const EFFECTIF_TIMEOUT_MS = 15000;
+const EFFECTIF_TIMEOUT_MS = 20000;
+const MODULE_WORKSPACE_URL = "/api/secure-sheet?source=module-workspace&sheet=current";
 
 const MODULE_COLUMNS = [
   { key: "module1", label: "Module 1" },
@@ -296,42 +294,6 @@ async function getUserAccess(user) {
   });
 }
 
-async function loadEffectifSettings() {
-  for (const docId of EFFECTIF_SETTINGS_DOC_IDS) {
-    try {
-      const snap = await withTimeout(
-        getDoc(doc(db, STAGE_SETTINGS_COLLECTION, docId)),
-        FIRESTORE_TIMEOUT_MS,
-        "Lecture du réglage effectif trop longue."
-      );
-      if (!snap.exists()) continue;
-
-      const data = snap.data() || {};
-      const spreadsheetId =
-        extractSpreadsheetId(data.spreadsheetId)
-        || extractSpreadsheetId(data.spreadsheetUrl)
-        || extractSpreadsheetId(data.link)
-        || extractSpreadsheetId(data.url);
-      const gid = String(
-        data.gid
-        || extractGid(data.spreadsheetId)
-        || extractGid(data.spreadsheetUrl)
-        || extractGid(data.link)
-        || extractGid(data.url)
-        || ""
-      ).trim();
-
-      if (spreadsheetId && gid) {
-        return { spreadsheetId, gid, cursusKey: buildCursusKey({ spreadsheetId, gid }) };
-      }
-    } catch (error) {
-      console.warn(`Réglage ${docId} indisponible, essai du chemin de secours :`, error);
-    }
-  }
-
-  return null;
-}
-
 function parseCsv(text) {
   const rows = [];
   let row = [];
@@ -406,15 +368,12 @@ function normalizeEffectifRows(rows) {
 }
 
 async function loadEffectifRows() {
-  const settings = await loadEffectifSettings();
   const params = new URLSearchParams({
-    source: "module-effectif",
+    source: "module-workspace",
     sheet: "current"
   });
-  if (settings?.spreadsheetId) params.set("spreadsheetId", settings.spreadsheetId);
-  if (settings?.gid) params.set("gid", settings.gid);
 
-  const requestEffectif = async forceRefresh => {
+  const requestWorkspace = async forceRefresh => {
     const token = await withTimeout(
       currentUser?.getIdToken?.(forceRefresh),
       FIRESTORE_TIMEOUT_MS,
@@ -428,48 +387,21 @@ async function loadEffectifRows() {
     });
   };
 
-  let response = null;
-  let usedSecureApi = false;
-
-  // Chemin historique connu comme stable lorsque la feuille est publique.
-  if (settings?.spreadsheetId && settings?.gid) {
-    const directUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(settings.spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(settings.gid)}&cacheBust=${Date.now()}`;
-    try {
-      const directResponse = await fetchWithTimeout(directUrl, 6000, { cache: "no-store" });
-      if (directResponse.ok) response = directResponse;
-    } catch (error) {
-      console.warn("Lecture directe de l'effectif indisponible, passage par le serveur :", error);
-    }
-  }
-
-  // Chemin sécurisé : utilisé pour les feuilles privées et comme secours.
-  if (!response) {
-    usedSecureApi = true;
-    response = await requestEffectif(false);
-  }
+  let response = await requestWorkspace(false);
 
   // Les navigateurs mobiles peuvent restaurer un ancien jeton après avoir
   // remis l'onglet en mémoire. On le renouvelle une fois avant d'abandonner.
-  if (usedSecureApi && (response.status === 401 || response.status === 403)) {
-    response = await requestEffectif(true);
+  if (response.status === 401 || response.status === 403) {
+    response = await requestWorkspace(true);
   }
 
+  const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    let detail = "";
-    try {
-      const payload = await response.json();
-      detail = String(payload?.error || "").trim();
-    } catch (error) {
-      // La route peut renvoyer du texte brut lorsqu'un intermédiaire échoue.
-    }
-
-    throw new Error(detail || `Effectif Google Sheets impossible à lire (${response.status}).`);
+    throw new Error(String(payload?.error || "").trim() || `Chargement des modules impossible (${response.status}).`);
   }
 
-  const spreadsheetId = settings?.spreadsheetId || extractSpreadsheetId(
-    response.headers.get("X-University-Spreadsheet-Id") || ""
-  );
-  const gid = settings?.gid || String(response.headers.get("X-University-Sheet-Gid") || "").trim();
+  const spreadsheetId = extractSpreadsheetId(payload.spreadsheetId || "");
+  const gid = String(payload.gid || "").trim();
   const cursusKey = buildCursusKey({ spreadsheetId, gid });
 
   if (!spreadsheetId || !gid || !cursusKey) {
@@ -483,39 +415,31 @@ async function loadEffectifRows() {
     detail: { cursusKey: currentCursusKey }
   }));
 
-  const csv = await response.text();
+  const csv = String(payload.csv || "");
   const rows = normalizeEffectifRows(parseCsv(csv));
 
   if (!rows.length) {
     throw new Error("Aucun élève avec ID Unique n'a été trouvé dans l'effectif.");
   }
 
+  progressById = new Map();
+  (Array.isArray(payload.progressDocuments) ? payload.progressDocuments : []).forEach(item => {
+    const data = item?.data || {};
+    if (!isCurrentCursusModuleDoc(item?.id, data)) return;
+
+    const studentId = getStudentIdFromModuleDoc(item?.id, data);
+    if (!studentId) return;
+    progressById.set(studentId, normalizeProgress(data));
+  });
+
   return rows;
 }
 
 async function loadStudentProgress() {
-  progressById = new Map();
-
-  try {
-    const snap = await withTimeout(
-      getDocs(collection(db, STUDENT_MODULES_COLLECTION)),
-      FIRESTORE_TIMEOUT_MS,
-      "Le chargement de la progression prend trop de temps."
-    );
-
-    snap.forEach(docSnap => {
-      const data = docSnap.data() || {};
-      if (!isCurrentCursusModuleDoc(docSnap.id, data)) return;
-
-      const studentId = getStudentIdFromModuleDoc(docSnap.id, data);
-      if (!studentId) return;
-
-      progressById.set(studentId, normalizeProgress(data));
-    });
-  } catch (error) {
-    console.warn("Lecture des modules élèves impossible :", error);
-    setStatus("Progression non chargée. Les nouvelles validations restent disponibles.", "error");
-  }
+  // L'effectif et la progression arrivent ensemble par la route serveur.
+  // Cette fonction reste volontairement présente pour conserver le contrat
+  // du chargeur et éviter une deuxième lecture Firebase dans le navigateur.
+  return progressById;
 }
 
 function getModulesStateSignature() {
@@ -740,6 +664,7 @@ async function saveStudentModulePatch(student, moduleKey, patch) {
     .then(async () => {
       const latestProgress = cloneProgress(getProgress(studentId));
       const data = {
+        documentId: getStudentModuleDocId(studentId),
         idUnique: student.idUnique,
         studentId,
         normalizedIdUnique: studentId,
@@ -750,28 +675,43 @@ async function saveStudentModulePatch(student, moduleKey, patch) {
         cursusGid: currentCursusSettings?.gid || null,
         checks: latestProgress.checks,
         dates: latestProgress.dates,
-        updatedAt: serverTimestamp(),
         updatedBy: getProfActorId(currentUser)
       };
-      const moduleDoc = doc(db, STUDENT_MODULES_COLLECTION, getStudentModuleDocId(studentId));
 
-      const commitWrite = () => withTimeout(
-        setDoc(moduleDoc, data, { merge: true }),
-        FIRESTORE_TIMEOUT_MS,
-        "La sauvegarde prend trop de temps."
-      );
+      const commitWrite = async forceRefresh => {
+        const token = await withTimeout(
+          currentUser?.getIdToken?.(forceRefresh),
+          FIRESTORE_TIMEOUT_MS,
+          "La session professeur met trop de temps à répondre."
+        );
+        if (!token) throw new Error("Session professeur indisponible.");
+
+        const response = await fetchWithTimeout(MODULE_WORKSPACE_URL, EFFECTIF_TIMEOUT_MS, {
+          method: "POST",
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const error = new Error(String(payload?.error || "").trim() || `Sauvegarde impossible (${response.status}).`);
+          error.status = response.status;
+          throw error;
+        }
+      };
 
       try {
-        await commitWrite();
+        await commitWrite(false);
       } catch (error) {
-        const errorText = String(error?.code || error?.message || "").toLowerCase();
-        const canRetry = ["permission", "unauthenticated", "unavailable", "deadline", "aborted", "network"]
+        const errorText = String(error?.status || error?.code || error?.message || "").toLowerCase();
+        const canRetry = ["401", "403", "permission", "unauthenticated", "unavailable", "deadline", "aborted", "network"]
           .some(token => errorText.includes(token));
 
         if (!canRetry || !currentUser?.getIdToken) throw error;
-
-        await currentUser.getIdToken(true);
-        await commitWrite();
+        await commitWrite(true);
       }
     });
 

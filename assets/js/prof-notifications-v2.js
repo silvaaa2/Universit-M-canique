@@ -49,6 +49,7 @@
   let authWaitTimer = null;
   let authWaitStartedAt = 0;
   let lastCheckAt = 0;
+  const passiveBadgesOnly = document.body?.classList?.contains("modules-page") === true;
 
   function notificationsEnabled() {
     const savedValue = localStorage.getItem(ENABLED_KEY);
@@ -506,7 +507,7 @@
   }
 
   async function checkNotifications({ baselineOnly = false, force = false } = {}) {
-    if (!notificationsEnabled() || !window.currentProfUser || checkRunning) return;
+    if (passiveBadgesOnly || !notificationsEnabled() || !window.currentProfUser || checkRunning) return;
     if (!force && Date.now() - lastCheckAt < INTERVAL_MS) return;
 
     checkRunning = true;

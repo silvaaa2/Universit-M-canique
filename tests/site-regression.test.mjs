@@ -45,19 +45,17 @@ test("la page Modules charge aussi l'effectif par l'API sécurisée", () => {
   const modules = read("assets/js/prof-modules-eleves-safe.js");
   const endpoint = read("api/secure-sheet.js");
 
-  assert.match(modules, /source:\s*"module-effectif"/);
-  assert.match(modules, /sheet:\s*"current"/);
-  assert.match(modules, /X-University-Spreadsheet-Id/);
-  assert.match(modules, /X-University-Sheet-Gid/);
+  assert.match(modules, /source=module-workspace&sheet=current/);
+  assert.match(modules, /payload\.spreadsheetId/);
+  assert.match(modules, /payload\.progressDocuments/);
   assert.match(modules, /Authorization:\s*`Bearer \$\{token\}`/);
   assert.match(modules, /currentUser\?\.getIdToken\?\.\(forceRefresh\)/);
   assert.match(modules, /response\.status === 401 \|\| response\.status === 403/);
-  assert.match(modules, /requestEffectif\(true\)/);
-  assert.match(modules, /async function loadEffectifSettings/);
-  assert.match(modules, /Lecture directe de l'effectif indisponible, passage par le serveur/);
-  assert.match(endpoint, /X-University-Spreadsheet-Id/);
-  assert.match(endpoint, /X-University-Sheet-Gid/);
-  assert.match(modules, /https:\/\/docs\.google\.com\/spreadsheets/);
+  assert.match(modules, /method:\s*"POST"/);
+  assert.match(endpoint, /source === MODULE_WORKSPACE_SOURCE/);
+  assert.match(endpoint, /listFirestoreDocuments\(STUDENT_MODULES_COLLECTION, idToken\)/);
+  assert.match(endpoint, /writeFirestoreDocument\(\s*STUDENT_MODULES_COLLECTION/);
+  assert.doesNotMatch(modules, /https:\/\/docs\.google\.com\/spreadsheets/);
 });
 
 test("la clé de correction n'est plus publiée", () => {

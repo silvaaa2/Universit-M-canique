@@ -31,7 +31,8 @@ test("les pastilles sont présentes sur la navigation PC et téléphone de tout 
   for (const page of professorPages) {
     const html = await read(page);
     if (page.endsWith("prof-modules-eleves.html")) {
-      assert.match(html, /prof-notifications-v2\.js\?v=8/);
+      const entry = await read("assets/js/prof-modules-eleves.js");
+      assert.match(entry, /prof-notifications-v2\.js\?v=9/);
     } else {
       assert.match(html, /prof-notifications-v2\.js\?v=7/);
     }
@@ -40,10 +41,12 @@ test("les pastilles sont présentes sur la navigation PC et téléphone de tout 
   }
 
   const mobile = await read("assets/js/prof-mobile-app.js");
+  const notifications = await read("assets/js/prof-notifications-v2.js");
   assert.match(mobile, /data-mobile-section="customs" data-prof-notification-target="custom"/);
   assert.match(mobile, /data-mobile-section="exams" data-prof-notification-target="exam"/);
   assert.match(mobile, /data-mobile-action="settings" data-prof-notification-target="settings"/);
   assert.match(mobile, /new CustomEvent\("profNavigationReady"\)/);
+  assert.match(notifications, /passiveBadgesOnly/);
 });
 
 test("une nouveauté Paramètres est annoncée puis marquée comme vue à l'ouverture", async () => {

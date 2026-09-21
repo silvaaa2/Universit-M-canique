@@ -280,3 +280,143 @@ test("les réponses restent lisibles si le compte de service n'a pas accès à l
     else process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = originalKey;
   }
 });
+
+test("l'espace Modules reçoit l'effectif et les progressions dans une seule réponse", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const originalKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+
+  delete process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  delete process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+
+  globalThis.fetch = async url => {
+    const requestUrl = String(url);
+
+    if (requestUrl.includes("securetoken@system.gserviceaccount.com")) {
+      return new Response(JSON.stringify({ "effectif-test-key": publicKeyPem }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" }
+      });
+    }
+    if (requestUrl.includes("/documents/users/prof%40example.com")) {
+      return jsonResponse({ fields: { role: { stringValue: "prof" } } });
+    }
+    if (requestUrl.includes("/documents/stageSettings/moduleEffectif")) {
+      return jsonResponse({
+        fields: {
+          spreadsheetId: { stringValue: "1ModulesWorkspaceSpreadsheet123456" },
+          gid: { stringValue: "84" }
+        }
+      });
+    }
+    if (requestUrl.includes("/documents/studentModules")) {
+      return jsonResponse({
+        documents: [{
+          name: "projects/universit-4b11e/databases/(default)/documents/studentModules/cursus_test__123456",
+          fields: {
+            studentId: { stringValue: "123456" },
+            cursusKey: { stringValue: "cursus_test" },
+            checks: { mapValue: { fields: { module1: { booleanValue: true } } } },
+            dates: { mapValue: { fields: { module1: { stringValue: "2026-09-21" } } } }
+          }
+        }]
+      });
+    }
+    if (requestUrl.includes("docs.google.com/spreadsheets")) {
+      return new Response("ID Unique,Nom de l'élève\n123456,Élève Modules", { status: 200 });
+    }
+
+    throw new Error(`Requête inattendue : ${requestUrl}`);
+  };
+
+  const req = {
+    method: "GET",
+    url: "/api/secure-sheet?source=module-workspace&sheet=current",
+    headers: { authorization: `Bearer ${createLegacyToken()}`, host: "localhost" }
+  };
+  const res = {
+    statusCode: 0,
+    headers: {},
+    body: "",
+    setHeader(name, value) { this.headers[name] = value; },
+    end(body = "") { this.body = String(body); }
+  };
+
+  try {
+    await secureSheetHandler(req, res);
+    const payload = JSON.parse(res.body);
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(payload.gid, "84");
+    assert.match(payload.csv, /Élève Modules/);
+    assert.equal(payload.progressDocuments.length, 1);
+    assert.equal(payload.progressDocuments[0].data.checks.module1, true);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalEmail === undefined) delete process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    else process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = originalEmail;
+    if (originalKey === undefined) delete process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+    else process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = originalKey;
+  }
+});
+
+test("une validation Module est enregistrée par la route professeur sécurisée", async () => {
+  const originalFetch = globalThis.fetch;
+  let savedDocument = null;
+
+  globalThis.fetch = async (url, options = {}) => {
+    const requestUrl = String(url);
+
+    if (requestUrl.includes("securetoken@system.gserviceaccount.com")) {
+      return new Response(JSON.stringify({ "effectif-test-key": publicKeyPem }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" }
+      });
+    }
+    if (requestUrl.includes("/documents/users/prof%40example.com")) {
+      return jsonResponse({ fields: { role: { stringValue: "prof" } } });
+    }
+    if (options.method === "PATCH" && requestUrl.includes("/documents/studentModules/")) {
+      savedDocument = JSON.parse(options.body);
+      return jsonResponse({ name: "saved" });
+    }
+
+    throw new Error(`Requête inattendue : ${requestUrl}`);
+  };
+
+  const cursusKey = "cursus_1modulesworkspacespreadsheet123456_84";
+  const req = {
+    method: "POST",
+    url: "/api/secure-sheet?source=module-workspace&sheet=current",
+    headers: { authorization: `Bearer ${createLegacyToken()}`, host: "localhost" },
+    body: {
+      documentId: `${cursusKey}__123456`,
+      idUnique: "123456",
+      studentId: "123456",
+      studentName: "Élève Modules",
+      searchText: "eleve modules 123456",
+      cursusKey,
+      cursusSpreadsheetId: "1ModulesWorkspaceSpreadsheet123456",
+      cursusGid: "84",
+      checks: { module1: true, module2: false },
+      dates: { module1: "2026-09-21", module2: "" }
+    }
+  };
+  const res = {
+    statusCode: 0,
+    headers: {},
+    body: "",
+    setHeader(name, value) { this.headers[name] = value; },
+    end(body = "") { this.body = String(body); }
+  };
+
+  try {
+    await secureSheetHandler(req, res);
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(JSON.parse(res.body), { ok: true });
+    assert.equal(savedDocument.fields.checks.mapValue.fields.module1.booleanValue, true);
+    assert.equal(savedDocument.fields.dates.mapValue.fields.module1.stringValue, "2026-09-21");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

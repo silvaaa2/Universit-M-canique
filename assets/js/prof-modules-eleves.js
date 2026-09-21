@@ -10,35 +10,49 @@ if (modulesStyle) {
   document.head.appendChild(link);
 }
 
-function keepModulesDashboardVisible() {
-  const protectedContent = document.getElementById("protectedContent");
-  if (!protectedContent) return;
+let extrasLoading = null;
 
-  protectedContent.hidden = false;
-  if (protectedContent.style.display !== "block") {
-    protectedContent.style.display = "block";
+function wait(delay) {
+  return new Promise(resolve => window.setTimeout(resolve, delay));
+}
+
+async function importOptional(path, label, delay = 0) {
+  if (delay) await wait(delay);
+  try {
+    await import(path);
+  } catch (error) {
+    console.warn(`${label} indisponible :`, error);
   }
-  protectedContent.classList.add("dashboard-visible");
 }
 
-function installModulesDashboardVisibilityGuard() {
-  const protectedContent = document.getElementById("protectedContent");
-  if (!protectedContent) return;
+function loadModulesExtras() {
+  if (extrasLoading) return extrasLoading;
 
-  keepModulesDashboardVisible();
-  const observer = new MutationObserver(keepModulesDashboardVisible);
-  observer.observe(protectedContent, {
-    attributes: true,
-    attributeFilter: ["hidden", "class", "style"]
-  });
+  // Le tableau critique est déjà affiché. Les outils secondaires arrivent
+  // ensuite un par un pour ne plus saturer Firebase et Google Sheets au login.
+  extrasLoading = (async () => {
+    await importOptional("./prof-modules-clipboard.js?v=10", "Pointage automatique", 100);
+    await importOptional("./prof-modules-alerts.js?v=1016", "Avertissements modules", 250);
+    await importOptional("./prof-modules-archives.js?v=1005", "Archives modules", 250);
+    await importOptional("./prof-modules-sheets-sync.js?v=1009", "Synchronisation Sheets", 300);
+    await importOptional("./prof-modules-sheets-sync-exact.js?v=1010", "Synchronisation Sheets exacte", 150);
+    await importOptional("./prof-presence.js?v=7", "Présence professeur", 1200);
+    await importOptional("./prof-notifications-v2.js?v=9", "Pastilles de notifications", 150);
+  })();
+
+  return extrasLoading;
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", installModulesDashboardVisibilityGuard, { once: true });
-} else {
-  installModulesDashboardVisibilityGuard();
+function scheduleModulesExtras() {
+  const run = () => void loadModulesExtras();
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run, { timeout: 700 });
+  } else {
+    window.setTimeout(run, 150);
+  }
 }
-window.addEventListener("profIdentityReady", keepModulesDashboardVisible);
 
-import "./prof-modules-eleves-safe.js?v=1023";
-import "./prof-modules-alerts.js?v=1015";
+window.addEventListener("profModulesReady", scheduleModulesExtras, { once: true });
+if (window.profModulesCriticalReady) scheduleModulesExtras();
+
+import "./prof-modules-eleves-safe.js?v=1030";

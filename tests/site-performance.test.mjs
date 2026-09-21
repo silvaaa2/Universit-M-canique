@@ -18,14 +18,14 @@ test("les boucles permanentes inutiles sont retirées des pages professeur", asy
   assert.match(mobile, /observer\.disconnect\(\)/);
 });
 
-test("les modules privilégient une lecture Firestore compatible et évitent les rendus identiques", async () => {
+test("les modules regroupent les lectures critiques et évitent les rendus identiques", async () => {
   const [modules, alerts] = await Promise.all([
     read("assets/js/prof-modules-eleves-safe.js"),
     read("assets/js/prof-modules-alerts.js")
   ]);
 
-  assert.match(modules, /getDocs\(collection\(db, STUDENT_MODULES_COLLECTION\)\)/);
-  assert.doesNotMatch(modules, /where\(documentId\(\), ">=", cursusPrefix\)/);
+  assert.match(modules, /source=module-workspace&sheet=current/);
+  assert.doesNotMatch(modules, /getDocs\(collection\(db, STUDENT_MODULES_COLLECTION\)\)/);
   assert.match(alerts, /where\(documentId\(\), ">=", cursusPrefix\)/);
   assert.match(alerts, /where\(documentId\(\), "<", `\$\{cursusPrefix\}\\uf8ff`\)/);
 
@@ -43,14 +43,15 @@ test("la page Modules restaure l'ordre de chargement stable de ses fonctions", a
 
   assert.match(loader, /window\.profModulesCriticalReady = true/);
   assert.match(loader, /new CustomEvent\("profModulesReady"/);
-  assert.match(entry, /prof-modules-eleves-safe\.js\?v=1023/);
-  assert.match(entry, /prof-modules-alerts\.js\?v=1015/);
-  assert.doesNotMatch(entry, /scheduleModulesExtras/);
-  assert.match(page, /prof-modules-sheets-sync\.js\?v=1008/);
-  assert.match(page, /prof-modules-archives\.js\?v=1004/);
-  assert.match(page, /prof-modules-clipboard\.js\?v=9/);
-  assert.match(page, /prof-notifications-v2\.js\?v=8/);
-  assert.match(page, /prof-presence\.js\?v=6/);
+  assert.match(entry, /prof-modules-eleves-safe\.js\?v=1030/);
+  assert.match(entry, /prof-modules-alerts\.js\?v=1016/);
+  assert.match(entry, /scheduleModulesExtras/);
+  assert.match(entry, /prof-modules-sheets-sync\.js\?v=1009/);
+  assert.match(entry, /prof-modules-archives\.js\?v=1005/);
+  assert.match(entry, /prof-modules-clipboard\.js\?v=10/);
+  assert.match(entry, /prof-notifications-v2\.js\?v=9/);
+  assert.match(entry, /prof-presence\.js\?v=7/);
+  assert.doesNotMatch(page, /prof-modules-sheets-sync\.js/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-(?:archives|alerts)\.js/);
 });
 
@@ -68,8 +69,7 @@ test("le garde Modules ne peut plus cacher son propre message", async () => {
   assert.match(guard, /protectedContent\.hidden = false/);
   assert.match(guard, /modulesMainContent\.hidden = true/);
   assert.doesNotMatch(guard, /protectedContent\.hidden = true/);
-  assert.match(entry, /protectedContent\.hidden = false/);
-  assert.doesNotMatch(entry, /!protectedContent \|\| protectedContent\.hidden/);
+  assert.doesNotMatch(entry, /MutationObserver\(keepModulesDashboardVisible\)/);
 });
 
 test("les onglets masqués suspendent les rafraîchissements lourds", async () => {
