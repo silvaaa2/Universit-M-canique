@@ -73,6 +73,11 @@ test("un seul lien d’effectif alimente modules, stages et anciens lecteurs", a
   assert.match(server, /\[STAGE_EFFECTIF_DOCUMENT, MODULE_EFFECTIF_DOCUMENT\]\.map/);
   assert.match(client, /id="cursusSharedEffectifForm"/);
   assert.match(client, /Enregistrer pour Modules \+ Stages/);
+  assert.match(client, /onclick="window\.saveSharedCursusEffectif\(\)"/);
+  assert.match(client, /window\.saveSharedCursusEffectif = function/);
+  assert.match(client, /id="cursusEffectifSaveStatus"/);
+  assert.match(client, /user\.getIdToken\(false\)/);
+  assert.doesNotMatch(client, /user\.getIdToken\(true\)/);
   assert.doesNotMatch(client, /data-effectif-target/);
   assert.match(modules, /source=module-workspace&sheet=current/);
   assert.doesNotMatch(modules, /async function loadEffectifSettings/);

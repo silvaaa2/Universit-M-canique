@@ -25,7 +25,16 @@ function waitForCursusFirebase() {
 async function getCursusAdminToken() {
   const firebase = await waitForCursusFirebase();
   const user = firebase.auth?.currentUser || window.currentProfUser;
-  return user ? user.getIdToken(true) : "";
+  if (!user?.getIdToken) return "";
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error("La session administrateur met trop de temps à répondre.")), 10000);
+  });
+  try {
+    return await Promise.race([user.getIdToken(false), timeout]);
+  } finally {
+    window.clearTimeout(timer);
+  }
 }
 
 async function requestCursusAdmin(method = "GET", body = null) {
@@ -93,6 +102,14 @@ function injectCursusAdminStyles() {
 
 function setCursusAdminStatus(message, tone = "") {
   const status = document.getElementById("cursusAdminStatus");
+  if (status) {
+    status.textContent = message || "";
+    status.dataset.tone = tone;
+  }
+}
+
+function setEffectifSaveStatus(message, tone = "") {
+  const status = document.getElementById("cursusEffectifSaveStatus");
   if (!status) return;
   status.textContent = message || "";
   status.dataset.tone = tone;
@@ -170,7 +187,8 @@ function ensureCursusAdminPanel() {
                   <label class="cursus-sheet-field">Lien Google Sheets<input type="url" data-sheet-link autocomplete="off" placeholder="https://docs.google.com/spreadsheets/d/..."></label>
                   <label class="cursus-sheet-field">GID<input type="text" inputmode="numeric" data-sheet-gid autocomplete="off"></label>
                 </div>
-                <button type="submit" class="prof-admin-small-btn gold" id="saveSharedEffectifBtn">Enregistrer pour Modules + Stages</button>
+                <button type="button" class="prof-admin-small-btn gold" id="saveSharedEffectifBtn" onclick="window.saveSharedCursusEffectif()">Enregistrer pour Modules + Stages</button>
+                <p class="cursus-admin-status" id="cursusEffectifSaveStatus" role="status" aria-live="polite"></p>
               </form>
             </div>
           </article>
@@ -265,18 +283,35 @@ async function saveEffectifForm(form) {
   if (cursusAdminBusy) return;
   const link = form.querySelector("[data-sheet-link]")?.value?.trim() || "";
   const gid = form.querySelector("[data-sheet-gid]")?.value?.trim() || "";
+  const button = document.getElementById("saveSharedEffectifBtn");
+  if (!link || !/^\d+$/.test(gid)) {
+    setEffectifSaveStatus("Ajoute un lien Google Sheets complet avec son GID.", "error");
+    return;
+  }
   try {
     setCursusAdminBusy(true);
+    if (button) button.textContent = "Enregistrement…";
     setCursusAdminStatus("Enregistrement du lien commun…");
+    setEffectifSaveStatus("Enregistrement en cours…");
     await requestCursusAdmin("PATCH", { action: "save-effectif", link, gid });
     renderCursusAdminState(await requestCursusAdmin());
     setCursusAdminStatus("Lien enregistré pour Modules élèves et Suivi de stage.", "ok");
+    setEffectifSaveStatus("Lien appliqué à Modules élèves et au Suivi de stage.", "ok");
   } catch (error) {
+    console.error("Enregistrement de l’effectif commun impossible :", error);
     setCursusAdminStatus(error?.message || "Enregistrement impossible.", "error");
+    setEffectifSaveStatus(error?.message || "Enregistrement impossible.", "error");
   } finally {
     setCursusAdminBusy(false);
+    if (button) button.textContent = "Enregistrer pour Modules + Stages";
   }
 }
+
+window.saveSharedCursusEffectif = function() {
+  const form = document.getElementById("cursusSharedEffectifForm");
+  if (!form) return;
+  void saveEffectifForm(form);
+};
 
 function bindCursusAdminEvents() {
   if (document.documentElement.dataset.cursusAdminEventsBound === "true") return;
