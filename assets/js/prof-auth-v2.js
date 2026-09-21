@@ -500,14 +500,14 @@ function normalizeEffectifRows(rows) {
 
 async function loadCurrentCursus() {
   let settingsSnap = await withTimeout(
-    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID)),
+    getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
     DASHBOARD_TIMEOUT_MS,
     "Lecture du cursus actif trop longue."
   );
 
   if (!settingsSnap.exists()) {
     settingsSnap = await withTimeout(
-      getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID)),
+      getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID)),
       DASHBOARD_TIMEOUT_MS,
       "Lecture du cursus actif trop longue."
     );

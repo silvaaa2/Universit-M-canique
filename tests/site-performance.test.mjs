@@ -37,8 +37,8 @@ test("la page Modules restaure l'ordre de chargement stable de ses fonctions", a
   assert.match(loader, /window\.profModulesCriticalReady = true/);
   assert.match(loader, /new CustomEvent\("profModulesReady"/);
   assert.match(loader, /function loadExtras\(\)/);
-  assert.match(loader, /prof-modules-sheets-sync\.js\?v=1010/);
-  assert.match(loader, /prof-modules-sheets-sync-exact\.js\?v=1011/);
+  assert.match(loader, /prof-modules-sheets-sync\.js\?v=1011/);
+  assert.match(loader, /prof-modules-sheets-sync-exact\.js\?v=1012/);
   assert.match(loader, /prof-modules-archives\.js\?v=1006/);
   assert.match(loader, /prof-modules-clipboard\.js\?v=11/);
   assert.match(loader, /prof-notifications-v2\.js\?v=10/);

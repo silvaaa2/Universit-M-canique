@@ -10,7 +10,7 @@ async function read(relativePath) {
   return readFile(new URL(`../${relativePath}`, import.meta.url), "utf8");
 }
 
-test("l’admin privé archive le cursus dans l’ordre stages puis modules", async () => {
+test("l’admin privé archive stages et modules avec une seule action", async () => {
   const server = await read("lib/server/cursus-management.js");
   const client = await read("assets/js/prof-admin-cursus-management.js");
   const loader = await read("assets/js/prof-admin-v2.js");
@@ -20,14 +20,17 @@ test("l’admin privé archive le cursus dans l’ordre stages puis modules", as
   assert.match(session, /adminAction === "cursus-management"/);
   assert.match(server, /action === "archive-stages"/);
   assert.match(server, /action === "archive-modules"/);
+  assert.match(server, /action === "archive-all"/);
+  assert.match(server, /await archiveStages\(access, body\);\s*return archiveModules\(access\);/);
   assert.match(server, /L’étape 1 doit être terminée avant les modules/);
   assert.match(server, /STAGE_ARCHIVE_COLLECTION/);
   assert.match(server, /STUDENT_MODULE_ARCHIVES_COLLECTION/);
-  assert.match(client, /Archiver le cursus en deux étapes/);
-  assert.match(client, /Stages et entreprises/);
-  assert.match(client, /Modules élèves/);
-  assert.match(client, /data-workflow-disabled="true"/);
-  assert.match(client, /effectif Google Sheets complet/);
+  assert.match(client, /Archiver le cursus complet/);
+  assert.match(client, /Stages \+ modules/);
+  assert.match(client, /id="archiveAllCursusBtn"/);
+  assert.match(client, /action: "archive-all"/);
+  assert.doesNotMatch(client, /archiveStagesStepBtn|archiveModulesStepBtn/);
+  assert.match(client, /tout l’effectif/);
 });
 
 test("l’archive modules contient tout l’effectif même sans progression", () => {
@@ -55,8 +58,9 @@ test("l’archive modules contient tout l’effectif même sans progression", ()
   assert.deepEqual(Object.values(archived[1].checks), [false, false, false, false, false, false]);
 });
 
-test("les deux liens d’effectif sont indépendants et gardent le réglage historique en repli", async () => {
+test("un seul lien d’effectif alimente modules, stages et anciens lecteurs", async () => {
   const server = await read("lib/server/cursus-management.js");
+  const client = await read("assets/js/prof-admin-cursus-management.js");
   const modules = await read("assets/js/prof-modules-eleves-v4.js");
   const secureSheet = await read("api/secure-sheet.js");
   const exactSync = await read("assets/js/prof-modules-sheets-sync-exact.js");
@@ -65,15 +69,17 @@ test("les deux liens d’effectif sont indépendants et gardent le réglage hist
 
   assert.match(server, /MODULE_EFFECTIF_DOCUMENT = "moduleEffectif"/);
   assert.match(server, /STAGE_EFFECTIF_DOCUMENT = "effectif"/);
-  assert.match(server, /target === "modules"/);
-  assert.match(server, /target === "stages"/);
+  assert.match(server, /target: "shared"/);
+  assert.match(server, /\[STAGE_EFFECTIF_DOCUMENT, MODULE_EFFECTIF_DOCUMENT\]\.map/);
+  assert.match(client, /id="cursusSharedEffectifForm"/);
+  assert.match(client, /Enregistrer pour Modules \+ Stages/);
+  assert.doesNotMatch(client, /data-effectif-target/);
   assert.match(modules, /source=module-workspace&sheet=current/);
   assert.doesNotMatch(modules, /async function loadEffectifSettings/);
   assert.match(secureSheet, /MODULE_WORKSPACE_SOURCE = "module-workspace"/);
   assert.match(secureSheet, /resolveModuleEffectifSheet\(idToken/);
-  assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "moduleEffectif"\], idToken\)/);
   assert.match(secureSheet, /return resolveEffectifSheet\(idToken, clientFallback\)/);
-  assert.match(exactSync, /MODULE_EFFECTIF_SETTINGS_DOC_ID/);
+  assert.match(exactSync, /getDoc\(doc\(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID\)\)/);
   assert.doesNotMatch(stageApp, /id="changeEffectifBtn"/);
   assert.match(rules, /docId in \["effectif", "moduleEffectif"\]/);
 });

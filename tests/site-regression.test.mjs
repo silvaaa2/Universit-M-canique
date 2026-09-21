@@ -34,7 +34,6 @@ test("le tableau de bord charge l'effectif actif par l'API sécurisée", () => {
   assert.doesNotMatch(dashboard, /const csvUrl = `https:\/\/docs\.google\.com\/spreadsheets\/d\/\$\{encodeURIComponent\(spreadsheetId\)\}/);
   assert.match(secureSheet, /source === EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY/);
   assert.match(secureSheet, /source === MODULE_EFFECTIF_SOURCE && safeSheetKey === EFFECTIF_SHEET_KEY/);
-  assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "moduleEffectif"\], idToken\)/);
   assert.match(secureSheet, /getFirestoreDocument\(\["stageSettings", "effectif"\], idToken\)/);
   assert.match(secureSheet, /publicOnly: true/);
   assert.match(secureSheet, /!publicOnly && getGoogleServiceAccount\(\)/);
@@ -218,7 +217,7 @@ test("la connexion Discord et la préparation du tableau ont une limite de temps
   const html = read("pages/espace-prof.html");
   const auth = read("assets/js/prof-auth-v2.js");
 
-  assert.match(html, /prof-auth-v2\.js\?v=38/);
+  assert.match(html, /prof-auth-v2\.js\?v=39/);
   assert.match(auth, /const DISCORD_SIGNIN_TIMEOUT_MS = 12000/);
   assert.match(auth, /const DASHBOARD_GATE_TIMEOUT_MS = 3500/);
   assert.match(auth, /signal: controller\.signal/);

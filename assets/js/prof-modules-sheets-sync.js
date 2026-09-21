@@ -201,10 +201,10 @@ async function getUserAccess(user) {
 }
 
 async function loadEffectifSettings() {
-  let snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID));
+  let snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID));
 
   if (!snap.exists()) {
-    snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOC_ID));
+    snap = await getDoc(doc(db, STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOC_ID));
   }
 
   if (!snap.exists()) {

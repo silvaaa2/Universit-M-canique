@@ -10,7 +10,7 @@ const ADMIN_MODULES = [
   "./prof-admin-exam-settings.js?v=1012",
   "./prof-admin-exam-scale-wizard.js?v=1007",
   "./prof-admin-company-codes.js?v=4",
-  "./prof-admin-cursus-management.js?v=2",
+  "./prof-admin-cursus-management.js?v=3",
   "./prof-admin-patch-notes.js?v=1004"
 ];
 
@@ -22,7 +22,7 @@ function wait(ms) {
 
 function getFreshModuleUrl(path) {
   const url = new URL(path, import.meta.url);
-  url.searchParams.set("_admin", "20260914-cursus-management");
+  url.searchParams.set("_admin", "20260921-shared-cursus");
   return url;
 }
 

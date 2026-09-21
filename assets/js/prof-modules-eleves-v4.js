@@ -736,8 +736,8 @@ function loadExtras() {
   // Chaque outil arrive après le tableau. Aucun ne peut bloquer l'effectif.
   void importOptional("./prof-modules-clipboard.js?v=11", "Pointage automatique", 100);
   void importOptional("./prof-modules-archives.js?v=1006", "Archives cursus", 700);
-  void importOptional("./prof-modules-sheets-sync.js?v=1010", "Bouton Sync Sheets", 1100)
-    .then(() => importOptional("./prof-modules-sheets-sync-exact.js?v=1011", "Synchronisation exacte", 250));
+  void importOptional("./prof-modules-sheets-sync.js?v=1011", "Bouton Sync Sheets", 1100)
+    .then(() => importOptional("./prof-modules-sheets-sync-exact.js?v=1012", "Synchronisation exacte", 250));
   void importOptional("./prof-presence.js?v=8", "Présence professeur", 1800);
   void importOptional("./prof-notifications-v2.js?v=10", "Pastilles de notifications", 2300);
 }

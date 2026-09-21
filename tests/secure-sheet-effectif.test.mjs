@@ -301,7 +301,7 @@ test("l'espace Modules reçoit l'effectif et les progressions dans une seule ré
     if (requestUrl.includes("/documents/users/prof%40example.com")) {
       return jsonResponse({ fields: { role: { stringValue: "prof" } } });
     }
-    if (requestUrl.includes("/documents/stageSettings/moduleEffectif")) {
+    if (requestUrl.includes("/documents/stageSettings/effectif")) {
       return jsonResponse({
         fields: {
           spreadsheetId: { stringValue: "1ModulesWorkspaceSpreadsheet123456" },

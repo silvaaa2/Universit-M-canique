@@ -80,8 +80,8 @@ function sanitizeCompanyWarning(row) {
 
 async function readModuleEffectifSettings() {
   return (
-    await getDocument(STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOCUMENT) ||
-    await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT)
+    await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT) ||
+    await getDocument(STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOCUMENT)
   );
 }
 
