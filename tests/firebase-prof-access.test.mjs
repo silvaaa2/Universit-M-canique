@@ -91,6 +91,39 @@ test("une désactivation ou une déconnexion distante invalide la session Discor
   );
 });
 
+test("les API gardent les droits signés si le contrôle Firebase est temporairement limité", async () => {
+  const access = await verifyFirebaseProfAccess(createIdToken({
+    sessionVersion: "session-signee",
+    sitePermissions: ["dashboard", "modules"]
+  }), {
+    fetchImpl: certificatesFetch,
+    nowSeconds,
+    policyLoader: async () => {
+      const error = new Error("Lecture Firebase impossible (429).");
+      error.status = 429;
+      throw error;
+    }
+  });
+
+  assert.equal(access.allowed, true);
+  assert.deepEqual(access.permissions, ["dashboard", "modules"]);
+});
+
+test("une erreur permanente du contrôle d’accès ne contourne pas la sécurité", async () => {
+  await assert.rejects(
+    verifyFirebaseProfAccess(createIdToken(), {
+      fetchImpl: certificatesFetch,
+      nowSeconds,
+      policyLoader: async () => {
+        const error = new Error("Politique invalide.");
+        error.status = 400;
+        throw error;
+      }
+    }),
+    /Politique invalide/
+  );
+});
+
 test("un jeton signé pour un autre projet est refusé", async () => {
   await assert.rejects(
     verifyFirebaseIdToken(createIdToken({ aud: "autre-projet" }), {
