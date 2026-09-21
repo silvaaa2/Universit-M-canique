@@ -1,4 +1,5 @@
 const { sendJson } = require("../../lib/server/discord-prof-auth.js");
+const { recordAuditEvent } = require("../../lib/server/audit-log.js");
 const {
   assertSameOrigin,
   validateStageCompanySession
@@ -308,6 +309,18 @@ async function deleteCompanyStage(session, request) {
   return { deleted: true };
 }
 
+async function logCompanyAction(session, action, target = "", details = "") {
+  return recordAuditEvent({
+    actorType: "company",
+    actorId: `company:${session.companyId}`,
+    actorName: session.companyName,
+    category: "entreprises",
+    action,
+    target,
+    details
+  }).catch(error => console.warn("Journal entreprise indisponible :", error?.message || error));
+}
+
 module.exports = async function handler(request, response) {
   try {
     const session = await requireCompany(request);
@@ -327,8 +340,19 @@ module.exports = async function handler(request, response) {
     if (request.method === "POST") {
       assertSameOrigin(request);
       if (session.adminPreview) throw Object.assign(new Error("Aperçu administrateur en lecture seule."), { status: 403 });
+      const body = readBody(request);
+      if (kind === "audit") {
+        const allowedActions = new Set(["Consultation d’un avertissement", "Consultation du parcours élève", "Ouverture des archives", "Consultation des examens", "Consultation de l’effectif"]);
+        const action = String(body.action || "");
+        if (!allowedActions.has(action)) throw Object.assign(new Error("Action de journal invalide."), { status: 400 });
+        await logCompanyAction(session, action, String(body.target || "").slice(0, 180));
+        sendJson(response, 200, { logged: true });
+        return;
+      }
       if (kind !== "stages") throw Object.assign(new Error("Action refusée."), { status: 403 });
-      sendJson(response, 200, await addCompanyStages(session, readBody(request)));
+      const result = await addCompanyStages(session, body);
+      await logCompanyAction(session, "Ajout de stagiaires", `${result.added} ajouté(s)`, `${result.skipped} ignoré(s)`);
+      sendJson(response, 200, result);
       return;
     }
 
@@ -336,7 +360,10 @@ module.exports = async function handler(request, response) {
       assertSameOrigin(request);
       if (session.adminPreview) throw Object.assign(new Error("Aperçu administrateur en lecture seule."), { status: 403 });
       if (kind !== "stages") throw Object.assign(new Error("Action refusée."), { status: 403 });
-      sendJson(response, 200, await deleteCompanyStage(session, request));
+      const documentId = String(getRequestUrl(request).searchParams.get("id") || "");
+      const result = await deleteCompanyStage(session, request);
+      await logCompanyAction(session, "Suppression d’un stagiaire", documentId);
+      sendJson(response, 200, result);
       return;
     }
 

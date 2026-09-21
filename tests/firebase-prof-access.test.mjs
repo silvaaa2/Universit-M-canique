@@ -71,6 +71,26 @@ test("la session Discord validée donne directement les droits professeur", asyn
   assert.equal(access.actorId, "discord:123456789012345678");
 });
 
+test("une désactivation ou une déconnexion distante invalide la session Discord", async () => {
+  await assert.rejects(
+    verifyFirebaseProfAccess(createIdToken({ sessionVersion: "ancienne" }), {
+      fetchImpl: certificatesFetch,
+      nowSeconds,
+      policyLoader: async () => ({ disabled: false, sessionVersion: "nouvelle", permissions: ["dashboard"] })
+    }),
+    /déconnectée à distance/
+  );
+
+  await assert.rejects(
+    verifyFirebaseProfAccess(createIdToken(), {
+      fetchImpl: certificatesFetch,
+      nowSeconds,
+      policyLoader: async () => ({ disabled: true, sessionVersion: "default", permissions: [] })
+    }),
+    /temporairement désactivé/
+  );
+});
+
 test("un jeton signé pour un autre projet est refusé", async () => {
   await assert.rejects(
     verifyFirebaseIdToken(createIdToken({ aud: "autre-projet" }), {

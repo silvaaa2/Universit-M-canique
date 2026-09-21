@@ -13,6 +13,7 @@ const {
   serializeCookie,
   verifyOAuthState
 } = require("../../../lib/server/discord-prof-auth.js");
+const { recordAuditEvent } = require("../../../lib/server/audit-log.js");
 
 module.exports = async function handler(request, response) {
   if (request.method !== "GET") {
@@ -47,6 +48,18 @@ module.exports = async function handler(request, response) {
 
     verifyOAuthState(state, cookies[STATE_COOKIE]);
     const identity = await authorizeDiscordLogin(code);
+    try {
+      await recordAuditEvent({
+        actorType: identity.admin ? "admin" : "prof",
+        actorId: `discord:${identity.discordId}`,
+        actorName: identity.displayName,
+        category: "connexion",
+        action: "Connexion Discord validée",
+        details: identity.admin ? "Compte administrateur" : "Compte professeur"
+      });
+    } catch (auditError) {
+      console.warn("Journal de connexion indisponible :", auditError?.message || auditError);
+    }
     const customToken = createFirebaseCustomToken(identity);
     const ticket = encryptLoginTicket({
       customToken,

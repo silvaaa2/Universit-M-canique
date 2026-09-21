@@ -44,35 +44,42 @@ service cloud.firestore {
       return isDiscordAdmin() || (hasEmailIdentity() && userData().admin == true);
     }
 
+    function hasSitePermission(permission) {
+      return isAdmin()
+        || !isDiscordProf()
+        || !request.auth.token.keys().hasAny(["sitePermissions"])
+        || tokenValue("sitePermissions", []).hasAny([permission]);
+    }
+
     match /users/{userEmail} {
       allow read: if isSignedIn() && (tokenValue("email", "") == userEmail || isAdmin());
       allow write: if isAdmin();
     }
 
     match /studentAnswerStatuses/{docId} {
-      allow read, write: if isProf() || isAdmin();
+      allow read, write: if (isProf() || isAdmin()) && hasSitePermission("customResponses");
     }
 
     match /studentModules/{docId} {
-      allow read, write: if isProf() || isAdmin();
+      allow read, write: if (isProf() || isAdmin()) && hasSitePermission("modules");
     }
 
     match /studentModuleArchives/{docId} {
-      allow read: if isProf() || isAdmin();
+      allow read: if (isProf() || isAdmin()) && hasSitePermission("modules");
       allow write: if isAdmin();
     }
 
     match /examAnswerStatuses/{docId} {
-      allow read: if isProf() || isStage() || isAdmin();
-      allow write: if isProf() || isAdmin();
+      allow read: if isStage() || isAdmin() || (isProf() && hasSitePermission("exams"));
+      allow write: if isAdmin() || (isProf() && hasSitePermission("exams"));
     }
 
     match /examCorrections/{docId} {
-      allow read, write: if isProf() || isAdmin();
+      allow read, write: if isAdmin() || (isProf() && hasSitePermission("exams"));
     }
 
     match /customAnswerKeys/{docId} {
-      allow read: if isProf() || isAdmin();
+      allow read: if isAdmin() || (isProf() && hasSitePermission("corrections"));
       allow write: if isAdmin();
     }
 
@@ -83,7 +90,7 @@ service cloud.firestore {
 
     match /customAvailability/{docId} {
       allow read: if true;
-      allow write: if isProf() || isAdmin();
+      allow write: if isAdmin() || (isProf() && hasSitePermission("customAccess"));
     }
 
     match /profSettings/{docId} {
@@ -92,11 +99,11 @@ service cloud.firestore {
     }
 
     match /stageValidations/{docId} {
-      allow read, write: if isProf() || isStage() || isAdmin();
+      allow read, write: if isStage() || isAdmin() || (isProf() && hasSitePermission("stages"));
     }
 
     match /stageArchives/{docId} {
-      allow read: if isProf() || isStage() || isAdmin();
+      allow read: if isStage() || isAdmin() || (isProf() && hasSitePermission("stages"));
       allow create: if isAdmin();
       allow delete: if isAdmin();
       allow update: if isAdmin()

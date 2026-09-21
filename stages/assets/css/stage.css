@@ -2195,6 +2195,11 @@ main {
   touch-action: none;
 }
 
+.company-student-progress-modal[hidden],
+.company-warning-modal[hidden] {
+  display: none !important;
+}
+
 html.company-student-modal-open,
 body.company-student-modal-open {
   overflow: hidden;
@@ -2994,6 +2999,67 @@ body.company-workspace .stage-header {
 body.company-workspace .brand-logo {
   width: 46px;
   height: 46px;
+}
+
+.company-brand-logo {
+  --company-accent: #d6b46a;
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--company-accent);
+  filter: drop-shadow(0 10px 24px color-mix(in srgb, var(--company-accent) 24%, transparent));
+}
+
+.company-brand-logo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.company-brand-logo svg path:first-child { fill: color-mix(in srgb, var(--company-accent) 12%, #080a09); stroke: currentColor; stroke-width: 2; }
+.company-brand-logo svg path:last-child { fill: none; stroke: currentColor; stroke-width: 1; opacity: .42; }
+.company-brand-logo strong { position: relative; z-index: 1; color: #fff; font-size: 15px; font-weight: 1000; letter-spacing: -.04em; }
+.stage-header .company-brand-logo { width: 46px; height: 46px; }
+.stage-header .company-brand-logo strong { font-size: 11px; }
+
+.company-brand-lockup { display: flex; align-items: center; gap: 18px; }
+.company-brand-lockup .kicker { margin: 0 0 8px; }
+.company-brand-lockup h1 { margin: 0 !important; }
+
+.company-cursus-chart {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  padding: 18px 20px 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px;
+  background: rgba(0,0,0,.22);
+}
+
+.company-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.company-chart-head span { color: var(--gold2); font-size: 10px; font-weight: 1000; letter-spacing: .09em; text-transform: uppercase; }
+.company-chart-head h2 { margin: 3px 0 0; font-size: 19px; }
+.company-chart-head > strong { padding: 7px 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 999px; color: var(--muted); font-size: 10px; }
+.company-chart-scroll { overflow-x: auto; scrollbar-width: thin; }
+.company-chart-scroll svg { display: block; width: 100%; min-width: 520px; height: 170px; overflow: visible; }
+.company-chart-axis { stroke: rgba(255,255,255,.10); stroke-width: 1; }
+.company-chart-area { fill: rgba(214,180,106,.10); }
+.company-chart-line { fill: none; stroke: var(--gold2); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 7px rgba(214,180,106,.38)); }
+.company-chart-point circle { fill: #0b0d0b; stroke: var(--gold2); stroke-width: 3; }
+.company-chart-point:last-child circle { fill: var(--green); stroke: #d6ffe7; }
+.company-chart-value { fill: #fff; font-size: 12px; font-weight: 1000; }
+.company-chart-label { fill: var(--muted); font-size: 9px; font-weight: 900; }
+
+@keyframes company-data-arrived {
+  0% { border-color: rgba(90,232,157,.7); box-shadow: 0 0 0 0 rgba(90,232,157,.20); }
+  45% { box-shadow: 0 0 0 7px rgba(90,232,157,0); }
+  100% { border-color: rgba(255,255,255,.08); box-shadow: none; }
+}
+
+.company-data-arrived { animation: company-data-arrived .75s ease-out; }
+
+@media (max-width: 680px) {
+  .company-brand-lockup { align-items: flex-start; }
+  .company-brand-lockup > .company-brand-logo { width: 52px; height: 52px; }
+  .company-cursus-chart { padding-inline: 14px; }
 }
 
 body.company-workspace main {

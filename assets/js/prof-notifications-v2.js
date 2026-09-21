@@ -51,6 +51,27 @@
   let lastCheckAt = 0;
   const passiveBadgesOnly = document.body?.classList?.contains("modules-page") === true;
 
+  function animateDataArrival(type) {
+    if (!document.getElementById("profDataArrivalStyle")) {
+      const style = document.createElement("style");
+      style.id = "profDataArrivalStyle";
+      style.textContent = `
+        @keyframes prof-data-arrived { 0% { box-shadow: 0 0 0 0 rgba(90,232,157,.34); transform: translateY(0); } 38% { box-shadow: 0 0 0 7px rgba(90,232,157,0); transform: translateY(-2px); } 100% { box-shadow: none; transform: translateY(0); } }
+        .prof-data-arrived { animation: prof-data-arrived .72s ease-out !important; }
+      `;
+      document.head.appendChild(style);
+    }
+    const selectors = type === "exam"
+      ? ["[data-prof-notification-target='exam']", ".v2-stat-card:first-of-type"]
+      : ["[data-prof-notification-target='custom']", ".v2-stat-card:last-of-type"];
+    document.querySelectorAll(selectors.join(",")).forEach(element => {
+      element.classList.remove("prof-data-arrived");
+      void element.offsetWidth;
+      element.classList.add("prof-data-arrived");
+    });
+    window.dispatchEvent(new CustomEvent("prof:data-arrived", { detail: { type, timestamp: Date.now() } }));
+  }
+
   function notificationsEnabled() {
     const savedValue = localStorage.getItem(ENABLED_KEY);
     return savedValue === null ? true : savedValue === "true";
@@ -504,6 +525,7 @@
     showToast(title, fullMessage, isExam ? "exam" : "custom");
     sendBrowserNotification(title, fullMessage, `prof-${type}-${Date.now()}`);
     playSound();
+    animateDataArrival(type);
   }
 
   async function checkNotifications({ baselineOnly = false, force = false } = {}) {

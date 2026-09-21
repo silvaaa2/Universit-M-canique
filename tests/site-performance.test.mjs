@@ -117,7 +117,7 @@ test("les feuilles et ressources statiques utilisent des caches courts et sûrs"
 
 test("les modules Stage autonomes initialisent Firebase avant getApp", async () => {
   const source = await read("stages/assets/js/stage-effectif-membership.js");
-  const stageImportIndex = source.indexOf('import "./stage-app.js?v=9086"');
+  const stageImportIndex = source.search(/import "\.\/stage-app\.js\?v=\d+"/);
   const getAppIndex = source.indexOf("const app = getApp()");
 
   assert.ok(stageImportIndex >= 0);

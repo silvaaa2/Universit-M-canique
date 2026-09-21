@@ -8,6 +8,8 @@ test("les règles Firestore reconnaissent les sessions Discord signées", async 
   const rules = await readFile(rulesUrl, "utf8");
 
   assert.match(rules, /tokenValue\("authProvider", ""\) == "discord"/);
+  assert.match(rules, /function hasSitePermission\(permission\)/);
+  assert.match(rules, /tokenValue\("sitePermissions", \[\]\)\.hasAny\(\[permission\]\)/);
   assert.match(rules, /tokenValue\("role", ""\) == "prof"/);
   assert.match(rules, /tokenValue\("admin", false\) == true/);
   assert.match(rules, /isDiscordProf\(\) \|\| \(hasEmailIdentity\(\) && userRole\(\) == "prof"\)/);

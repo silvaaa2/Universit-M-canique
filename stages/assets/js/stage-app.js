@@ -65,13 +65,13 @@ let effectifGid =
   DEFAULT_EFFECTIF_GID;
 
 const ALL_COMPANIES = [
-  { id: "bennys", name: "Benny's" },
-  { id: "lsc", name: "LSC" },
-  { id: "paleto", name: "Paleto Garage" },
-  { id: "harmony", name: "Harmony Repair" },
-  { id: "cayo", name: "Cayo Garage" },
-  { id: "portolina", name: "Portolina Mechanic" },
-  { id: "favelas", name: "Favelas Repair" }
+  { id: "bennys", name: "Benny's", mark: "B", accent: "#5b8cff" },
+  { id: "lsc", name: "LSC", mark: "LS", accent: "#f0b14a" },
+  { id: "paleto", name: "Paleto Garage", mark: "PG", accent: "#e4494f" },
+  { id: "harmony", name: "Harmony Repair", mark: "HR", accent: "#e6c45d" },
+  { id: "cayo", name: "Cayo Garage", mark: "CG", accent: "#4fd1a1" },
+  { id: "portolina", name: "Portolina Mechanic", mark: "PM", accent: "#cf7cff" },
+  { id: "favelas", name: "Favelas Repair", mark: "FR", accent: "#ff7a59" }
 ];
 const COMPANIES = IS_COMPANY_ACCESS
   ? ALL_COMPANIES.filter(company => company.id === COMPANY_SCOPE_ID)
@@ -112,6 +112,43 @@ let currentArchive = null;
 let currentArchiveSearch = "";
 let companyWorkspaceReady = false;
 let unifiedLogoutInProgress = false;
+let companyDataSignature = "";
+let companyRefreshTimer = 0;
+let companyRefreshRunning = false;
+const COMPANY_REFRESH_MS = 15_000;
+
+function getScopedCompany() {
+  return ALL_COMPANIES.find(company => company.id === COMPANY_SCOPE_ID) || ALL_COMPANIES[0];
+}
+
+function renderCompanyLogo(company = getScopedCompany()) {
+  const mark = escapeHtml(company?.mark || "UM");
+  const accent = escapeHtml(company?.accent || "#d6b46a");
+  return `
+    <span class="company-brand-logo" style="--company-accent:${accent}" aria-hidden="true">
+      <svg viewBox="0 0 72 72" role="img">
+        <path d="M36 3 61 17v38L36 69 11 55V17L36 3Z"/>
+        <path d="M36 12 53 22v28L36 60 19 50V22L36 12Z"/>
+      </svg>
+      <strong>${mark}</strong>
+    </span>`;
+}
+
+function buildCompanyDataSignature() {
+  return JSON.stringify({
+    stages: stageValidations.map(item => [item.firebaseId, item.idUnique]).sort(),
+    exams: examParticipants.map(item => [item.firebaseId, item.status, item.totalScore]).sort(),
+    archives: stageArchives.map(item => [item.firebaseId, item.stageValidations?.length || 0]).sort()
+  });
+}
+
+function animateCompanyDataUpdate() {
+  document.querySelectorAll(".company-overview article, .company-cursus-chart, .stage-companies-card, .stage-exams-card").forEach(element => {
+    element.classList.remove("company-data-arrived");
+    void element.offsetWidth;
+    element.classList.add("company-data-arrived");
+  });
+}
 
 function ensureCompanyWorkspaceChrome() {
   if (!IS_COMPANY_ACCESS || companyWorkspaceReady) return;
@@ -138,14 +175,18 @@ function ensureCompanyWorkspaceChrome() {
 
   const brandSubtitle = document.querySelector(".stage-header .brand span");
   if (brandSubtitle) brandSubtitle.textContent = COMPANY_SCOPE_NAME || "Espace entreprise";
+  const headerLogo = document.querySelector(".stage-header .brand-logo");
+  if (headerLogo) headerLogo.innerHTML = renderCompanyLogo();
 
   if (dashboardTitle?.closest(".dashboard-top")) {
     dashboardTitle.closest(".dashboard-top").innerHTML = `
       <div class="company-hero">
         <div class="company-hero-copy">
           <div class="company-access-badge"><span></span> ${IS_ADMIN_COMPANY_PREVIEW ? "Aperçu admin" : "Espace entreprise"}</div>
-          <p class="kicker">Mécanique · Université</p>
-          <h1>Bienvenue, <span>${escapeHtml(COMPANY_SCOPE_NAME || "Entreprise")}</span>.</h1>
+          <div class="company-brand-lockup">
+            ${renderCompanyLogo()}
+            <div><p class="kicker">Mécanique · Université</p><h1>Bienvenue, <span>${escapeHtml(COMPANY_SCOPE_NAME || "Entreprise")}</span>.</h1></div>
+          </div>
           <p class="intro">${IS_ADMIN_COMPANY_PREVIEW ? "Visualisation de l’espace entreprise sans modification possible." : "Suivez vos stagiaires et consultez les résultats du cursus."}</p>
         </div>
 
@@ -172,6 +213,7 @@ function ensureCompanyWorkspaceChrome() {
             <small>élèves inscrits</small>
           </article>
         </div>
+        <section id="companyCursusChart" class="company-cursus-chart" aria-label="Historique des stages par cursus"></section>
       </div>
     `;
   }
@@ -228,6 +270,55 @@ function updateCompanyWorkspaceStats() {
 
   const examDetail = document.querySelector('[data-company-stat-detail="exams"]');
   if (examDetail) examDetail.textContent = `sur ${examParticipants.length} reçu(s)`;
+  renderCompanyCursusChart();
+}
+
+function renderCompanyCursusChart() {
+  if (!IS_COMPANY_ACCESS) return;
+  const container = document.getElementById("companyCursusChart");
+  if (!container) return;
+
+  const archivedPoints = [...stageArchives]
+    .sort((left, right) => String(left.startDate || "").localeCompare(String(right.startDate || "")))
+    .map((archive, index) => ({
+      label: archive.startDisplay || archive.startDate || `Cursus ${index + 1}`,
+      value: Array.isArray(archive.stageValidations) ? archive.stageValidations.length : 0
+    }));
+  const points = [...archivedPoints, { label: "Actuel", value: stageValidations.length }].slice(-8);
+  const max = Math.max(1, ...points.map(point => point.value));
+  const width = 760;
+  const height = 150;
+  const left = 28;
+  const right = 18;
+  const top = 24;
+  const bottom = 32;
+  const usableWidth = width - left - right;
+  const usableHeight = height - top - bottom;
+  const coordinates = points.map((point, index) => ({
+    ...point,
+    x: points.length === 1 ? width / 2 : left + (index * usableWidth / (points.length - 1)),
+    y: top + usableHeight - (point.value / max * usableHeight)
+  }));
+  const line = coordinates.map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const area = coordinates.length
+    ? `${left},${height - bottom} ${line} ${coordinates.at(-1).x.toFixed(1)},${height - bottom}`
+    : "";
+
+  container.innerHTML = `
+    <div class="company-chart-head"><div><span>Historique</span><h2>Stages par cursus</h2></div><strong>${points.length} cursus</strong></div>
+    <div class="company-chart-scroll">
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Nombre de stages pour chacun des derniers cursus">
+        <line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" class="company-chart-axis"/>
+        ${area ? `<polygon points="${area}" class="company-chart-area"/>` : ""}
+        ${coordinates.length > 1 ? `<polyline points="${line}" class="company-chart-line"/>` : ""}
+        ${coordinates.map(point => `
+          <g class="company-chart-point">
+            <circle cx="${point.x}" cy="${point.y}" r="6"/>
+            <text x="${point.x}" y="${Math.max(14, point.y - 12)}" text-anchor="middle" class="company-chart-value">${point.value}</text>
+            <text x="${point.x}" y="${height - 10}" text-anchor="middle" class="company-chart-label">${escapeHtml(point.label)}</text>
+          </g>`).join("")}
+      </svg>
+    </div>`;
 }
 
 window.openCompanyWorkspaceSection = function(panel) {
@@ -430,6 +521,19 @@ async function fetchCompanyRows(kind, options = {}) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(payload.error || "Données entreprise indisponibles.");
   return payload;
+}
+
+const companyAuditSent = new Map();
+function auditCompanyAction(action, target = "") {
+  if (!IS_COMPANY_ACCESS || IS_ADMIN_COMPANY_PREVIEW) return;
+  const key = `${action}:${target}`;
+  const lastSent = Number(companyAuditSent.get(key) || 0);
+  if (Date.now() - lastSent < 60_000) return;
+  companyAuditSent.set(key, Date.now());
+  fetchCompanyRows("audit", {
+    method: "POST",
+    body: { action, target }
+  }).catch(error => console.warn("Journal entreprise non envoyé :", error?.message || error));
 }
 
 async function loadStageValidations() {
@@ -1607,6 +1711,9 @@ function renderRightPanelTabs() {
 window.switchRightPanel = function(panel) {
   currentRightPanel = panel;
   updateCompanyWorkspaceNavigation(panel === "effectif" ? "effectif" : "examens");
+  if (panel === "archives") auditCompanyAction("Ouverture des archives");
+  if (panel === "effectif") auditCompanyAction("Consultation de l’effectif");
+  if (panel === "examens") auditCompanyAction("Consultation des examens");
 
   if (panel === "effectif") {
     renderExamParticipants();
@@ -2290,6 +2397,7 @@ window.openCompanyStudentWarning = function(normalizedIdUnique) {
     normalizeIdUnique(item.normalizedIdUnique || item.idUnique) === normalizedId
   ));
   if (!warning || !warningMeta || !stageStudent) return;
+  auditCompanyAction("Consultation d’un avertissement", normalizedId);
 
   ensureCompanyWarningModal();
   const modal = document.getElementById("companyWarningModal");
@@ -2440,6 +2548,7 @@ window.openCompanyStudentProgress = async function(normalizedIdUnique) {
   const normalizedId = normalizeIdUnique(normalizedIdUnique);
   const effectifStudent = effectifRows.find(item => item.normalizedIdUnique === normalizedId);
   if (!effectifStudent) return;
+  auditCompanyAction("Consultation du parcours élève", normalizedId);
 
   ensureCompanyStudentProgressModal();
   const modal = document.getElementById("companyStudentProgressModal");
@@ -2934,9 +3043,11 @@ window.resetStageWeek = async function() {
    REFRESH
 ========================================================= */
 
-async function refreshAll() {
-  companyGrid.innerHTML = `<div class="loading-box">Chargement des stages...</div>`;
-  examList.innerHTML = `<div class="loading-box">Chargement des participants...</div>`;
+async function refreshAll({ silent = false } = {}) {
+  if (!silent) {
+    companyGrid.innerHTML = `<div class="loading-box">Chargement des stages...</div>`;
+    examList.innerHTML = `<div class="loading-box">Chargement des participants...</div>`;
+  }
 
   const loaders = [
     loadStageValidations(),
@@ -2953,9 +3064,34 @@ async function refreshAll() {
 
   await Promise.all(loaders);
 
+  const nextCompanySignature = IS_COMPANY_ACCESS ? buildCompanyDataSignature() : "";
+  const shouldAnimate = Boolean(companyDataSignature && nextCompanySignature !== companyDataSignature);
+  companyDataSignature = nextCompanySignature;
+
   renderCompanies();
   renderExamParticipants();
   updateCompanyWorkspaceStats();
+  if (shouldAnimate) requestAnimationFrame(animateCompanyDataUpdate);
+}
+
+function scheduleCompanyRefresh() {
+  window.clearTimeout(companyRefreshTimer);
+  if (!IS_COMPANY_ACCESS || unifiedLogoutInProgress) return;
+  companyRefreshTimer = window.setTimeout(async () => {
+    if (document.visibilityState !== "visible" || companyRefreshRunning) {
+      scheduleCompanyRefresh();
+      return;
+    }
+    companyRefreshRunning = true;
+    try {
+      await refreshAll({ silent: true });
+    } catch (error) {
+      console.warn("Actualisation entreprise momentanément indisponible :", error?.message || error);
+    } finally {
+      companyRefreshRunning = false;
+      scheduleCompanyRefresh();
+    }
+  }, COMPANY_REFRESH_MS);
 }
 
 /* =========================================================
@@ -3048,6 +3184,7 @@ onAuthStateChanged(auth, async user => {
       showDashboard();
       try {
         await refreshAll();
+        scheduleCompanyRefresh();
       } catch (error) {
         console.error("Erreur chargement espace entreprise :", error);
         companyGrid.innerHTML = `<div class="loading-box">Impossible de charger vos stagiaires.</div>`;
@@ -3074,6 +3211,7 @@ onAuthStateChanged(auth, async user => {
     showDashboard();
     try {
       await refreshAll();
+      scheduleCompanyRefresh();
     } catch (error) {
       console.error("Erreur chargement aperçu entreprise :", error);
       companyGrid.innerHTML = `<div class="loading-box">Impossible de charger cet aperçu.</div>`;
