@@ -9,9 +9,11 @@ const {
   createCompanyPreviewSession,
   createCompanySession,
   findCompanyByCode,
+  loadCompanyCodeConfig,
   normalizeCompanyCode,
   readCompanyPreviewSession,
-  readCompanySession
+  readCompanySession,
+  validateCompanySession
 } = require("../lib/server/unified-access.js");
 
 test("les codes entreprise ne sont jamais livrés au navigateur", async () => {
@@ -140,6 +142,34 @@ test("la session entreprise est signée et reste limitée à son périmètre ser
   assert.equal(restored.companyId, company.id);
   assert.equal(restored.companyName, company.name);
   assert.equal(restored.role, "company");
+});
+
+test("une limite Firebase temporaire ne bloque ni le formulaire ni une session entreprise signée", async () => {
+  process.env.DISCORD_SESSION_SECRET = "test-session-secret-long-de-plus-de-trente-deux-caracteres";
+  const quotaError = Object.assign(new Error("Lecture Firebase impossible (429)."), { status: 429 });
+  const unavailableLoader = async () => { throw quotaError; };
+
+  const fallbackConfig = await loadCompanyCodeConfig({
+    force: true,
+    fallbackToDefaults: true,
+    loader: unavailableLoader,
+    wait: async () => {}
+  });
+  assert.deepEqual(fallbackConfig, { hashes: {}, versions: {}, updatedAt: {} });
+
+  const company = COMPANIES[2];
+  const request = { headers: { host: "localhost", "x-forwarded-proto": "http" } };
+  const cookie = createCompanySession(request, company);
+  const cookieValue = cookie.match(/university_company_access=([^;]+)/)?.[1];
+  const restored = await validateCompanySession({
+    headers: { cookie: `university_company_access=${cookieValue}` }
+  }, {
+    loader: unavailableLoader,
+    wait: async () => {}
+  });
+
+  assert.equal(restored.companyId, company.id);
+  assert.equal(restored.credentialVersion, "default");
 });
 
 test("le déploiement reste dans la limite de fonctions du projet Vercel", async () => {
