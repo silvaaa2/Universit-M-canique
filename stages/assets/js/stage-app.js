@@ -74,7 +74,13 @@ const ALL_COMPANIES = [
     accent: "#e4494f",
     logo: "/Images/companies/paleto-garage.webp"
   },
-  { id: "harmony", name: "Harmony Repair", mark: "HR", accent: "#e6c45d" },
+  {
+    id: "harmony",
+    name: "Harmony Repair",
+    mark: "HR",
+    accent: "#e6c45d",
+    logo: "/Images/companies/harmony-repair.webp"
+  },
   { id: "cayo", name: "Cayo Garage", mark: "CG", accent: "#4fd1a1" },
   { id: "portolina", name: "Portolina Mechanic", mark: "PM", accent: "#cf7cff" },
   { id: "favelas", name: "Favelas Repair", mark: "FR", accent: "#ff7a59" }
