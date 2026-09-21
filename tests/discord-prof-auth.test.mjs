@@ -66,6 +66,57 @@ test("le ticket de connexion chiffré est lisible une fois avant expiration", ()
   }
 });
 
+test("une limitation Firebase temporaire ne bloque plus une connexion Discord autorisée", async () => {
+  const { loadProfAccessPolicyForLogin } = loadAuthHelpers();
+  let attempts = 0;
+  const policy = await loadProfAccessPolicyForLogin(
+    "123456789012345678",
+    async () => {
+      attempts += 1;
+      const error = new Error("Lecture Firebase impossible (429).");
+      error.status = 429;
+      throw error;
+    },
+    async () => {}
+  );
+
+  assert.equal(attempts, 2);
+  assert.deepEqual(policy, {});
+});
+
+test("la politique professeur est relue une fois après une erreur temporaire", async () => {
+  const { loadProfAccessPolicyForLogin } = loadAuthHelpers();
+  let attempts = 0;
+  const expected = { disabled: false, permissions: ["dashboard"] };
+  const policy = await loadProfAccessPolicyForLogin(
+    "123456789012345678",
+    async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        const error = new Error("Service temporairement indisponible.");
+        error.status = 503;
+        throw error;
+      }
+      return expected;
+    },
+    async () => {}
+  );
+
+  assert.equal(attempts, 2);
+  assert.equal(policy, expected);
+});
+
+test("une erreur de politique non temporaire reste bloquante", async () => {
+  const { loadProfAccessPolicyForLogin } = loadAuthHelpers();
+  const error = new Error("Politique invalide.");
+  error.status = 400;
+
+  await assert.rejects(
+    loadProfAccessPolicyForLogin("123456789012345678", async () => { throw error; }, async () => {}),
+    /Politique invalide/
+  );
+});
+
 test("le jeton Firebase contient uniquement l'identité et les droits Discord attendus", () => {
   const previousEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const previousKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
