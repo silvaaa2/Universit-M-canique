@@ -1,4 +1,4 @@
-import "./effectif-sync.js?v=9094";
+import "./effectif-sync.js?v=9095";
 
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";

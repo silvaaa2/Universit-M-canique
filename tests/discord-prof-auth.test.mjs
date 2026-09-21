@@ -81,6 +81,7 @@ test("le jeton Firebase contient uniquement l'identité et les droits Discord at
       displayName: "Prof Test",
       avatarUrl: "https://cdn.discordapp.com/avatar.png",
       admin: true,
+      owner: true,
       roleSynced: true
     }, 1_800_000_000);
     const payload = decodeJwtPayload(token);
@@ -89,6 +90,7 @@ test("le jeton Firebase contient uniquement l'identité et les droits Discord at
     assert.equal(payload.claims.authProvider, "discord");
     assert.equal(payload.claims.role, "prof");
     assert.equal(payload.claims.admin, true);
+    assert.equal(payload.claims.owner, true);
     assert.equal(payload.claims.discordName, "Prof Test");
     assert.equal(payload.exp - payload.iat, 3600);
   } finally {

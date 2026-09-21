@@ -12,12 +12,22 @@ const firebaseConfig = {
 
 const ALL_PERMISSIONS = new Set(["dashboard", "corrections", "customResponses", "exams", "modules", "customAccess", "stages"]);
 const CHECK_INTERVAL_MS = 20_000;
+const PERMISSION_PATHS = {
+  dashboard: "/pages/espace-prof.html",
+  corrections: "/pages/espace-prof.html?section=corrections",
+  customResponses: "/pages/prof-rp-7x92q.html",
+  exams: "/pages/prof-exam-4x91q.html",
+  modules: "/pages/prof-modules-eleves.html",
+  customAccess: "/pages/prof-customs-eleves.html",
+  stages: "/stages/"
+};
 let timer = 0;
 let currentUser = null;
 let revoking = false;
 
 function currentSection() {
   const path = window.location.pathname.toLowerCase();
+  if (path.includes("espace-prof") && new URLSearchParams(window.location.search).get("section") === "corrections") return "corrections";
   if (path.includes("prof-rp-7x92q")) return "customResponses";
   if (path.includes("prof-exam-4x91q")) return "exams";
   if (path.includes("prof-modules-eleves")) return "modules";
@@ -47,7 +57,7 @@ function applyPermissions(policy) {
   window.profAccessPolicy = { ...policy, permissions: [...permissions] };
   document.documentElement.dataset.profPolicyReady = "true";
 
-  document.querySelectorAll("a, button[onclick], [data-mobile-section]").forEach(element => {
+  document.querySelectorAll("a, button, [data-mobile-section]").forEach(element => {
     const permission = permissionForElement(element);
     if (!permission) return;
     const allowed = permissions.has(permission);
@@ -55,9 +65,30 @@ function applyPermissions(policy) {
     element.setAttribute("aria-hidden", String(!allowed));
   });
 
-  const adminButton = document.getElementById("profAdminBtn");
-  if (adminButton) adminButton.hidden = policy.admin !== true;
+  document.querySelectorAll("#profAdminBtn, #profAccessLogsBtn").forEach(button => {
+    button.hidden = policy.admin !== true;
+  });
   return permissions;
+}
+
+function firstAllowedPath(permissions) {
+  for (const permission of ALL_PERMISSIONS) {
+    if (permissions.has(permission) && PERMISSION_PATHS[permission]) return PERMISSION_PATHS[permission];
+  }
+  return "";
+}
+
+function openRequestedSection(permissions) {
+  const section = new URLSearchParams(window.location.search).get("section");
+  if (section === "corrections" && permissions.has("corrections")) {
+    window.setTimeout(() => document.getElementById("openCorrectionsBtn")?.click(), 0);
+  }
+}
+
+function restrictedDestination(path) {
+  const url = new URL(path, window.location.origin);
+  url.searchParams.set("access", "restricted");
+  return `${url.pathname}${url.search}`;
 }
 
 function showRevokedMessage(message) {
@@ -98,9 +129,12 @@ async function checkPolicy() {
     if (!response.ok) throw new Error(payload.error || `Accès indisponible (${response.status})`);
     const permissions = applyPermissions(payload);
     if (!permissions.has(currentSection())) {
-      window.location.replace("/pages/espace-prof.html?access=restricted");
+      const destination = firstAllowedPath(permissions);
+      if (destination) window.location.replace(restrictedDestination(destination));
+      else await revokeAccess("Aucune page du site ne t’est actuellement autorisée.");
       return;
     }
+    openRequestedSection(permissions);
   } catch (error) {
     console.warn("Contrôle des permissions temporairement indisponible :", error?.message || error);
   } finally {

@@ -4,27 +4,38 @@ import { createRequire } from "node:module";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
-const { ALL_PERMISSIONS, buildProfessorAccessRows, normalizePermissions } = require("../lib/server/prof-access-control.js");
-const { normalizeAuditEvent } = require("../lib/server/audit-log.js");
+const {
+  ALL_PERMISSIONS,
+  buildProfessorAccessRows,
+  normalizePermissions,
+  resolveOwnerDiscordId
+} = require("../lib/server/prof-access-control.js");
+const { isPassiveAuditEvent, normalizeAuditEvent } = require("../lib/server/audit-log.js");
 
 async function read(relativePath) {
   return readFile(new URL(`../${relativePath}`, import.meta.url), "utf8");
 }
 
-test("les permissions professeur sont explicites et gardent toujours le tableau de bord", () => {
-  assert.deepEqual(normalizePermissions(["modules", "exams"]), ["dashboard", "exams", "modules"]);
+test("les permissions professeur sont toutes réellement décochables", () => {
+  assert.deepEqual(normalizePermissions(["modules", "exams"]), ["exams", "modules"]);
+  assert.deepEqual(normalizePermissions([]), []);
   assert.deepEqual(normalizePermissions([], true), [...ALL_PERMISSIONS]);
   const rows = buildProfessorAccessRows([
     { discordId: "123456789012345678", name: "Prof Test", role: "prof", active: true },
-    { discordId: "223456789012345678", name: "Admin Test", role: "admin", active: true }
+    { discordId: "223456789012345678", name: "Admin Test", role: "admin", active: true },
+    { discordId: "323456789012345678", name: "Marc Carter", role: "admin", active: true }
   ], {
     "123456789012345678": { disabled: true, permissions: ["modules"] },
-    "223456789012345678": { disabled: true, permissions: [] }
+    "223456789012345678": { adminOverride: false, permissions: ["exams"] }
   });
   assert.equal(rows[0].disabled, true);
-  assert.deepEqual(rows[0].permissions, ["dashboard", "modules"]);
+  assert.deepEqual(rows[0].permissions, ["modules"]);
   assert.equal(rows[1].disabled, false);
-  assert.deepEqual(rows[1].permissions, [...ALL_PERMISSIONS]);
+  assert.equal(rows[1].role, "prof");
+  assert.deepEqual(rows[1].permissions, ["exams"]);
+  assert.equal(rows[2].owner, true);
+  assert.equal(rows[2].role, "admin");
+  assert.equal(resolveOwnerDiscordId([{ discordId: "323456789012345678", name: "Marc Carter", role: "admin", active: true }]), "323456789012345678");
 });
 
 test("le journal nettoie les actions et distingue professeurs et entreprises", () => {
@@ -39,6 +50,9 @@ test("le journal nettoie les actions et distingue professeurs et entreprises", (
   assert.equal(event.actorType, "company");
   assert.equal(event.action, "Ajout stagiaire");
   assert.equal(event.category, "entreprises");
+  assert.equal(isPassiveAuditEvent({ action: "Ouverture de la page" }), true);
+  assert.equal(isPassiveAuditEvent({ action: "Consultation de l’effectif" }), true);
+  assert.equal(isPassiveAuditEvent(event), false);
 });
 
 test("l’admin privé contrôle les sessions, comptes, pages et journaux", async () => {
@@ -53,17 +67,21 @@ test("l’admin privé contrôle les sessions, comptes, pages et journaux", asyn
   assert.match(endpoint, /action === "disconnect"/);
   assert.match(endpoint, /action === "set-disabled"/);
   assert.match(endpoint, /action === "set-permissions"/);
+  assert.match(endpoint, /action === "set-admin"/);
+  assert.match(endpoint, /Seul Marc Carter peut modifier les droits administrateur/);
   assert.match(adminLoader, /prof-admin-access-control\.js/);
   assert.match(adminPanel, /Déconnecter la session/);
   assert.match(adminPanel, /Désactiver temporairement/);
   assert.match(adminPanel, /Journal d’activité/);
+  assert.match(adminPanel, /Donner les droits admin/);
   assert.match(dashboard, /id="profAccessLogsBtn"/);
   assert.match(adminLoader, /#profAdminBtn, #profAccessLogsBtn/);
   assert.match(adminPanel, /id="profAccessControlModal"/);
   assert.doesNotMatch(adminPanel, /data-admin-tab=.*accessControl/);
   assert.match(policy, /CHECK_INTERVAL_MS = 20_000/);
   assert.match(policy, /profAccessRevoked/);
-  assert.match(audit, /Ouverture de la page/);
+  assert.doesNotMatch(audit, /Ouverture de la page/);
+  assert.match(audit, /Validation :/);
 });
 
 test("les entreprises ont un graphique, une identité et un avertissement réellement fermable", async () => {
@@ -84,5 +102,7 @@ test("le salon Discord des logs reste une configuration serveur", async () => {
   const audit = await read("lib/server/audit-log.js");
   assert.match(audit, /process\.env\.DISCORD_AUDIT_CHANNEL_ID/);
   assert.match(audit, /Authorization: `Bot \$\{token\}`/);
+  assert.match(audit, /Effectué par/);
+  assert.match(audit, /Informations précises/);
   assert.doesNotMatch(audit, /allowed_mentions:\s*\{\s*parse:\s*\["everyone"\]/);
 });

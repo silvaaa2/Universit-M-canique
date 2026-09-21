@@ -12,6 +12,7 @@ test("les règles Firestore reconnaissent les sessions Discord signées", async 
   assert.match(rules, /tokenValue\("sitePermissions", \[\]\)\.hasAny\(\[permission\]\)/);
   assert.match(rules, /tokenValue\("role", ""\) == "prof"/);
   assert.match(rules, /tokenValue\("admin", false\) == true/);
+  assert.match(rules, /tokenValue\("owner", false\) == true/);
   assert.match(rules, /isDiscordProf\(\) \|\| \(hasEmailIdentity\(\) && userRole\(\) == "prof"\)/);
   assert.match(rules, /isDiscordAdmin\(\) \|\| \(hasEmailIdentity\(\) && userData\(\)\.admin == true\)/);
 });
@@ -30,4 +31,6 @@ test("les collections professeur restent protégées", async () => {
   }
 
   assert.doesNotMatch(rules, /match \/\{document=\*\*\}[\s\S]*allow read, write: if true/);
+  assert.match(rules, /docId in \["profAccessControl", "auditLogSettings"\]/);
+  assert.match(rules, /request\.resource\.data\.get\("recordType", ""\) != "auditLog"/);
 });

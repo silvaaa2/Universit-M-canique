@@ -10,6 +10,7 @@ const {
   buildProfessorAccessRows,
   getProfAccessPolicy,
   loadAccessControl,
+  resolveOwnerDiscordId,
   updateProfAccessPolicy
 } = require("../../lib/server/prof-access-control.js");
 const handleCursusManagement = require("../../lib/server/cursus-management.js");
@@ -83,7 +84,7 @@ module.exports = async function handler(request, response) {
       }
 
       if (adminAccessControl) {
-        await requireAdmin(request);
+        const viewer = await requireAdmin(request);
         const [sheetRows, policies, logs] = await Promise.all([
           loadAccessRows({ bypassCache: true }),
           loadAccessControl({ force: true }),
@@ -93,9 +94,11 @@ module.exports = async function handler(request, response) {
             actorType: requestUrl.searchParams.get("actorType") || ""
           })
         ]);
+        const ownerDiscordId = resolveOwnerDiscordId(sheetRows);
         sendJson(response, 200, {
           users: buildProfessorAccessRows(sheetRows, policies),
           logs,
+          viewerOwner: viewer.owner === true && String(viewer.claims?.discordId || "") === ownerDiscordId,
           discordChannelConfigured: Boolean(await resolveAuditChannelId())
         });
         return;
@@ -278,9 +281,18 @@ module.exports = async function handler(request, response) {
       const sheetRows = await loadAccessRows({ bypassCache: true });
       const target = sheetRows.find(row => row.discordId === discordId);
       if (!target) throw new ProfAuthError("user", "Compte Discord introuvable.", 404);
-
-      if (target.role === "admin" && action !== "disconnect") {
-        throw new ProfAuthError("admin", "Les droits administrateur sont protégés.", 400);
+      const ownerDiscordId = resolveOwnerDiscordId(sheetRows);
+      const viewerIsOwner = admin.owner === true && String(admin.claims?.discordId || "") === ownerDiscordId;
+      const targetRows = buildProfessorAccessRows(sheetRows, await loadAccessControl({ force: true }));
+      const targetAccess = targetRows.find(row => row.discordId === discordId);
+      if (action === "set-admin" && !viewerIsOwner) {
+        throw new ProfAuthError("owner", "Seul Marc Carter peut modifier les droits administrateur.", 403);
+      }
+      if (targetAccess?.owner && action !== "disconnect") {
+        throw new ProfAuthError("owner", "Le compte propriétaire Marc Carter est protégé.", 400);
+      }
+      if (targetAccess?.role === "admin" && action !== "disconnect" && action !== "set-admin") {
+        throw new ProfAuthError("admin", "Rétrograde d’abord ce compte administrateur pour modifier ses accès.", 400);
       }
       let changes;
       let actionLabel;
@@ -293,6 +305,9 @@ module.exports = async function handler(request, response) {
       } else if (action === "set-permissions") {
         changes = { permissions: body.permissions, disconnect: true };
         actionLabel = "Permissions du professeur modifiées";
+      } else if (action === "set-admin") {
+        changes = { adminOverride: body.admin === true, disconnect: true };
+        actionLabel = body.admin === true ? "Droits administrateur accordés" : "Droits administrateur retirés";
       } else {
         throw new ProfAuthError("action", "Action administrateur inconnue.", 400);
       }
@@ -305,7 +320,11 @@ module.exports = async function handler(request, response) {
         category: "administration",
         action: actionLabel,
         target: `${target.name || "Professeur"} · ${discordId}`,
-        details: action === "set-permissions" ? policy.permissions.join(", ") : ""
+        details: action === "set-permissions"
+          ? `Pages autorisées : ${policy.permissions.length ? policy.permissions.join(", ") : "aucune"}`
+          : action === "set-admin"
+            ? `Nouveau rôle : ${body.admin === true ? "administrateur" : "professeur"}`
+            : ""
       }).catch(error => console.warn("Journal administration indisponible :", error?.message || error));
       sendJson(response, 200, { updated: true, policy: await getProfAccessPolicy(discordId, { force: true }) });
     } catch (error) {

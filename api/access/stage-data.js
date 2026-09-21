@@ -341,14 +341,6 @@ module.exports = async function handler(request, response) {
       assertSameOrigin(request);
       if (session.adminPreview) throw Object.assign(new Error("Aperçu administrateur en lecture seule."), { status: 403 });
       const body = readBody(request);
-      if (kind === "audit") {
-        const allowedActions = new Set(["Consultation d’un avertissement", "Consultation du parcours élève", "Ouverture des archives", "Consultation des examens", "Consultation de l’effectif"]);
-        const action = String(body.action || "");
-        if (!allowedActions.has(action)) throw Object.assign(new Error("Action de journal invalide."), { status: 400 });
-        await logCompanyAction(session, action, String(body.target || "").slice(0, 180));
-        sendJson(response, 200, { logged: true });
-        return;
-      }
       if (kind !== "stages") throw Object.assign(new Error("Action refusée."), { status: 403 });
       const result = await addCompanyStages(session, body);
       await logCompanyAction(session, "Ajout de stagiaires", `${result.added} ajouté(s)`, `${result.skipped} ignoré(s)`);

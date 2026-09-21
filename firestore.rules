@@ -44,6 +44,10 @@ service cloud.firestore {
       return isDiscordAdmin() || (hasEmailIdentity() && userData().admin == true);
     }
 
+    function isOwner() {
+      return isDiscordAdmin() && tokenValue("owner", false) == true;
+    }
+
     function hasSitePermission(permission) {
       return isAdmin()
         || !isDiscordProf()
@@ -53,7 +57,7 @@ service cloud.firestore {
 
     match /users/{userEmail} {
       allow read: if isSignedIn() && (tokenValue("email", "") == userEmail || isAdmin());
-      allow write: if isAdmin();
+      allow write: if isOwner();
     }
 
     match /studentAnswerStatuses/{docId} {
@@ -94,8 +98,10 @@ service cloud.firestore {
     }
 
     match /profSettings/{docId} {
-      allow read: if isProf() || isAdmin();
-      allow write: if isAdmin();
+      allow read: if isAdmin()
+        || (isProf() && !(docId in ["profAccessControl", "auditLogSettings"]));
+      allow write: if isAdmin()
+        && !(docId in ["profAccessControl", "auditLogSettings"]);
     }
 
     match /stageValidations/{docId} {
@@ -114,8 +120,10 @@ service cloud.firestore {
     }
 
     match /stageHistory/{docId} {
-      allow read: if isProf() || isAdmin();
-      allow create: if isProf() || isStage() || isAdmin();
+      allow read: if isAdmin()
+        || (resource.data.get("recordType", "") != "auditLog" && (isStage() || (isProf() && hasSitePermission("stages"))));
+      allow create: if request.resource.data.get("recordType", "") != "auditLog"
+        && (isProf() || isStage() || isAdmin());
       allow update, delete: if false;
     }
 

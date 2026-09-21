@@ -46,39 +46,98 @@ async function sendAudit(action, target = "", details = "") {
   }
 }
 
+function studentTarget(element) {
+  const card = element.closest("[data-answer-card], [data-student-row]");
+  const warningModal = element.closest("#moduleWarningModal");
+  const name = cleanLabel(
+    card?.dataset.studentName
+    || card?.querySelector("h2,strong")?.textContent
+    || warningModal?.querySelector("#moduleWarningTitle")?.textContent
+    || ""
+  );
+  const id = cleanLabel(
+    element.dataset.studentId
+    || card?.dataset.idUnique
+    || card?.dataset.normalizedIdUnique
+    || card?.dataset.studentRow
+    || warningModal?.querySelector("#moduleWarningSubtitle")?.textContent?.replace(/^ID Unique\s*:\s*/i, "")
+    || ""
+  );
+  return [name, id ? `ID ${id}` : ""].filter(Boolean).join(" · ");
+}
+
 function describeAction(element) {
-  if (element.matches("[data-module-check]")) return "Modification d’un module";
-  if (element.matches("[data-warning-save]")) return "Enregistrement d’un avertissement";
+  if (element.matches("[data-module-check]")) {
+    const label = cleanLabel(element.dataset.checkLabel || element.dataset.moduleKey || "Module");
+    const willValidate = element.dataset.checked !== "true";
+    return {
+      action: willValidate ? `Validation : ${label}` : `Annulation : ${label}`,
+      target: studentTarget(element),
+      details: `Nouvel état demandé : ${willValidate ? "validé" : "non validé"}`
+    };
+  }
+  if (element.matches("[data-warning-save]")) {
+    const modal = element.closest("#moduleWarningModal");
+    const level = cleanLabel(modal?.querySelector("[data-warning-choice].active")?.textContent || "Non précisé");
+    const comment = cleanLabel(modal?.querySelector("#moduleWarningComment")?.value || "Aucun motif", 300);
+    return {
+      action: "Enregistrement d’un avertissement",
+      target: studentTarget(element) || "Élève sélectionné",
+      details: `Niveau : ${level} · Motif : ${comment}`
+    };
+  }
+  if (element.matches("[data-set-status]")) {
+    const approved = element.dataset.setStatus === "approved";
+    return {
+      action: approved ? "Réponse approuvée" : "Réponse refusée",
+      target: studentTarget(element),
+      details: `Décision : ${approved ? "approuvée" : "refusée"}`
+    };
+  }
   const label = cleanLabel(element.getAttribute("aria-label") || element.title || element.textContent);
-  if (!label) return "";
-  if (/approuv|valid|enregistr|sauveg|refus|supprim|archiv|synchron|sync|publier|modifier|corriger|déconnexion/i.test(label)) return label;
-  return "";
+  if (!label) return null;
+  if (/approuv|valid|enregistr|sauveg|refus|supprim|archiv|synchron|sync|publier|modifier|corriger|déconnexion/i.test(label)) {
+    return { action: label, target: studentTarget(element), details: `Commande utilisée : ${label}` };
+  }
+  return null;
 }
 
 document.addEventListener("click", event => {
   const element = event.target instanceof Element ? event.target.closest("button, a") : null;
   if (!element) return;
-  const action = describeAction(element);
-  if (!action) return;
-  const target = cleanLabel(element.dataset.studentId || element.dataset.id || element.closest("[data-student-id]")?.dataset.studentId || "");
-  void sendAudit(action, target);
+  if (element.closest("#profAccessControlModal")) return;
+  const description = describeAction(element);
+  if (!description) return;
+  void sendAudit(description.action, description.target, description.details);
 }, true);
 
 document.addEventListener("change", event => {
   const element = event.target instanceof Element ? event.target : null;
   if (element?.matches("input[data-module-date]")) {
-    void sendAudit("Modification d’une date de module", cleanLabel(element.dataset.studentId));
+    const moduleName = cleanLabel(
+      element.getAttribute("aria-label")?.match(/^Date\s+(.+?)\s+pour\s+/i)?.[1]
+      || element.dataset.moduleKey
+      || "module"
+    );
+    void sendAudit(
+      `Date modifiée : ${moduleName}`,
+      studentTarget(element),
+      `Nouvelle date : ${cleanLabel(element.value || "date supprimée")}`
+    );
+  }
+  if (element?.matches("[data-score-input]")) {
+    const control = element.closest("[data-score-control]");
+    const question = cleanLabel(element.closest("[data-exam-line]")?.querySelector(".exam-line-content span")?.textContent || "Question");
+    const maximum = cleanLabel(control?.dataset.maxPoints || "0");
+    void sendAudit(
+      "Note d’examen modifiée",
+      studentTarget(element),
+      `${question} : ${cleanLabel(element.value || "0")} / ${maximum}`
+    );
   }
 }, true);
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 onAuthStateChanged(getAuth(app), user => {
   auditUser = user || null;
-  if (!auditUser) return;
-  const visitKey = `profAuditVisit:${window.location.pathname}`;
-  const previous = Number(sessionStorage.getItem(visitKey) || 0);
-  if (Date.now() - previous > 30_000) {
-    sessionStorage.setItem(visitKey, String(Date.now()));
-    void sendAudit("Ouverture de la page", document.title);
-  }
 });

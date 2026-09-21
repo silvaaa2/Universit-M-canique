@@ -8,7 +8,7 @@ const PERMISSIONS = [
   ["stages", "Suivi de stage"]
 ];
 
-let accessControlState = { users: [], logs: [], discordChannelConfigured: false };
+let accessControlState = { users: [], logs: [], viewerOwner: false, discordChannelConfigured: false };
 let accessControlBusy = false;
 
 function accessEscape(value) {
@@ -108,7 +108,7 @@ function ensureAccessPanel() {
         <div class="prof-admin-toolbar"><button type="button" class="prof-admin-small-btn" id="reloadAccessControl">Actualiser</button><span class="prof-admin-status">Sessions, pages autorisées et journal du site</span></div>
         <div class="access-control-layout">
           <article class="access-control-card">
-            <div class="access-control-head"><div><h3>Professeurs Discord</h3><p>Coupez une session, désactivez un compte ou choisissez précisément ses pages.</p></div><div><span id="accessDiscordState" class="access-discord-state">Salon logs à configurer</span><button type="button" class="prof-admin-small-btn gold" id="createAuditChannelBtn">Créer le salon Discord</button></div></div>
+            <div class="access-control-head"><div><h3>Professeurs Discord</h3><p>Toutes les pages peuvent être décochées. Seul Marc Carter peut accorder ou retirer les droits administrateur.</p></div><div><span id="accessDiscordState" class="access-discord-state">Salon logs à configurer</span><button type="button" class="prof-admin-small-btn gold" id="createAuditChannelBtn">Créer le salon Discord</button></div></div>
             <div id="accessUserList" class="access-user-list"><p class="prof-admin-status">Chargement…</p></div>
           </article>
           <article class="access-control-card">
@@ -152,12 +152,14 @@ function renderAccessUsers() {
   if (!container) return;
   container.innerHTML = accessControlState.users.map(user => {
     const protectedAdmin = user.role === "admin";
+    const canChangeAdmin = accessControlState.viewerOwner === true && user.owner !== true;
     return `
       <article class="access-user ${user.disabled ? "is-disabled" : ""}" data-access-user="${accessEscape(user.discordId)}">
-        <div class="access-user-head"><div><strong>${accessEscape(user.name)}</strong><span>${accessEscape(user.discordId)} · ${user.sheetActive ? "Présent sur la feuille" : "Désactivé dans la feuille"}</span></div><span class="access-role">${protectedAdmin ? "Admin" : user.disabled ? "Désactivé" : "Prof"}</span></div>
+        <div class="access-user-head"><div><strong>${accessEscape(user.name)}</strong><span>${accessEscape(user.discordId)} · ${user.sheetActive ? "Présent sur la feuille" : "Désactivé dans la feuille"}</span></div><span class="access-role">${user.owner ? "Propriétaire" : protectedAdmin ? "Admin" : user.disabled ? "Désactivé" : "Prof"}</span></div>
         <div class="access-permissions">${PERMISSIONS.map(([key, label]) => `<label><input type="checkbox" data-access-permission="${key}" ${user.permissions.includes(key) ? "checked" : ""} ${protectedAdmin ? "disabled" : ""}> ${label}</label>`).join("")}</div>
         <div class="access-user-actions">
           ${protectedAdmin ? "" : `<button type="button" class="prof-admin-small-btn gold" data-access-save>Enregistrer les pages</button><button type="button" class="prof-admin-small-btn danger" data-access-disable>${user.disabled ? "Réactiver le compte" : "Désactiver temporairement"}</button>`}
+          ${canChangeAdmin ? `<button type="button" class="prof-admin-small-btn ${protectedAdmin ? "danger" : "gold"}" data-access-admin>${protectedAdmin ? "Retirer les droits admin" : "Donner les droits admin"}</button>` : ""}
           <button type="button" class="prof-admin-small-btn" data-access-disconnect>Déconnecter la session</button>
         </div>
       </article>`;
@@ -215,10 +217,13 @@ async function mutateAccess(card, action) {
   let body = { action, discordId };
   if (action === "set-permissions") body.permissions = [...card.querySelectorAll("[data-access-permission]:checked")].map(input => input.dataset.accessPermission);
   if (action === "set-disabled") body.disabled = !user.disabled;
+  if (action === "set-admin") body.admin = user.role !== "admin";
   const confirmation = action === "disconnect"
     ? `Déconnecter immédiatement ${user.name} de tous ses appareils ?`
     : action === "set-disabled" && !user.disabled
       ? `Désactiver temporairement le compte de ${user.name} ?`
+      : action === "set-admin"
+        ? `${user.role === "admin" ? "Retirer" : "Accorder"} les droits administrateur à ${user.name} ? Sa session actuelle sera fermée.`
       : "";
   if (confirmation && !window.confirm(confirmation)) return;
 
@@ -263,6 +268,7 @@ function bindAccessEvents() {
     const card = target?.closest("[data-access-user]");
     if (target?.closest("[data-access-save]")) void mutateAccess(card, "set-permissions");
     if (target?.closest("[data-access-disable]")) void mutateAccess(card, "set-disabled");
+    if (target?.closest("[data-access-admin]")) void mutateAccess(card, "set-admin");
     if (target?.closest("[data-access-disconnect]")) void mutateAccess(card, "disconnect");
   }, true);
   document.addEventListener("input", event => {

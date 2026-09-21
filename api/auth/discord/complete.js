@@ -31,6 +31,7 @@ module.exports = function handler(request, response) {
         avatarUrl: payload.identity?.avatarUrl || "",
         siteRole: payload.identity?.siteRole || "prof",
         admin: payload.identity?.admin === true,
+        owner: payload.identity?.owner === true,
         roleSynced: payload.identity?.roleSynced === true,
         permissions: Array.isArray(payload.identity?.permissions) ? payload.identity.permissions : []
       }

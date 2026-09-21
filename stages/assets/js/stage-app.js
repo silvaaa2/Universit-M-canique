@@ -523,19 +523,6 @@ async function fetchCompanyRows(kind, options = {}) {
   return payload;
 }
 
-const companyAuditSent = new Map();
-function auditCompanyAction(action, target = "") {
-  if (!IS_COMPANY_ACCESS || IS_ADMIN_COMPANY_PREVIEW) return;
-  const key = `${action}:${target}`;
-  const lastSent = Number(companyAuditSent.get(key) || 0);
-  if (Date.now() - lastSent < 60_000) return;
-  companyAuditSent.set(key, Date.now());
-  fetchCompanyRows("audit", {
-    method: "POST",
-    body: { action, target }
-  }).catch(error => console.warn("Journal entreprise non envoyé :", error?.message || error));
-}
-
 async function loadStageValidations() {
   stageValidations = [];
   stageDirectory = [];
@@ -1711,9 +1698,6 @@ function renderRightPanelTabs() {
 window.switchRightPanel = function(panel) {
   currentRightPanel = panel;
   updateCompanyWorkspaceNavigation(panel === "effectif" ? "effectif" : "examens");
-  if (panel === "archives") auditCompanyAction("Ouverture des archives");
-  if (panel === "effectif") auditCompanyAction("Consultation de l’effectif");
-  if (panel === "examens") auditCompanyAction("Consultation des examens");
 
   if (panel === "effectif") {
     renderExamParticipants();
@@ -2397,7 +2381,6 @@ window.openCompanyStudentWarning = function(normalizedIdUnique) {
     normalizeIdUnique(item.normalizedIdUnique || item.idUnique) === normalizedId
   ));
   if (!warning || !warningMeta || !stageStudent) return;
-  auditCompanyAction("Consultation d’un avertissement", normalizedId);
 
   ensureCompanyWarningModal();
   const modal = document.getElementById("companyWarningModal");
@@ -2548,7 +2531,6 @@ window.openCompanyStudentProgress = async function(normalizedIdUnique) {
   const normalizedId = normalizeIdUnique(normalizedIdUnique);
   const effectifStudent = effectifRows.find(item => item.normalizedIdUnique === normalizedId);
   if (!effectifStudent) return;
-  auditCompanyAction("Consultation du parcours élève", normalizedId);
 
   ensureCompanyStudentProgressModal();
   const modal = document.getElementById("companyStudentProgressModal");
