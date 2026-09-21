@@ -38,6 +38,7 @@ const COMPANY_SCOPE_ID = unifiedAccess?.role === "company" ? String(unifiedAcces
 const COMPANY_SCOPE_NAME = unifiedAccess?.role === "company" ? String(unifiedAccess.companyName || "") : "";
 const IS_COMPANY_ACCESS = Boolean(COMPANY_SCOPE_ID);
 const IS_ADMIN_COMPANY_PREVIEW = IS_COMPANY_ACCESS && unifiedAccess?.adminPreview === true;
+const IS_PALETO_STAGE_V2 = IS_COMPANY_ACCESS && COMPANY_SCOPE_ID === "paleto";
 
 const STAGE_COLLECTION = "stageValidations";
 const EXAM_COLLECTION = "examAnswerStatuses";
@@ -133,6 +134,7 @@ let unifiedLogoutInProgress = false;
 let companyDataSignature = "";
 let companyRefreshTimer = 0;
 let companyRefreshRunning = false;
+let paletoClockTimer = 0;
 const COMPANY_REFRESH_MS = 15_000;
 
 function getScopedCompany() {
@@ -178,12 +180,94 @@ function animateCompanyDataUpdate() {
   });
 }
 
+function renderPaletoNavIcon(name) {
+  const icons = {
+    dashboard: '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>',
+    stages: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2M14 14.5a4.5 4.5 0 0 1 7 3.7V20"/>',
+    exams: '<path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5M10 13h6M10 17h6"/>',
+    effectif: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="8" r="3"/><path d="M3 20v-2a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v2M14 13h2a5 5 0 0 1 5 5v2"/>',
+    archives: '<path d="M4 7h16v14H4zM3 3h18v4H3zM9 11h6"/>',
+    logout: '<path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9"/>'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name] || icons.dashboard}</svg>`;
+}
+
+function updatePaletoClock() {
+  const target = document.querySelector("[data-paleto-clock]");
+  if (!target) return;
+  const now = new Date();
+  const date = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short"
+  }).format(now);
+  const time = new Intl.DateTimeFormat("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(now);
+  target.textContent = `${date} · ${time}`;
+}
+
+function ensurePaletoStageV2Chrome() {
+  if (!IS_PALETO_STAGE_V2 || document.querySelector(".paleto-stage-sidebar")) return;
+
+  document.body.classList.add("paleto-stage-v2");
+  const sidebar = document.createElement("aside");
+  sidebar.className = "paleto-stage-sidebar";
+  sidebar.setAttribute("aria-label", "Navigation Paleto Garage");
+  sidebar.innerHTML = `
+    <div class="paleto-sidebar-brand">
+      ${renderCompanyLogo()}
+      <div><strong>Paleto Garage</strong><span>Espace entreprise</span></div>
+    </div>
+    <nav class="paleto-sidebar-nav">
+      <button type="button" class="active" data-paleto-stage-panel="dashboard">${renderPaletoNavIcon("dashboard")}<span>Tableau de bord</span></button>
+      <button type="button" data-paleto-stage-panel="stages">${renderPaletoNavIcon("stages")}<span>Mes stagiaires</span></button>
+      <button type="button" data-paleto-stage-panel="examens">${renderPaletoNavIcon("exams")}<span>Examens</span></button>
+      <button type="button" data-paleto-stage-panel="effectif">${renderPaletoNavIcon("effectif")}<span>Effectif</span></button>
+      <button type="button" data-paleto-stage-panel="archives">${renderPaletoNavIcon("archives")}<span>Archives</span></button>
+    </nav>
+    <div class="paleto-sidebar-logout-slot"></div>`;
+  document.body.insertBefore(sidebar, document.querySelector(".stage-header"));
+
+  const logoutSlot = sidebar.querySelector(".paleto-sidebar-logout-slot");
+  logoutBtn.classList.add("paleto-sidebar-logout");
+  logoutBtn.innerHTML = `${renderPaletoNavIcon("logout")}<span>${IS_ADMIN_COMPANY_PREVIEW ? "Quitter l’aperçu" : "Déconnexion"}</span>`;
+  logoutSlot.append(logoutBtn);
+
+  const header = document.querySelector(".stage-header");
+  const brand = header?.querySelector(".brand");
+  const actions = header?.querySelector(".header-actions");
+  if (brand) {
+    brand.innerHTML = `
+      <div class="paleto-command-title">
+        <strong>Suivi de stage</strong>
+        <span><i></i> Cursus actif</span>
+      </div>`;
+  }
+  if (actions) {
+    actions.insertAdjacentHTML("afterbegin", `
+      <time class="paleto-command-clock" data-paleto-clock></time>
+      <span class="paleto-command-logo">${renderCompanyLogo()}</span>`);
+  }
+
+  sidebar.querySelectorAll("[data-paleto-stage-panel]").forEach(button => {
+    button.addEventListener("click", () => {
+      window.openCompanyWorkspaceSection(button.dataset.paletoStagePanel || "dashboard");
+    });
+  });
+
+  updatePaletoClock();
+  paletoClockTimer = window.setInterval(updatePaletoClock, 30_000);
+}
+
 function ensureCompanyWorkspaceChrome() {
   if (!IS_COMPANY_ACCESS || companyWorkspaceReady) return;
 
   companyWorkspaceReady = true;
   document.body.classList.add("company-workspace");
   document.body.classList.toggle("admin-company-preview", IS_ADMIN_COMPANY_PREVIEW);
+  document.body.classList.toggle("paleto-stage-v2", IS_PALETO_STAGE_V2);
 
   if (IS_ADMIN_COMPANY_PREVIEW) {
     const header = document.querySelector(".stage-header");
@@ -207,7 +291,19 @@ function ensureCompanyWorkspaceChrome() {
   if (headerLogo) headerLogo.innerHTML = renderCompanyLogo();
 
   if (dashboardTitle?.closest(".dashboard-top")) {
-    dashboardTitle.closest(".dashboard-top").innerHTML = `
+    dashboardTitle.closest(".dashboard-top").innerHTML = IS_PALETO_STAGE_V2 ? `
+      <div class="company-hero paleto-company-hero">
+        <div class="company-hero-copy">
+          <h1>Bienvenue, <span>${escapeHtml(COMPANY_SCOPE_NAME || "Paleto Garage")}</span>.</h1>
+          <p class="intro">Suivi du cursus en cours.</p>
+        </div>
+        <div class="company-overview" aria-label="Résumé de l’entreprise">
+          <article><span>Mes stagiaires</span><strong data-company-stat="stages">0</strong><small>cursus actuel</small></article>
+          <article><span>Examens corrigés</span><strong data-company-stat="exams">0</strong><small data-company-stat-detail="exams">sur 0 reçus</small></article>
+          <article><span>Effectif</span><strong data-company-stat="effectif">0</strong><small>élèves inscrits</small></article>
+        </div>
+      </div>
+    ` : `
       <div class="company-hero">
         <div class="company-hero-copy">
           <div class="company-access-badge"><span></span> ${IS_ADMIN_COMPANY_PREVIEW ? "Aperçu admin" : "Espace entreprise"}</div>
@@ -269,13 +365,16 @@ function ensureCompanyWorkspaceChrome() {
       window.openCompanyWorkspaceSection(button.dataset.companyWorkspacePanel || "stages");
     });
   });
+
+  ensurePaletoStageV2Chrome();
 }
 
 function updateCompanyWorkspaceNavigation(panel) {
   if (!IS_COMPANY_ACCESS) return;
 
-  document.querySelectorAll("[data-company-workspace-panel]").forEach(button => {
-    const active = button.dataset.companyWorkspacePanel === panel;
+  document.querySelectorAll("[data-company-workspace-panel], [data-paleto-stage-panel]").forEach(button => {
+    const target = button.dataset.companyWorkspacePanel || button.dataset.paletoStagePanel;
+    const active = target === panel;
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
@@ -352,13 +451,20 @@ function renderCompanyCursusChart() {
 window.openCompanyWorkspaceSection = function(panel) {
   if (!IS_COMPANY_ACCESS) return;
 
+  if (panel === "dashboard") {
+    updateCompanyWorkspaceNavigation("dashboard");
+    document.querySelector("main")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
   if (panel === "stages") {
     updateCompanyWorkspaceNavigation("stages");
     document.querySelector(".stage-companies-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
     return;
   }
 
-  window.switchRightPanel(panel === "effectif" ? "effectif" : "examens");
+  const rightPanel = panel === "effectif" ? "effectif" : panel === "archives" ? "archives" : "examens";
+  window.switchRightPanel(rightPanel);
   document.querySelector(".stage-exams-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
@@ -1725,7 +1831,7 @@ function renderRightPanelTabs() {
 
 window.switchRightPanel = function(panel) {
   currentRightPanel = panel;
-  updateCompanyWorkspaceNavigation(panel === "effectif" ? "effectif" : "examens");
+  updateCompanyWorkspaceNavigation(panel);
 
   if (panel === "effectif") {
     renderExamParticipants();

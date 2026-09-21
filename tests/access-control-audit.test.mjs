@@ -113,6 +113,22 @@ test("Paleto Garage utilise son vrai logo dans son espace entreprise", async () 
   assert.ok(logo.length > 1_000, "le fichier du logo Paleto ne doit pas être vide");
 });
 
+test("la nouvelle interface APEX Stage reste limitée à Paleto Garage", async () => {
+  const app = await read("stages/assets/js/stage-app.js");
+  const css = await read("stages/assets/css/stage.css");
+
+  assert.match(app, /IS_PALETO_STAGE_V2 = IS_COMPANY_ACCESS && COMPANY_SCOPE_ID === "paleto"/);
+  assert.match(app, /className = "paleto-stage-sidebar"/);
+  assert.match(app, /data-paleto-stage-panel="dashboard"/);
+  assert.match(app, /data-paleto-stage-panel="stages"/);
+  assert.match(app, /data-paleto-stage-panel="archives"/);
+  assert.match(app, /panel === "archives" \? "archives"/);
+  assert.match(css, /body\.paleto-stage-v2 \.stage-header/);
+  assert.match(css, /body\.paleto-stage-v2 \.stage-layout/);
+  assert.match(css, /body\.paleto-stage-v2 \.company-cursus-chart \{ display: none !important; \}/);
+  assert.doesNotMatch(css, /body\.company-workspace\.paleto-stage-v2|body\.company-workspace\s+\.paleto-stage-sidebar/);
+});
+
 test("Harmony Repair utilise son vrai logo dans son espace entreprise", async () => {
   const app = await read("stages/assets/js/stage-app.js");
   const logo = await read("Images/companies/harmony-repair.webp");
