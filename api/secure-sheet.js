@@ -95,6 +95,7 @@ const MODULE_CHECK_KEYS = new Set([
   "module1", "module2", "module3", "verif3", "module4", "verif4", "exam", "retakeExam"
 ]);
 const MODULE_DATE_KEYS = new Set(["module1", "module2", "module3", "module4", "exam", "retakeExam"]);
+const MODULE_WARNING_LEVELS = new Set(["none", "warning1", "warning2", "warning3", "refused"]);
 
 let googleAccessTokenCache = null;
 const GOOGLE_SHEET_TITLE_TTL_MS = 10 * 60_000;
@@ -489,6 +490,22 @@ function normalizeModuleWrite(payload = {}, actorId = "professeur inconnu") {
     const error = new Error("Progression incohérente avec le cursus actif.");
     error.status = 400;
     throw error;
+  }
+
+  if (payload.action === "warning") {
+    const warningLevel = cleanModuleText(payload.warningLevel, 24);
+    return {
+      documentId,
+      data: {
+        studentId,
+        normalizedIdUnique: studentId,
+        cursusKey,
+        warningLevel: MODULE_WARNING_LEVELS.has(warningLevel) ? warningLevel : "none",
+        warningComment: cleanModuleText(payload.warningComment, 1000),
+        warningUpdatedAt: new Date().toISOString(),
+        warningUpdatedBy: cleanModuleText(actorId, 180)
+      }
+    };
   }
 
   const checks = cleanModuleMap(payload.checks, MODULE_CHECK_KEYS, value => value === true);

@@ -59,8 +59,8 @@ test("les cinq pages prof chargent l'interface de présence", () => {
     const html = readFileSync(new URL(`../pages/${page}`, import.meta.url), "utf8");
     assert.match(html, /prof-presence\.css\?v=4/);
     if (page === "prof-modules-eleves.html") {
-      const entry = readFileSync(new URL("../assets/js/prof-modules-eleves.js", import.meta.url), "utf8");
-      assert.match(entry, /prof-presence\.js\?v=7/);
+      const entry = readFileSync(new URL("../assets/js/prof-modules-eleves-v4.js", import.meta.url), "utf8");
+      assert.match(entry, /prof-presence\.js\?v=8/);
     } else {
       assert.match(html, /prof-presence\.js\?v=5/);
     }

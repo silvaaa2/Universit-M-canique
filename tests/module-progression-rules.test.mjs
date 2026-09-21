@@ -39,13 +39,13 @@ test("Vérif 3 et Vérif 4 dépendent de leur module et restent hors Google Shee
   assert.equal(getProgressionBlockReason({ module1: true, module2: true, module3: true }, "verif3", true), "");
   assert.match(getProgressionBlockReason({ module1: true, module2: true, module3: true }, "verif4", true), /Module 4/);
 
-  const page = await readFile(new URL("assets/js/prof-modules-eleves-safe.js", root), "utf8");
+  const page = await readFile(new URL("assets/js/prof-modules-eleves-v4.js", root), "utf8");
   const exactSync = await readFile(new URL("assets/js/prof-modules-sheets-sync-exact.js", root), "utf8");
   const legacySync = await readFile(new URL("assets/js/prof-modules-sheets-sync.js", root), "utf8");
 
   assert.match(page, /verificationKey: "verif3"/);
   assert.match(page, /verificationKey: "verif4"/);
-  assert.match(page, /checks: latestProgress\.checks/);
+  assert.match(page, /checks: latest\.checks/);
   assert.doesNotMatch(exactSync, /verif3|verif4/);
   assert.doesNotMatch(legacySync, /verif3|verif4/);
 });

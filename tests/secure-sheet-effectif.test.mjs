@@ -420,3 +420,64 @@ test("une validation Module est enregistrée par la route professeur sécurisée
     globalThis.fetch = originalFetch;
   }
 });
+
+test("un avertissement Module conserve le format lu par les entreprises", async () => {
+  const originalFetch = globalThis.fetch;
+  let savedDocument = null;
+  let savedUrl = "";
+
+  globalThis.fetch = async (url, options = {}) => {
+    const requestUrl = String(url);
+
+    if (requestUrl.includes("securetoken@system.gserviceaccount.com")) {
+      return new Response(JSON.stringify({ "effectif-test-key": publicKeyPem }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=3600" }
+      });
+    }
+    if (requestUrl.includes("/documents/users/prof%40example.com")) {
+      return jsonResponse({ fields: { role: { stringValue: "prof" } } });
+    }
+    if (options.method === "PATCH" && requestUrl.includes("/documents/studentModules/")) {
+      savedUrl = requestUrl;
+      savedDocument = JSON.parse(options.body);
+      return jsonResponse({ name: "saved-warning" });
+    }
+
+    throw new Error(`Requête inattendue : ${requestUrl}`);
+  };
+
+  const cursusKey = "cursus_1modulesworkspacespreadsheet123456_84";
+  const req = {
+    method: "POST",
+    url: "/api/secure-sheet?source=module-workspace&sheet=current",
+    headers: { authorization: `Bearer ${createLegacyToken()}`, host: "localhost" },
+    body: {
+      action: "warning",
+      documentId: `${cursusKey}__123456`,
+      studentId: "123456",
+      cursusKey,
+      warningLevel: "warning2",
+      warningComment: "Retards répétés"
+    }
+  };
+  const res = {
+    statusCode: 0,
+    headers: {},
+    body: "",
+    setHeader(name, value) { this.headers[name] = value; },
+    end(body = "") { this.body = String(body); }
+  };
+
+  try {
+    await secureSheetHandler(req, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(savedDocument.fields.warningLevel.stringValue, "warning2");
+    assert.equal(savedDocument.fields.warningComment.stringValue, "Retards répétés");
+    assert.equal(savedDocument.fields.cursusKey.stringValue, cursusKey);
+    assert.equal(savedDocument.fields.checks, undefined);
+    assert.match(savedUrl, /updateMask\.fieldPaths=warningLevel/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

@@ -7,7 +7,7 @@ const read = path => readFile(new URL(path, root), "utf8");
 
 test("les boucles permanentes inutiles sont retirées des pages professeur", async () => {
   const [modules, examSettings, mobile] = await Promise.all([
-    read("assets/js/prof-modules-eleves.js"),
+    read("assets/js/prof-modules-eleves-v4.js"),
     read("assets/js/prof-admin-exam-settings.js"),
     read("assets/js/prof-mobile-app.js")
   ]);
@@ -19,57 +19,51 @@ test("les boucles permanentes inutiles sont retirées des pages professeur", asy
 });
 
 test("les modules regroupent les lectures critiques et évitent les rendus identiques", async () => {
-  const [modules, alerts] = await Promise.all([
-    read("assets/js/prof-modules-eleves-safe.js"),
-    read("assets/js/prof-modules-alerts.js")
-  ]);
+  const modules = await read("assets/js/prof-modules-eleves-v4.js");
 
   assert.match(modules, /source=module-workspace&sheet=current/);
   assert.doesNotMatch(modules, /getDocs\(collection\(db, STUDENT_MODULES_COLLECTION\)\)/);
-  assert.match(alerts, /where\(documentId\(\), ">=", cursusPrefix\)/);
-  assert.match(alerts, /where\(documentId\(\), "<", `\$\{cursusPrefix\}\\uf8ff`\)/);
-
-  assert.match(modules, /getModulesStateSignature\(\)/);
-  assert.match(modules, /if \(!silent \|\| nextSignature !== lastRenderedSignature\)/);
+  assert.match(modules, /function signature\(\)/);
+  assert.match(modules, /if \(!silent \|\| nextSignature !== state\.lastSignature\) renderTable\(\)/);
 });
 
 test("la page Modules restaure l'ordre de chargement stable de ses fonctions", async () => {
-  const [entry, loader, page, navigation] = await Promise.all([
-    read("assets/js/prof-modules-eleves.js"),
-    read("assets/js/prof-modules-eleves-safe.js"),
+  const [loader, page, navigation] = await Promise.all([
+    read("assets/js/prof-modules-eleves-v4.js"),
     read("pages/prof-modules-eleves.html"),
     read("assets/js/navigation.js")
   ]);
 
   assert.match(loader, /window\.profModulesCriticalReady = true/);
   assert.match(loader, /new CustomEvent\("profModulesReady"/);
-  assert.match(entry, /prof-modules-eleves-safe\.js\?v=1030/);
-  assert.match(entry, /prof-modules-alerts\.js\?v=1016/);
-  assert.match(entry, /scheduleModulesExtras/);
-  assert.match(entry, /prof-modules-sheets-sync\.js\?v=1009/);
-  assert.match(entry, /prof-modules-archives\.js\?v=1005/);
-  assert.match(entry, /prof-modules-clipboard\.js\?v=10/);
-  assert.match(entry, /prof-notifications-v2\.js\?v=9/);
-  assert.match(entry, /prof-presence\.js\?v=7/);
+  assert.match(loader, /function loadExtras\(\)/);
+  assert.match(loader, /prof-modules-sheets-sync\.js\?v=1010/);
+  assert.match(loader, /prof-modules-sheets-sync-exact\.js\?v=1011/);
+  assert.match(loader, /prof-modules-archives\.js\?v=1006/);
+  assert.match(loader, /prof-modules-clipboard\.js\?v=11/);
+  assert.match(loader, /prof-notifications-v2\.js\?v=10/);
+  assert.match(loader, /prof-presence\.js\?v=8/);
+  assert.match(page, /prof-modules-eleves-v4\.js\?v=1/);
   assert.doesNotMatch(page, /prof-modules-sheets-sync\.js/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-(?:archives|alerts)\.js/);
 });
 
 test("le garde Modules ne peut plus cacher son propre message", async () => {
-  const [entry, loader] = await Promise.all([
-    read("assets/js/prof-modules-eleves.js"),
-    read("assets/js/prof-modules-eleves-safe.js")
+  const [loader, styles] = await Promise.all([
+    read("assets/js/prof-modules-eleves-v4.js"),
+    read("assets/css/prof-modules-eleves-v4.css")
   ]);
   const guard = loader.slice(
-    loader.indexOf("function showGuardMessage"),
-    loader.indexOf("async function getUserAccess")
+    loader.indexOf("function showGuard"),
+    loader.indexOf("function showWorkspace")
   );
 
-  assert.match(loader, /const modulesMainContent = document\.querySelector\("\.modules-v2-content"\)/);
-  assert.match(guard, /protectedContent\.hidden = false/);
-  assert.match(guard, /modulesMainContent\.hidden = true/);
-  assert.doesNotMatch(guard, /protectedContent\.hidden = true/);
-  assert.doesNotMatch(entry, /MutationObserver\(keepModulesDashboardVisible\)/);
+  assert.match(loader, /content: document\.querySelector\("\.modules-v2-content"\)/);
+  assert.match(guard, /dom\.content\.hidden = true/);
+  assert.match(guard, /dom\.guard\.hidden = false/);
+  assert.match(loader, /dashboard\?\.classList\.add\("dashboard-visible"\)/);
+  assert.match(styles, /modules-v2-dashboard[\s\S]*?opacity: 1 !important/);
+  assert.doesNotMatch(loader, /MutationObserver\(keepModulesDashboardVisible\)/);
 });
 
 test("les onglets masqués suspendent les rafraîchissements lourds", async () => {

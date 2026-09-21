@@ -42,14 +42,14 @@ test("la date et l'heure restent visibles et actualisées sur chaque page profes
 test("chaque écran recharge silencieusement sa propre source sans interrompre une correction", async () => {
   const [dashboard, modules, customs, customAnswers, exams] = await Promise.all([
     read("assets/js/prof-auth-v2.js"),
-    read("assets/js/prof-modules-eleves-safe.js"),
+    read("assets/js/prof-modules-eleves-v4.js"),
     read("assets/js/prof-customs-eleves-page.js"),
     read("assets/js/rp-loader-9kq4z.js"),
     read("assets/js/exam-loader-x8p2.js")
   ]);
 
   assert.match(dashboard, /addEventListener\("prof:live-refresh"[\s\S]*?loadDashboardStats\(\)/);
-  assert.match(modules, /loadAndRenderModules\(\{ silent: true \}\)/);
+  assert.match(modules, /loadWorkspace\(\{ silent: true \}\)/);
   assert.match(customs, /refreshCustomAccess\(\{ silent: true \}\)/);
   assert.match(customAnswers, /loadSheet\(sheet, \{ force: true, silent: true \}\)/);
   assert.match(exams, /loadSheet\(sheet, \{ force: true, silent: true \}\)/);

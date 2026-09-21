@@ -4,18 +4,19 @@ import test from "node:test";
 
 const read = relativePath => readFileSync(new URL(`../${relativePath}`, import.meta.url), "utf8");
 
-test("le triangle averto intercepte le clic avant les contrôles de la table", () => {
-  const alerts = read("assets/js/prof-modules-alerts.js");
-  const modules = read("assets/js/prof-modules-eleves.js");
+test("le triangle averto est intégré au nouveau contrôleur Modules", () => {
+  const modules = read("assets/js/prof-modules-eleves-v4.js");
+  const endpoint = read("api/secure-sheet.js");
   const navigation = read("assets/js/navigation.js");
   const page = read("pages/prof-modules-eleves.html");
 
-  assert.match(alerts, /event\.target instanceof Element/);
-  assert.match(alerts, /target\.closest\("\[data-warning-toggle\]"\)/);
-  assert.match(alerts, /openWarningModal\(warningButton\)/);
-  assert.match(alerts, /\}, true\);/);
-  assert.match(modules, /prof-modules-alerts\.js\?v=1016/);
+  assert.match(modules, /target\?\.closest\("button\[data-warning-toggle\]"\)/);
+  assert.match(modules, /openWarning\(warning\.dataset\.studentId/);
+  assert.match(modules, /action: "warning"/);
+  assert.match(endpoint, /payload\.action === "warning"/);
+  assert.match(endpoint, /warningComment: cleanModuleText\(payload\.warningComment, 1000\)/);
+  assert.doesNotMatch(modules, /prof-modules-alerts\.js/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-alerts\.js/);
   assert.match(page, /navigation\.js\?v=1012/);
-  assert.match(page, /prof-modules-eleves\.js\?v=1030/);
+  assert.match(page, /prof-modules-eleves-v4\.js\?v=1/);
 });

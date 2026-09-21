@@ -57,7 +57,7 @@ test("l’archive modules contient tout l’effectif même sans progression", ()
 
 test("les deux liens d’effectif sont indépendants et gardent le réglage historique en repli", async () => {
   const server = await read("lib/server/cursus-management.js");
-  const modules = await read("assets/js/prof-modules-eleves-safe.js");
+  const modules = await read("assets/js/prof-modules-eleves-v4.js");
   const secureSheet = await read("api/secure-sheet.js");
   const exactSync = await read("assets/js/prof-modules-sheets-sync-exact.js");
   const stageApp = await read("stages/assets/js/stage-app.js");

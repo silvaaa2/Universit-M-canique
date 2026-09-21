@@ -42,15 +42,15 @@ test("le tableau de bord charge l'effectif actif par l'API sécurisée", () => {
 });
 
 test("la page Modules charge aussi l'effectif par l'API sécurisée", () => {
-  const modules = read("assets/js/prof-modules-eleves-safe.js");
+  const modules = read("assets/js/prof-modules-eleves-v4.js");
   const endpoint = read("api/secure-sheet.js");
 
   assert.match(modules, /source=module-workspace&sheet=current/);
   assert.match(modules, /payload\.spreadsheetId/);
   assert.match(modules, /payload\.progressDocuments/);
   assert.match(modules, /Authorization:\s*`Bearer \$\{token\}`/);
-  assert.match(modules, /currentUser\?\.getIdToken\?\.\(forceRefresh\)/);
-  assert.match(modules, /response\.status === 401 \|\| response\.status === 403/);
+  assert.match(modules, /state\.user\?\.getIdToken\?\.\(forceRefresh\)/);
+  assert.match(modules, /error\?\.status !== 401 && error\?\.status !== 403/);
   assert.match(modules, /method:\s*"POST"/);
   assert.match(endpoint, /source === MODULE_WORKSPACE_SOURCE/);
   assert.match(endpoint, /listFirestoreDocuments\(STUDENT_MODULES_COLLECTION, idToken\)/);
@@ -285,12 +285,11 @@ test("les liens customs ont une ouverture externe native et un secours navigateu
 });
 
 test("les modules utilisent un vrai bouton compatible entre navigateurs", () => {
-  const modules = read("assets/js/prof-modules-eleves-safe.js");
-  assert.match(modules, /<button type="button" class="\$\{classes\}"/);
-  assert.match(modules, /"module-check"/);
+  const modules = read("assets/js/prof-modules-eleves-v4.js");
+  assert.match(modules, /<button type="button" class="module-check/);
   assert.match(modules, /aria-pressed=/);
   assert.match(modules, /data-persisted-checked=/);
-  assert.match(modules, /modulesTable\?\.addEventListener\("click"/);
-  assert.match(modules, /handleModuleCheckChange\(control\)/);
+  assert.match(modules, /dom\.table\?\.addEventListener\("click"/);
+  assert.match(modules, /changeCheck\(check\)/);
   assert.doesNotMatch(modules, /<input type="checkbox"[^>]*data-module-check/);
 });

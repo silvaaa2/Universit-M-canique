@@ -31,8 +31,8 @@ test("les pastilles sont présentes sur la navigation PC et téléphone de tout 
   for (const page of professorPages) {
     const html = await read(page);
     if (page.endsWith("prof-modules-eleves.html")) {
-      const entry = await read("assets/js/prof-modules-eleves.js");
-      assert.match(entry, /prof-notifications-v2\.js\?v=9/);
+      const entry = await read("assets/js/prof-modules-eleves-v4.js");
+      assert.match(entry, /prof-notifications-v2\.js\?v=10/);
     } else {
       assert.match(html, /prof-notifications-v2\.js\?v=7/);
     }
