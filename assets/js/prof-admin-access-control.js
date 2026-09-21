@@ -1,4 +1,3 @@
-const ACCESS_TAB = "accessControl";
 const PERMISSIONS = [
   ["dashboard", "Tableau de bord"],
   ["corrections", "Corrigés"],
@@ -87,24 +86,25 @@ function injectAccessStyles() {
     .access-control-status { min-height:20px; margin:10px 0 0; color:var(--muted); font-size:12px; font-weight:850; }
     .access-control-status[data-tone="error"] { color:#fca5a5; }
     .access-control-status[data-tone="ok"] { color:#86efac; }
+    .prof-access-modal-card { width:min(1460px,100%); max-height:min(92vh,940px); }
+    .prof-access-modal-card .prof-admin-workspace { min-height:min(710px,calc(92vh - 125px)); padding-top:18px; }
+    .prof-access-modal-card .access-log-list { max-height:520px; }
     @media(max-width:780px){.access-permissions{grid-template-columns:1fr 1fr}.access-log-filters{grid-template-columns:1fr}.access-log{grid-template-columns:1fr;gap:4px}}
   `;
   document.head.appendChild(style);
 }
 
 function ensureAccessPanel() {
-  const modal = document.getElementById("profAdminModal");
-  const tabs = modal?.querySelector(".prof-admin-tabs");
-  const workspace = modal?.querySelector(".prof-admin-workspace");
-  if (!modal || !tabs || !workspace) return;
+  if (document.getElementById("profAccessControlModal")) return;
   injectAccessStyles();
-
-  if (!tabs.querySelector(`[data-admin-tab="${ACCESS_TAB}"]`)) {
-    tabs.insertAdjacentHTML("beforeend", `<button type="button" class="prof-admin-tab" data-admin-tab="${ACCESS_TAB}">Accès & journaux</button>`);
-  }
-  if (!document.getElementById("profAdminAccessPanel")) {
-    workspace.insertAdjacentHTML("beforeend", `
-      <section id="profAdminAccessPanel" class="prof-admin-panel" data-admin-panel="${ACCESS_TAB}" hidden>
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="profAccessControlModal" class="prof-admin-modal-overlay" hidden>
+      <div class="prof-admin-modal-card prof-access-modal-card" role="dialog" aria-modal="true" aria-labelledby="profAccessControlTitle">
+        <button type="button" class="prof-admin-close" data-close-access-control aria-label="Fermer">×</button>
+        <p class="kicker">Administration</p>
+        <h2 id="profAccessControlTitle">Accès &amp; journaux</h2>
+        <div class="prof-admin-workspace">
+          <section id="profAdminAccessPanel" class="prof-admin-panel">
         <div class="prof-admin-toolbar"><button type="button" class="prof-admin-small-btn" id="reloadAccessControl">Actualiser</button><span class="prof-admin-status">Sessions, pages autorisées et journal du site</span></div>
         <div class="access-control-layout">
           <article class="access-control-card">
@@ -118,14 +118,26 @@ function ensureAccessPanel() {
           </article>
         </div>
         <p id="accessControlStatus" class="access-control-status" role="status" aria-live="polite"></p>
-      </section>`);
-  }
+          </section>
+        </div>
+      </div>
+    </div>`);
+}
 
-  const tab = tabs.querySelector(`[data-admin-tab="${ACCESS_TAB}"]`);
-  if (tab && tab.dataset.accessBound !== "true") {
-    tab.dataset.accessBound = "true";
-    tab.addEventListener("click", loadAccessControl);
-  }
+function openAccessControlPanel() {
+  ensureAccessPanel();
+  const modal = document.getElementById("profAccessControlModal");
+  if (!modal) return;
+  modal.hidden = false;
+  requestAnimationFrame(() => modal.classList.add("active"));
+  void loadAccessControl();
+}
+
+function closeAccessControlPanel() {
+  const modal = document.getElementById("profAccessControlModal");
+  if (!modal) return;
+  modal.classList.remove("active");
+  window.setTimeout(() => { modal.hidden = true; }, 180);
 }
 
 function setAccessStatus(message, tone = "") {
@@ -229,6 +241,8 @@ function bindAccessEvents() {
   document.documentElement.dataset.accessControlBound = "true";
   document.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest("[data-close-access-control]")) closeAccessControlPanel();
+    if (target?.id === "profAccessControlModal") closeAccessControlPanel();
     if (target?.closest("#reloadAccessControl")) void loadAccessControl();
     if (target?.closest("#createAuditChannelBtn")) {
       if (window.confirm("Créer un salon Discord privé #logs-universite visible par le rôle Admin ?")) {
@@ -262,10 +276,14 @@ function bindAccessEvents() {
 function startAccessControl() {
   injectAccessStyles();
   bindAccessEvents();
-  const observer = new MutationObserver(ensureAccessPanel);
-  observer.observe(document.body, { childList: true, subtree: true });
   ensureAccessPanel();
 }
+
+window.openProfAccessControlPanel = openAccessControlPanel;
+window.closeProfAccessControlPanel = closeAccessControlPanel;
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") closeAccessControlPanel();
+});
 
 if (document.body) startAccessControl();
 else document.addEventListener("DOMContentLoaded", startAccessControl, { once: true });

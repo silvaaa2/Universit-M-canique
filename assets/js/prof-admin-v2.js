@@ -11,7 +11,7 @@ const ADMIN_MODULES = [
   "./prof-admin-exam-scale-wizard.js?v=1007",
   "./prof-admin-company-codes.js?v=4",
   "./prof-admin-cursus-management.js?v=4",
-  "./prof-admin-access-control.js?v=1",
+  "./prof-admin-access-control.js?v=2",
   "./prof-admin-patch-notes.js?v=1004"
 ];
 
@@ -23,7 +23,7 @@ function wait(ms) {
 
 function getFreshModuleUrl(path) {
   const url = new URL(path, import.meta.url);
-  url.searchParams.set("_admin", "20260921-access-control");
+  url.searchParams.set("_admin", "20260921-access-control-page");
   return url;
 }
 
@@ -82,7 +82,7 @@ function showAdminLoadError(error) {
 }
 
 async function openAdminPanel(event) {
-  const button = event.target?.closest?.("#profAdminBtn");
+  const button = event.target?.closest?.("#profAdminBtn, #profAccessLogsBtn");
   if (!button) return;
 
   event.preventDefault();
@@ -93,12 +93,18 @@ async function openAdminPanel(event) {
     button.disabled = true;
     await loadAdminBundle();
 
-    const modalReady = await waitForAdminModal();
-    if (!modalReady || typeof window.openProfAdminPanel !== "function") {
-      throw new Error("Le panneau admin complet n'est pas prêt.");
+    if (button.id === "profAccessLogsBtn") {
+      if (typeof window.openProfAccessControlPanel !== "function") {
+        throw new Error("Le panneau des accès n'est pas prêt.");
+      }
+      window.openProfAccessControlPanel();
+    } else {
+      const modalReady = await waitForAdminModal();
+      if (!modalReady || typeof window.openProfAdminPanel !== "function") {
+        throw new Error("Le panneau admin complet n'est pas prêt.");
+      }
+      window.openProfAdminPanel();
     }
-
-    window.openProfAdminPanel();
   } catch (error) {
     showAdminLoadError(error);
   } finally {

@@ -45,6 +45,7 @@ test("l’admin privé contrôle les sessions, comptes, pages et journaux", asyn
   const endpoint = await read("api/access/session.js");
   const adminLoader = await read("assets/js/prof-admin-v2.js");
   const adminPanel = await read("assets/js/prof-admin-access-control.js");
+  const dashboard = await read("pages/espace-prof.html");
   const policy = await read("assets/js/prof-access-policy.js");
   const audit = await read("assets/js/prof-audit.js");
 
@@ -56,6 +57,10 @@ test("l’admin privé contrôle les sessions, comptes, pages et journaux", asyn
   assert.match(adminPanel, /Déconnecter la session/);
   assert.match(adminPanel, /Désactiver temporairement/);
   assert.match(adminPanel, /Journal d’activité/);
+  assert.match(dashboard, /id="profAccessLogsBtn"/);
+  assert.match(adminLoader, /#profAdminBtn, #profAccessLogsBtn/);
+  assert.match(adminPanel, /id="profAccessControlModal"/);
+  assert.doesNotMatch(adminPanel, /data-admin-tab=.*accessControl/);
   assert.match(policy, /CHECK_INTERVAL_MS = 20_000/);
   assert.match(policy, /profAccessRevoked/);
   assert.match(audit, /Ouverture de la page/);
