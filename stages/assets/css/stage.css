@@ -3022,6 +3022,7 @@ body.company-workspace .brand-logo {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+  filter: none;
 }
 .company-brand-logo.has-image img {
   position: absolute;

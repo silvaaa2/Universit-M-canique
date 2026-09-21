@@ -101,12 +101,13 @@ test("les entreprises ont un graphique, une identité et un avertissement réell
 test("Paleto Garage utilise son vrai logo dans son espace entreprise", async () => {
   const app = await read("stages/assets/js/stage-app.js");
   const css = await read("stages/assets/css/stage.css");
-  const logo = await read("Images/companies/paleto-garage-mark.webp");
+  const logo = await read("Images/companies/paleto-garage.webp");
 
-  assert.match(app, /id: "paleto"[\s\S]*logo: "\/Images\/companies\/paleto-garage-mark\.webp"/);
+  assert.match(app, /id: "paleto"[\s\S]*logo: "\/Images\/companies\/paleto-garage\.webp"/);
   assert.match(app, /class="company-brand-logo has-image"/);
   assert.match(css, /\.company-brand-logo\.has-image img/);
   assert.match(css, /\.company-brand-logo\.has-image\s*\{[^}]*background:\s*transparent;/);
+  assert.match(css, /\.company-brand-logo\.has-image\s*\{[^}]*filter:\s*none;/);
   assert.doesNotMatch(css, /\.company-brand-logo\.has-image\s*\{[^}]*border-radius:\s*50%/);
   assert.ok(logo.length > 1_000, "le fichier du logo Paleto ne doit pas être vide");
 });
