@@ -98,7 +98,7 @@ module.exports = async function handler(request, response) {
         sendJson(response, 200, {
           users: buildProfessorAccessRows(sheetRows, policies),
           logs,
-          viewerOwner: viewer.owner === true && String(viewer.claims?.discordId || "") === ownerDiscordId,
+          viewerOwner: String(viewer.claims?.discordId || "") === ownerDiscordId,
           discordChannelConfigured: Boolean(await resolveAuditChannelId())
         });
         return;
@@ -282,7 +282,7 @@ module.exports = async function handler(request, response) {
       const target = sheetRows.find(row => row.discordId === discordId);
       if (!target) throw new ProfAuthError("user", "Compte Discord introuvable.", 404);
       const ownerDiscordId = resolveOwnerDiscordId(sheetRows);
-      const viewerIsOwner = admin.owner === true && String(admin.claims?.discordId || "") === ownerDiscordId;
+      const viewerIsOwner = String(admin.claims?.discordId || "") === ownerDiscordId;
       const targetRows = buildProfessorAccessRows(sheetRows, await loadAccessControl({ force: true }));
       const targetAccess = targetRows.find(row => row.discordId === discordId);
       if (action === "set-admin" && !viewerIsOwner) {
