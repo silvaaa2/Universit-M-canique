@@ -72,7 +72,7 @@ const ALL_COMPANIES = [
     name: "Paleto Garage",
     mark: "PG",
     accent: "#e4494f",
-    logo: "/Images/companies/paleto-garage.webp"
+    logo: "/Images/companies/paleto-garage-mark.webp"
   },
   { id: "harmony", name: "Harmony Repair", mark: "HR", accent: "#e6c45d" },
   { id: "cayo", name: "Cayo Garage", mark: "CG", accent: "#4fd1a1" },
