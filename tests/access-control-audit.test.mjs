@@ -120,6 +120,14 @@ test("Harmony Repair utilise son vrai logo dans son espace entreprise", async ()
   assert.ok(logo.length > 1_000, "le fichier du logo Harmony ne doit pas être vide");
 });
 
+test("Cayo Garage utilise son vrai logo dans son espace entreprise", async () => {
+  const app = await read("stages/assets/js/stage-app.js");
+  const logo = await read("Images/companies/cayo-garage.webp");
+
+  assert.match(app, /id: "cayo"[\s\S]*logo: "\/Images\/companies\/cayo-garage\.webp"/);
+  assert.ok(logo.length > 1_000, "le fichier du logo Cayo ne doit pas être vide");
+});
+
 test("le salon Discord des logs reste une configuration serveur", async () => {
   const audit = await read("lib/server/audit-log.js");
   assert.match(audit, /process\.env\.DISCORD_AUDIT_CHANNEL_ID/);
