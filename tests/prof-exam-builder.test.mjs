@@ -21,8 +21,10 @@ test("le nouvel éditeur crée un examen natif avec barème, photos et aperçu",
   assert.match(page, /id="examPreviewModal"/);
   assert.match(script, /prof=exam-builder/);
   assert.match(script, /compressImage/);
-  assert.match(script, /data-pick-image/);
-  assert.match(script, /input\.click\(\)/);
+  assert.match(script, /question-image-input/);
+  assert.doesNotMatch(script, /input\.click\(\)/);
+  assert.match(css, /\.exam-editor \.question-image-input/);
+  assert.match(css, /position:\s*absolute/);
   assert.match(script, /correctAnswers/);
   assert.match(css, /\.exam-question-list/);
   assert.match(css, /@media \(max-width: 760px\)/);
