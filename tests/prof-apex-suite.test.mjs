@@ -7,6 +7,7 @@ const pages = [
   "pages/espace-prof.html",
   "pages/prof-rp-7x92q.html",
   "pages/prof-exam-4x91q.html",
+  "pages/prof-exam-builder.html",
   "pages/prof-modules-eleves.html",
   "pages/prof-customs-eleves.html"
 ];
@@ -23,6 +24,7 @@ test("les pages métiers affichent la version V3 et gardent leurs zones fonction
   const expectedZones = new Map([
     ["pages/prof-rp-7x92q.html", /id="sheetContent"/],
     ["pages/prof-exam-4x91q.html", /id="sheetContent"/],
+    ["pages/prof-exam-builder.html", /id="questionList"/],
     ["pages/prof-modules-eleves.html", /id="modulesTable"/],
     ["pages/prof-customs-eleves.html", /id="customsAccessContent"/]
   ]);

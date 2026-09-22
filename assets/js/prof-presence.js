@@ -57,7 +57,7 @@ function clean(value, maxLength = 160) {
 function currentSection() {
   const path = window.location.pathname.toLowerCase();
   if (path.includes("prof-rp-7x92q")) return "customResponses";
-  if (path.includes("prof-exam-4x91q")) return "exams";
+  if (path.includes("prof-exam-4x91q") || path.includes("prof-exam-builder")) return "exams";
   if (path.includes("prof-modules-eleves")) return "modules";
   if (path.includes("prof-customs-eleves")) return "customAccess";
   return "dashboard";
@@ -73,7 +73,7 @@ function sectionFromElement(element) {
   const source = `${href} ${action} ${text}`;
 
   if (source.includes("prof-rp-7x92q") || source.includes("réponses élèves") || source.includes("réponses customs")) return "customResponses";
-  if (source.includes("prof-exam-4x91q") || text.includes("examens") || text.includes("corriger les copies")) return "exams";
+  if (source.includes("prof-exam-4x91q") || source.includes("prof-exam-builder") || text.includes("examens") || text.includes("nouvel examen") || text.includes("corriger les copies")) return "exams";
   if (source.includes("prof-modules-eleves") || text.includes("modules élèves") || text.trim() === "modules") return "modules";
   if (source.includes("prof-customs-eleves") || text.includes("customs élèves") || text.includes("accès customs") || text.trim() === "gérer") return "customAccess";
   if (source.includes("espace-prof") || text.includes("centre de pilotage") || text.includes("tableau de bord") || text.trim() === "accueil") return "dashboard";

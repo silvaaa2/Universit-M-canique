@@ -61,6 +61,10 @@
             <span class="v2-nav-mark">EX</span>
             <span>Examens</span>
           </button>
+          <button type="button" class="v2-nav-item" onclick="goPage('prof-exam-builder.html')">
+            <span class="v2-nav-mark">N2</span>
+            <span>Nouvel examen</span>
+          </button>
 
           <p>Suivi</p>
           <button type="button" class="v2-nav-item" onclick="goPage('prof-modules-eleves.html')">
@@ -113,7 +117,21 @@
         </section>
 
         <section class="exam-v2-content">
-          <div class="exam-v2-hero">
+          <div class="exam-mode-switch" role="tablist" aria-label="Choix de l'examen">
+            <button type="button" class="active" role="tab" aria-selected="true" data-exam-mode="classic">
+              <span>Examen 1</span>
+              <small>Réponses actuelles</small>
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-exam-mode="native">
+              <span>Examen 2</span>
+              <small>Créé sur le site</small>
+            </button>
+            <button type="button" class="exam-create-shortcut" onclick="goPage('prof-exam-builder.html')">
+              + Créer un examen
+            </button>
+          </div>
+
+          <div class="exam-v2-hero" id="examClassicHero">
             <div>
               <p class="v2-eyebrow">Copies reçues</p>
               <h2>Copies d'examen</h2>
@@ -136,7 +154,7 @@
             </div>
           </div>
 
-          <div class="inline-corrections active exam-v2-board">
+          <div class="inline-corrections active exam-v2-board" id="examClassicBoard">
             <div class="inline-corrections-card">
               <div class="inline-corrections-head">
                 <div>
@@ -169,6 +187,19 @@
               </div>
             </div>
           </div>
+
+          <section class="exam-native-board" id="examNativeBoard" hidden>
+            <header>
+              <div>
+                <p class="v2-eyebrow">Examen 2</p>
+                <h2>Formulaires natifs</h2>
+                <p>Les examens créés directement sur le site apparaissent ici. Les réponses arriveront lors de la V2 élève.</p>
+              </div>
+              <button type="button" class="builder-btn primary" onclick="goPage('prof-exam-builder.html')">Ouvrir l’éditeur</button>
+            </header>
+            <div id="examNativeStatus" class="exam-native-status">Choisis Examen 2 pour charger les formulaires.</div>
+            <div id="examNativeList" class="exam-native-list"></div>
+          </section>
         </section>
       </div>
     </div>
@@ -247,6 +278,7 @@
 </script>
 <script src="../assets/js/prof-live-refresh.js?v=4"></script>
 <script type="module" src="../assets/js/prof-guard-exam.js?v=9056"></script>
+<script type="module" src="../assets/js/prof-exam-2-panel.js?v=1"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=7"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260916-perf"></script>
 <script type="module" src="../assets/js/prof-presence.js?v=6"></script>

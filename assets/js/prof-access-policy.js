@@ -29,7 +29,7 @@ function currentSection() {
   const path = window.location.pathname.toLowerCase();
   if (path.includes("espace-prof") && new URLSearchParams(window.location.search).get("section") === "corrections") return "corrections";
   if (path.includes("prof-rp-7x92q")) return "customResponses";
-  if (path.includes("prof-exam-4x91q")) return "exams";
+  if (path.includes("prof-exam-4x91q") || path.includes("prof-exam-builder")) return "exams";
   if (path.includes("prof-modules-eleves")) return "modules";
   if (path.includes("prof-customs-eleves")) return "customAccess";
   if (path.startsWith("/stages")) return "stages";
@@ -42,7 +42,7 @@ function permissionForElement(element) {
   const text = String(element.textContent || "").toLowerCase();
   const source = `${href} ${action} ${text}`;
   if (source.includes("prof-rp-7x92q") || source.includes("réponses élèves")) return "customResponses";
-  if (source.includes("prof-exam-4x91q") || text.trim() === "examens") return "exams";
+  if (source.includes("prof-exam-4x91q") || source.includes("prof-exam-builder") || text.trim() === "examens" || source.includes("nouvel examen")) return "exams";
   if (source.includes("prof-modules-eleves") || source.includes("modules élèves")) return "modules";
   if (source.includes("prof-customs-eleves") || source.includes("customs élèves")) return "customAccess";
   if (source.includes("stages/") || source.includes("suivi de stage")) return "stages";

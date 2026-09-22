@@ -14,6 +14,7 @@ const {
   updateProfAccessPolicy
 } = require("../../lib/server/prof-access-control.js");
 const handleCursusManagement = require("../../lib/server/cursus-management.js");
+const { handleProfExamBuilder } = require("../../lib/server/prof-exam-builder.js");
 const {
   COMPANIES,
   authenticateCompanyCode,
@@ -67,11 +68,27 @@ module.exports = async function handler(request, response) {
   const adminCursusManagement = adminAction === "cursus-management";
   const adminAccessControl = adminAction === "access-control";
   const profAccess = requestUrl.searchParams.get("prof") === "access";
+  const profExamBuilder = requestUrl.searchParams.get("prof") === "exam-builder";
   const auditRequest = requestUrl.searchParams.get("audit") === "1";
   const stageContext = requestUrl.searchParams.get("context") === "stages";
 
   if (adminCursusManagement) {
     await handleCursusManagement(request, response);
+    return;
+  }
+
+  if (profExamBuilder) {
+    try {
+      if (request.method !== "GET") assertSameOrigin(request);
+      const access = await requireProf(request);
+      await handleProfExamBuilder(request, response, access);
+    } catch (error) {
+      const status = Number(error?.status) || 500;
+      console.error("Gestion Examen 2 impossible :", error);
+      sendJson(response, status, {
+        error: status >= 500 ? "Gestion des examens temporairement indisponible." : error.message
+      });
+    }
     return;
   }
 

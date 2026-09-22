@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Nouvel examen - Mécanique - Université</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="../Images/favicon.png?v=23">
+  <link rel="stylesheet" href="../assets/css/base.css?v=20260808-mobile2">
+  <link rel="stylesheet" href="../assets/css/buttons.css?v=9028">
+  <link rel="stylesheet" href="../assets/css/loader.css?v=9028">
+  <link rel="stylesheet" href="../assets/css/prof.css?v=9028">
+  <link rel="stylesheet" href="../assets/css/prof-v2.css?v=16">
+  <link rel="stylesheet" href="../assets/css/prof-mobile-app.css?v=20260825-1">
+  <link rel="stylesheet" href="../assets/css/prof-dashboard-apex.css?v=3">
+  <link rel="stylesheet" href="../assets/css/prof-apex-suite.css?v=1">
+  <link rel="stylesheet" href="../assets/css/prof-exam-builder.css?v=1">
+  <link rel="stylesheet" href="../assets/css/prof-presence.css?v=4">
+  <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
+  <link rel="stylesheet" href="../assets/css/unified-motion.css?v=4">
+  <script src="../assets/js/prof-simplified-mode.js?v=5"></script>
+  <script src="../assets/js/prof-local-preferences.js?v=2"></script>
+</head>
+<body class="prof-v2-page exam-builder-page" data-theme="dark">
+  <main class="v2-shell">
+    <section id="protectedContent" class="exam-builder-dashboard">
+      <div class="v2-app exam-builder-app">
+        <aside class="v2-sidebar exam-builder-sidebar">
+          <button type="button" class="v2-brand" onclick="goPage('../index.html')" aria-label="Accueil du site">
+            <img src="../Images/logo.webp" width="507" height="512" alt="Logo Mécanique - Université">
+            <span><strong>Mécanique</strong><small>Université</small></span>
+            <i class="apex-version-badge" aria-label="Version 3">V3</i>
+          </button>
+          <nav class="v2-nav" aria-label="Navigation professeur">
+            <p>Principal</p>
+            <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html')"><span class="v2-nav-mark">TB</span><span>Tableau de bord</span></button>
+            <button type="button" class="v2-nav-item" onclick="goPage('espace-prof.html?section=corrections')"><span class="v2-nav-mark">CO</span><span>Corrigés</span></button>
+            <button type="button" class="v2-nav-item" data-prof-notification-target="custom" onclick="goPage('prof-rp-7x92q.html')"><span class="v2-nav-mark">RE</span><span>Réponses élèves</span></button>
+            <button type="button" class="v2-nav-item" data-prof-notification-target="exam" onclick="goPage('prof-exam-4x91q.html')"><span class="v2-nav-mark">EX</span><span>Examens</span></button>
+            <button type="button" class="v2-nav-item active" aria-current="page"><span class="v2-nav-mark">N2</span><span>Nouvel examen</span></button>
+            <p>Suivi</p>
+            <button type="button" class="v2-nav-item" onclick="goPage('prof-modules-eleves.html')"><span class="v2-nav-mark">ME</span><span>Modules élèves</span></button>
+            <button type="button" class="v2-nav-item" onclick="goPage('prof-customs-eleves.html')"><span class="v2-nav-mark">CE</span><span>Customs élèves</span></button>
+            <button type="button" class="v2-nav-item" data-university-stage-link onclick="goPage('../stages/')"><span class="v2-nav-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6V4h6v2M4 8h16v11H4z"/><path d="M4 12c5 2 11 2 16 0M10 12v2h4v-2"/></svg></span><span>Suivi de stage</span></button>
+          </nav>
+        </aside>
+
+        <div class="v2-workspace exam-builder-workspace">
+          <header class="v2-topbar">
+            <div><p class="v2-eyebrow">Création native</p><h1>Nouvel examen</h1></div>
+            <div class="v2-topbar-actions">
+              <time class="apex-date-chip prof-live-clock" data-prof-live-clock></time>
+              <div class="v2-user-pill"><span id="builderUserInitials">PR</span><strong id="builderUserName">Professeur</strong><small>Compte prof</small></div>
+              <button type="button" class="v2-secondary-btn" onclick="goPage('prof-exam-4x91q.html')">Réponses</button>
+            </div>
+          </header>
+
+          <section id="guardLoader" class="exam-builder-guard">
+            <div class="exam-builder-guard-card"><span class="builder-spinner"></span><p class="v2-eyebrow">Accès sécurisé</p><h2>Préparation de l’éditeur</h2><p>Chargement de tes examens...</p></div>
+          </section>
+
+          <section class="exam-builder-content" aria-label="Éditeur d'examen">
+            <div class="exam-builder-head">
+              <div>
+                <p class="v2-eyebrow">Examen 2</p>
+                <h2>Construis ton formulaire.</h2>
+                <p>Questions, barème, réponses attendues et photos sont enregistrés directement sur le site.</p>
+              </div>
+              <div class="exam-builder-actions">
+                <button type="button" class="builder-btn quiet" id="newExamBtn">Nouveau</button>
+                <button type="button" class="builder-btn quiet" id="previewExamBtn">Aperçu</button>
+                <button type="button" class="builder-btn danger" id="deleteExamBtn" hidden>Supprimer</button>
+                <button type="button" class="builder-btn" id="saveDraftBtn">Sauvegarder</button>
+                <button type="button" class="builder-btn primary" id="publishExamBtn">Publier</button>
+              </div>
+            </div>
+
+            <div class="exam-builder-layout">
+              <aside class="exam-library" aria-label="Examens enregistrés">
+                <div class="exam-library-head"><div><span>Bibliothèque</span><strong>Mes examens</strong></div><b id="examLibraryCount">0</b></div>
+                <div id="examLibraryStatus" class="exam-library-status">Chargement...</div>
+                <div id="examLibraryList" class="exam-library-list"></div>
+              </aside>
+
+              <form class="exam-editor" id="examEditor" novalidate>
+                <section class="exam-editor-card exam-meta-card">
+                  <div class="exam-meta-main">
+                    <label for="examTitle">Titre de l’examen</label>
+                    <input id="examTitle" maxlength="160" placeholder="Ex. Examen final de mécanique" required>
+                    <label for="examDescription">Description</label>
+                    <textarea id="examDescription" maxlength="1800" rows="3" placeholder="Présente rapidement l’examen aux élèves."></textarea>
+                    <label for="examInstructions">Consignes générales</label>
+                    <textarea id="examInstructions" maxlength="3000" rows="3" placeholder="Matériel autorisé, méthode de réponse, règles particulières..."></textarea>
+                  </div>
+                  <div class="exam-meta-side">
+                    <label for="examDuration">Durée en minutes</label>
+                    <input id="examDuration" type="number" min="0" max="360" step="1" value="0">
+                    <div class="exam-live-summary">
+                      <div><span>Questions</span><strong id="questionCount">1</strong></div>
+                      <div><span>Barème</span><strong><i id="maxScore">1</i> pts</strong></div>
+                      <div><span>État</span><strong id="examStateLabel">Brouillon</strong></div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="exam-questions-section">
+                  <div class="exam-section-title"><div><p class="v2-eyebrow">Formulaire</p><h3>Questions</h3></div><span>60 maximum</span></div>
+                  <div id="questionList" class="exam-question-list"></div>
+                  <div class="exam-add-question">
+                    <span>Ajouter une question</span>
+                    <button type="button" data-add-question="short">Réponse courte</button>
+                    <button type="button" data-add-question="long">Texte long</button>
+                    <button type="button" data-add-question="single">Choix unique</button>
+                    <button type="button" data-add-question="multiple">Choix multiple</button>
+                    <button type="button" data-add-question="true_false">Vrai / Faux</button>
+                  </div>
+                </section>
+                <p id="builderStatus" class="exam-builder-status" role="status" aria-live="polite"></p>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="exam-preview-modal" id="examPreviewModal" hidden>
+    <button type="button" class="exam-preview-backdrop" data-close-preview aria-label="Fermer l'aperçu"></button>
+    <section class="exam-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+      <header><div><span>Aperçu élève</span><h2 id="previewTitle">Examen 2</h2></div><button type="button" data-close-preview aria-label="Fermer">×</button></header>
+      <div id="examPreviewContent" class="exam-preview-content"></div>
+    </section>
+  </div>
+
+  <script src="../assets/js/navigation.js?v=1007"></script>
+  <script src="../assets/js/prof-live-refresh.js?v=4"></script>
+  <script type="module" src="../assets/js/prof-exam-builder.js?v=1"></script>
+  <script src="../assets/js/prof-mobile-app.js?v=20260916-perf"></script>
+  <script type="module" src="../assets/js/prof-presence.js?v=6"></script>
+  <script type="module" src="../assets/js/prof-access-policy.js?v=3"></script>
+  <script type="module" src="../assets/js/prof-audit.js?v=2"></script>
+  <script src="../assets/js/unified-motion.js?v=4"></script>
+  <script src="../assets/js/unified-access-context.js?v=1"></script>
+</body>
+</html>

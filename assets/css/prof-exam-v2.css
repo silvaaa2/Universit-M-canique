@@ -336,6 +336,155 @@ body[data-theme="light"].exam-v2-page .exam-v2-kpis div {
   border-color: rgba(15, 23, 42, .10);
 }
 
+.exam-v2-page :is(#examClassicHero, #examClassicBoard, #examNativeBoard)[hidden] {
+  display: none !important;
+}
+
+.exam-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(150px, 230px)) 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: var(--v2-radius);
+  background: color-mix(in srgb, var(--v2-panel-strong) 72%, transparent);
+}
+
+.exam-mode-switch > button {
+  min-height: 54px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .018);
+  padding: 7px 13px;
+  color: var(--v2-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.exam-mode-switch > button span {
+  font-size: 14px;
+  font-weight: 1000;
+}
+
+.exam-mode-switch > button small {
+  color: var(--v2-muted);
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.exam-mode-switch > button.active {
+  border-color: rgba(239, 206, 114, .42);
+  background: rgba(239, 206, 114, .075);
+  color: var(--v2-gold);
+}
+
+.exam-mode-switch .exam-create-shortcut {
+  justify-self: end;
+  align-self: center;
+  min-height: 42px;
+  display: block;
+  border-color: rgba(105, 233, 161, .3);
+  background: rgba(105, 233, 161, .07);
+  color: var(--v2-green);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 1000;
+}
+
+.exam-native-board {
+  min-height: 440px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: var(--v2-radius);
+  background: linear-gradient(145deg, rgba(239, 206, 114, .04), transparent 44%), var(--v2-panel-strong);
+  padding: 18px;
+}
+
+.exam-native-board > header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 10px 20px;
+  border-bottom: 1px solid var(--v2-line-soft);
+}
+
+.exam-native-board h2 {
+  margin: 4px 0 0;
+  color: var(--v2-text);
+  font-size: clamp(30px, 3vw, 46px);
+  letter-spacing: -.05em;
+}
+
+.exam-native-board header p:not(.v2-eyebrow) {
+  max-width: 720px;
+  margin: 8px 0 0;
+  color: var(--v2-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.exam-native-board .builder-btn {
+  min-height: 42px;
+  border: 1px solid rgba(105, 233, 161, .3);
+  border-radius: 11px;
+  background: rgba(105, 233, 161, .1);
+  padding: 0 16px;
+  color: var(--v2-green);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.exam-native-status {
+  padding: 28px 10px;
+  color: var(--v2-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.exam-native-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 14px;
+}
+
+.exam-native-card {
+  display: grid;
+  gap: 14px;
+  min-height: 150px;
+  padding: 17px;
+  border: 1px solid var(--v2-line-soft);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .018);
+}
+
+.exam-native-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.exam-native-card h3 { margin: 0; color: var(--v2-text); font-size: 19px; }
+.exam-native-card p { margin: 0; color: var(--v2-muted); font-size: 11px; font-weight: 800; }
+.exam-native-card b { color: var(--v2-gold); font-size: 11px; }
+.exam-native-card footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; }
+.exam-native-card footer span { color: var(--v2-muted); font-size: 9px; font-weight: 900; }
+.exam-native-card footer a { color: var(--v2-green); font-size: 10px; font-weight: 950; text-decoration: none; }
+
+@media (max-width: 760px) {
+  .exam-mode-switch { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .exam-mode-switch .exam-create-shortcut { grid-column: 1 / -1; justify-self: stretch; }
+  .exam-native-board > header { align-items: stretch; flex-direction: column; }
+  .exam-native-list { grid-template-columns: 1fr; }
+}
+
 .exam-v2-page .exam-cockpit-question-nav,
 .exam-v2-page .exam-cockpit-progress {
   display: none;
