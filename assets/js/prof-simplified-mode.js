@@ -88,7 +88,7 @@
 
     const textSize = getTextSize();
 
-    document.querySelectorAll("[data-simplified-text-size]").forEach((control) => {
+    document.querySelectorAll("button[data-simplified-text-size]").forEach((control) => {
       const isActive = control.dataset.simplifiedTextSize === textSize;
       control.classList.toggle("active", isActive);
       control.setAttribute("aria-pressed", String(isActive));
@@ -182,7 +182,7 @@
       });
     });
 
-    document.querySelectorAll("[data-simplified-text-size]").forEach((control) => {
+    document.querySelectorAll("button[data-simplified-text-size]").forEach((control) => {
       control.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();

@@ -277,6 +277,13 @@ function validatePayload(payload) {
   if (emptyIndex >= 0) throw new Error(`Écris le texte de la question ${emptyIndex + 1}.`);
   const invalidChoice = payload.questions.findIndex(question => ["single", "multiple"].includes(question.type) && question.options.filter(Boolean).length < 2);
   if (invalidChoice >= 0) throw new Error(`Ajoute au moins deux choix à la question ${invalidChoice + 1}.`);
+  if (payload.status === "published") {
+    const missingAnswer = payload.questions.findIndex(question => (
+      ["single", "multiple", "true_false"].includes(question.type)
+      && question.correctAnswers.length === 0
+    ));
+    if (missingAnswer >= 0) throw new Error(`Coche au moins une bonne réponse à la question ${missingAnswer + 1}.`);
+  }
 }
 
 async function apiRequest(method = "GET", payload = null) {
@@ -370,7 +377,12 @@ function previewAnswer(question) {
   if (question.type === "short") return `<div class="preview-answer">Réponse de l’élève...</div>`;
   const options = question.type === "true_false" ? ["Vrai", "Faux"] : question.options;
   const type = question.type === "multiple" ? "checkbox" : "radio";
-  return options.map(option => `<label class="preview-option"><input type="${type}" disabled> ${escapeHtml(option)}</label>`).join("");
+  const name = `preview-${question.id}`;
+  return `<fieldset class="preview-options"><legend>${question.type === "multiple" ? "Plusieurs réponses sont possibles" : "Choisis une réponse"}</legend>${options.map((option, index) => `
+    <label class="preview-option">
+      <input type="${type}" name="${escapeHtml(name)}" value="${escapeHtml(question.type === "true_false" ? (index === 0 ? "true" : "false") : option)}">
+      <span>${escapeHtml(option)}</span>
+    </label>`).join("")}</fieldset>`;
 }
 
 function openPreview() {

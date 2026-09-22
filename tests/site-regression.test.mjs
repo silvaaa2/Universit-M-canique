@@ -95,7 +95,7 @@ test("le Mode Simplifié branche directement son interrupteur et sauvegarde le c
   assert.match(source, /localStorage\.setItem\(STORAGE_KEY, String\(safeEnabled\)\)/);
   assert.match(source, /document\.readyState === "loading"/);
   assert.match(dashboard, /id="simplifiedModeToggle"/);
-  assert.match(dashboard, /prof-simplified-mode\.js\?v=5/);
+  assert.match(dashboard, /prof-simplified-mode\.js\?v=6/);
 });
 
 test("la lecture vocale utilise un clic direct et privilégie une voix française masculine", () => {
@@ -120,7 +120,8 @@ test("le Confort de lecture applique directement le thème et les tailles", () =
   assert.match(source, /querySelectorAll\("\[data-theme-choice\]"\)[\s\S]*?control\.addEventListener\("click"/);
   assert.match(source, /applyTheme\(control\.dataset\.themeChoice, \{ persist: true \}\)/);
   assert.match(source, /localStorage\.setItem\(THEME_STORAGE_KEY, safeTheme\)/);
-  assert.match(source, /querySelectorAll\("\[data-simplified-text-size\]"\)[\s\S]*?control\.addEventListener\("click"/);
+  assert.match(source, /querySelectorAll\("button\[data-simplified-text-size\]"\)[\s\S]*?control\.addEventListener\("click"/);
+  assert.doesNotMatch(source, /querySelectorAll\("\[data-simplified-text-size\]"\)[\s\S]*?control\.addEventListener\("click"/);
   assert.doesNotMatch(auth, /function initTheme\(/);
 });
 

@@ -29,9 +29,11 @@ test("le nouvel éditeur crée un examen natif avec barème, photos et aperçu",
   assert.match(css, /position:\s*static/);
   assert.match(css, /::file-selector-button/);
   assert.match(css, /\.image-picker-button/);
-  assert.match(page, /prof-exam-builder\.css\?v=6/);
-  assert.match(page, /prof-exam-builder\.js\?v=6/);
+  assert.match(page, /prof-exam-builder\.css\?v=7/);
+  assert.match(page, /prof-exam-builder\.js\?v=7/);
   assert.match(script, /correctAnswers/);
+  assert.match(script, /Plusieurs réponses sont possibles/);
+  assert.doesNotMatch(script, /<input type="\$\{type\}" disabled>/);
   assert.match(css, /\.exam-question-list/);
   assert.match(css, /@media \(max-width: 760px\)/);
 });
@@ -44,16 +46,18 @@ test("le serveur nettoie le formulaire et calcule exactement son barème", () =>
     questions: [
       { type: "short", title: "ID ?", points: 2.5, required: true },
       { type: "single", title: "Couleur ?", points: 3, options: ["Rouge", "Bleu"], correctAnswers: ["Bleu"] },
-      { type: "true_false", title: "Le moteur tourne", points: 1, correctAnswer: "true" }
+      { type: "true_false", title: "Le moteur tourne", points: 1, correctAnswers: ["true"] },
+      { type: "multiple", title: "Pièces ?", points: 2, options: ["Moteur", "Roue", "Radio"], correctAnswers: ["Moteur", "Roue"] }
     ]
   });
 
   assert.equal(exam.title, "Examen mécanique");
-  assert.equal(exam.questionCount, 3);
-  assert.equal(exam.maxScore, 6.5);
+  assert.equal(exam.questionCount, 4);
+  assert.equal(exam.maxScore, 8.5);
   assert.equal(exam.status, "published");
   assert.deepEqual(exam.questions[1].correctAnswers, ["Bleu"]);
   assert.deepEqual(exam.questions[2].correctAnswers, ["true"]);
+  assert.deepEqual(exam.questions[3].correctAnswers, ["Moteur", "Roue"]);
   assert.equal(examSummary({ id: "exam-1", ...exam }).questions.length, 0);
 });
 
@@ -68,6 +72,16 @@ test("les formulaires invalides ou trop lourds sont refusés", () => {
     title: "Test",
     questions: [{ title: "Q", type: "short", image: "https://example.com/image.jpg" }]
   }), /image/i);
+  assert.throws(() => normalizeExamPayload({
+    title: "Test publié",
+    status: "published",
+    questions: [{ title: "Vrai ou faux ?", type: "true_false", correctAnswers: [] }]
+  }), /bonne réponse/i);
+  assert.doesNotThrow(() => normalizeExamPayload({
+    title: "Brouillon",
+    status: "draft",
+    questions: [{ title: "Choix", type: "multiple", options: ["A", "B"], correctAnswers: [] }]
+  }));
 });
 
 test("Nouvel examen reste lié au droit Examens et Examen 2 apparaît dans les réponses", () => {
