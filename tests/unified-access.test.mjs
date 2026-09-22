@@ -80,12 +80,16 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(stageApp, /writeCompanyLocalCache\(kind, payload\)/);
   assert.match(stageApp, /readCompanyLocalCache\(kind\)/);
   assert.match(stageApp, /Promise\.allSettled\(loaders\)/);
-  assert.match(stageApp, /COMPANY_REFRESH_MS = 120_000/);
+  assert.match(stageApp, /COMPANY_REFRESH_MS = 600_000/);
   assert.match(stageApp, /const nextStageValidations = \(payload\.rows \|\| \[\]\)\.map/);
+  assert.match(stageApp, /COMPANY_WORKSPACE_KINDS = new Set\(\["stages", "exams", "archives"\]\)/);
+  assert.match(stageApp, /companyWorkspaceRequest = fetchCompanyRows\("workspace"\)/);
   assert.match(serverProxy, /listDocumentsCached/);
   assert.match(serverProxy, /collectionRequests/);
   assert.match(serverProxy, /isTemporaryFirebaseReadError/);
   assert.match(serverProxy, /invalidateCollectionCache\(STAGE_COLLECTION\)/);
+  assert.match(serverProxy, /kind === "workspace"/);
+  assert.match(serverProxy, /Promise\.all\(\[\s*readCompanyStages\(session\),\s*readCompanyExams\(\),\s*readCompanyArchives\(session\)/);
 });
 
 test("les entreprises voient uniquement les avertissements de leurs stagiaires en lecture seule", async () => {

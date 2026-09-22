@@ -18,5 +18,5 @@ test("le triangle averto est intégré au nouveau contrôleur Modules", () => {
   assert.doesNotMatch(modules, /prof-modules-alerts\.js/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-alerts\.js/);
   assert.match(page, /navigation\.js\?v=1012/);
-  assert.match(page, /prof-modules-eleves-v4\.js\?v=1/);
+  assert.match(page, /prof-modules-eleves-v4\.js\?v=2/);
 });

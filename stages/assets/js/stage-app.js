@@ -38,7 +38,7 @@ const COMPANY_SCOPE_ID = unifiedAccess?.role === "company" ? String(unifiedAcces
 const COMPANY_SCOPE_NAME = unifiedAccess?.role === "company" ? String(unifiedAccess.companyName || "") : "";
 const IS_COMPANY_ACCESS = Boolean(COMPANY_SCOPE_ID);
 const IS_ADMIN_COMPANY_PREVIEW = IS_COMPANY_ACCESS && unifiedAccess?.adminPreview === true;
-const IS_PALETO_STAGE_V2 = IS_COMPANY_ACCESS && COMPANY_SCOPE_ID === "paleto";
+const IS_COMPANY_STAGE_V2 = IS_COMPANY_ACCESS;
 
 const STAGE_COLLECTION = "stageValidations";
 const EXAM_COLLECTION = "examAnswerStatuses";
@@ -137,7 +137,9 @@ let companyDataSignature = "";
 let companyRefreshTimer = 0;
 let companyRefreshRunning = false;
 let paletoClockTimer = 0;
-const COMPANY_REFRESH_MS = 120_000;
+const COMPANY_REFRESH_MS = 600_000;
+const COMPANY_WORKSPACE_KINDS = new Set(["stages", "exams", "archives"]);
+let companyWorkspaceRequest = null;
 
 function getScopedCompany() {
   return ALL_COMPANIES.find(company => company.id === COMPANY_SCOPE_ID) || ALL_COMPANIES[0];
@@ -211,16 +213,17 @@ function updatePaletoClock() {
 }
 
 function ensurePaletoStageV2Chrome() {
-  if (!IS_PALETO_STAGE_V2 || document.querySelector(".paleto-stage-sidebar")) return;
+  if (!IS_COMPANY_STAGE_V2 || document.querySelector(".paleto-stage-sidebar")) return;
 
   document.body.classList.add("paleto-stage-v2");
+  const scopedCompany = getScopedCompany();
   const sidebar = document.createElement("aside");
   sidebar.className = "paleto-stage-sidebar";
-  sidebar.setAttribute("aria-label", "Navigation Paleto Garage");
+  sidebar.setAttribute("aria-label", `Navigation ${scopedCompany.name}`);
   sidebar.innerHTML = `
     <div class="paleto-sidebar-brand">
-      ${renderCompanyLogo()}
-      <div><strong>Paleto Garage</strong><span>Espace entreprise</span></div>
+      ${renderCompanyLogo(scopedCompany)}
+      <div><strong>${escapeHtml(scopedCompany.name)}</strong><span>Espace entreprise</span></div>
     </div>
     <nav class="paleto-sidebar-nav">
       <button type="button" class="active" data-paleto-stage-panel="dashboard">${renderPaletoNavIcon("dashboard")}<span>Tableau de bord</span></button>
@@ -269,7 +272,7 @@ function ensureCompanyWorkspaceChrome() {
   companyWorkspaceReady = true;
   document.body.classList.add("company-workspace");
   document.body.classList.toggle("admin-company-preview", IS_ADMIN_COMPANY_PREVIEW);
-  document.body.classList.toggle("paleto-stage-v2", IS_PALETO_STAGE_V2);
+  document.body.classList.toggle("paleto-stage-v2", IS_COMPANY_STAGE_V2);
 
   if (IS_ADMIN_COMPANY_PREVIEW) {
     const header = document.querySelector(".stage-header");
@@ -293,10 +296,10 @@ function ensureCompanyWorkspaceChrome() {
   if (headerLogo) headerLogo.innerHTML = renderCompanyLogo();
 
   if (dashboardTitle?.closest(".dashboard-top")) {
-    dashboardTitle.closest(".dashboard-top").innerHTML = IS_PALETO_STAGE_V2 ? `
+    dashboardTitle.closest(".dashboard-top").innerHTML = IS_COMPANY_STAGE_V2 ? `
       <div class="company-hero paleto-company-hero">
         <div class="company-hero-copy">
-          <h1>Bienvenue, <span>${escapeHtml(COMPANY_SCOPE_NAME || "Paleto Garage")}</span>.</h1>
+          <h1>Bienvenue, <span>${escapeHtml(COMPANY_SCOPE_NAME || "Entreprise")}</span>.</h1>
           <p class="intro">Suivi du cursus en cours.</p>
         </div>
         <div class="company-overview" aria-label="Résumé de l’entreprise">
@@ -698,6 +701,41 @@ function setCompanySyncStatus(errors = []) {
 
 async function fetchCompanyRows(kind, options = {}) {
   const method = options.method || "GET";
+  if (
+    IS_COMPANY_ACCESS &&
+    method === "GET" &&
+    !options.documentId &&
+    COMPANY_WORKSPACE_KINDS.has(kind)
+  ) {
+    if (!companyWorkspaceRequest) {
+      companyWorkspaceRequest = fetchCompanyRows("workspace")
+        .then(payload => {
+          COMPANY_WORKSPACE_KINDS.forEach(workspaceKind => {
+            if (payload?.[workspaceKind]) writeCompanyLocalCache(workspaceKind, payload[workspaceKind]);
+          });
+          return payload;
+        })
+        .catch(error => {
+          const cached = Object.fromEntries([...COMPANY_WORKSPACE_KINDS]
+            .map(workspaceKind => [workspaceKind, readCompanyLocalCache(workspaceKind)]));
+          if (Object.values(cached).some(Boolean)) {
+            return {
+              stages: cached.stages || { rows: [], directory: [], warnings: [] },
+              exams: cached.exams || { rows: [] },
+              archives: cached.archives || { rows: [] },
+              cacheFallback: true
+            };
+          }
+          throw error;
+        })
+        .finally(() => {
+          companyWorkspaceRequest = null;
+        });
+    }
+    const workspace = await companyWorkspaceRequest;
+    return workspace[kind] || { rows: [] };
+  }
+
   try {
     const response = await fetch(`/api/access/stage-data?kind=${encodeURIComponent(kind)}${options.documentId ? `&id=${encodeURIComponent(options.documentId)}` : ""}`, {
       method,

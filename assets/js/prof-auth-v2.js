@@ -127,6 +127,8 @@ const homeButtons = document.querySelectorAll("[data-v2-home]");
 let isManualLoginTransition = false;
 let currentAccess = { role: null, admin: false };
 let dashboardStatsLoading = false;
+let dashboardStatsLastLoadedAt = 0;
+const DASHBOARD_STATS_REFRESH_MS = 600_000;
 let lastCursusHistory = [];
 let renderedCursusChartWidth = 0;
 let cursusHistoryResizeFrame = 0;
@@ -1400,6 +1402,7 @@ async function loadDashboardStats() {
     }
 
     renderWatchList({ modules, exams, customAccess, customAnswers });
+    dashboardStatsLastLoadedAt = Date.now();
     return true;
   } catch (error) {
     console.warn("Tableau de bord impossible à charger :", error);
@@ -1412,6 +1415,7 @@ async function loadDashboardStats() {
 
 window.addEventListener("prof:live-refresh", () => {
   if (!window.currentProfUser || dashboardStatsLoading) return;
+  if (Date.now() - dashboardStatsLastLoadedAt < DASHBOARD_STATS_REFRESH_MS) return;
   void loadDashboardStats();
 });
 

@@ -21,7 +21,7 @@ const firebaseConfig = {
 const WORKSPACE_URL = "/api/secure-sheet?source=module-workspace&sheet=current";
 const REQUEST_TIMEOUT_MS = 25000;
 const AUTH_TIMEOUT_MS = 9000;
-const REFRESH_THROTTLE_MS = 8000;
+const REFRESH_THROTTLE_MS = 600_000;
 const MODULE_COLUMNS = [
   { key: "module1", label: "Module 1" },
   { key: "module2", label: "Module 2" },

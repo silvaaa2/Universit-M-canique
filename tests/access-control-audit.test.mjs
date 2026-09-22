@@ -92,7 +92,7 @@ test("les entreprises ont un graphique, une identité et un avertissement réell
   assert.match(app, /renderCompanyCursusChart/);
   assert.match(app, /renderCompanyLogo/);
   assert.match(app, /company-data-arrived/);
-  assert.match(app, /COMPANY_REFRESH_MS = 120_000/);
+  assert.match(app, /COMPANY_REFRESH_MS = 600_000/);
   assert.match(css, /\.company-warning-modal\[hidden\][\s\S]*display: none !important/);
   assert.match(css, /\.company-brand-logo/);
   assert.match(css, /\.company-cursus-chart/);
@@ -113,11 +113,13 @@ test("Paleto Garage utilise son vrai logo dans son espace entreprise", async () 
   assert.ok(logo.length > 1_000, "le fichier du logo Paleto ne doit pas être vide");
 });
 
-test("la nouvelle interface APEX Stage reste limitée à Paleto Garage", async () => {
+test("la nouvelle interface APEX Stage couvre toutes les entreprises", async () => {
   const app = await read("stages/assets/js/stage-app.js");
   const css = await read("stages/assets/css/stage.css");
 
-  assert.match(app, /IS_PALETO_STAGE_V2 = IS_COMPANY_ACCESS && COMPANY_SCOPE_ID === "paleto"/);
+  assert.match(app, /IS_COMPANY_STAGE_V2 = IS_COMPANY_ACCESS/);
+  assert.match(app, /`Navigation \$\{scopedCompany\.name\}`/);
+  assert.match(app, /escapeHtml\(scopedCompany\.name\)/);
   assert.match(app, /className = "paleto-stage-sidebar"/);
   assert.match(app, /data-paleto-stage-panel="dashboard"/);
   assert.match(app, /data-paleto-stage-panel="stages"/);

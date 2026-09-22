@@ -22,6 +22,7 @@ test("les modules regroupent les lectures critiques et évitent les rendus ident
   const modules = await read("assets/js/prof-modules-eleves-v4.js");
 
   assert.match(modules, /source=module-workspace&sheet=current/);
+  assert.match(modules, /REFRESH_THROTTLE_MS = 600_000/);
   assert.doesNotMatch(modules, /getDocs\(collection\(db, STUDENT_MODULES_COLLECTION\)\)/);
   assert.match(modules, /function signature\(\)/);
   assert.match(modules, /if \(!silent \|\| nextSignature !== state\.lastSignature\) renderTable\(\)/);
@@ -43,7 +44,7 @@ test("la page Modules restaure l'ordre de chargement stable de ses fonctions", a
   assert.match(loader, /prof-modules-clipboard\.js\?v=11/);
   assert.match(loader, /prof-notifications-v2\.js\?v=10/);
   assert.match(loader, /prof-presence\.js\?v=9/);
-  assert.match(page, /prof-modules-eleves-v4\.js\?v=1/);
+  assert.match(page, /prof-modules-eleves-v4\.js\?v=2/);
   assert.doesNotMatch(page, /prof-modules-sheets-sync\.js/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-(?:archives|alerts)\.js/);
 });

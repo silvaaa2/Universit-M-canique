@@ -3403,8 +3403,8 @@ body.company-workspace .exam-row > strong { color: var(--gold2); }
 }
 
 /* =========================================================
-   PALETO GARAGE · SUIVI DE STAGE APEX V2
-   Cette coque reste strictement limitée au login Paleto.
+   ENTREPRISES · SUIVI DE STAGE APEX V2
+   Interface commune à tous les accès entreprise.
 ========================================================= */
 
 body.paleto-stage-v2 {

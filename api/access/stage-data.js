@@ -251,6 +251,26 @@ async function readCompanyArchives(session) {
     .sort((a, b) => String(b.startDate || "").localeCompare(String(a.startDate || "")));
 }
 
+async function readCompanyStages(session) {
+  const rows = await listDocumentsCached(STAGE_COLLECTION);
+  const companyRows = rows.filter(row => row.companyId === session.companyId);
+  return {
+    rows: companyRows,
+    directory: rows.map(row => ({
+      idUnique: String(row.idUnique || ""),
+      normalizedIdUnique: normalizeIdUnique(row.normalizedIdUnique || row.idUnique),
+      companyId: String(row.companyId || ""),
+      companyName: String(row.companyName || "")
+    })).filter(row => row.normalizedIdUnique && row.companyId),
+    warnings: await readCompanyWarnings(companyRows)
+  };
+}
+
+async function readCompanyExams() {
+  const rows = await listDocumentsCached(EXAM_COLLECTION);
+  return rows.filter(row => row.archived !== true);
+}
+
 function sanitizeStudentProgress(row) {
   if (!row) return null;
 
@@ -282,25 +302,25 @@ function sanitizeStudentProgress(row) {
 
 async function readCompanyData(session, kind, request) {
   if (kind === "stages") {
-    const rows = await listDocumentsCached(STAGE_COLLECTION);
-    const companyRows = rows.filter(row => row.companyId === session.companyId);
-    return {
-      rows: companyRows,
-      directory: rows.map(row => ({
-        idUnique: String(row.idUnique || ""),
-        normalizedIdUnique: normalizeIdUnique(row.normalizedIdUnique || row.idUnique),
-        companyId: String(row.companyId || ""),
-        companyName: String(row.companyName || "")
-      })).filter(row => row.normalizedIdUnique && row.companyId),
-      warnings: await readCompanyWarnings(companyRows)
-    };
+    return readCompanyStages(session);
   }
   if (kind === "exams") {
-    const rows = await listDocumentsCached(EXAM_COLLECTION);
-    return rows.filter(row => row.archived !== true);
+    return readCompanyExams();
   }
   if (kind === "archives") {
     return readCompanyArchives(session);
+  }
+  if (kind === "workspace") {
+    const [stages, exams, archives] = await Promise.all([
+      readCompanyStages(session),
+      readCompanyExams(),
+      readCompanyArchives(session)
+    ]);
+    return {
+      stages,
+      exams: { rows: exams },
+      archives: { rows: archives }
+    };
   }
   if (kind === "student-progress") {
     const requestedId = normalizeIdUnique(getRequestUrl(request).searchParams.get("id"));
@@ -410,7 +430,7 @@ module.exports = async function handler(request, response) {
       sendJson(
         response,
         200,
-        kind === "stages" || kind === "student-progress" ? data : { rows: data }
+        kind === "stages" || kind === "student-progress" || kind === "workspace" ? data : { rows: data }
       );
       return;
     }
