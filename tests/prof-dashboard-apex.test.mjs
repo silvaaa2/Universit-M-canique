@@ -18,7 +18,7 @@ test("APEX Command conserve les statistiques réelles et les accès professeur",
   assert.match(html, /id="v2ApexSyncChip" hidden/);
   assert.match(html, /<html lang="fr" data-prof-admin="false">/);
   assert.match(html, /html:not\(\[data-prof-admin="true"\]\) \.admin-only/);
-  assert.match(html, /prof-auth-v2\.js\?v=40/);
+  assert.match(html, /prof-auth-v2\.js\?v=41/);
   assert.match(html, /class="apex-kicker">Université Mécanique<\/p>/);
   assert.doesNotMatch(html, /Promotion actuelle|Ouvrir les priorités|Voir tous les élèves/);
   assert.doesNotMatch(html, /Corrections prioritaires/);

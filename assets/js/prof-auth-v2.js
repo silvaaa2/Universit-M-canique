@@ -1693,8 +1693,8 @@ function initCommandSearch() {
       run: () => goPage("prof-modules-eleves.html")
     },
     {
-      label: "Customs élèves",
-      terms: ["custom eleve", "ouvrir", "fermer", "acces"],
+      label: "Fiches Élèves",
+      terms: ["fiche eleve", "fiches eleves", "custom eleve", "ouvrir", "fermer", "acces"],
       run: () => goPage("prof-customs-eleves.html")
     },
     {

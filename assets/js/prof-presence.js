@@ -75,7 +75,7 @@ function sectionFromElement(element) {
   if (source.includes("prof-rp-7x92q") || source.includes("réponses élèves") || source.includes("réponses customs")) return "customResponses";
   if (source.includes("prof-exam-4x91q") || source.includes("prof-exam-builder") || text.includes("examens") || text.includes("nouvel examen") || text.includes("corriger les copies")) return "exams";
   if (source.includes("prof-modules-eleves") || text.includes("modules élèves") || text.trim() === "modules") return "modules";
-  if (source.includes("prof-customs-eleves") || text.includes("customs élèves") || text.includes("accès customs") || text.trim() === "gérer") return "customAccess";
+  if (source.includes("prof-customs-eleves") || text.includes("fiches élèves") || text.includes("customs élèves") || text.includes("accès customs") || text.trim() === "gérer") return "customAccess";
   if (source.includes("espace-prof") || text.includes("centre de pilotage") || text.includes("tableau de bord") || text.trim() === "accueil") return "dashboard";
   return "";
 }

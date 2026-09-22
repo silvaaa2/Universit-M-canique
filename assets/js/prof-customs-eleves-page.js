@@ -24,6 +24,8 @@ const CUSTOMS = [
   { id: "argento2f", label: "Custom Moyen", vehicle: "Argento 2F", page: "custom-moyen.html" },
   { id: "cypher", label: "Custom Difficile", vehicle: "Cypher", page: "custom-difficile.html" }
 ];
+const EXAM_ACCESS = { id: "examV2", label: "Examen 2" };
+const ACCESS_ITEMS = [...CUSTOMS, EXAM_ACCESS];
 
 const FIRESTORE_TIMEOUT_MS = 6500;
 
@@ -153,6 +155,9 @@ function renderRows() {
 
   renderSummary();
 
+  const examKnown = typeof states[EXAM_ACCESS.id] === "boolean";
+  const examEnabled = states[EXAM_ACCESS.id] === true;
+
   content.innerHTML = `
     <div class="customs-v2-grid">
       ${CUSTOMS.map(custom => {
@@ -184,6 +189,22 @@ function renderRows() {
         `;
       }).join("")}
     </div>
+    <section class="customs-v2-exam-access customs-v2-card ${examKnown ? examEnabled ? "is-open" : "is-closed" : "is-unknown"}${lastChangedId === EXAM_ACCESS.id ? " is-updated" : ""}" data-custom-row="${EXAM_ACCESS.id}">
+      <div class="customs-v2-exam-copy">
+        <span class="customs-v2-mark" aria-hidden="true">EX</span>
+        <div>
+          <p class="v2-eyebrow">Accès à l’examen</p>
+          <h2>Examen 2</h2>
+          <p>Verrouille ou ouvre l’examen créé sur le site. Les copies déjà envoyées et la correction restent accessibles aux professeurs.</p>
+        </div>
+      </div>
+      <div class="customs-v2-exam-actions">
+        <span class="customs-v2-state" data-enabled="${examEnabled}">${examKnown ? examEnabled ? "Ouvert" : "Verrouillé" : "Indisponible"}</span>
+        <button type="button" class="customs-toggle-btn" data-custom-id="${EXAM_ACCESS.id}" data-enabled="${examEnabled}" ${examKnown ? "" : "disabled"}>
+          ${examEnabled ? "Verrouiller" : "Ouvrir"}
+        </button>
+      </div>
+    </section>
   `;
 }
 
@@ -203,7 +224,7 @@ function renderMessage(title, message) {
 async function loadStates() {
   const nextStates = {};
 
-  await Promise.all(CUSTOMS.map(async custom => {
+  await Promise.all(ACCESS_ITEMS.map(async custom => {
     const snap = await withTimeout(
       getDoc(doc(db, "customAvailability", custom.id)),
       FIRESTORE_TIMEOUT_MS,
@@ -216,10 +237,31 @@ async function loadStates() {
   states = nextStates;
 }
 
+async function logExamAccessChange(enabled) {
+  try {
+    const token = await currentUser?.getIdToken(false);
+    if (!token) return;
+    await fetch("/api/access/session?audit=1", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        category: "customs",
+        action: enabled ? "Examen 2 ouvert" : "Examen 2 verrouillé",
+        target: "Examen 2",
+        details: "Accès élève modifié depuis Fiches Élèves"
+      }),
+      cache: "no-store"
+    });
+  } catch (error) {
+    console.warn("Journal de l’accès Examen 2 indisponible :", error);
+  }
+}
+
 async function toggleCustom(button) {
   const customId = button.dataset.customId || "";
   const nextEnabled = button.dataset.enabled !== "true";
-  const custom = CUSTOMS.find(item => item.id === customId);
+  const custom = ACCESS_ITEMS.find(item => item.id === customId);
+  if (!custom || !canManageCustoms()) return;
 
   try {
     button.disabled = true;
@@ -238,12 +280,15 @@ async function toggleCustom(button) {
     states[customId] = nextEnabled;
     lastChangedId = customId;
     saveLocalState(customId, nextEnabled);
+    if (customId === EXAM_ACCESS.id) void logExamAccessChange(nextEnabled);
     renderRows();
     window.setTimeout(() => {
       document.querySelector(`[data-custom-row="${customId}"]`)?.classList.remove("is-updated");
     }, 620);
     setStatus(
-      `${custom?.label || "Custom"} ${nextEnabled ? "ouverte" : "fermée"} pour les élèves.`,
+      customId === EXAM_ACCESS.id
+        ? `Examen 2 ${nextEnabled ? "ouvert" : "verrouillé"} pour les élèves.`
+        : `${custom.label} ${nextEnabled ? "ouverte" : "fermée"} pour les élèves.`,
       "ok"
     );
   } catch (error) {

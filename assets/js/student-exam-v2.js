@@ -19,7 +19,11 @@ function setStatus(message, tone = "") {
 async function request(url, options = {}) {
   const response = await fetch(url, { cache: "no-store", credentials: "same-origin", ...options });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `Action impossible (${response.status}).`);
+  if (!response.ok) {
+    const error = new Error(data.error || `Action impossible (${response.status}).`);
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -127,7 +131,12 @@ async function loadExams() {
     }
     list.innerHTML = exams.map(exam => `<button type="button" data-exam-id="${escapeHtml(exam.id)}"><span>EXAMEN PUBLIÉ</span><strong>${escapeHtml(exam.title)}</strong><small>${escapeHtml(exam.description || "Clique pour ouvrir le formulaire.")}</small><b>${Number(exam.questionCount || 0)} questions · ${Number(exam.maxScore || 0)} points →</b></button>`).join("");
     setStatus("");
-  } catch (error) { setStatus(error.message || "Chargement impossible.", "error"); }
+  } catch (error) {
+    if (error.status === 423) {
+      list.innerHTML = "<p class='student-exam-empty'>L’Examen 2 est verrouillé pour le moment. Réessaie quand un professeur l’aura ouvert.</p>";
+    }
+    setStatus(error.message || "Chargement impossible.", "error");
+  }
 }
 
 list.addEventListener("click", async event => {

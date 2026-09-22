@@ -9,10 +9,12 @@ const firebaseConfig = {
 };
 
 const CUSTOM_IDS = ["sentinelClassic", "argento2f", "cypher"];
+const EXAM_ID = "examV2";
+const ACCESS_IDS = [...CUSTOM_IDS, EXAM_ID];
 const FIRESTORE_TIMEOUT_MS = 6500;
 
 const elements = [...document.querySelectorAll("[data-custom-link]")];
-const availabilityState = new Map(CUSTOM_IDS.map(customId => [customId, null]));
+const availabilityState = new Map(ACCESS_IDS.map(customId => [customId, null]));
 let allClosedNoticeShown = false;
 let allClosedNoticeTimer = null;
 
@@ -53,9 +55,17 @@ function setClosedState(customId, closed) {
     element.dataset.customAvailabilityState = closed ? "closed" : "open";
 
     if (closed) {
-      element.setAttribute("title", "Fiche fermée pour les élèves");
+      element.setAttribute("title", customId === EXAM_ID ? "Examen verrouillé pour les élèves" : "Fiche fermée pour les élèves");
     } else {
       element.removeAttribute("title");
+    }
+    if (customId === EXAM_ID) {
+      const label = element.querySelector("[data-exam-access-label]");
+      if (label) label.textContent = closed ? "Examen verrouillé" : "Voir les examens disponibles";
+      const caption = document.querySelector("[data-exam-access-caption]");
+      if (caption) caption.textContent = closed
+        ? "L’examen est temporairement verrouillé par les professeurs."
+        : "Les examens publiés s’ouvrent ici après validation des quatre modules.";
     }
   });
 }
@@ -100,7 +110,7 @@ function showAllClosedNotice() {
 }
 
 function applyInitialLocalStates() {
-  CUSTOM_IDS.forEach(customId => {
+  ACCESS_IDS.forEach(customId => {
     const enabled = readLocalState(customId);
     if (enabled !== null) {
       setAvailabilityState(customId, enabled);
@@ -141,7 +151,7 @@ async function startLinksAvailability() {
     const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    CUSTOM_IDS.forEach(customId => {
+    ACCESS_IDS.forEach(customId => {
       const availabilityRef = doc(db, "customAvailability", customId);
 
       withTimeout(

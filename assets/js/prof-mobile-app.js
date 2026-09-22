@@ -24,7 +24,7 @@
 
   const desktopIconNames = {
     "TB": "home", "⌘": "home", "CO": "corrections", "RE": "responses", "EX": "exams", "N2": "exams",
-    "ME": "modules", "CE": "customs", "PA": "settings", "AD": "admin"
+    "ME": "modules", "CE": "customs", "FE": "customs", "PA": "settings", "AD": "admin"
   };
 
   document.querySelectorAll(".v2-nav-mark").forEach(mark => {
@@ -61,7 +61,7 @@
       section: "modules"
     },
     "prof-customs-eleves.html": {
-      title: "Accès aux customs",
+      title: "Fiches Élèves",
       section: "access"
     }
   };
@@ -140,7 +140,7 @@
     </a>
     <a href="prof-customs-eleves.html" data-mobile-section="access">
       <span class="prof-mobile-tab-icon" aria-hidden="true">${profNavIcon("customs")}</span>
-      <small>Gérer</small>
+      <small>Fiches</small>
     </a>
   `;
 
@@ -171,7 +171,7 @@
         <a href="prof-exam-4x91q.html" data-prof-notification-target="exam"><span>${profNavIcon("exams")}</span><strong>Examens</strong><small>Corriger les copies</small></a>
         <a href="prof-exam-builder.html"><span>${profNavIcon("exams")}</span><strong>Nouvel examen</strong><small>Créer un formulaire</small></a>
         <a href="prof-modules-eleves.html"><span>${profNavIcon("modules")}</span><strong>Modules élèves</strong><small>Cocher et dater</small></a>
-        <a href="prof-customs-eleves.html"><span>${profNavIcon("customs")}</span><strong>Accès customs</strong><small>Ouvrir ou fermer</small></a>
+        <a href="prof-customs-eleves.html"><span>${profNavIcon("customs")}</span><strong>Fiches Élèves</strong><small>Customs et Examen 2</small></a>
         <a href="../stages/" data-university-stage-link><span>${profNavIcon("stage")}</span><strong>Suivi de stage</strong><small>Stagiaires et examens</small></a>
         <a href="../index.html"><span>${profNavIcon("university")}</span><strong>Portail</strong><small>Changer d’espace</small></a>
       </div>

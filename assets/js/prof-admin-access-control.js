@@ -4,7 +4,7 @@ const PERMISSIONS = [
   ["customResponses", "Réponses élèves"],
   ["exams", "Examens"],
   ["modules", "Modules élèves"],
-  ["customAccess", "Customs élèves"],
+  ["customAccess", "Fiches Élèves"],
   ["stages", "Suivi de stage"]
 ];
 

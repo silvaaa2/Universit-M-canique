@@ -218,7 +218,7 @@ test("la connexion Discord et la préparation du tableau ont une limite de temps
   const html = read("pages/espace-prof.html");
   const auth = read("assets/js/prof-auth-v2.js");
 
-  assert.match(html, /prof-auth-v2\.js\?v=40/);
+  assert.match(html, /prof-auth-v2\.js\?v=41/);
   assert.match(auth, /const DISCORD_SIGNIN_TIMEOUT_MS = 12000/);
   assert.match(auth, /const DASHBOARD_GATE_TIMEOUT_MS = 3500/);
   assert.match(auth, /signal: controller\.signal/);

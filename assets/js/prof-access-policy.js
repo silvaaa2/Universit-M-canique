@@ -44,7 +44,7 @@ function permissionForElement(element) {
   if (source.includes("prof-rp-7x92q") || source.includes("réponses élèves")) return "customResponses";
   if (source.includes("prof-exam-4x91q") || source.includes("prof-exam-builder") || text.trim() === "examens" || source.includes("nouvel examen")) return "exams";
   if (source.includes("prof-modules-eleves") || source.includes("modules élèves")) return "modules";
-  if (source.includes("prof-customs-eleves") || source.includes("customs élèves")) return "customAccess";
+  if (source.includes("prof-customs-eleves") || source.includes("fiches élèves") || source.includes("customs élèves")) return "customAccess";
   if (source.includes("stages/") || source.includes("suivi de stage")) return "stages";
   if (source.includes("corrig") || text.trim() === "corrigés") return "corrections";
   if (source.includes("espace-prof") || source.includes("tableau de bord") || source.includes("centre de pilotage")) return "dashboard";
