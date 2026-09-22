@@ -22,12 +22,15 @@ test("le nouvel éditeur crée un examen natif avec barème, photos et aperçu",
   assert.match(script, /prof=exam-builder/);
   assert.match(script, /compressImage/);
   assert.match(script, /question-image-input/);
-  assert.doesNotMatch(script, /input\.click\(\)/);
+  assert.match(script, /data-pick-image/);
+  assert.match(script, /input\.showPicker\(\)/);
+  assert.match(script, /input\.click\(\)/);
   assert.match(css, /\.exam-editor \.question-image-input/);
   assert.match(css, /position:\s*static/);
   assert.match(css, /::file-selector-button/);
-  assert.match(page, /prof-exam-builder\.css\?v=5/);
-  assert.match(page, /prof-exam-builder\.js\?v=5/);
+  assert.match(css, /\.image-picker-button/);
+  assert.match(page, /prof-exam-builder\.css\?v=6/);
+  assert.match(page, /prof-exam-builder\.js\?v=6/);
   assert.match(script, /correctAnswers/);
   assert.match(css, /\.exam-question-list/);
   assert.match(css, /@media \(max-width: 760px\)/);

@@ -187,9 +187,9 @@ function renderQuestion(question, index) {
         </div>
         <div class="question-image-zone">
           <div class="image-picker">
-            <span>Ajouter une photo</span>
+            <button type="button" class="image-picker-button" data-pick-image="${escapeHtml(question.id)}">+ Choisir une photo sur l’appareil</button>
             <input class="question-image-input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-image-input="${escapeHtml(question.id)}" aria-label="Choisir une photo depuis cet appareil">
-            <small>JPG, PNG ou WebP · 12 Mo maximum</small>
+            <small>Le bouton natif reste disponible juste au-dessus du format accepté · JPG, PNG ou WebP · 12 Mo maximum</small>
           </div>
           ${question.image ? `<div class="question-image-preview"><img src="${question.image}" alt="Photo de la question"><button type="button" class="image-remove" data-remove-image="${escapeHtml(question.id)}" aria-label="Retirer la photo">×</button></div>` : `<span class="exam-library-status">Aucune photo</span>`}
         </div>
@@ -468,6 +468,29 @@ editor.addEventListener("change", async event => {
 editor.addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target) return;
+  if (target.dataset.pickImage) {
+    event.preventDefault();
+    const input = target.closest(".image-picker")?.querySelector("input[type='file']");
+    if (!input) {
+      setStatus("Le sélecteur de photos est introuvable. Recharge la page.", "error");
+      return;
+    }
+
+    input.value = "";
+    setStatus("Ouverture du sélecteur de photos...", "info");
+    try {
+      if (typeof input.showPicker === "function") {
+        input.showPicker();
+      } else {
+        input.click();
+      }
+    } catch (error) {
+      console.error("Ouverture du sélecteur de photos impossible :", error);
+      setStatus("Le navigateur a bloqué l’ouverture. Utilise le bouton natif « Choisir un fichier » dans le cadre photo.", "error");
+      input.focus();
+    }
+    return;
+  }
   if (target.dataset.addQuestion) {
     if (questions.length >= 60) return setStatus("Limite de 60 questions atteinte.", "error");
     questions.push(defaultQuestion(target.dataset.addQuestion));
