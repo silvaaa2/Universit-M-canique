@@ -497,7 +497,7 @@
   <link rel="stylesheet" href="../assets/css/prof-presence.css?v=4">
   <link rel="stylesheet" href="../assets/css/prof-simplified-mode.css?v=5">
   <link rel="stylesheet" href="../assets/css/unified-motion.css?v=5">
-  <link rel="stylesheet" href="../assets/css/prof-modules-eleves-v4.css?v=1">
+  <link rel="stylesheet" href="../assets/css/prof-modules-eleves-v4.css?v=2">
   <script src="../assets/js/prof-simplified-mode.js?v=5"></script>
   <script src="../assets/js/prof-local-preferences.js?v=2"></script>
 </head>
@@ -620,6 +620,29 @@
   </section>
 </main>
 
+<div id="moduleWarningModal" class="module-warning-modal" hidden aria-hidden="true">
+  <div class="module-warning-backdrop" data-warning-close></div>
+  <section class="module-warning-dialog" role="dialog" aria-modal="true" aria-labelledby="moduleWarningTitle" aria-describedby="moduleWarningSubtitle">
+    <button type="button" class="module-warning-close" data-warning-close aria-label="Fermer">×</button>
+    <p class="module-warning-kicker">Suivi modules</p>
+    <h2 id="moduleWarningTitle" class="module-warning-title">Avertissement</h2>
+    <p id="moduleWarningSubtitle" class="module-warning-subtitle"></p>
+    <div class="module-warning-choices">
+      <button type="button" class="module-warning-choice" data-warning-choice="none">Aucun averto</button>
+      <button type="button" class="module-warning-choice" data-warning-choice="warning1">Averto 1</button>
+      <button type="button" class="module-warning-choice" data-warning-choice="warning2">Averto 2</button>
+      <button type="button" class="module-warning-choice" data-warning-choice="warning3">Averto 3</button>
+      <button type="button" class="module-warning-choice" data-warning-choice="refused">Refusé</button>
+    </div>
+    <label class="module-warning-label" for="moduleWarningComment">Motif ou commentaire</label>
+    <textarea id="moduleWarningComment" class="module-warning-comment" data-clipboard-scan-ignore placeholder="Explique l’avertissement..."></textarea>
+    <div class="module-warning-actions">
+      <button type="button" class="module-warning-cancel" data-warning-close>Annuler</button>
+      <button type="button" class="module-warning-save" data-warning-save>Enregistrer</button>
+    </div>
+  </section>
+</div>
+
 <script src="../assets/js/navigation.js?v=1012"></script>
 <script>
   (() => {
@@ -691,7 +714,7 @@
   })();
 </script>
 <script src="../assets/js/prof-live-refresh.js?v=4"></script>
-<script type="module" src="../assets/js/prof-modules-eleves-v4.js?v=2"></script>
+<script type="module" src="../assets/js/prof-modules-eleves-v4.js?v=3"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260920-modules"></script>
 <script type="module" src="../assets/js/prof-access-policy.js?v=2"></script>
 <script type="module" src="../assets/js/prof-audit.js?v=2"></script>

@@ -10,13 +10,18 @@ test("le triangle averto est intégré au nouveau contrôleur Modules", () => {
   const navigation = read("assets/js/navigation.js");
   const page = read("pages/prof-modules-eleves.html");
 
-  assert.match(modules, /target\?\.closest\("button\[data-warning-toggle\]"\)/);
+  assert.match(modules, /target\.closest\("button\[data-warning-toggle\]"\)/);
   assert.match(modules, /openWarning\(warning\.dataset\.studentId/);
+  assert.match(modules, /modal\.setAttribute\("aria-hidden", "false"\)/);
+  assert.match(modules, /document\.body\.classList\.add\("module-warning-open"\)/);
+  assert.match(modules, /event\.key !== "Escape"/);
   assert.match(modules, /action: "warning"/);
   assert.match(endpoint, /payload\.action === "warning"/);
   assert.match(endpoint, /warningComment: cleanModuleText\(payload\.warningComment, 1000\)/);
   assert.doesNotMatch(modules, /prof-modules-alerts\.js/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-alerts\.js/);
   assert.match(page, /navigation\.js\?v=1012/);
-  assert.match(page, /prof-modules-eleves-v4\.js\?v=2/);
+  assert.match(page, /id="moduleWarningModal" class="module-warning-modal" hidden aria-hidden="true"/);
+  assert.match(page, /prof-modules-eleves-v4\.css\?v=2/);
+  assert.match(page, /prof-modules-eleves-v4\.js\?v=3/);
 });

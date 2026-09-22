@@ -72,6 +72,7 @@ const state = {
   warningLevel: "none",
   extrasStarted: false
 };
+let warningCloseTimer = 0;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -625,6 +626,7 @@ function ensureWarningModal() {
   modal.id = "moduleWarningModal";
   modal.className = "module-warning-modal";
   modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
   modal.innerHTML = `
     <div class="module-warning-backdrop" data-warning-close></div>
     <section class="module-warning-dialog" role="dialog" aria-modal="true" aria-labelledby="moduleWarningTitle">
@@ -661,15 +663,31 @@ function openWarning(studentId) {
   modal.querySelector("#moduleWarningSubtitle").textContent = `ID Unique : ${student.idUnique}`;
   modal.querySelector("#moduleWarningComment").value = progress.warningComment;
   refreshWarningChoices();
+  window.clearTimeout(warningCloseTimer);
   modal.hidden = false;
-  requestAnimationFrame(() => modal.classList.add("is-open"));
+  modal.setAttribute("aria-hidden", "false");
+  modal.classList.add("is-open");
+  document.body.classList.add("module-warning-open");
+  window.requestAnimationFrame(() => {
+    const closeButton = modal.querySelector("[data-warning-close]");
+    try {
+      closeButton?.focus({ preventScroll: true });
+    } catch (error) {
+      closeButton?.focus();
+    }
+  });
 }
 
 function closeWarning() {
   const modal = document.getElementById("moduleWarningModal");
   if (!modal) return;
   modal.classList.remove("is-open");
-  window.setTimeout(() => { modal.hidden = true; }, 180);
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("module-warning-open");
+  window.clearTimeout(warningCloseTimer);
+  warningCloseTimer = window.setTimeout(() => {
+    if (!modal.classList.contains("is-open")) modal.hidden = true;
+  }, 180);
   state.warningStudentId = "";
 }
 
@@ -753,15 +771,10 @@ dom.table?.addEventListener("click", event => {
   const target = event.target instanceof Element ? event.target : null;
   const retry = target?.closest("[data-modules-inline-retry]");
   const check = target?.closest("button[data-module-check]");
-  const warning = target?.closest("button[data-warning-toggle]");
   if (retry) void loadWorkspace({ force: true });
   if (check) {
     event.preventDefault();
     void changeCheck(check);
-  }
-  if (warning) {
-    event.preventDefault();
-    openWarning(warning.dataset.studentId || "");
   }
 });
 
@@ -773,14 +786,44 @@ dom.table?.addEventListener("change", event => {
 
 document.addEventListener("click", event => {
   const target = event.target instanceof Element ? event.target : null;
-  if (target?.closest("[data-warning-close]")) closeWarning();
+  if (!target) return;
+
+  const warning = target.closest("button[data-warning-toggle]");
+  if (warning) {
+    event.preventDefault();
+    openWarning(warning.dataset.studentId || "");
+    return;
+  }
+
+  if (target.closest("[data-warning-close]")) {
+    event.preventDefault();
+    closeWarning();
+    return;
+  }
+
   const choice = target?.closest("[data-warning-choice]");
   if (choice) {
+    event.preventDefault();
     state.warningLevel = normalizeWarningLevel(choice.dataset.warningChoice);
     refreshWarningChoices();
+    return;
   }
-  if (target?.closest("[data-warning-save]")) void saveWarning();
-  if (target?.closest("[data-modules-auth-retry]")) window.location.reload();
+
+  if (target.closest("[data-warning-save]")) {
+    event.preventDefault();
+    void saveWarning();
+    return;
+  }
+
+  if (target.closest("[data-modules-auth-retry]")) window.location.reload();
+}, true);
+
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape") return;
+  const modal = document.getElementById("moduleWarningModal");
+  if (!modal || modal.hidden) return;
+  event.preventDefault();
+  closeWarning();
 });
 
 window.addEventListener("prof:live-refresh", () => {

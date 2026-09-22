@@ -146,7 +146,7 @@ body.modules-page .modules-v2-content {
 .module-warning-modal {
   position: fixed;
   inset: 0;
-  z-index: 10050;
+  z-index: 40000;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -158,6 +158,18 @@ body.modules-page .modules-v2-content {
 .module-warning-modal.is-open {
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
+}
+
+.module-warning-modal[aria-hidden="false"] {
+  display: grid !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+body.module-warning-open {
+  overflow: hidden !important;
 }
 
 .module-warning-backdrop {
@@ -172,6 +184,7 @@ body.modules-page .modules-v2-content {
   max-height: min(720px, calc(100vh - 40px));
   overflow: auto;
   position: relative;
+  z-index: 1;
   padding: 30px;
   border: 1px solid rgba(245, 208, 112, .28);
   border-radius: 18px;
