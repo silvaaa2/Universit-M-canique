@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="../assets/css/loader.css?v=9028">
   <link rel="stylesheet" href="../assets/css/prof.css?v=9028">
   <link rel="stylesheet" href="../assets/css/prof-v2.css?v=16">
-  <link rel="stylesheet" href="../assets/css/prof-exam-v2.css?v=5">
+  <link rel="stylesheet" href="../assets/css/prof-exam-v2.css?v=6">
   <link rel="stylesheet" href="../assets/css/mobile-correction.css?v=20260808-ios1">
   <link rel="stylesheet" href="../assets/css/mobile-correction-flow.css?v=20260808-flow1">
   <link rel="stylesheet" href="../assets/css/mobile-correction-easy.css?v=20260809-phone1">
@@ -193,12 +193,15 @@
               <div>
                 <p class="v2-eyebrow">Examen 2</p>
                 <h2>Formulaires natifs</h2>
-                <p>Les examens créés directement sur le site apparaissent ici. Les réponses arriveront lors de la V2 élève.</p>
+                <p>Examens publiés, copies reçues, correction des réponses écrites et bonus Custom/Stage.</p>
               </div>
               <button type="button" class="builder-btn primary" onclick="goPage('prof-exam-builder.html')">Ouvrir l’éditeur</button>
             </header>
             <div id="examNativeStatus" class="exam-native-status">Choisis Examen 2 pour charger les formulaires.</div>
             <div id="examNativeList" class="exam-native-list"></div>
+            <div class="exam-native-results-head"><h3>Copies reçues</h3><button type="button" id="examNativeRefresh">Actualiser</button></div>
+            <div id="examNativeResultsStatus" class="exam-native-status" role="status" aria-live="polite"></div>
+            <div id="examNativeResults" class="exam-native-results"></div>
           </section>
         </section>
       </div>
@@ -278,7 +281,7 @@
 </script>
 <script src="../assets/js/prof-live-refresh.js?v=4"></script>
 <script type="module" src="../assets/js/prof-guard-exam.js?v=9056"></script>
-<script type="module" src="../assets/js/prof-exam-2-panel.js?v=1"></script>
+<script type="module" src="../assets/js/prof-exam-2-panel.js?v=2"></script>
 <script type="module" src="../assets/js/prof-notifications-v2.js?v=7"></script>
 <script src="../assets/js/prof-mobile-app.js?v=20260916-perf"></script>
 <script type="module" src="../assets/js/prof-presence.js?v=6"></script>

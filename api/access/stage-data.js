@@ -1,5 +1,6 @@
 const { sendJson } = require("../../lib/server/discord-prof-auth.js");
 const { recordAuditEvent } = require("../../lib/server/audit-log.js");
+const { refreshNativeExamRows } = require("../../lib/server/native-exam-v2.js");
 const {
   assertSameOrigin,
   validateStageCompanySession
@@ -216,6 +217,9 @@ function sanitizeCompanyArchive(archive, companyId) {
       totalScore: Number(row?.totalScore || 0),
       maxScore: Number(row?.maxScore || 50),
       status: String(row?.status || "pending"),
+      recordType: String(row?.recordType || ""),
+      examId: String(row?.examId || ""),
+      examTitle: String(row?.examTitle || ""),
       companyId: String(row?.companyId || ""),
       companyName: String(row?.companyName || "")
     }));
@@ -268,7 +272,23 @@ async function readCompanyStages(session) {
 
 async function readCompanyExams() {
   const rows = await listDocumentsCached(EXAM_COLLECTION);
-  return rows.filter(row => row.archived !== true);
+  const refreshed = await refreshNativeExamRows(rows);
+  collectionCache.set(EXAM_COLLECTION, { rows: refreshed, expiresAt: Date.now() + COLLECTION_CACHE_TTL_MS });
+  return refreshed.filter(row => row.archived !== true).map(row => ({
+    id: row.id,
+    idUnique: row.idUnique,
+    normalizedIdUnique: row.normalizedIdUnique,
+    studentName: row.studentName,
+    totalScore: row.totalScore,
+    maxScore: row.maxScore,
+    status: row.status,
+    examId: row.examId || "",
+    examTitle: row.examTitle || "",
+    recordType: row.recordType || "",
+    scoreFieldCount: Object.keys(row.fieldScores || {}).length,
+    updatedAt: row.updatedAt,
+    archived: row.archived === true
+  }));
 }
 
 function sanitizeStudentProgress(row) {

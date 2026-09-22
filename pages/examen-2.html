@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Examen 2 - Mécanique Université</title>
+  <link rel="icon" href="../Images/favicon.png" type="image/png">
+  <link rel="stylesheet" href="../assets/css/student-exam-v2.css?v=1">
+</head>
+<body>
+  <header class="student-exam-header">
+    <a class="student-exam-brand" href="../eleve.html"><img src="../Images/logo.webp" alt="" width="48" height="48"><span>Mécanique <b>Université</b></span></a>
+    <a class="student-exam-back" href="../eleve.html">← Espace élève</a>
+  </header>
+  <main class="student-exam-main">
+    <section class="student-exam-hero">
+      <p>ÉVALUATION · CURSUS ACTUEL</p>
+      <h1>Examen 2</h1>
+      <span>Choisis un examen publié, renseigne ton identité, puis envoie ta copie.</span>
+    </section>
+    <p id="studentExamStatus" class="student-exam-status" role="status" aria-live="polite">Chargement des examens…</p>
+    <section id="studentExamList" class="student-exam-list" aria-label="Examens disponibles"></section>
+    <section id="studentExamPanel" class="student-exam-panel" hidden>
+      <button type="button" class="student-exam-link" id="studentExamListBack">← Tous les examens</button>
+      <div id="studentExamContent"></div>
+    </section>
+  </main>
+  <script type="module" src="../assets/js/student-exam-v2.js?v=1"></script>
+</body>
+</html>

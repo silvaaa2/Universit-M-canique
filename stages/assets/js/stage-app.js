@@ -874,10 +874,13 @@ function dedupeExamParticipants(participants) {
       firebaseIds: getExamParticipantFirebaseIds(participant)
     };
 
-    const current = participantsById.get(normalizedId);
+    const examKey = participant.examId
+      ? `native:${participant.examId}:${normalizedId}`
+      : `classic:${normalizedId}`;
+    const current = participantsById.get(examKey);
 
     if (!current) {
-      participantsById.set(normalizedId, normalizedParticipant);
+      participantsById.set(examKey, normalizedParticipant);
       return;
     }
 
@@ -885,7 +888,7 @@ function dedupeExamParticipants(participants) {
       ? normalizedParticipant
       : current;
 
-    participantsById.set(normalizedId, {
+    participantsById.set(examKey, {
       ...preferred,
       firebaseIds: [...new Set([
         ...getExamParticipantFirebaseIds(current),
@@ -917,9 +920,10 @@ async function loadExamParticipants() {
         totalScore: Number(data.totalScore || 0),
         maxScore: Number(data.maxScore || 50),
         status: data.status || "pending",
-        scoreFieldCount: data.fieldScores && typeof data.fieldScores === "object"
-          ? Object.keys(data.fieldScores).length
-          : 0,
+        recordType: data.recordType || "",
+        examId: data.examId || "",
+        examTitle: data.examTitle || "",
+        scoreFieldCount: Number(data.scoreFieldCount || 0),
         updatedAt: data.updatedAt || data.updatedAtIso || null
       });
     });
@@ -945,6 +949,9 @@ async function loadExamParticipants() {
         totalScore: Number(data.totalScore || 0),
         maxScore: Number(data.maxScore || 50),
         status: data.status || "pending",
+        recordType: data.recordType || "",
+        examId: data.examId || "",
+        examTitle: data.examTitle || "",
         scoreFieldCount: data.fieldScores && typeof data.fieldScores === "object"
           ? Object.keys(data.fieldScores).length
           : 0,
@@ -1319,6 +1326,9 @@ async function createStageArchive(start, end) {
       idUnique: participant.idUnique || "",
       normalizedIdUnique: normalizedId,
       studentName: participant.studentName || "Nom non renseigné",
+      recordType: participant.recordType || "",
+      examId: participant.examId || "",
+      examTitle: participant.examTitle || "",
       totalScore: Number(participant.totalScore || 0),
       maxScore: Number(participant.maxScore || 50),
       status: participant.status || "pending",
@@ -1802,19 +1812,19 @@ function renderEffectifRows() {
 
     <div class="effectif-list">
       ${rows.map(item => {
-        const exam = displayedExams.find(participant => {
-          return participant.normalizedIdUnique === item.normalizedIdUnique;
-        });
+        const studentExams = displayedExams.filter(participant => (
+          participant.normalizedIdUnique === item.normalizedIdUnique
+        ));
 
         const stageCompany = currentArchive
           ? getArchiveStageCompanyForId(currentArchive, item.normalizedIdUnique)
           : getStageCompanyForId(item.normalizedIdUnique);
 
-        const examText = exam
-          ? `${escapeHtml(exam.totalScore)} / ${escapeHtml(exam.maxScore)} · ${escapeHtml(getStatusLabel(exam.status))}`
+        const examText = studentExams.length
+          ? studentExams.map(exam => `${exam.examTitle || "Examen 1"} : ${exam.totalScore} / ${exam.maxScore} · ${getStatusLabel(exam.status)}`).join(" · ")
           : "Pas d’examen";
 
-        const examClass = exam ? "ok" : "no";
+        const examClass = studentExams.length ? "ok" : "no";
 
         const stageText = stageCompany
           ? `✅ ${escapeHtml(stageCompany)}`
@@ -1844,7 +1854,7 @@ function renderEffectifRows() {
             </div>
 
             <em class="${examClass}">
-              ${exam ? "✅ Examen" : "❌ Aucun examen"}
+              ${studentExams.length ? "✅ Examen" : "❌ Aucun examen"}
             </em>
 
             <em class="${stageClass}">
@@ -2196,6 +2206,7 @@ function renderExamParticipants() {
 
             <div class="exam-name">
               <b title="${escapeHtml(participant.studentName)}">${escapeHtml(participant.studentName)}</b>
+              <span>${escapeHtml(participant.examTitle || "Examen 1")}</span>
               <span>${escapeHtml(participant.totalScore)} / ${escapeHtml(participant.maxScore)} · ${escapeHtml(statusLabel)}</span>
               <span class="exam-score-track" aria-label="${scorePercent}% des points">
                 <i style="width:${scorePercent}%"></i>
@@ -2293,6 +2304,7 @@ function renderArchiveExamParticipants(content) {
 
             <div class="exam-name">
               <b title="${escapeHtml(participant.studentName || "Nom non renseigné")}">${escapeHtml(participant.studentName || "Nom non renseigné")}</b>
+              <span>${escapeHtml(participant.examTitle || "Examen 1")}</span>
               <span>${escapeHtml(participant.totalScore || 0)} / ${escapeHtml(participant.maxScore || 50)} · ${escapeHtml(statusLabel)}</span>
             </div>
 
@@ -2709,7 +2721,7 @@ async function loadCompanyStudentProgress(normalizedIdUnique) {
   return student;
 }
 
-function renderCompanyStudentProgress(student, exam) {
+function renderCompanyStudentProgress(student, exams) {
   const checks = student?.checks || {};
   const dates = student?.dates || {};
   const modules = [
@@ -2733,12 +2745,27 @@ function renderCompanyStudentProgress(student, exam) {
     `;
   }).join("");
 
-  const safeMaxScore = exam ? Math.max(1, Number(exam.maxScore || 50)) : 50;
-  const safeTotalScore = exam
-    ? Math.max(0, Math.min(safeMaxScore, Number(exam.totalScore || 0)))
-    : 0;
-  const examPercent = exam ? Math.round((safeTotalScore / safeMaxScore) * 100) : 0;
-  const examStatus = exam ? getStatusLabel(exam.status) : "Pas encore passé";
+  const examCards = exams.length ? exams.map(exam => {
+    const safeMaxScore = Math.max(1, Number(exam.maxScore || 50));
+    const safeTotalScore = Math.max(0, Math.min(safeMaxScore, Number(exam.totalScore || 0)));
+    const examPercent = Math.round((safeTotalScore / safeMaxScore) * 100);
+    return `
+      <article class="company-exam-card has-exam">
+        <div>
+          <span>${escapeHtml(exam.examTitle || "Examen 1")}</span>
+          <strong>${escapeHtml(safeTotalScore)} / ${escapeHtml(safeMaxScore)}</strong>
+          <small>${escapeHtml(getStatusLabel(exam.status))}</small>
+        </div>
+        <div class="company-exam-gauge" aria-label="${examPercent}% des points">
+          <i style="width:${examPercent}%"></i>
+        </div>
+      </article>
+    `;
+  }).join("") : `
+    <article class="company-exam-card no-exam">
+      <div><span>Examen</span><strong>Aucun résultat</strong><small>Pas encore passé</small></div>
+    </article>
+  `;
 
   return `
     <div class="company-progress-summary">
@@ -2753,16 +2780,7 @@ function renderCompanyStudentProgress(student, exam) {
 
     <div class="company-progress-grid">${moduleCards}</div>
 
-    <article class="company-exam-card ${exam ? "has-exam" : "no-exam"}">
-      <div>
-        <span>Examen</span>
-        <strong>${exam ? `${escapeHtml(safeTotalScore)} / ${escapeHtml(safeMaxScore)}` : "Aucun résultat"}</strong>
-        <small>${escapeHtml(examStatus)}</small>
-      </div>
-      <div class="company-exam-gauge" aria-label="${examPercent}% des points">
-        <i style="width:${examPercent}%"></i>
-      </div>
-    </article>
+    ${examCards}
   `;
 }
 
@@ -2791,14 +2809,14 @@ window.openCompanyStudentProgress = async function(normalizedIdUnique) {
     document.getElementById("companyStudentProgressCloseBtn")?.focus();
   });
 
-  const exam = examParticipants.find(participant => {
+  const exams = examParticipants.filter(participant => {
     return participant.normalizedIdUnique === normalizedId;
   });
 
   try {
     const student = await loadCompanyStudentProgress(normalizedId);
     if (modal.dataset.studentId !== normalizedId) return;
-    content.innerHTML = renderCompanyStudentProgress(student, exam);
+    content.innerHTML = renderCompanyStudentProgress(student, exams);
   } catch (error) {
     console.error("Erreur chargement parcours élève :", error);
     if (modal.dataset.studentId !== normalizedId) return;

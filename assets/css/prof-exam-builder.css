@@ -137,3 +137,4 @@ body.exam-builder-page { overflow: hidden; }
   .question-image-zone { grid-column: 1; align-items: stretch; flex-direction: column; }
   .exam-builder-head h2 { font-size: 42px; }
 }
+.exam-fixed-block{margin-top:12px;padding:15px 18px;border-color:rgba(239,206,114,.28);background:rgba(239,206,114,.04)}.exam-fixed-block strong{color:var(--v2-gold)}.exam-fixed-block p{margin:7px 0;color:var(--v2-text)}.exam-fixed-block small{color:var(--v2-muted)}

@@ -15,6 +15,7 @@ const {
 } = require("../../lib/server/prof-access-control.js");
 const handleCursusManagement = require("../../lib/server/cursus-management.js");
 const { handleProfExamBuilder } = require("../../lib/server/prof-exam-builder.js");
+const { handleProfExamResults, handleStudentExam } = require("../../lib/server/native-exam-v2.js");
 const {
   COMPANIES,
   authenticateCompanyCode,
@@ -69,11 +70,28 @@ module.exports = async function handler(request, response) {
   const adminAccessControl = adminAction === "access-control";
   const profAccess = requestUrl.searchParams.get("prof") === "access";
   const profExamBuilder = requestUrl.searchParams.get("prof") === "exam-builder";
+  const profExamResults = requestUrl.searchParams.get("prof") === "exam-v2-results";
+  const studentExam = requestUrl.searchParams.get("student") === "exam-v2";
   const auditRequest = requestUrl.searchParams.get("audit") === "1";
   const stageContext = requestUrl.searchParams.get("context") === "stages";
 
   if (adminCursusManagement) {
     await handleCursusManagement(request, response);
+    return;
+  }
+
+  if (studentExam || profExamResults) {
+    try {
+      const access = profExamResults ? await requireProf(request) : null;
+      if (profExamResults) await handleProfExamResults(request, response, access);
+      else await handleStudentExam(request, response);
+    } catch (error) {
+      const status = Number(error?.status) || 500;
+      console.error("Examen 2 indisponible :", error);
+      sendJson(response, status, {
+        error: status >= 500 ? "Examen temporairement indisponible." : error.message
+      });
+    }
     return;
   }
 

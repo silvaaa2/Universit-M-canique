@@ -29,8 +29,8 @@ test("le nouvel éditeur crée un examen natif avec barème, photos et aperçu",
   assert.match(css, /position:\s*static/);
   assert.match(css, /::file-selector-button/);
   assert.match(css, /\.image-picker-button/);
-  assert.match(page, /prof-exam-builder\.css\?v=7/);
-  assert.match(page, /prof-exam-builder\.js\?v=7/);
+  assert.match(page, /prof-exam-builder\.css\?v=8/);
+  assert.match(page, /prof-exam-builder\.js\?v=8/);
   assert.match(script, /correctAnswers/);
   assert.match(script, /Plusieurs réponses sont possibles/);
   assert.doesNotMatch(script, /<input type="\$\{type\}" disabled>/);
@@ -53,7 +53,8 @@ test("le serveur nettoie le formulaire et calcule exactement son barème", () =>
 
   assert.equal(exam.title, "Examen mécanique");
   assert.equal(exam.questionCount, 4);
-  assert.equal(exam.maxScore, 8.5);
+  assert.equal(exam.questionMaxScore, 8.5);
+  assert.equal(exam.maxScore, 10.5);
   assert.equal(exam.status, "published");
   assert.deepEqual(exam.questions[1].correctAnswers, ["Bleu"]);
   assert.deepEqual(exam.questions[2].correctAnswers, ["true"]);
@@ -101,6 +102,6 @@ test("Nouvel examen reste lié au droit Examens et Examen 2 apparaît dans les r
   assert.match(policy, /prof-exam-builder/);
   assert.match(examPage, /data-exam-mode="native"/);
   assert.match(examPage, />Examen 2</);
-  assert.match(examPage, /prof-exam-2-panel\.js\?v=1/);
+  assert.match(examPage, /prof-exam-2-panel\.js\?v=2/);
   navPages.forEach(page => assert.match(read(page), /prof-exam-builder\.html/));
 });

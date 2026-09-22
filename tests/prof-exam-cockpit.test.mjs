@@ -12,7 +12,7 @@ test("le Cockpit remplace uniquement la zone de correction des examens", () => {
   const css = read("assets/css/prof-exam-v2.css");
   const loader = read("assets/js/exam-loader-x8p2.js");
 
-  assert.match(page, /prof-exam-v2\.css\?v=5/);
+  assert.match(page, /prof-exam-v2\.css\?v=6/);
   assert.match(page, /prof-guard-exam\.js\?v=9056/);
   assert.match(page, /<aside class="v2-sidebar exam-v2-sidebar">/);
 

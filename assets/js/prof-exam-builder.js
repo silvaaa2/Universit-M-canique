@@ -121,7 +121,7 @@ function formatDate(value) {
 }
 
 function updateSummary() {
-  const score = Math.round(questions.reduce((total, question) => total + (Number(question.points) || 0), 0) * 100) / 100;
+  const score = Math.round(questions.reduce((total, question) => total + (Number(question.points) || 0), 0) * 100) / 100 + 2;
   document.getElementById("questionCount").textContent = String(questions.length);
   document.getElementById("maxScore").textContent = String(score).replace(".", ",");
   document.getElementById("examStateLabel").textContent = currentStatus === "published" ? "Publié" : currentStatus === "archived" ? "Archivé" : "Brouillon";
@@ -387,7 +387,7 @@ function previewAnswer(question) {
 
 function openPreview() {
   const payload = collectPayload(currentStatus);
-  const score = questions.reduce((total, question) => total + (Number(question.points) || 0), 0);
+  const score = questions.reduce((total, question) => total + (Number(question.points) || 0), 0) + 2;
   document.getElementById("previewTitle").textContent = payload.title || "Examen sans titre";
   document.getElementById("examPreviewContent").innerHTML = `
     <section class="preview-intro">
@@ -395,6 +395,7 @@ function openPreview() {
       <p>${escapeHtml(payload.description || "Aucune description.")}</p>
       ${payload.instructions ? `<p><strong>Consignes :</strong> ${escapeHtml(payload.instructions)}</p>` : ""}
       <p><strong>${payload.durationMinutes ? `${payload.durationMinutes} minutes · ` : ""}${score} points</strong></p>
+      <p>Identité obligatoire : prénom, nom et ID unique · Bonus automatiques : Custom +1, Stage +1.</p>
     </section>
     ${payload.questions.map((question, index) => `
       <article class="preview-question">
