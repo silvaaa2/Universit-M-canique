@@ -78,7 +78,7 @@ test("l’admin privé contrôle les sessions, comptes, pages et journaux", asyn
   assert.match(adminLoader, /#profAdminBtn, #profAccessLogsBtn/);
   assert.match(adminPanel, /id="profAccessControlModal"/);
   assert.doesNotMatch(adminPanel, /data-admin-tab=.*accessControl/);
-  assert.match(policy, /CHECK_INTERVAL_MS = 20_000/);
+  assert.match(policy, /CHECK_INTERVAL_MS = 60_000/);
   assert.match(policy, /profAccessRevoked/);
   assert.doesNotMatch(audit, /Ouverture de la page/);
   assert.match(audit, /Validation :/);
@@ -92,7 +92,7 @@ test("les entreprises ont un graphique, une identité et un avertissement réell
   assert.match(app, /renderCompanyCursusChart/);
   assert.match(app, /renderCompanyLogo/);
   assert.match(app, /company-data-arrived/);
-  assert.match(app, /COMPANY_REFRESH_MS = 15_000/);
+  assert.match(app, /COMPANY_REFRESH_MS = 120_000/);
   assert.match(css, /\.company-warning-modal\[hidden\][\s\S]*display: none !important/);
   assert.match(css, /\.company-brand-logo/);
   assert.match(css, /\.company-cursus-chart/);

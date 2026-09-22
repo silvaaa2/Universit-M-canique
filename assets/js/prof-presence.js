@@ -22,9 +22,9 @@ const firebaseConfig = {
   appId: "1:11363330953:web:b08d1b2de1f93a8e11cf58"
 };
 
-const HEARTBEAT_MS = 30_000;
-const HIDDEN_HEARTBEAT_MS = 60_000;
-const PRESENCE_TTL_MS = 150_000;
+const HEARTBEAT_MS = 120_000;
+const HIDDEN_HEARTBEAT_MS = 300_000;
+const PRESENCE_TTL_MS = 420_000;
 const INITIAL_HEARTBEAT_DELAY_MS = 6_000;
 const PRESENCE_COLLECTION = "stageComments";
 const PRESENCE_DOCUMENT_PREFIX = "prof_presence_";

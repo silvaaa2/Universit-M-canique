@@ -42,7 +42,7 @@ test("la page Modules restaure l'ordre de chargement stable de ses fonctions", a
   assert.match(loader, /prof-modules-archives\.js\?v=1006/);
   assert.match(loader, /prof-modules-clipboard\.js\?v=11/);
   assert.match(loader, /prof-notifications-v2\.js\?v=10/);
-  assert.match(loader, /prof-presence\.js\?v=8/);
+  assert.match(loader, /prof-presence\.js\?v=9/);
   assert.match(page, /prof-modules-eleves-v4\.js\?v=1/);
   assert.doesNotMatch(page, /prof-modules-sheets-sync\.js/);
   assert.doesNotMatch(navigation, /import\("\.\/prof-modules-(?:archives|alerts)\.js/);
@@ -75,7 +75,7 @@ test("les onglets masqués suspendent les rafraîchissements lourds", async () =
 
   assert.match(liveRefresh, /document\.visibilityState !== "visible"[\s\S]*?clearTimeout\(refreshTimer\)/);
   assert.match(notifications, /Date\.now\(\) - lastCheckAt < INTERVAL_MS/);
-  assert.match(presence, /const HIDDEN_HEARTBEAT_MS = 60_000/);
+  assert.match(presence, /const HIDDEN_HEARTBEAT_MS = 300_000/);
   assert.match(presence, /orderBy\(documentId\(\)\)/);
 });
 

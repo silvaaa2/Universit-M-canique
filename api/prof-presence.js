@@ -81,7 +81,7 @@ module.exports = async function handler(req, res) {
 
     sendJson(res, 200, {
       ok: true,
-      refreshAfterMs: 10_000,
+      refreshAfterMs: 120_000,
       presences: listActivePresences(documents, now)
     });
   } catch (error) {

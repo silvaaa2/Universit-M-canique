@@ -1,7 +1,8 @@
 (() => {
   if (window.profLiveRefresh) return;
 
-  const REFRESH_INTERVAL_MS = 10_000;
+  const REFRESH_INTERVAL_MS = 60_000;
+  const CLOCK_INTERVAL_MS = 10_000;
   const RESUME_REFRESH_DELAY_MS = 4_000;
   const CLOCK_SELECTOR = "[data-prof-live-clock]";
   const EDITING_SELECTOR = "input, textarea, select, [contenteditable='true']";
@@ -9,6 +10,7 @@
   const OPEN_CORRECTION_SELECTOR = "[data-answer-card].is-open";
   let lastRefreshAt = Date.now();
   let refreshTimer = 0;
+  let clockTimer = 0;
   let stopped = false;
 
   const clockFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -86,6 +88,7 @@
   }
 
   updateClock();
+  clockTimer = window.setInterval(updateClock, CLOCK_INTERVAL_MS);
   scheduleRefresh();
   document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -97,6 +100,7 @@
     stop() {
       stopped = true;
       window.clearTimeout(refreshTimer);
+      window.clearInterval(clockTimer);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     }
   });

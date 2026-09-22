@@ -3081,6 +3081,37 @@ body.company-workspace .stage-header .brand-logo .company-brand-logo {
 
 .company-data-arrived { animation: company-data-arrived .75s ease-out; }
 
+.company-sync-status {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 12px;
+  padding: 11px 14px;
+  border: 1px solid rgba(255,196,92,.24);
+  border-radius: 15px;
+  background: rgba(255,174,52,.075);
+  color: #ffd58b;
+}
+
+.company-sync-status > span {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 50%;
+  background: #ffbc56;
+  box-shadow: 0 0 14px rgba(255,188,86,.55);
+  animation: company-sync-pulse 1.7s ease-in-out infinite;
+}
+
+.company-sync-status strong,
+.company-sync-status small { display: block; }
+.company-sync-status strong { font-size: .75rem; font-weight: 1000; }
+.company-sync-status small { margin-top: 2px; color: rgba(255,247,232,.62); font-size: .7rem; font-weight: 750; }
+
+@keyframes company-sync-pulse {
+  50% { opacity: .45; transform: scale(.76); }
+}
+
 @media (max-width: 680px) {
   .company-brand-lockup { align-items: flex-start; }
   .company-brand-lockup > .company-brand-logo { width: 52px; height: 52px; }

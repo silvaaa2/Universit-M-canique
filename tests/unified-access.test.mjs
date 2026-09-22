@@ -56,7 +56,7 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(stageCss, /\.company-student-progress-modal,[\s\S]*\.company-warning-modal\s*\{[^}]*position: fixed !important;[^}]*align-items: center;[^}]*justify-content: center;/);
   assert.match(stageCss, /body\.company-student-modal-open\s*\{[^}]*overflow: hidden;/);
   assert.doesNotMatch(stageCss, /body\.company-student-modal-open\s*\{[^}]*position: fixed;/);
-  assert.match(stageApp, /stageDirectory = \(payload\.directory \|\| \[\]\)/);
+  assert.match(stageApp, /const nextStageDirectory = \(payload\.directory \|\| \[\]\)/);
   assert.match(stageApp, /const found = stageDirectory\.find/);
   assert.match(stageApp, /IS_COMPANY_ACCESS[\s\S]*\/api\/secure-sheet\?source=effectif&sheet=current/);
   assert.match(stageApp, /currentUserRole = "company"/);
@@ -67,8 +67,8 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.match(serverProxy, /STUDENT_MODULES_COLLECTION = "studentModules"/);
   assert.match(serverProxy, /warnings: await readCompanyWarnings\(companyRows\)/);
   assert.match(serverProxy, /companyStudentIds = new Set\(companyRows/);
-  assert.match(serverProxy, /getDocument\(STUDENT_MODULES_COLLECTION, `\$\{cursusKey\}__\$\{studentId\}`\)/);
-  assert.match(serverProxy, /getDocument\(STUDENT_MODULES_COLLECTION, `\$\{cursusKey\}__\$\{requestedId\}`\)/);
+  assert.match(serverProxy, /getDocumentCached\(STUDENT_MODULES_COLLECTION, `\$\{cursusKey\}__\$\{studentId\}`\)/);
+  assert.match(serverProxy, /getDocumentCached\(STUDENT_MODULES_COLLECTION, `\$\{cursusKey\}__\$\{requestedId\}`\)/);
   assert.match(serverProxy, /warningComment[\s\S]*slice\(0, 1200\)/);
   assert.match(serverProxy, /kind === "student-progress"/);
   assert.match(serverProxy, /module1: readCheck\("module1"\)/);
@@ -76,6 +76,16 @@ test("le suivi de stage applique le périmètre entreprise côté requête", asy
   assert.doesNotMatch(stageApp, /Vérif 3|Vérif 4|company-verification-badge/);
   assert.match(serverProxy, /documentId\.startsWith\(`\$\{session\.companyId\}__`\)/);
   assert.match(serverProxy, /if \(kind !== "stages"\)/);
+  assert.match(stageApp, /COMPANY_LOCAL_CACHE_TTL_MS/);
+  assert.match(stageApp, /writeCompanyLocalCache\(kind, payload\)/);
+  assert.match(stageApp, /readCompanyLocalCache\(kind\)/);
+  assert.match(stageApp, /Promise\.allSettled\(loaders\)/);
+  assert.match(stageApp, /COMPANY_REFRESH_MS = 120_000/);
+  assert.match(stageApp, /const nextStageValidations = \(payload\.rows \|\| \[\]\)\.map/);
+  assert.match(serverProxy, /listDocumentsCached/);
+  assert.match(serverProxy, /collectionRequests/);
+  assert.match(serverProxy, /isTemporaryFirebaseReadError/);
+  assert.match(serverProxy, /invalidateCollectionCache\(STAGE_COLLECTION\)/);
 });
 
 test("les entreprises voient uniquement les avertissements de leurs stagiaires en lecture seule", async () => {

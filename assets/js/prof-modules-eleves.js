@@ -36,7 +36,7 @@ function loadModulesExtras() {
     await importOptional("./prof-modules-archives.js?v=1005", "Archives modules", 250);
     await importOptional("./prof-modules-sheets-sync.js?v=1009", "Synchronisation Sheets", 300);
     await importOptional("./prof-modules-sheets-sync-exact.js?v=1010", "Synchronisation Sheets exacte", 150);
-    await importOptional("./prof-presence.js?v=7", "Présence professeur", 1200);
+    await importOptional("./prof-presence.js?v=9", "Présence professeur", 1200);
     await importOptional("./prof-notifications-v2.js?v=9", "Pastilles de notifications", 150);
   })();
 

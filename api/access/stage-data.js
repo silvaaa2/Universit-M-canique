@@ -19,6 +19,82 @@ const STAGE_SETTINGS_COLLECTION = "stageSettings";
 const EFFECTIF_SETTINGS_DOCUMENT = "effectif";
 const MODULE_EFFECTIF_SETTINGS_DOCUMENT = "moduleEffectif";
 const COMPANY_WARNING_LEVELS = new Set(["warning1", "warning2", "warning3", "refused"]);
+const COLLECTION_CACHE_TTL_MS = 90_000;
+const ARCHIVE_CACHE_TTL_MS = 5 * 60_000;
+const DOCUMENT_CACHE_TTL_MS = 2 * 60_000;
+
+const collectionCache = new Map();
+const collectionRequests = new Map();
+const documentCache = new Map();
+const documentRequests = new Map();
+
+function isTemporaryFirebaseReadError(error) {
+  const status = Number(error?.status || 0);
+  const code = String(error?.code || "").toUpperCase();
+  return status === 408
+    || status === 425
+    || status === 429
+    || status >= 500
+    || error?.name === "TypeError"
+    || ["ECONNRESET", "ETIMEDOUT", "EAI_AGAIN", "ENETUNREACH"].includes(code);
+}
+
+async function listDocumentsCached(collectionName, ttlMs = COLLECTION_CACHE_TTL_MS) {
+  const cached = collectionCache.get(collectionName);
+  if (cached?.expiresAt > Date.now()) return cached.rows;
+  if (collectionRequests.has(collectionName)) return collectionRequests.get(collectionName);
+
+  const request = listDocuments(collectionName)
+    .then(rows => {
+      collectionCache.set(collectionName, {
+        rows,
+        expiresAt: Date.now() + ttlMs
+      });
+      return rows;
+    })
+    .catch(error => {
+      if (cached?.rows && isTemporaryFirebaseReadError(error)) {
+        console.warn(`Lecture ${collectionName} limitée, utilisation du cache serveur.`);
+        return cached.rows;
+      }
+      throw error;
+    })
+    .finally(() => collectionRequests.delete(collectionName));
+
+  collectionRequests.set(collectionName, request);
+  return request;
+}
+
+async function getDocumentCached(collectionName, documentId, ttlMs = DOCUMENT_CACHE_TTL_MS) {
+  const key = `${collectionName}/${documentId}`;
+  const cached = documentCache.get(key);
+  if (cached?.expiresAt > Date.now()) return cached.value;
+  if (documentRequests.has(key)) return documentRequests.get(key);
+
+  const request = getDocument(collectionName, documentId)
+    .then(value => {
+      documentCache.set(key, { value, expiresAt: Date.now() + ttlMs });
+      return value;
+    })
+    .catch(error => {
+      if (cached && isTemporaryFirebaseReadError(error)) {
+        console.warn(`Lecture ${key} limitée, utilisation du cache serveur.`);
+        return cached.value;
+      }
+      throw error;
+    })
+    .finally(() => documentRequests.delete(key));
+
+  documentRequests.set(key, request);
+  return request;
+}
+
+function invalidateCollectionCache(collectionName) {
+  collectionCache.delete(collectionName);
+  for (const key of documentCache.keys()) {
+    if (key.startsWith(`${collectionName}/`)) documentCache.delete(key);
+  }
+}
 
 function normalizeIdUnique(value) {
   return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
@@ -81,8 +157,8 @@ function sanitizeCompanyWarning(row) {
 
 async function readModuleEffectifSettings() {
   return (
-    await getDocument(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT) ||
-    await getDocument(STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOCUMENT)
+    await getDocumentCached(STAGE_SETTINGS_COLLECTION, EFFECTIF_SETTINGS_DOCUMENT, 5 * 60_000) ||
+    await getDocumentCached(STAGE_SETTINGS_COLLECTION, MODULE_EFFECTIF_SETTINGS_DOCUMENT, 5 * 60_000)
   );
 }
 
@@ -99,7 +175,7 @@ async function readCompanyWarnings(companyRows) {
 
     const warningRows = await Promise.all([...companyStudentIds].map(async studentId => ({
       studentId,
-      row: await getDocument(STUDENT_MODULES_COLLECTION, `${cursusKey}__${studentId}`)
+      row: await getDocumentCached(STUDENT_MODULES_COLLECTION, `${cursusKey}__${studentId}`)
     })));
 
     return warningRows.reduce((warnings, { studentId, row }) => {
@@ -168,7 +244,7 @@ function sanitizeCompanyArchive(archive, companyId) {
 }
 
 async function readCompanyArchives(session) {
-  const rows = await listDocuments(STAGE_ARCHIVE_COLLECTION);
+  const rows = await listDocumentsCached(STAGE_ARCHIVE_COLLECTION, ARCHIVE_CACHE_TTL_MS);
   return rows
     .map(row => sanitizeCompanyArchive(row, session.companyId))
     .filter(Boolean)
@@ -206,7 +282,7 @@ function sanitizeStudentProgress(row) {
 
 async function readCompanyData(session, kind, request) {
   if (kind === "stages") {
-    const rows = await listDocuments(STAGE_COLLECTION);
+    const rows = await listDocumentsCached(STAGE_COLLECTION);
     const companyRows = rows.filter(row => row.companyId === session.companyId);
     return {
       rows: companyRows,
@@ -220,7 +296,7 @@ async function readCompanyData(session, kind, request) {
     };
   }
   if (kind === "exams") {
-    const rows = await listDocuments(EXAM_COLLECTION);
+    const rows = await listDocumentsCached(EXAM_COLLECTION);
     return rows.filter(row => row.archived !== true);
   }
   if (kind === "archives") {
@@ -237,7 +313,7 @@ async function readCompanyData(session, kind, request) {
     const settings = await readModuleEffectifSettings();
     const cursusKey = buildCursusKey(settings || {});
     const matchingRow = cursusKey
-      ? await getDocument(STUDENT_MODULES_COLLECTION, `${cursusKey}__${requestedId}`)
+      ? await getDocumentCached(STUDENT_MODULES_COLLECTION, `${cursusKey}__${requestedId}`)
       : null;
 
     return { student: sanitizeStudentProgress(matchingRow) };
@@ -258,7 +334,7 @@ async function addCompanyStages(session, body) {
     throw error;
   }
 
-  const existingRows = await listDocuments(STAGE_COLLECTION);
+  const existingRows = await listDocumentsCached(STAGE_COLLECTION);
   const existing = new Set(existingRows
     .filter(row => row.companyId === session.companyId)
     .map(row => normalizeIdUnique(row.normalizedIdUnique || row.idUnique)));
@@ -284,6 +360,7 @@ async function addCompanyStages(session, body) {
       createdAtIso: new Date().toISOString(),
       updatedAtIso: new Date().toISOString()
     });
+    invalidateCollectionCache(STAGE_COLLECTION);
     existing.add(normalizedIdUnique);
     added += 1;
   }
@@ -306,6 +383,7 @@ async function deleteCompanyStage(session, request) {
     throw error;
   }
   await deleteDocument(STAGE_COLLECTION, documentId);
+  invalidateCollectionCache(STAGE_COLLECTION);
   return { deleted: true };
 }
 

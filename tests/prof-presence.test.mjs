@@ -60,17 +60,17 @@ test("les cinq pages prof chargent l'interface de présence", () => {
     assert.match(html, /prof-presence\.css\?v=4/);
     if (page === "prof-modules-eleves.html") {
       const entry = readFileSync(new URL("../assets/js/prof-modules-eleves-v4.js", import.meta.url), "utf8");
-      assert.match(entry, /prof-presence\.js\?v=8/);
+      assert.match(entry, /prof-presence\.js\?v=9/);
     } else {
-      assert.match(html, /prof-presence\.js\?v=5/);
+      assert.match(html, /prof-presence\.js\?v=6/);
     }
   });
 });
 
 test("le client actualise la présence sans surcharger les onglets", () => {
   const source = readFileSync(new URL("../assets/js/prof-presence.js", import.meta.url), "utf8");
-  assert.match(source, /const HEARTBEAT_MS = 30_000/);
-  assert.match(source, /const HIDDEN_HEARTBEAT_MS = 60_000/);
+  assert.match(source, /const HEARTBEAT_MS = 120_000/);
+  assert.match(source, /const HIDDEN_HEARTBEAT_MS = 300_000/);
   assert.match(source, /const INITIAL_HEARTBEAT_DELAY_MS = 6_000/);
   assert.match(source, /const PRESENCE_COLLECTION = "stageComments"/);
   assert.match(source, /recordType: "profPresence"/);

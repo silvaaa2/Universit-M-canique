@@ -11,7 +11,7 @@ const firebaseConfig = {
 };
 
 const ALL_PERMISSIONS = new Set(["dashboard", "corrections", "customResponses", "exams", "modules", "customAccess", "stages"]);
-const CHECK_INTERVAL_MS = 20_000;
+const CHECK_INTERVAL_MS = 60_000;
 const PERMISSION_PATHS = {
   dashboard: "/pages/espace-prof.html",
   corrections: "/pages/espace-prof.html?section=corrections",

@@ -738,7 +738,7 @@ function loadExtras() {
   void importOptional("./prof-modules-archives.js?v=1006", "Archives cursus", 700);
   void importOptional("./prof-modules-sheets-sync.js?v=1011", "Bouton Sync Sheets", 1100)
     .then(() => importOptional("./prof-modules-sheets-sync-exact.js?v=1012", "Synchronisation exacte", 250));
-  void importOptional("./prof-presence.js?v=8", "Présence professeur", 1800);
+  void importOptional("./prof-presence.js?v=9", "Présence professeur", 1800);
   void importOptional("./prof-notifications-v2.js?v=10", "Pastilles de notifications", 2300);
 }
 

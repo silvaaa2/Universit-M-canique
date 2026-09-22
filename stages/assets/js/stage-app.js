@@ -119,6 +119,8 @@ let stageArchives = [];
 let companyWarningByStudentId = new Map();
 const companyStudentProgressCache = new Map();
 const COMPANY_STUDENT_PROGRESS_CACHE_MS = 10000;
+const COMPANY_LOCAL_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const COMPANY_LOCAL_CACHE_PREFIX = "university_company_stage_cache_v1";
 let companyStudentProgressScrollLocked = false;
 
 let currentUserRole = null;
@@ -135,7 +137,7 @@ let companyDataSignature = "";
 let companyRefreshTimer = 0;
 let companyRefreshRunning = false;
 let paletoClockTimer = 0;
-const COMPANY_REFRESH_MS = 15_000;
+const COMPANY_REFRESH_MS = 120_000;
 
 function getScopedCompany() {
   return ALL_COMPANIES.find(company => company.id === COMPANY_SCOPE_ID) || ALL_COMPANIES[0];
@@ -644,37 +646,98 @@ function buildStageDocId(companyId, normalizedIdUnique) {
   return `${companyId}__${normalizedIdUnique}`;
 }
 
+function getCompanyLocalCacheKey(kind) {
+  return `${COMPANY_LOCAL_CACHE_PREFIX}:${COMPANY_SCOPE_ID}:${kind}`;
+}
+
+function readCompanyLocalCache(kind) {
+  if (!IS_COMPANY_ACCESS || !kind) return null;
+  try {
+    const stored = JSON.parse(localStorage.getItem(getCompanyLocalCacheKey(kind)) || "null");
+    if (!stored || stored.companyId !== COMPANY_SCOPE_ID || !stored.payload) return null;
+    if (Date.now() - Number(stored.savedAt || 0) > COMPANY_LOCAL_CACHE_TTL_MS) {
+      localStorage.removeItem(getCompanyLocalCacheKey(kind));
+      return null;
+    }
+    return stored.payload;
+  } catch {
+    return null;
+  }
+}
+
+function writeCompanyLocalCache(kind, payload) {
+  if (!IS_COMPANY_ACCESS || !kind || !payload) return;
+  try {
+    localStorage.setItem(getCompanyLocalCacheKey(kind), JSON.stringify({
+      companyId: COMPANY_SCOPE_ID,
+      savedAt: Date.now(),
+      payload
+    }));
+  } catch (error) {
+    console.warn("Cache local entreprise indisponible :", error?.message || error);
+  }
+}
+
+function setCompanySyncStatus(errors = []) {
+  if (!IS_COMPANY_ACCESS) return;
+  const host = document.querySelector(".dashboard-top");
+  if (!host) return;
+  let status = document.getElementById("companySyncStatus");
+  if (!errors.length) {
+    status?.remove();
+    return;
+  }
+  if (!status) {
+    status = document.createElement("div");
+    status.id = "companySyncStatus";
+    status.className = "company-sync-status";
+    host.append(status);
+  }
+  status.innerHTML = `<span></span><div><strong>Synchronisation différée</strong><small>Les dernières données disponibles restent affichées. Nouvelle tentative automatique.</small></div>`;
+}
+
 async function fetchCompanyRows(kind, options = {}) {
-  const response = await fetch(`/api/access/stage-data?kind=${encodeURIComponent(kind)}${options.documentId ? `&id=${encodeURIComponent(options.documentId)}` : ""}`, {
-    method: options.method || "GET",
-    headers: options.body ? { "Content-Type": "application/json" } : undefined,
-    credentials: "same-origin",
-    cache: "no-store",
-    body: options.body ? JSON.stringify(options.body) : undefined
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || "Données entreprise indisponibles.");
-  return payload;
+  const method = options.method || "GET";
+  try {
+    const response = await fetch(`/api/access/stage-data?kind=${encodeURIComponent(kind)}${options.documentId ? `&id=${encodeURIComponent(options.documentId)}` : ""}`, {
+      method,
+      headers: options.body ? { "Content-Type": "application/json" } : undefined,
+      credentials: "same-origin",
+      cache: "no-store",
+      body: options.body ? JSON.stringify(options.body) : undefined
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(payload.error || "Données entreprise indisponibles.");
+      error.status = response.status;
+      throw error;
+    }
+    if (method === "GET") writeCompanyLocalCache(kind, payload);
+    return payload;
+  } catch (error) {
+    const cached = method === "GET" ? readCompanyLocalCache(kind) : null;
+    if (cached) {
+      console.warn(`Données ${kind} limitées, utilisation du cache local.`, error?.message || error);
+      return { ...cached, cacheFallback: true };
+    }
+    throw error;
+  }
 }
 
 async function loadStageValidations() {
-  stageValidations = [];
-  stageDirectory = [];
-  companyWarningByStudentId = new Map();
-
   if (IS_COMPANY_ACCESS) {
     const payload = await fetchCompanyRows("stages");
-    stageValidations = (payload.rows || []).map(row => ({
+    const nextStageValidations = (payload.rows || []).map(row => ({
       firebaseId: row.id,
       ...row
     }));
-    stageDirectory = (payload.directory || []).map(row => ({
+    const nextStageDirectory = (payload.directory || []).map(row => ({
       idUnique: String(row.idUnique || ""),
       normalizedIdUnique: normalizeIdUnique(row.normalizedIdUnique || row.idUnique),
       companyId: String(row.companyId || ""),
       companyName: String(row.companyName || "")
     }));
-    companyWarningByStudentId = new Map((payload.warnings || []).map(warning => [
+    const nextWarnings = new Map((payload.warnings || []).map(warning => [
       normalizeIdUnique(warning.studentId),
       {
         level: String(warning.level || "none"),
@@ -682,19 +745,25 @@ async function loadStageValidations() {
         comment: String(warning.comment || "").trim()
       }
     ]).filter(([studentId, warning]) => studentId && COMPANY_WARNING_META[warning.level]));
+    stageValidations = nextStageValidations;
+    stageDirectory = nextStageDirectory;
+    companyWarningByStudentId = nextWarnings;
     return;
   }
 
   const snap = await getDocs(collection(db, STAGE_COLLECTION));
+  const nextStageValidations = [];
 
   snap.forEach(docSnap => {
     const data = docSnap.data();
-    stageValidations.push({
+    nextStageValidations.push({
       firebaseId: docSnap.id,
       ...data
     });
   });
+  stageValidations = nextStageValidations;
   stageDirectory = stageValidations;
+  companyWarningByStudentId = new Map();
 }
 
 function getExamParticipantFirebaseIds(participant) {
@@ -3178,7 +3247,12 @@ async function refreshAll({ silent = false } = {}) {
   }
   loaders.push(loadStageArchives());
 
-  await Promise.all(loaders);
+  const results = await Promise.allSettled(loaders);
+  const errors = results
+    .filter(result => result.status === "rejected")
+    .map(result => result.reason);
+
+  if (!IS_COMPANY_ACCESS && errors.length) throw errors[0];
 
   const nextCompanySignature = IS_COMPANY_ACCESS ? buildCompanyDataSignature() : "";
   const shouldAnimate = Boolean(companyDataSignature && nextCompanySignature !== companyDataSignature);
@@ -3187,6 +3261,7 @@ async function refreshAll({ silent = false } = {}) {
   renderCompanies();
   renderExamParticipants();
   updateCompanyWorkspaceStats();
+  setCompanySyncStatus(errors);
   if (shouldAnimate) requestAnimationFrame(animateCompanyDataUpdate);
 }
 
