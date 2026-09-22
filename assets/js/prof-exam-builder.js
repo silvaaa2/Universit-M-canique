@@ -131,6 +131,7 @@ function renderOptions(question) {
   if (question.type === "true_false") {
     return `
       <div class="question-options" data-options-for="${escapeHtml(question.id)}">
+        <span class="answer-key-hint">Coche la bonne réponse</span>
         ${["true", "false"].map(value => `
           <label class="question-option">
             <input type="radio" name="correct-${escapeHtml(question.id)}" value="${value}" data-correct-true-false="${escapeHtml(question.id)}" ${question.correctAnswers.includes(value) ? "checked" : ""}>
@@ -143,6 +144,7 @@ function renderOptions(question) {
   const inputType = question.type === "single" ? "radio" : "checkbox";
   return `
     <div class="question-options" data-options-for="${escapeHtml(question.id)}">
+      <span class="answer-key-hint">${question.type === "multiple" ? "Coche les bonnes réponses" : "Coche la bonne réponse"}</span>
       ${question.options.map((option, index) => `
         <div class="question-option">
           <input type="${inputType}" name="correct-${escapeHtml(question.id)}" data-correct-option="${escapeHtml(question.id)}" data-option-index="${index}" ${question.correctAnswers.includes(option) ? "checked" : ""} aria-label="Bonne réponse">
