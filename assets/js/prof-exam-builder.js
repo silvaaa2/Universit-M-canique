@@ -186,10 +186,11 @@ function renderQuestion(question, index) {
           <label class="question-required"><input type="checkbox" data-question-field="required" data-question="${escapeHtml(question.id)}" ${question.required ? "checked" : ""}> Réponse obligatoire</label>
         </div>
         <div class="question-image-zone">
-          <label class="image-picker">
-            <span>+ Importer une photo du PC</span>
-            <input class="question-image-input" type="file" accept="image/png,image/jpeg,image/webp" data-image-input="${escapeHtml(question.id)}" aria-label="Importer une photo depuis cet appareil">
-          </label>
+          <div class="image-picker">
+            <span>Ajouter une photo</span>
+            <input class="question-image-input" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" data-image-input="${escapeHtml(question.id)}" aria-label="Choisir une photo depuis cet appareil">
+            <small>JPG, PNG ou WebP · 12 Mo maximum</small>
+          </div>
           ${question.image ? `<div class="question-image-preview"><img src="${question.image}" alt="Photo de la question"><button type="button" class="image-remove" data-remove-image="${escapeHtml(question.id)}" aria-label="Retirer la photo">×</button></div>` : `<span class="exam-library-status">Aucune photo</span>`}
         </div>
       </div>
