@@ -186,7 +186,8 @@ function renderQuestion(question, index) {
           <label class="question-required"><input type="checkbox" data-question-field="required" data-question="${escapeHtml(question.id)}" ${question.required ? "checked" : ""}> Réponse obligatoire</label>
         </div>
         <div class="question-image-zone">
-          <label class="image-picker">+ Ajouter une photo<input type="file" accept="image/png,image/jpeg,image/webp" data-image-input="${escapeHtml(question.id)}"></label>
+          <button type="button" class="image-picker" data-pick-image="${escapeHtml(question.id)}">+ Importer une photo du PC</button>
+          <input class="question-image-input" type="file" accept="image/png,image/jpeg,image/webp" data-image-input="${escapeHtml(question.id)}" tabindex="-1" aria-hidden="true">
           ${question.image ? `<div class="question-image-preview"><img src="${question.image}" alt="Photo de la question"><button type="button" class="image-remove" data-remove-image="${escapeHtml(question.id)}" aria-label="Retirer la photo">×</button></div>` : `<span class="exam-library-status">Aucune photo</span>`}
         </div>
       </div>
@@ -464,6 +465,13 @@ editor.addEventListener("change", async event => {
 editor.addEventListener("click", event => {
   const target = event.target.closest("button");
   if (!target) return;
+  if (target.dataset.pickImage) {
+    const input = target.closest(".exam-question")?.querySelector(".question-image-input");
+    if (!input) return setStatus("Le sélecteur de fichiers est indisponible.", "error");
+    input.value = "";
+    input.click();
+    return;
+  }
   if (target.dataset.addQuestion) {
     if (questions.length >= 60) return setStatus("Limite de 60 questions atteinte.", "error");
     questions.push(defaultQuestion(target.dataset.addQuestion));

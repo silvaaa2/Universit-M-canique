@@ -66,8 +66,9 @@ body.exam-builder-page { overflow: hidden; }
 .question-option input[type="radio"], .question-option input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--v2-green); }
 .add-option { justify-self: start; border: 0; background: transparent; color: var(--v2-gold); padding: 5px 0; font: inherit; font-size: 11px; font-weight: 950; cursor: pointer; }
 .question-image-zone { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; padding-top: 3px; }
-.image-picker { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px dashed rgba(239,206,114,.3); border-radius: 10px; color: var(--v2-gold); font-size: 11px; font-weight: 900; cursor: pointer; }
-.image-picker input { display: none; }
+.image-picker { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px dashed rgba(239,206,114,.3); border-radius: 10px; background: rgba(239,206,114,.025); color: var(--v2-gold); font: inherit; font-size: 11px; font-weight: 900; cursor: pointer; }
+.image-picker:hover { border-color: rgba(239,206,114,.58); background: rgba(239,206,114,.07); }
+.question-image-input { position: fixed; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .question-image-preview { position: relative; width: min(260px,100%); overflow: hidden; border: 1px solid var(--v2-line); border-radius: 12px; background: #050505; }
 .question-image-preview img { display: block; width: 100%; max-height: 170px; object-fit: contain; }
 .question-image-preview .image-remove { position: absolute; top: 7px; right: 7px; background: rgba(0,0,0,.78); }
