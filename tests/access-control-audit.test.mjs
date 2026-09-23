@@ -147,6 +147,20 @@ test("Cayo Garage utilise son vrai logo dans son espace entreprise", async () =>
   assert.ok(logo.length > 1_000, "le fichier du logo Cayo ne doit pas être vide");
 });
 
+test("Benny's affiche son logo horizontal sans fond ajouté sur ordinateur et téléphone", async () => {
+  const app = await read("stages/assets/js/stage-app.js");
+  const css = await read("stages/assets/css/stage.css");
+  const logo = await readFile(new URL("../Images/companies/bennys-motorworks.png", import.meta.url));
+
+  assert.match(app, /id: "bennys"[\s\S]*logo: "\/Images\/companies\/bennys-motorworks\.png"/);
+  assert.match(app, /data-company-logo="\$\{escapeHtml\(company\.id\)\}"/);
+  assert.match(css, /\.paleto-sidebar-brand > \.company-brand-logo\[data-company-logo="bennys"\]/);
+  assert.match(css, /\.paleto-command-logo\[data-company-logo="bennys"\]/);
+  assert.match(css, /\.company-brand-logo\.has-image\s*\{[^}]*background:\s*transparent;/);
+  assert.equal(logo.subarray(1, 4).toString(), "PNG");
+  assert.ok(logo.readUInt32BE(16) > logo.readUInt32BE(20), "le logo Benny's doit garder son format horizontal");
+});
+
 test("le salon Discord des logs reste une configuration serveur", async () => {
   const audit = await read("lib/server/audit-log.js");
   assert.match(audit, /process\.env\.DISCORD_AUDIT_CHANNEL_ID/);

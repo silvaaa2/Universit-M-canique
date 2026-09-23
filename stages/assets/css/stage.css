@@ -3451,6 +3451,11 @@ body.paleto-stage-v2 {
   height: 58px;
 }
 
+.paleto-sidebar-brand > .company-brand-logo[data-company-logo="bennys"] {
+  width: 102px;
+  height: 48px;
+}
+
 .paleto-sidebar-brand > div { min-width: 0; }
 .paleto-sidebar-brand strong,
 .paleto-sidebar-brand span { display: block; }
@@ -3608,6 +3613,12 @@ body.paleto-stage-v2 .stage-header .header-actions {
   height: 32px;
 }
 
+.paleto-command-logo[data-company-logo="bennys"] { width: 88px; }
+.paleto-command-logo[data-company-logo="bennys"] .company-brand-logo {
+  width: 72px;
+  height: 34px;
+}
+
 body.paleto-stage-v2 main {
   width: auto;
   margin: 0 18px 0 calc(var(--paleto-sidebar-width) + 34px);
@@ -3746,6 +3757,7 @@ body.paleto-stage-v2.admin-company-preview main { padding-top: 178px; }
   }
 
   .paleto-sidebar-brand > .company-brand-logo { width: 42px; height: 42px; }
+  .paleto-sidebar-brand > .company-brand-logo[data-company-logo="bennys"] { width: 88px; height: 42px; }
   .paleto-sidebar-nav {
     display: flex;
     gap: 6px;

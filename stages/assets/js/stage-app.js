@@ -66,7 +66,13 @@ let effectifGid =
   DEFAULT_EFFECTIF_GID;
 
 const ALL_COMPANIES = [
-  { id: "bennys", name: "Benny's", mark: "B", accent: "#5b8cff" },
+  {
+    id: "bennys",
+    name: "Benny's",
+    mark: "B",
+    accent: "#5b8cff",
+    logo: "/Images/companies/bennys-motorworks.png"
+  },
   { id: "lsc", name: "LSC", mark: "LS", accent: "#f0b14a" },
   {
     id: "paleto",
@@ -152,7 +158,7 @@ function renderCompanyLogo(company = getScopedCompany()) {
 
   if (logo) {
     return `
-      <span class="company-brand-logo has-image" style="--company-accent:${accent}" aria-hidden="true">
+      <span class="company-brand-logo has-image" data-company-logo="${escapeHtml(company.id)}" style="--company-accent:${accent}" aria-hidden="true">
         <strong>${mark}</strong>
         <img src="${logo}" alt="" decoding="async" onerror="this.remove()">
       </span>`;
@@ -253,7 +259,7 @@ function ensurePaletoStageV2Chrome() {
   if (actions) {
     actions.insertAdjacentHTML("afterbegin", `
       <time class="paleto-command-clock" data-paleto-clock></time>
-      <span class="paleto-command-logo">${renderCompanyLogo()}</span>`);
+      <span class="paleto-command-logo" data-company-logo="${escapeHtml(COMPANY_SCOPE_ID)}">${renderCompanyLogo()}</span>`);
   }
 
   sidebar.querySelectorAll("[data-paleto-stage-panel]").forEach(button => {
