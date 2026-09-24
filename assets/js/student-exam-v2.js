@@ -3,8 +3,13 @@ const status = document.getElementById("studentExamStatus");
 const list = document.getElementById("studentExamList");
 const panel = document.getElementById("studentExamPanel");
 const content = document.getElementById("studentExamContent");
+const imageDialog = document.getElementById("studentExamImageDialog");
+const imageDialogImage = document.getElementById("studentExamImageFull");
+const imageDialogCaption = document.getElementById("studentExamImageCaption");
+const imageDialogClose = document.getElementById("studentExamImageClose");
 let activeExam = null;
 let sending = false;
+let lastImageZoomButton = null;
 
 function escapeHtml(value) {
   return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;")
@@ -55,10 +60,15 @@ function renderExam(exam) {
           <label>Nom<input name="lastName" maxlength="80" autocomplete="family-name" required></label>
           <label>ID unique<input name="idUnique" maxlength="80" autocomplete="off" required></label></div>
       </fieldset>
-      ${exam.questions.map((question, index) => `<fieldset class="student-exam-question" data-question-id="${escapeHtml(question.id)}">
+      ${exam.questions.map((question, index) => `<fieldset class="student-exam-question" data-question-id="${escapeHtml(question.id)}" style="--question-index:${Math.min(index, 12)}">
         <legend><span>${index + 1}</span> ${escapeHtml(question.title)} ${question.required ? "*" : ""}</legend>
         ${question.description ? `<p>${escapeHtml(question.description)}</p>` : ""}
-        ${question.image ? `<img src="${question.image}" alt="Illustration de la question ${index + 1}">` : ""}
+        ${question.image ? `<div class="student-exam-image-preview">
+          <img src="${escapeHtml(question.image)}" alt="Illustration de la question ${index + 1}" loading="lazy">
+          <button type="button" class="student-exam-image-zoom" data-exam-image-zoom data-question-number="${index + 1}" aria-label="Agrandir l’image de la question ${index + 1}" title="Agrandir l’image">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+          </button>
+        </div>` : ""}
         ${questionInput(question, index)}
         <small>${Number(question.points || 0)} point(s)</small>
       </fieldset>`).join("")}
@@ -129,7 +139,7 @@ async function loadExams() {
       setStatus("");
       return;
     }
-    list.innerHTML = exams.map(exam => `<button type="button" data-exam-id="${escapeHtml(exam.id)}"><span>EXAMEN PUBLIÉ</span><strong>${escapeHtml(exam.title)}</strong><small>${escapeHtml(exam.description || "Clique pour ouvrir le formulaire.")}</small><b>${Number(exam.questionCount || 0)} questions · ${Number(exam.maxScore || 0)} points →</b></button>`).join("");
+    list.innerHTML = exams.map((exam, index) => `<button type="button" data-exam-id="${escapeHtml(exam.id)}" style="--card-index:${Math.min(index, 10)}"><span>EXAMEN PUBLIÉ</span><strong>${escapeHtml(exam.title)}</strong><small>${escapeHtml(exam.description || "Clique pour ouvrir le formulaire.")}</small><b>${Number(exam.questionCount || 0)} questions · ${Number(exam.maxScore || 0)} points →</b></button>`).join("");
     setStatus("");
   } catch (error) {
     if (error.status === 423) {
@@ -138,6 +148,51 @@ async function loadExams() {
     setStatus(error.message || "Chargement impossible.", "error");
   }
 }
+
+function resetImagePreview() {
+  document.body.classList.remove("student-exam-image-open");
+  imageDialogImage?.removeAttribute("src");
+  lastImageZoomButton?.focus({ preventScroll: true });
+  lastImageZoomButton = null;
+}
+
+function closeImagePreview() {
+  if (!imageDialog) return;
+  if (typeof imageDialog.close === "function") imageDialog.close();
+  else {
+    imageDialog.removeAttribute("open");
+    resetImagePreview();
+  }
+}
+
+content.addEventListener("click", event => {
+  const button = event.target.closest("[data-exam-image-zoom]");
+  if (!button || !imageDialog || !imageDialogImage) return;
+  const image = button.closest(".student-exam-image-preview")?.querySelector("img");
+  const imageSource = image?.currentSrc || image?.src;
+  if (!imageSource || imageDialog.open || imageDialog.hasAttribute?.("open")) return;
+
+  lastImageZoomButton = button;
+  imageDialogImage.src = imageSource;
+  imageDialogImage.alt = image.alt;
+  if (imageDialogCaption) imageDialogCaption.textContent = `Question ${button.dataset.questionNumber} · image agrandie`;
+  if (typeof imageDialog.showModal === "function") imageDialog.showModal();
+  else imageDialog.setAttribute("open", "");
+  document.body.classList.add("student-exam-image-open");
+  imageDialogClose?.focus();
+});
+
+imageDialogClose?.addEventListener("click", closeImagePreview);
+imageDialog?.addEventListener("click", event => {
+  if (event.target === imageDialog) closeImagePreview();
+});
+imageDialog?.addEventListener("close", resetImagePreview);
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape" || typeof imageDialog?.showModal === "function") return;
+  if (!imageDialog.hasAttribute("open")) return;
+  event.preventDefault();
+  closeImagePreview();
+});
 
 list.addEventListener("click", async event => {
   const button = event.target.closest("[data-exam-id]");

@@ -6,6 +6,7 @@
   <title>Examen 2 - Mécanique Université</title>
   <link rel="icon" href="../Images/favicon.png" type="image/png">
   <link rel="stylesheet" href="../assets/css/student-exam-v2.css?v=1">
+  <link rel="stylesheet" href="../assets/css/student-exam-v2-enhancements.css?v=1">
 </head>
 <body>
   <header class="student-exam-header">
@@ -25,6 +26,16 @@
       <div id="studentExamContent"></div>
     </section>
   </main>
-  <script type="module" src="../assets/js/student-exam-v2.js?v=2"></script>
+  <dialog class="student-exam-image-dialog" id="studentExamImageDialog" aria-label="Image de la question agrandie">
+    <button type="button" class="student-exam-image-close" id="studentExamImageClose" aria-label="Fermer l’image agrandie">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19"/></svg>
+      <span>Fermer</span>
+    </button>
+    <div class="student-exam-image-stage">
+      <img id="studentExamImageFull" alt="">
+      <p id="studentExamImageCaption"></p>
+    </div>
+  </dialog>
+  <script type="module" src="../assets/js/student-exam-v2.js?v=3"></script>
 </body>
 </html>
