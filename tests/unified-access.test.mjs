@@ -34,6 +34,7 @@ test("le portail expose les trois parcours demandés", async () => {
   assert.match(portal, /Continuer avec Discord/);
   assert.match(portal, /Continuer en tant qu’élève/);
   assert.match(portal, /Connexion avec un code entreprise/);
+  assert.doesNotMatch(portal, /Connexion e-mail|emailAccessForm/);
 });
 
 test("le suivi de stage applique le périmètre entreprise côté requête", async () => {

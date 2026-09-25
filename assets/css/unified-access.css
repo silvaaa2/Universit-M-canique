@@ -138,8 +138,6 @@ button { -webkit-tap-highlight-color: transparent; }
 .company-toggle:focus-visible,
 .code-row input:focus-visible,
 .code-row button:focus-visible,
-.email-panel input:focus-visible,
-.email-panel button:focus-visible,
 .profile-actions button:focus-visible,
 .dialog-close:focus-visible {
   outline: 3px solid rgba(241, 211, 110, .28);
@@ -201,41 +199,6 @@ input:disabled { opacity: .55; cursor: wait; transform: none; }
 }
 
 .company-panel[hidden] { display: none; }
-
-.email-toggle {
-  margin-top: 6px;
-  font-size: .76rem;
-  color: #92968d;
-  text-decoration: none;
-}
-
-.email-panel form { display: grid; gap: 9px; }
-
-.email-panel input {
-  width: 100%;
-  height: 48px;
-  padding: 0 14px;
-  border: 1px solid #383d35;
-  border-radius: 13px;
-  background: #050705;
-  color: #fff;
-  outline: none;
-}
-
-.email-panel input:focus { border-color: var(--gold); }
-
-.email-panel button[type="submit"] {
-  min-height: 48px;
-  margin-top: 5px;
-  border: 1px solid #7a6d39;
-  border-radius: 13px;
-  background: var(--gold);
-  color: #171406;
-  font-weight: 950;
-  cursor: pointer;
-}
-
-.email-panel .form-status { margin-top: 0; }
 
 .company-panel label {
   display: block;

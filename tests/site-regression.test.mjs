@@ -186,17 +186,15 @@ test("les contrôles mobiles principaux ont un nom accessible", () => {
   }
 });
 
-test("la connexion Discord utilise le logo officiel et garde l'e-mail fonctionnel", () => {
+test("le portail garde Discord sans proposer la connexion e-mail", () => {
   const html = read("index.html");
   const auth = read("assets/js/unified-access.js");
   const dashboard = read("pages/espace-prof.html");
 
   assert.match(html, /Images\/discord-symbol\.svg/);
-  assert.match(html, /Connexion e-mail/);
-  assert.doesNotMatch(html, /Connexion e-mail de secours/);
-  assert.match(html, /id="emailAccessForm"/);
-  assert.match(auth, /signInWithEmailAndPassword/);
-  assert.match(auth, /addEventListener\("submit", enterEmail\)/);
+  assert.doesNotMatch(html, /Connexion e-mail|emailAccessForm|emailAccessToggle/);
+  assert.doesNotMatch(auth, /signInWithEmailAndPassword|enterEmail|emailAccessForm/);
+  assert.match(auth, /signInWithCustomToken/);
   assert.match(auth, /await verifyProfAccess\(credential\.user\)/);
   assert.doesNotMatch(dashboard, /id="loginSection"|id="loginForm"|id="discordLoginBtn"/);
   assert.equal(existsSync(join(root, "Images/discord-symbol.svg")), true);

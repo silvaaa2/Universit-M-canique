@@ -1,6 +1,5 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, signOut, signInWithCustomToken, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getAuth, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getProfAccess, isProfAllowed } from "./prof-identity.js?v=2";
 
 const firebaseConfig = {
@@ -14,7 +13,6 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 const DISCORD_SIGNIN_TIMEOUT_MS = 12000;
 
 function withTimeout(promise, ms) {
@@ -28,13 +26,7 @@ function withTimeout(promise, ms) {
 }
 
 async function verifyProfAccess(user) {
-  const access = await getProfAccess(user, async () => {
-    if (!user?.email) return { role: null, admin: false };
-    const snapshot = await withTimeout(getDoc(doc(db, "users", user.email)), 8500);
-    if (!snapshot.exists()) return { role: null, admin: false };
-    const data = snapshot.data();
-    return { role: data.role || null, admin: data.admin === true };
-  });
+  const access = await getProfAccess(user);
   if (!isProfAllowed(access)) throw new Error("Accès refusé. Ce compte n’est pas autorisé comme professeur.");
   return access;
 }
@@ -164,42 +156,6 @@ async function enterDiscord() {
   }
 }
 
-async function enterEmail(event) {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const email = form.elements.email.value.trim();
-  const password = form.elements.password.value;
-  const status = document.getElementById("emailStatus");
-  const controls = [...form.querySelectorAll("input, button")];
-  status.textContent = "Vérification du compte…";
-  setBusy(controls, true);
-  window.UniversityMotion?.beginAccess({
-    mode: "enter",
-    title: "Connexion en cours",
-    detail: "Vérification de votre accès professeur…"
-  });
-
-  let signedInForAttempt = false;
-  try {
-    const credential = await signInWithEmailAndPassword(auth, email, password);
-    signedInForAttempt = true;
-    await verifyProfAccess(credential.user);
-    await clearCompanySession();
-    sessionStorage.removeItem("universityStudentAccess");
-    await animateAccess({ label: credential.user.email?.split("@")[0] || "Professeur", role: "prof" });
-    window.location.assign("/pages/espace-prof.html");
-  } catch (error) {
-    if (signedInForAttempt) await signOut(auth).catch(() => null);
-    await window.UniversityMotion?.hideAccess();
-    status.textContent = error?.code === "auth/invalid-credential"
-      ? "E-mail ou mot de passe incorrect."
-      : error?.code === "auth/too-many-requests"
-        ? "Trop de tentatives. Réessaie plus tard."
-        : error?.message || "Connexion e-mail impossible.";
-    setBusy(controls, false);
-  }
-}
-
 async function completeDiscordLogin() {
   const button = document.getElementById("discordAccessButton");
   const status = document.getElementById("discordStatus");
@@ -265,16 +221,6 @@ companyToggle?.addEventListener("click", () => {
 document.getElementById("studentAccessButton")?.addEventListener("click", enterStudent);
 document.getElementById("discordAccessButton")?.addEventListener("click", enterDiscord);
 document.getElementById("companyAccessForm")?.addEventListener("submit", enterCompany);
-
-const emailToggle = document.getElementById("emailAccessToggle");
-const emailPanel = document.getElementById("emailAccessPanel");
-emailToggle?.addEventListener("click", () => {
-  const shouldOpen = emailPanel.hidden;
-  emailPanel.hidden = !shouldOpen;
-  emailToggle.setAttribute("aria-expanded", String(shouldOpen));
-  if (shouldOpen) document.getElementById("profEmail")?.focus();
-});
-document.getElementById("emailAccessForm")?.addEventListener("submit", enterEmail);
 
 const accessParams = new URLSearchParams(window.location.search);
 const discordErrors = {
