@@ -1,0 +1,32 @@
+@keyframes student-exam-home-arrive {
+  from { opacity: 0; transform: translateY(22px) scale(.985); filter: blur(5px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes student-exam-home-depart {
+  to { opacity: 0; transform: translateY(-14px) scale(.975); filter: blur(7px); }
+}
+
+.student-exam-entry {
+  animation: student-exam-home-arrive .65s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.student-exam-entry a {
+  transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+}
+
+.student-exam-entry a:not(.custom-link-closed):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(239, 212, 142, .2);
+}
+
+body.student-exam-opening .student-exam-entry {
+  pointer-events: none;
+  animation: student-exam-home-depart .3s cubic-bezier(.4, 0, 1, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-exam-entry,
+  body.student-exam-opening .student-exam-entry { animation-duration: .01ms; }
+  .student-exam-entry a { transition-duration: .01ms; }
+}

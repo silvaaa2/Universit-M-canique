@@ -9,7 +9,26 @@ const imageDialogCaption = document.getElementById("studentExamImageCaption");
 const imageDialogClose = document.getElementById("studentExamImageClose");
 let activeExam = null;
 let sending = false;
+let openingExam = false;
+let switchingView = false;
+let leavingPage = false;
+let closingImagePreview = false;
 let lastImageZoomButton = null;
+
+function reducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+}
+
+function waitForMotion(milliseconds) {
+  return new Promise(resolve => window.setTimeout(resolve, reducedMotion() ? 0 : milliseconds));
+}
+
+async function animateOut(element) {
+  if (!element || reducedMotion()) return;
+  element.classList.add("is-exiting");
+  await waitForMotion(260);
+  element.classList.remove("is-exiting");
+}
 
 function escapeHtml(value) {
   return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;")
@@ -113,12 +132,14 @@ async function submitExam(event) {
     const button = form.querySelector("button[type='submit']");
     button.disabled = true;
     button.textContent = "Envoi en cours…";
-    setStatus("Envoi de ta copie…");
+    button.classList.add("is-sending");
+    setStatus("Envoi de ta copie…", "loading");
     const data = await request(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
+    await animateOut(form);
     content.innerHTML = `<div class="student-exam-receipt"><span>✓</span><h2>Copie envoyée</h2><p>${escapeHtml(activeExam.title)} a été enregistré pour ${escapeHtml(payload.firstName)} ${escapeHtml(payload.lastName)}.</p>
       <p>${data.result?.status === "pending" ? "La note finale apparaîtra après correction des réponses écrites et calcul des bonus." : `Résultat : ${Number(data.result?.totalScore || 0)} / ${Number(data.result?.maxScore || 0)}.`}</p>
       <a href="../eleve.html">Revenir à l’espace élève</a></div>`;
@@ -126,12 +147,12 @@ async function submitExam(event) {
   } catch (error) {
     setStatus(error.message || "Envoi impossible.", "error");
     const button = form.querySelector("button[type='submit']");
-    if (button) { button.disabled = false; button.textContent = "Envoyer ma copie"; }
+    if (button) { button.disabled = false; button.textContent = "Envoyer ma copie"; button.classList.remove("is-sending"); }
   } finally { sending = false; }
 }
 
 async function loadExams() {
-  setStatus("Chargement des examens…");
+  setStatus("Chargement des examens…", "loading");
   try {
     const { exams } = await request(endpoint);
     if (!Array.isArray(exams) || !exams.length) {
@@ -151,13 +172,20 @@ async function loadExams() {
 
 function resetImagePreview() {
   document.body.classList.remove("student-exam-image-open");
+  imageDialog?.classList?.remove("is-closing");
   imageDialogImage?.removeAttribute("src");
   lastImageZoomButton?.focus({ preventScroll: true });
   lastImageZoomButton = null;
+  closingImagePreview = false;
 }
 
-function closeImagePreview() {
-  if (!imageDialog) return;
+async function closeImagePreview() {
+  if (!imageDialog || closingImagePreview) return;
+  closingImagePreview = true;
+  if (imageDialog.open && !reducedMotion()) {
+    imageDialog.classList?.add("is-closing");
+    await waitForMotion(200);
+  }
   if (typeof imageDialog.close === "function") imageDialog.close();
   else {
     imageDialog.removeAttribute("open");
@@ -187,6 +215,10 @@ imageDialog?.addEventListener("click", event => {
   if (event.target === imageDialog) closeImagePreview();
 });
 imageDialog?.addEventListener("close", resetImagePreview);
+imageDialog?.addEventListener("cancel", event => {
+  event.preventDefault();
+  void closeImagePreview();
+});
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape" || typeof imageDialog?.showModal === "function") return;
   if (!imageDialog.hasAttribute("open")) return;
@@ -196,23 +228,49 @@ document.addEventListener("keydown", event => {
 
 list.addEventListener("click", async event => {
   const button = event.target.closest("[data-exam-id]");
-  if (!button) return;
+  if (!button || openingExam || switchingView) return;
+  openingExam = true;
   button.disabled = true;
-  setStatus("Ouverture de l’examen…");
+  setStatus("Ouverture de l’examen…", "loading");
   try {
     const { exam } = await request(`${endpoint}&id=${encodeURIComponent(button.dataset.examId)}`);
+    await animateOut(list);
     renderExam(exam);
   } catch (error) {
-    button.disabled = false;
     setStatus(error.message || "Examen indisponible.", "error");
+  } finally {
+    button.disabled = false;
+    openingExam = false;
   }
 });
 
-document.getElementById("studentExamListBack")?.addEventListener("click", () => {
+document.getElementById("studentExamListBack")?.addEventListener("click", async () => {
+  if (switchingView || sending) return;
+  switchingView = true;
+  await animateOut(panel);
   panel.hidden = true;
   list.hidden = false;
   activeExam = null;
   setStatus("");
+  switchingView = false;
+});
+
+document.addEventListener("click", async event => {
+  const link = event.target?.closest?.(".student-exam-brand, .student-exam-back, .student-exam-receipt a");
+  if (!link || event.defaultPrevented) return;
+  if (event.button !== undefined && event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === "_blank") return;
+  event.preventDefault();
+  if (leavingPage) return;
+  leavingPage = true;
+  document.body.classList.add("is-leaving");
+  await waitForMotion(300);
+  window.location.assign(link.href);
+});
+
+window.addEventListener?.("pageshow", () => {
+  leavingPage = false;
+  document.body.classList.remove("is-leaving");
 });
 
 const accessTimestamp = Number(sessionStorage.getItem("universityStudentAccess") || 0);

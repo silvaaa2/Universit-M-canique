@@ -58,7 +58,10 @@ test("l'élève peut agrandir une image d'examen et la refermer sans perdre sa r
         remove: name => bodyClasses.delete(name)
       } }
     },
-    window: { location: { replace() { throw new Error("Accès élève inattendu"); } } },
+    window: {
+      location: { replace() { throw new Error("Accès élève inattendu"); } },
+      setTimeout: callback => callback()
+    },
     sessionStorage: { getItem: () => String(Date.now()) },
     fetch: async () => ({ ok: true, json: async () => ({ exams: [] }) }),
     Date,
@@ -74,6 +77,7 @@ test("l'élève peut agrandir une image d'examen et la refermer sans perdre sa r
   assert.equal(bodyClasses.has("student-exam-image-open"), true);
 
   closeButton.dispatch("click");
+  await new Promise(resolve => setImmediate(resolve));
   assert.equal(dialog.open, false);
   assert.equal(fullImage.src, undefined);
   assert.equal(triggerFocused, true);
@@ -88,7 +92,7 @@ test("la loupe, la croix visible et les animations sont réservées à l'examen 
 
   assert.match(page, /<dialog[^>]*id="studentExamImageDialog"/);
   assert.match(page, /id="studentExamImageClose"[^>]*aria-label="Fermer l’image agrandie"/);
-  assert.match(page, /student-exam-v2-enhancements\.css\?v=1/);
+  assert.match(page, /student-exam-v2-enhancements\.css\?v=2/);
   assert.match(script, /class="student-exam-image-zoom"[^>]*data-exam-image-zoom/);
   assert.match(script, /imageDialog\.showModal\(\)/);
   assert.match(css, /\.student-exam-image-dialog\[open\]/);
