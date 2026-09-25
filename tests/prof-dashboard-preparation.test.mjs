@@ -22,7 +22,7 @@ test("le tableau attend brièvement les statistiques sans pouvoir bloquer la con
   const end = script.indexOf("function showDashboardInstant", start);
   const preparation = script.slice(start, end);
   const instantStart = end;
-  const instantEnd = script.indexOf("function showDashboardWithTransition", instantStart);
+  const instantEnd = script.indexOf("async function getUserAccess", instantStart);
   const instantDisplay = script.slice(instantStart, instantEnd);
 
   assert.ok(start >= 0 && end > start, "Le flux de préparation doit exister.");
@@ -38,5 +38,6 @@ test("le tableau attend brièvement les statistiques sans pouvoir bloquer la con
   assert.doesNotMatch(instantDisplay, /prepareAndShowDashboard/);
   assert.match(instantDisplay, /loadDashboardStats\(\)/);
   assert.match(script, /showDashboardInstant\(\)/);
-  assert.match(script, /await showDashboardWithTransition\(user\)/);
+  assert.match(script, /if \(freshLogin\) void prepareAndShowDashboard\(user\)/);
+  assert.match(script, /else showDashboardInstant\(\)/);
 });

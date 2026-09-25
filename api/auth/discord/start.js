@@ -4,6 +4,7 @@ const {
   STATE_MAX_AGE_SECONDS,
   buildDiscordAuthorizeUrl,
   createOAuthState,
+  getErrorRedirect,
   redirect,
   sendJson,
   serializeCookie
@@ -25,6 +26,6 @@ module.exports = function handler(request, response) {
     redirect(response, buildDiscordAuthorizeUrl(state.value), [stateCookie]);
   } catch (error) {
     console.error("Démarrage OAuth Discord impossible :", error);
-    sendJson(response, 500, { error: "Connexion Discord indisponible." });
+    redirect(response, getErrorRedirect("discord_unavailable"));
   }
 };

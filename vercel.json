@@ -37,6 +37,14 @@
   ],
   "headers": [
     {
+      "source": "/",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/pages/espace-prof.html",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {

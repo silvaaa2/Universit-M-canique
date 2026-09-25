@@ -187,42 +187,46 @@ test("les contrôles mobiles principaux ont un nom accessible", () => {
 });
 
 test("la connexion Discord utilise le logo officiel et garde l'e-mail fonctionnel", () => {
-  const html = read("pages/espace-prof.html");
-  const auth = read("assets/js/prof-auth-v2.js");
+  const html = read("index.html");
+  const auth = read("assets/js/unified-access.js");
+  const dashboard = read("pages/espace-prof.html");
 
   assert.match(html, /Images\/discord-symbol\.svg/);
-  assert.match(html, /<span>Connexion e-mail<\/span>/);
+  assert.match(html, /Connexion e-mail/);
   assert.doesNotMatch(html, /Connexion e-mail de secours/);
-  assert.match(html, /id="loginForm"/);
+  assert.match(html, /id="emailAccessForm"/);
   assert.match(auth, /signInWithEmailAndPassword/);
-  assert.match(auth, /loginForm\?\.addEventListener\("submit"/);
-  assert.match(auth, /emailLoginDetails\.open = shouldOpen/);
-  assert.match(auth, /loginForm\.requestSubmit\(\)/);
+  assert.match(auth, /addEventListener\("submit", enterEmail\)/);
+  assert.match(auth, /await verifyProfAccess\(credential\.user\)/);
+  assert.doesNotMatch(dashboard, /id="loginSection"|id="loginForm"|id="discordLoginBtn"/);
   assert.equal(existsSync(join(root, "Images/discord-symbol.svg")), true);
 });
 
-test("le retour Discord masque l'ancienne connexion avant le premier rendu", () => {
+test("le retour Discord passe par le portail unique et garde le ticket OAuth", () => {
   const html = read("pages/espace-prof.html");
+  const portal = read("assets/js/unified-access.js");
   const auth = read("assets/js/prof-auth-v2.js");
+  const server = read("lib/server/discord-prof-auth.js");
 
-  assert.match(html, /dataset\.profDiscordReturn = "true"/);
-  assert.match(html, /html\[data-prof-discord-return="true"\] #loginSection/);
-  assert.match(html, /html\[data-prof-discord-return="true"\] #loginTransition\[hidden\]/);
-  assert.match(auth, /function showDiscordReturnTransition\(\)/);
-  assert.match(auth, /if \(discordComplete\) \{\s*showDiscordReturnTransition\(\)/);
-  assert.match(auth, /delete document\.documentElement\.dataset\.profDiscordReturn/);
-  assert.doesNotMatch(auth, /loginError\.textContent = "Connexion Discord en cours\.\.\."/);
+  assert.match(html, /window\.location\.replace\(`\/\$\{window\.location\.search\}`\)/);
+  assert.doesNotMatch(html, /id="loginSection"/);
+  assert.match(portal, /fetch\("\/api\/auth\/discord\/complete"/);
+  assert.match(portal, /signInWithCustomToken/);
+  assert.match(portal, /void completeDiscordLogin\(\)/);
+  assert.match(server, /const DEFAULT_LOGIN_PATH = "\/"/);
+  assert.match(auth, /window\.location\.replace\(query \? `\/\?\$\{query\}` : "\/"\)/);
 });
 
 test("la connexion Discord et la préparation du tableau ont une limite de temps", () => {
   const html = read("pages/espace-prof.html");
   const auth = read("assets/js/prof-auth-v2.js");
+  const portal = read("assets/js/unified-access.js");
 
-  assert.match(html, /prof-auth-v2\.js\?v=41/);
-  assert.match(auth, /const DISCORD_SIGNIN_TIMEOUT_MS = 12000/);
+  assert.match(html, /prof-auth-v2\.js\?v=42/);
+  assert.match(portal, /const DISCORD_SIGNIN_TIMEOUT_MS = 12000/);
   assert.match(auth, /const DASHBOARD_GATE_TIMEOUT_MS = 3500/);
-  assert.match(auth, /signal: controller\.signal/);
-  assert.match(auth, /withTimeout\(\s*signInWithCustomToken/);
+  assert.match(portal, /signal: controller\.signal/);
+  assert.match(portal, /withTimeout\(\s*signInWithCustomToken/);
   assert.match(auth, /finalisation des données en arrière-plan/);
 });
 

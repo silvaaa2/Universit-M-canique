@@ -17,6 +17,19 @@ function decodeJwtPayload(token) {
   return JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
 }
 
+test("les retours Discord utilisent le portail unique même avec l'ancienne variable de déploiement", () => {
+  const previousPath = process.env.DISCORD_LOGIN_PATH;
+  process.env.DISCORD_LOGIN_PATH = "/pages/espace-prof.html";
+  try {
+    const { getLoginPath, getErrorRedirect } = loadAuthHelpers();
+    assert.equal(getLoginPath(), "/");
+    assert.equal(getErrorRedirect("discord_cancelled"), "/?discord_error=discord_cancelled");
+  } finally {
+    if (previousPath === undefined) delete process.env.DISCORD_LOGIN_PATH;
+    else process.env.DISCORD_LOGIN_PATH = previousPath;
+  }
+});
+
 test("la feuille Discord accepte les colonnes prévues et normalise les rôles", () => {
   const { parseAccessRows } = loadAuthHelpers();
   const rows = parseAccessRows([

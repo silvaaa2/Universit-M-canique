@@ -1,8 +1,6 @@
 ﻿import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import {
   getAuth,
-  signInWithEmailAndPassword,
-  signInWithCustomToken,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
@@ -42,7 +40,6 @@ const firebaseConfig = {
 };
 
 const AUTH_TIMEOUT_MS = 8500;
-const DISCORD_SIGNIN_TIMEOUT_MS = 12000;
 const DASHBOARD_GATE_TIMEOUT_MS = 3500;
 const PROFILE_STORAGE_KEY = "profV2Profile";
 const DASHBOARD_TIMEOUT_MS = 7000;
@@ -85,17 +82,8 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const loginSection = document.getElementById("loginSection");
 const profDashboard = document.getElementById("profDashboard");
-const loginForm = document.getElementById("loginForm");
-const loginError = document.getElementById("loginError");
 const logoutBtn = document.getElementById("logoutBtn");
-const loginBtn = document.getElementById("loginBtn");
-const loginBtnText = loginBtn?.querySelector(".btn-text");
-const discordLoginBtn = document.getElementById("discordLoginBtn");
-const discordLoginBtnText = discordLoginBtn?.querySelector(".discord-btn-text");
-const emailLoginDetails = document.getElementById("emailLoginDetails");
-const emailLoginSummary = document.getElementById("emailLoginSummary");
 const loginTransition = document.getElementById("loginTransition");
 const loginTransitionTitle = document.getElementById("loginTransitionTitle");
 const loginTransitionStatus = document.getElementById("loginTransitionStatus");
@@ -124,7 +112,6 @@ const profilePreviewName = document.getElementById("v2ProfilePreviewName");
 const profilePreviewMeta = document.getElementById("v2ProfilePreviewMeta");
 const homeButtons = document.querySelectorAll("[data-v2-home]");
 
-let isManualLoginTransition = false;
 let currentAccess = { role: null, admin: false };
 let dashboardStatsLoading = false;
 let dashboardStatsLastLoadedAt = 0;
@@ -160,21 +147,6 @@ function withTimeout(promise, ms, message) {
   });
 
   return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timer));
-}
-
-function setLoginLoading(isLoading) {
-  if (!loginBtn || !loginBtnText) return;
-
-  loginBtn.disabled = isLoading;
-  loginBtn.classList.toggle("loading", isLoading);
-  loginBtnText.textContent = isLoading ? "Connexion..." : "Connexion";
-}
-
-function setDiscordLoading(isLoading) {
-  if (!discordLoginBtn || !discordLoginBtnText) return;
-  discordLoginBtn.disabled = isLoading;
-  discordLoginBtn.classList.toggle("loading", isLoading);
-  discordLoginBtnText.textContent = isLoading ? "Connexion à Discord..." : "Continuer avec Discord";
 }
 
 function getInitials(email) {
@@ -1419,42 +1391,12 @@ window.addEventListener("prof:live-refresh", () => {
   void loadDashboardStats();
 });
 
-function showLogin() {
-  applyAdminVisibility();
-  delete document.documentElement.dataset.profDiscordReturn;
-
-  if (loginTransition) {
-    loginTransition.hidden = true;
-    loginTransition.classList.remove("active");
-  }
-
-  profDashboard?.classList.remove("dashboard-visible");
-  loginSection?.removeAttribute("hidden");
-  profDashboard?.setAttribute("hidden", "");
-
-  if (loginSection) loginSection.style.display = "grid";
-  if (profDashboard) profDashboard.style.display = "none";
-
-  setLoginLoading(false);
-}
-
-function showDiscordReturnTransition() {
-  applyAdminVisibility();
-
-  profDashboard?.classList.remove("dashboard-visible");
-  loginSection?.setAttribute("hidden", "");
-  profDashboard?.setAttribute("hidden", "");
-
-  if (loginSection) loginSection.style.display = "none";
-  if (profDashboard) profDashboard.style.display = "none";
-  if (loginTransitionTitle) loginTransitionTitle.textContent = "Connexion Discord";
-  if (loginTransitionStatus) loginTransitionStatus.textContent = "Vérification de votre accès...";
-
-  if (loginTransition) {
-    loginTransition.dataset.ready = "false";
-    loginTransition.hidden = false;
-    loginTransition.classList.add("active");
-  }
+function showLogin(errorCode = "") {
+  window.currentProfUser = null;
+  const params = new URLSearchParams();
+  if (errorCode) params.set("login_error", errorCode);
+  const query = params.toString();
+  window.location.replace(query ? `/?${query}` : "/");
 }
 
 function setDashboardTransition(user, status = "Chargement de vos statistiques...") {
@@ -1464,18 +1406,7 @@ function setDashboardTransition(user, status = "Chargement de vos statistiques..
   if (loginTransition) loginTransition.dataset.ready = "false";
 }
 
-async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
-  const loginWasVisible = Boolean(
-    loginSection
-    && !loginSection.hidden
-    && loginSection.style.display !== "none"
-  );
-
-  if (animateLogin && loginWasVisible) {
-    loginSection?.classList.add("leaving");
-    await wait(220);
-  }
-
+async function prepareAndShowDashboard(user) {
   setDashboardTransition(user);
 
   if (loginTransition) {
@@ -1485,10 +1416,8 @@ async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
 
   await wait(40);
 
-  loginSection?.setAttribute("hidden", "");
   profDashboard?.setAttribute("hidden", "");
   profDashboard?.classList.remove("dashboard-visible");
-  if (loginSection) loginSection.style.display = "none";
   if (profDashboard) profDashboard.style.display = "none";
 
   const preparationStartedAt = Date.now();
@@ -1527,9 +1456,6 @@ async function prepareAndShowDashboard(user, { animateLogin = false } = {}) {
   await wait(220);
 
   if (loginTransition) loginTransition.hidden = true;
-  loginSection?.classList.remove("leaving");
-  setLoginLoading(false);
-
   if (statsStillLoading) {
     void statsPromise.catch(error => {
       console.warn("Finalisation différée du tableau de bord impossible :", error);
@@ -1543,39 +1469,12 @@ function showDashboardInstant() {
     loginTransition.classList.remove("active");
   }
 
-  loginSection?.setAttribute("hidden", "");
-  loginSection?.classList.remove("leaving");
   profDashboard?.removeAttribute("hidden");
-  if (loginSection) loginSection.style.display = "none";
   if (profDashboard) profDashboard.style.display = "grid";
   window.scrollTo(0, 0);
 
   requestAnimationFrame(() => profDashboard?.classList.add("dashboard-visible"));
   loadDashboardStats();
-  setLoginLoading(false);
-}
-
-async function showDashboardWithTransition(user) {
-  const displayName = getDisplayProfile(user, currentAccess).displayName || "Professeur";
-  window.UniversityMotion?.beginAccess({
-    mode: "enter",
-    title: "Connexion validée",
-    detail: "Chargement de vos statistiques…"
-  });
-  await prepareAndShowDashboard(user, { animateLogin: true });
-  if (window.UniversityMotion) {
-    await window.UniversityMotion.completeAccess({
-      mode: "enter",
-      title: `Bienvenue, ${displayName}`,
-      detail: "Votre espace professeur est prêt.",
-      validatedTitle: "Données chargées",
-      validatedDetail: "Votre tableau de bord est à jour.",
-      minimum: 0,
-      validationHold: 360,
-      hold: 520
-    });
-    await window.UniversityMotion.hideAccess();
-  }
 }
 
 async function getUserAccess(user) {
@@ -1609,12 +1508,7 @@ async function refuseAccess(user) {
     console.error("Erreur déconnexion après refus :", error);
   }
 
-  if (loginError) {
-    loginError.textContent = "Accès refusé. Ce compte n'est pas autorisé sur l'espace professeur.";
-  }
-
-  loginSection?.classList.remove("leaving");
-  showLogin();
+  showLogin("access_denied");
 }
 
 function resetHomeState() {
@@ -1724,61 +1618,9 @@ function initCommandSearch() {
 }
 
 function initAuth() {
-  const authParams = new URLSearchParams(window.location.search);
-  const discordError = authParams.get("discord_error");
-  const discordComplete = authParams.get("discord") === "complete";
-  const discordWarning = authParams.get("discord_warning");
-
-  if (discordComplete) {
-    showDiscordReturnTransition();
-  } else {
-    showLogin();
-  }
-  setLoginLoading(false);
-  setDiscordLoading(false);
-
-  emailLoginSummary?.addEventListener("click", event => {
-    event.preventDefault();
-    if (!emailLoginDetails) return;
-
-    const shouldOpen = !emailLoginDetails.open;
-    emailLoginDetails.open = shouldOpen;
-    emailLoginSummary.setAttribute("aria-expanded", String(shouldOpen));
-
-    if (shouldOpen) {
-      requestAnimationFrame(() => document.getElementById("email")?.focus({ preventScroll: true }));
-    }
-  });
-
-  const discordErrorMessages = {
-    discord_cancelled: "Connexion Discord annulée.",
-    session_expired: "La connexion Discord a expiré. Recommence.",
-    access_denied: "Accès refusé. Cet ID Discord n'est pas autorisé.",
-    not_member: "Accès refusé. Ce compte n'est pas présent sur le serveur Discord.",
-    sheet_invalid: "La feuille des autorisations est mal configurée.",
-    sheet_unavailable: "La liste des professeurs est momentanément indisponible.",
-    discord_exchange: "Discord n'a pas pu valider la connexion.",
-    discord_unavailable: "Discord est momentanément indisponible.",
-    configuration: "La connexion Discord n'est pas complètement configurée.",
-    unknown: "La connexion Discord a échoué. Réessaie."
-  };
-
-  if (discordError && loginError) {
-    loginError.textContent = discordErrorMessages[discordError] || discordErrorMessages.unknown;
-  }
-
-  function cleanDiscordQuery() {
-    const url = new URL(window.location.href);
-    ["discord", "discord_error", "discord_warning"].forEach(key => url.searchParams.delete(key));
-    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
-    delete document.documentElement.dataset.profDiscordReturn;
-  }
-
+  const freshLogin = document.documentElement.classList.contains("university-login-arrival");
   onAuthStateChanged(auth, async user => {
-    if (isManualLoginTransition) return;
-
     if (!user) {
-      window.currentProfUser = null;
       showLogin();
       return;
     }
@@ -1787,8 +1629,7 @@ function initAuth() {
       currentAccess = await getUserAccess(user);
     } catch (error) {
       console.error("Erreur accès utilisateur :", error);
-      if (loginError) loginError.textContent = "Impossible de vérifier le compte.";
-      await refuseAccess(user);
+      showLogin("verification_unavailable");
       return;
     }
 
@@ -1799,143 +1640,9 @@ function initAuth() {
 
     window.currentProfUser = user;
     updateProfile(user, currentAccess);
-    showDashboardInstant();
+    if (freshLogin) void prepareAndShowDashboard(user);
+    else showDashboardInstant();
   });
-
-  loginBtn?.addEventListener("click", event => {
-    event.preventDefault();
-    if (!loginForm?.checkValidity()) {
-      loginForm?.reportValidity();
-      return;
-    }
-
-    if (typeof loginForm.requestSubmit === "function") {
-      loginForm.requestSubmit();
-    } else {
-      loginForm.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-    }
-  });
-
-  loginForm?.addEventListener("submit", async event => {
-    event.preventDefault();
-
-    const email = document.getElementById("email")?.value.trim() || "";
-    const password = document.getElementById("password")?.value || "";
-
-    if (loginError) loginError.textContent = "";
-    setLoginLoading(true);
-    isManualLoginTransition = true;
-
-    try {
-      const credential = await signInWithEmailAndPassword(auth, email, password);
-      const user = credential.user;
-      currentAccess = await getUserAccess(user);
-
-      if (!isAllowed(currentAccess)) {
-        isManualLoginTransition = false;
-        await refuseAccess(user);
-        return;
-      }
-
-      window.currentProfUser = user;
-      updateProfile(user, currentAccess);
-      await showDashboardWithTransition(user);
-    } catch (error) {
-      console.error("Erreur Firebase :", error.code, error.message);
-
-      if (loginError) {
-        if (error.code === "auth/invalid-credential") {
-          loginError.textContent = "Email ou mot de passe incorrect.";
-        } else if (error.code === "auth/too-many-requests") {
-          loginError.textContent = "Trop de tentatives. Réessaie plus tard.";
-        } else if (error.code === "auth/network-request-failed") {
-          loginError.textContent = "Erreur réseau.";
-        } else {
-          loginError.textContent = "Erreur de connexion.";
-        }
-      }
-
-      loginSection?.classList.remove("leaving");
-      setLoginLoading(false);
-    } finally {
-      isManualLoginTransition = false;
-    }
-  });
-
-  discordLoginBtn?.addEventListener("click", async () => {
-    if (loginError) loginError.textContent = "";
-    setDiscordLoading(true);
-    window.UniversityMotion?.beginAccess({
-      mode: "enter",
-      title: "Connexion Discord",
-      detail: "Ouverture de la vérification sécurisée…"
-    });
-    await wait(650);
-    await window.UniversityMotion?.departAccess({ detail: "Redirection vers Discord…" });
-    window.location.assign("/api/auth/discord/start");
-  });
-
-  if (discordComplete) {
-    (async () => {
-      if (loginTransitionStatus) loginTransitionStatus.textContent = "Validation de votre session...";
-      setDiscordLoading(true);
-      isManualLoginTransition = true;
-
-      try {
-        const controller = new AbortController();
-        const requestTimer = window.setTimeout(() => controller.abort(), DISCORD_SIGNIN_TIMEOUT_MS);
-        let response;
-        try {
-          response = await fetch("/api/auth/discord/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "same-origin",
-            cache: "no-store",
-            signal: controller.signal
-          });
-        } finally {
-          window.clearTimeout(requestTimer);
-        }
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok || !payload.customToken) {
-          throw new Error(payload.error || "Connexion Discord impossible.");
-        }
-
-        if (loginTransitionStatus) loginTransitionStatus.textContent = "Ouverture de votre espace...";
-        const credential = await withTimeout(
-          signInWithCustomToken(auth, payload.customToken),
-          DISCORD_SIGNIN_TIMEOUT_MS,
-          "La connexion Discord prend trop de temps. Réessaie."
-        );
-        const user = credential.user;
-        currentAccess = await getUserAccess(user);
-
-        if (!isAllowed(currentAccess)) {
-          await refuseAccess(user);
-          return;
-        }
-
-        window.currentProfUser = user;
-        updateProfile(user, currentAccess);
-        if (loginError) loginError.textContent = discordWarning === "role_sync"
-          ? "Connexion validée. Le rôle Discord n'a pas pu être synchronisé automatiquement."
-          : "";
-        cleanDiscordQuery();
-        await showDashboardWithTransition(user);
-      } catch (error) {
-        console.error("Connexion Discord impossible :", error);
-        if (loginError) loginError.textContent = error.message || discordErrorMessages.unknown;
-        cleanDiscordQuery();
-        showLogin();
-      } finally {
-        isManualLoginTransition = false;
-        setDiscordLoading(false);
-      }
-    })();
-  } else if (discordError) {
-    cleanDiscordQuery();
-  }
 
   logoutBtn?.addEventListener("click", async () => {
     setProfileMenuOpen(false);

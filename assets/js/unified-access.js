@@ -1,5 +1,7 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getAuth, signOut, signInWithCustomToken, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { getProfAccess, isProfAllowed } from "./prof-identity.js?v=2";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDsEuRjht4ujClPreuT4btpSJKxXSP8I6c",
@@ -12,6 +14,30 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
+const DISCORD_SIGNIN_TIMEOUT_MS = 12000;
+
+function withTimeout(promise, ms) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = window.setTimeout(() => reject(new Error("La vérification prend trop de temps. Réessaie.")), ms);
+    })
+  ]).finally(() => window.clearTimeout(timer));
+}
+
+async function verifyProfAccess(user) {
+  const access = await getProfAccess(user, async () => {
+    if (!user?.email) return { role: null, admin: false };
+    const snapshot = await withTimeout(getDoc(doc(db, "users", user.email)), 8500);
+    if (!snapshot.exists()) return { role: null, admin: false };
+    const data = snapshot.data();
+    return { role: data.role || null, admin: data.admin === true };
+  });
+  if (!isProfAllowed(access)) throw new Error("Accès refusé. Ce compte n’est pas autorisé comme professeur.");
+  return access;
+}
 
 function setBusy(controls, busy) {
   controls.filter(Boolean).forEach(control => {
@@ -138,6 +164,95 @@ async function enterDiscord() {
   }
 }
 
+async function enterEmail(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const email = form.elements.email.value.trim();
+  const password = form.elements.password.value;
+  const status = document.getElementById("emailStatus");
+  const controls = [...form.querySelectorAll("input, button")];
+  status.textContent = "Vérification du compte…";
+  setBusy(controls, true);
+  window.UniversityMotion?.beginAccess({
+    mode: "enter",
+    title: "Connexion en cours",
+    detail: "Vérification de votre accès professeur…"
+  });
+
+  let signedInForAttempt = false;
+  try {
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    signedInForAttempt = true;
+    await verifyProfAccess(credential.user);
+    await clearCompanySession();
+    sessionStorage.removeItem("universityStudentAccess");
+    await animateAccess({ label: credential.user.email?.split("@")[0] || "Professeur", role: "prof" });
+    window.location.assign("/pages/espace-prof.html");
+  } catch (error) {
+    if (signedInForAttempt) await signOut(auth).catch(() => null);
+    await window.UniversityMotion?.hideAccess();
+    status.textContent = error?.code === "auth/invalid-credential"
+      ? "E-mail ou mot de passe incorrect."
+      : error?.code === "auth/too-many-requests"
+        ? "Trop de tentatives. Réessaie plus tard."
+        : error?.message || "Connexion e-mail impossible.";
+    setBusy(controls, false);
+  }
+}
+
+async function completeDiscordLogin() {
+  const button = document.getElementById("discordAccessButton");
+  const status = document.getElementById("discordStatus");
+  setBusy([button], true);
+  status.textContent = "Validation de votre connexion Discord…";
+  window.UniversityMotion?.beginAccess({
+    mode: "enter",
+    title: "Connexion Discord",
+    detail: "Validation de votre session…"
+  });
+
+  let signedInForAttempt = false;
+  try {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), DISCORD_SIGNIN_TIMEOUT_MS);
+    let response;
+    try {
+      response = await fetch("/api/auth/discord/complete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        cache: "no-store",
+        signal: controller.signal
+      });
+    } finally {
+      window.clearTimeout(timer);
+    }
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.customToken) {
+      throw new Error(payload.error || "Connexion Discord impossible.");
+    }
+
+    const credential = await withTimeout(
+      signInWithCustomToken(auth, payload.customToken),
+      DISCORD_SIGNIN_TIMEOUT_MS
+    );
+    signedInForAttempt = true;
+    await verifyProfAccess(credential.user);
+    await clearCompanySession();
+    sessionStorage.removeItem("universityStudentAccess");
+    const displayName = credential.user.profDisplayName || payload.profile?.displayName || "Professeur";
+    await animateAccess({ label: displayName, role: "prof" });
+    window.location.assign("/pages/espace-prof.html");
+  } catch (error) {
+    if (signedInForAttempt) await signOut(auth).catch(() => null);
+    await window.UniversityMotion?.hideAccess();
+    status.textContent = error?.name === "AbortError"
+      ? "Connexion Discord trop longue. Réessaie."
+      : error?.message || "Connexion Discord impossible.";
+    setBusy([button], false);
+  }
+}
+
 const companyToggle = document.getElementById("companyAccessToggle");
 const companyPanel = document.getElementById("companyAccessPanel");
 companyToggle?.addEventListener("click", () => {
@@ -150,6 +265,41 @@ companyToggle?.addEventListener("click", () => {
 document.getElementById("studentAccessButton")?.addEventListener("click", enterStudent);
 document.getElementById("discordAccessButton")?.addEventListener("click", enterDiscord);
 document.getElementById("companyAccessForm")?.addEventListener("submit", enterCompany);
+
+const emailToggle = document.getElementById("emailAccessToggle");
+const emailPanel = document.getElementById("emailAccessPanel");
+emailToggle?.addEventListener("click", () => {
+  const shouldOpen = emailPanel.hidden;
+  emailPanel.hidden = !shouldOpen;
+  emailToggle.setAttribute("aria-expanded", String(shouldOpen));
+  if (shouldOpen) document.getElementById("profEmail")?.focus();
+});
+document.getElementById("emailAccessForm")?.addEventListener("submit", enterEmail);
+
+const accessParams = new URLSearchParams(window.location.search);
+const discordErrors = {
+  discord_cancelled: "Connexion Discord annulée.",
+  session_expired: "La connexion Discord a expiré. Recommence.",
+  access_denied: "Accès refusé. Ce compte Discord n’est pas autorisé.",
+  not_member: "Ce compte n’est pas présent sur le serveur Discord.",
+  sheet_invalid: "La liste des professeurs est mal configurée.",
+  sheet_unavailable: "La liste des professeurs est momentanément indisponible.",
+  discord_exchange: "Discord n’a pas pu valider la connexion.",
+  discord_unavailable: "Discord est momentanément indisponible.",
+  configuration: "La connexion Discord n’est pas complètement configurée.",
+  unknown: "La connexion Discord a échoué. Réessaie."
+};
+if (accessParams.get("discord") === "complete") {
+  window.history.replaceState({}, "", "/");
+  void completeDiscordLogin();
+} else {
+  const discordError = accessParams.get("discord_error");
+  const loginError = accessParams.get("login_error");
+  const status = document.getElementById("discordStatus");
+  if (discordError) status.textContent = discordErrors[discordError] || discordErrors.unknown;
+  else if (loginError === "access_denied") status.textContent = "Accès refusé. Ce compte n’est pas autorisé comme professeur.";
+  else if (loginError === "verification_unavailable") status.textContent = "Impossible de vérifier le compte pour le moment. Réessaie.";
+}
 
 fetch("/api/access/session", { credentials: "same-origin", cache: "no-store" })
   .then(response => response.ok ? response.json() : null)

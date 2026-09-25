@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#050705">
   <title>Connexion · Université Mécanique</title>
   <link rel="icon" type="image/png" href="/Images/favicon.png?v=23">
-  <link rel="stylesheet" href="/assets/css/unified-access.css?v=1">
+  <link rel="stylesheet" href="/assets/css/unified-access.css?v=2">
   <link rel="stylesheet" href="/assets/css/unified-motion.css?v=4">
   <script src="/assets/js/unified-motion.js?v=4"></script>
 </head>
@@ -51,6 +51,21 @@
         </form>
       </div>
 
+      <button class="company-toggle email-toggle" id="emailAccessToggle" type="button" aria-expanded="false" aria-controls="emailAccessPanel">
+        <span>Connexion e-mail</span>
+        <b aria-hidden="true">⌄</b>
+      </button>
+      <div class="company-panel email-panel" id="emailAccessPanel" hidden>
+        <form id="emailAccessForm">
+          <label for="profEmail">Adresse e-mail</label>
+          <input id="profEmail" name="email" type="email" autocomplete="email" required>
+          <label for="profPassword">Mot de passe</label>
+          <input id="profPassword" name="password" type="password" autocomplete="current-password" required>
+          <button type="submit">Se connecter</button>
+          <p class="form-status" id="emailStatus" aria-live="polite"></p>
+        </form>
+      </div>
+
       <footer>
         <span class="security-dot" aria-hidden="true"></span>
         Accès sécurisé · Université Mécanique
@@ -58,6 +73,6 @@
     </section>
   </main>
 
-  <script type="module" src="/assets/js/unified-access.js?v=1"></script>
+  <script type="module" src="/assets/js/unified-access.js?v=2"></script>
 </body>
 </html>
