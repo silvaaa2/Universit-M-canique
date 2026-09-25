@@ -12,6 +12,7 @@ const ADMIN_MODULES = [
   "./prof-admin-company-codes.js?v=4",
   "./prof-admin-cursus-management.js?v=4",
   "./prof-admin-access-control.js?v=4",
+  "./prof-admin-discord-bot.js?v=1",
   "./prof-admin-patch-notes.js?v=1004"
 ];
 
@@ -82,7 +83,7 @@ function showAdminLoadError(error) {
 }
 
 async function openAdminPanel(event) {
-  const button = event.target?.closest?.("#profAdminBtn, #profAccessLogsBtn");
+  const button = event.target?.closest?.("#profAdminBtn, #profAccessLogsBtn, #profDiscordBotBtn");
   if (!button) return;
 
   event.preventDefault();
@@ -93,7 +94,12 @@ async function openAdminPanel(event) {
     button.disabled = true;
     await loadAdminBundle();
 
-    if (button.id === "profAccessLogsBtn") {
+    if (button.id === "profDiscordBotBtn") {
+      if (typeof window.openProfDiscordBotPanel !== "function") {
+        throw new Error("Le panneau du bot Discord n'est pas prêt.");
+      }
+      window.openProfDiscordBotPanel();
+    } else if (button.id === "profAccessLogsBtn") {
       if (typeof window.openProfAccessControlPanel !== "function") {
         throw new Error("Le panneau des accès n'est pas prêt.");
       }

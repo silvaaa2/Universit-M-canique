@@ -16,6 +16,7 @@ const {
 const handleCursusManagement = require("../../lib/server/cursus-management.js");
 const { handleProfExamBuilder } = require("../../lib/server/prof-exam-builder.js");
 const { handleProfExamResults, handleStudentExam } = require("../../lib/server/native-exam-v2.js");
+const { handleDiscordBotControl } = require("../../lib/server/discord-bot-control.js");
 const {
   COMPANIES,
   authenticateCompanyCode,
@@ -68,12 +69,19 @@ module.exports = async function handler(request, response) {
   const adminCompanyPreview = adminAction === "company-preview";
   const adminCursusManagement = adminAction === "cursus-management";
   const adminAccessControl = adminAction === "access-control";
+  const adminDiscordBot = adminAction === "discord-bot";
+  const localDiscordBot = requestUrl.searchParams.get("bot") === "discord-bot";
   const profAccess = requestUrl.searchParams.get("prof") === "access";
   const profExamBuilder = requestUrl.searchParams.get("prof") === "exam-builder";
   const profExamResults = requestUrl.searchParams.get("prof") === "exam-v2-results";
   const studentExam = requestUrl.searchParams.get("student") === "exam-v2";
   const auditRequest = requestUrl.searchParams.get("audit") === "1";
   const stageContext = requestUrl.searchParams.get("context") === "stages";
+
+  if (adminDiscordBot || localDiscordBot) {
+    await handleDiscordBotControl(request, response, { requireAdmin, botRequest: localDiscordBot });
+    return;
+  }
 
   if (adminCursusManagement) {
     await handleCursusManagement(request, response);

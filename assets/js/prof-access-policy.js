@@ -65,7 +65,7 @@ function applyPermissions(policy) {
     element.setAttribute("aria-hidden", String(!allowed));
   });
 
-  document.querySelectorAll("#profAdminBtn, #profAccessLogsBtn").forEach(button => {
+  document.querySelectorAll("#profAdminBtn, #profAccessLogsBtn, #profDiscordBotBtn").forEach(button => {
     button.hidden = policy.admin !== true;
   });
   return permissions;
